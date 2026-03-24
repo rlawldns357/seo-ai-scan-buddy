@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
 
 type EventName =
   | "analysis_start"
@@ -24,13 +23,13 @@ function getSessionId(): string {
 
 export async function trackEvent(
   eventName: EventName,
-  eventData: Record<string, unknown> = {},
+  eventData: Record<string, string | number | boolean> = {},
   url?: string
 ) {
   try {
     await supabase.from("analytics_events").insert([{
       event_name: eventName,
-      event_data: eventData as Record<string, unknown>,
+      event_data: eventData,
       session_id: getSessionId(),
       url: url ?? window.location.href,
     }]);
