@@ -376,10 +376,11 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
         ))}
       </div>
 
-      {/* Full-width detail panel */}
+      {/* Full-width detail panel — visually connected */}
       <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
 
-      {/* CTA */}
+      {/* CTA — needs spacing */}
+      <div className="pt-6">
       <InlineCTA />
     </div>
   );
