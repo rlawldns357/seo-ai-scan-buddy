@@ -1,4 +1,4 @@
-import { type PsiResult, type PsiStrategy } from "@/lib/psi";
+import { type PsiResult } from "@/lib/psi";
 import ScoreRing from "@/components/ScoreRing";
 import { Smartphone, Monitor } from "lucide-react";
 
