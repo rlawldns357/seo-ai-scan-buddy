@@ -8,6 +8,7 @@ import LighthouseScores from "@/components/LighthouseScores";
 import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
+import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
@@ -147,7 +148,7 @@ const Index = () => {
       {screen === "loading" && <LoadingScreen />}
 
       {screen === "result" && result && (
-        <main className="flex-1 py-8 sm:py-12 px-4">
+        <main className="flex-1 py-8 sm:py-12 px-4 pb-24">
           <div className="container max-w-4xl mx-auto space-y-5">
             {/* Result header: URL, time, badge */}
             <ResultHeader
@@ -171,6 +172,8 @@ const Index = () => {
             {/* Email Form */}
             <EmailForm onSubmitted={() => {}} />
           </div>
+
+          <StickyBottomCTA />
         </main>
       )}
     </div>
