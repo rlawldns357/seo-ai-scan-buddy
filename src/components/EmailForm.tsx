@@ -29,11 +29,13 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
     const stored = JSON.parse(localStorage.getItem("demo_emails") || "[]") as string[];
     if (stored.includes(email.trim().toLowerCase())) {
       setEmailStatus("duplicate");
+      trackEvent("email_submit_duplicate", { email: email.trim().toLowerCase() });
       return;
     }
     stored.push(email.trim().toLowerCase());
     localStorage.setItem("demo_emails", JSON.stringify(stored));
     setEmailStatus("success");
+    trackEvent("email_submit_success", { email: email.trim().toLowerCase() });
     onSubmitted();
   };
 
