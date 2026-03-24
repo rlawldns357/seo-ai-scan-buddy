@@ -140,7 +140,7 @@ function SummaryCard({
   return (
     <button
       onClick={onClick}
-      className={`${selected ? "rounded-t-xl rounded-b-none" : "rounded-xl"} overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full text-center transition-all duration-200 hover:shadow-elevated`}
+      className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full text-center transition-all duration-200 hover:shadow-elevated`}
       style={{ animationDelay: `${delay / 1000}s` }}
     >
       <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
@@ -189,18 +189,13 @@ function SummaryCard({
         )}
       </div>
 
-      {/* Bottom tab indicator */}
-      {selected ? (
-        <div className="flex items-center justify-center gap-1.5 py-2 bg-primary/5 border-t border-primary/20 text-[11px] font-semibold text-primary">
-          <ChevronDown className="w-3.5 h-3.5 rotate-180" />
-          상세 분석 보는 중
-        </div>
-      ) : (
-        <div className="flex items-center justify-center gap-1 py-2 border-t border-border text-[11px] text-muted-foreground hover:text-foreground transition-colors">
-          상세 분석 보기
-          <ChevronDown className="w-3.5 h-3.5" />
-        </div>
-      )}
+      {/* Bottom hint */}
+      <div className={`flex items-center justify-center gap-1 py-2.5 border-t border-border text-[11px] font-semibold ${
+        selected ? "text-primary bg-primary/5" : "text-muted-foreground"
+      }`}>
+        {selected ? "상세 분석 보는 중" : "상세 분석 보기"}
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${selected ? "rotate-180" : ""}`} />
+      </div>
     </button>
   );
 }
@@ -213,7 +208,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
   const isCritical = severity === "critical";
 
   return (
-    <div className="rounded-b-xl bg-card ring-1 ring-primary/30 overflow-hidden border-t-2 border-primary/30">
+    <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden animate-fade-up">
       {/* Header */}
       <div className="flex items-center gap-2.5 px-6 py-4 border-b border-border bg-muted/30">
         <Icon className={`w-5 h-5 ${config.accent}`} />
@@ -361,7 +356,7 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
   const selectedEntry = axes.find((a) => a.key === selected)!;
 
   return (
-    <div className="space-y-0">
+    <div className="space-y-5">
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-3 sm:items-stretch">
         {axes.map(({ axis, score, key }, i) => (
@@ -376,13 +371,11 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
         ))}
       </div>
 
-      {/* Full-width detail panel — visually connected */}
+      {/* Full-width detail panel */}
       <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
 
       {/* CTA */}
-      <div className="pt-6">
-        <InlineCTA />
-      </div>
+      <InlineCTA />
     </div>
   );
 }
