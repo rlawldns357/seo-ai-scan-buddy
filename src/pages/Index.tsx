@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import confetti from "canvas-confetti";
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
@@ -15,6 +16,7 @@ import { trackEvent } from "@/lib/analytics";
 type Screen = "home" | "loading" | "result";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [screen, setScreen] = useState<Screen>("home");
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
@@ -132,6 +134,12 @@ const Index = () => {
             {urlError && (
               <p className="mt-3 text-sm text-destructive">{urlError}</p>
             )}
+            <button
+              onClick={() => navigate("/design-test")}
+              className="mt-6 text-xs text-muted-foreground/60 hover:text-muted-foreground underline underline-offset-4 transition-colors"
+            >
+              🎨 디자인 테스트 모드
+            </button>
           </div>
         </main>
       )}
