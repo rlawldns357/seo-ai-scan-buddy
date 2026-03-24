@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
 import LoadingScreen from "@/components/LoadingScreen";
 import LighthouseScores from "@/components/LighthouseScores";
-import PageThumbnail from "@/components/PageThumbnail";
+import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
@@ -38,8 +38,6 @@ const Index = () => {
       fetchPsi(finalUrl, 'desktop'),
     ]);
 
-    
-
     if (mobileRes.data) setPsiMobile(mobileRes.data);
     if (desktopRes.data) setPsiDesktop(desktopRes.data);
 
@@ -56,7 +54,6 @@ const Index = () => {
     setResult(getDemoResult(finalUrl));
     setScreen("result");
 
-    // 🎉 Confetti from both sides
     const end = Date.now() + 800;
     const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#34d399', '#fbbf24'];
     const frame = () => {
@@ -143,9 +140,14 @@ const Index = () => {
 
       {screen === "result" && result && (
         <main className="flex-1 py-8 sm:py-12 px-4">
-          <div className="container max-w-3xl mx-auto space-y-6">
-            {/* Page thumbnail + URL */}
-            <PageThumbnail psi={psiMobile || psiDesktop} psiError={psiError} url={normalizedUrl} />
+          <div className="container max-w-4xl mx-auto space-y-5">
+            {/* Result header: URL, time, badge, overall score */}
+            <ResultHeader
+              psi={psiMobile || psiDesktop}
+              psiError={psiError}
+              url={normalizedUrl}
+              result={result}
+            />
 
             {/* PSI Error */}
             {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
@@ -153,7 +155,7 @@ const Index = () => {
             {/* Lighthouse real scores */}
             {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
 
-            {/* Score Dashboard: total summary + SEO/AEO/GEO blocks with inline insights */}
+            {/* Main: SEO/AEO/GEO gauge cards with inline insights */}
             <ScoreDashboard result={result} />
 
             {/* Verification Links */}
