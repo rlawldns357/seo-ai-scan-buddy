@@ -343,7 +343,9 @@ function InlineCTA() {
 
 /* ── Main ── */
 export default function ScoreDashboard({ result }: ScoreDashboardProps) {
-  const [selected, setSelected] = useState<AxisLabel>("SEO");
+  // Default to the worst-scoring axis
+  const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
+  const [selected, setSelected] = useState<AxisLabel>(worstKey);
 
   const axes: { axis: AxisAnalysis; score: number; key: AxisLabel }[] = [
     { axis: result.seoAxis, score: result.seoScore, key: "SEO" },
