@@ -8,7 +8,7 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
-import { fetchPsi, type PsiResult, type PsiError, type PsiStrategy } from "@/lib/psi";
+import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
 import { AlertTriangle, CheckCircle, Lightbulb, Loader2, Monitor, Smartphone } from "lucide-react";
 
