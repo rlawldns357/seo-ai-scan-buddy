@@ -38,7 +38,7 @@ export interface DemoResult {
 const resultA: DemoResult = {
   seoScore: 78,
   aeoScore: 80,
-  geoScore: 76,
+  geoScore: 58,
   seoAxis: {
     label: 'SEO',
     description: '검색엔진이 이 페이지를 크롤링·인덱싱하고 검색 결과에 노출할 기술적 준비 상태',
@@ -93,27 +93,29 @@ const resultA: DemoResult = {
     label: 'GEO',
     description: '생성형 검색 엔진에서 이 사이트와 브랜드가 발견·인용·참조될 준비 상태',
     subSignals: [
-      { name: 'AI 접근 가능성', score: 80, weight: 20 },
-      { name: 'Citation Eligibility', score: 72, weight: 20 },
-      { name: 'Source Clarity', score: 70, weight: 20 },
-      { name: '주제 커버리지', score: 78, weight: 15 },
-      { name: 'Evidence·Freshness', score: 76, weight: 15 },
-      { name: 'AI 가시성 추적', score: 74, weight: 10 },
+      { name: 'AI 접근 가능성', score: 65, weight: 20 },
+      { name: 'Citation Eligibility', score: 48, weight: 20 },
+      { name: 'Source Clarity', score: 45, weight: 20 },
+      { name: '주제 커버리지', score: 62, weight: 15 },
+      { name: 'Evidence·Freshness', score: 55, weight: 15 },
+      { name: 'AI 가시성 추적', score: 50, weight: 10 },
     ],
     scoreRationale: '콘텐츠 양과 주제 커버리지는 양호하나, 출처 명확성과 인용 적합성에 보강이 필요합니다.',
     issues: [
       '브랜드·조직 소개가 흩어져 있어 출처 명확성이 약해요.',
       '인용 가능한 핵심 문장 구조가 부족해요.',
+      '인용 적합 데이터(통계, 근거)가 거의 없어요.',
     ],
     strengths: [
       '주제별 콘텐츠 커버리지가 양호해요.',
       'AI 봇 접근이 허용되어 있어요.',
     ],
-    priorityFix: { label: '브랜드·조직 소개를 한 블록으로 통합', pointRange: '+4~+7' },
-    quickFix: { label: '핵심 주장에 출처·근거 문장 추가', pointRange: '+2~+4' },
+    priorityFix: { label: '브랜드·조직 소개를 한 블록으로 통합', pointRange: '+5~+8' },
+    quickFix: { label: '핵심 주장에 출처·근거 문장 추가', pointRange: '+3~+5' },
     additionalFixes: [
-      { label: '콘텐츠 최신성 표시(날짜, 업데이트 기록)', pointRange: '+1~+2' },
+      { label: '콘텐츠 최신성 표시(날짜, 업데이트 기록)', pointRange: '+2~+4' },
     ],
+    scoreCap: '출처 명확성이 부족해 GEO 점수 상한이 제한됩니다.',
   },
 };
 
@@ -121,7 +123,7 @@ const resultA: DemoResult = {
 const resultB: DemoResult = {
   seoScore: 55,
   aeoScore: 64,
-  geoScore: 52,
+  geoScore: 35,
   seoAxis: {
     label: 'SEO',
     description: '검색엔진이 이 페이지를 크롤링·인덱싱하고 검색 결과에 노출할 기술적 준비 상태',
@@ -179,12 +181,12 @@ const resultB: DemoResult = {
     label: 'GEO',
     description: '생성형 검색 엔진에서 이 사이트와 브랜드가 발견·인용·참조될 준비 상태',
     subSignals: [
-      { name: 'AI 접근 가능성', score: 58, weight: 20 },
-      { name: 'Citation Eligibility', score: 45, weight: 20 },
-      { name: 'Source Clarity', score: 42, weight: 20 },
-      { name: '주제 커버리지', score: 60, weight: 15 },
-      { name: 'Evidence·Freshness', score: 50, weight: 15 },
-      { name: 'AI 가시성 추적', score: 55, weight: 10 },
+      { name: 'AI 접근 가능성', score: 40, weight: 20 },
+      { name: 'Citation Eligibility', score: 28, weight: 20 },
+      { name: 'Source Clarity', score: 25, weight: 20 },
+      { name: '주제 커버리지', score: 42, weight: 15 },
+      { name: 'Evidence·Freshness', score: 35, weight: 15 },
+      { name: 'AI 가시성 추적', score: 38, weight: 10 },
     ],
     scoreRationale: '브랜드 신뢰 신호가 약하고, 인용 가능한 구조화된 출처 정보가 부족합니다.',
     issues: [
