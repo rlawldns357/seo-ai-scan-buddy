@@ -327,7 +327,7 @@ function InlineCTA() {
 export default function ScoreDashboard({ result }: ScoreDashboardProps) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3 items-start">
+      <div className="grid gap-4 sm:grid-cols-3 sm:items-stretch">
         <AxisCard axis={result.seoAxis} score={result.seoScore} delay={200} />
         <AxisCard axis={result.aeoAxis} score={result.aeoScore} delay={400} />
         <AxisCard axis={result.geoAxis} score={result.geoScore} delay={600} />

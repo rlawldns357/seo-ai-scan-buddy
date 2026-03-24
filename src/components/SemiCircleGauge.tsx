@@ -110,7 +110,7 @@ export default function SemiCircleGauge({ score, size = 140, delay = 0 }: SemiCi
         {/* Score number */}
         <text
           x={cx}
-          y={cy - 12}
+          y={cy - 4}
           textAnchor="middle"
           className={`${colorClass} font-bold`}
           style={{ fontSize: size * 0.22, fill: color }}
