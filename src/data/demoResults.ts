@@ -121,7 +121,7 @@ const resultA: DemoResult = {
 const resultB: DemoResult = {
   seoScore: 55,
   aeoScore: 64,
-  geoScore: 52,
+  geoScore: 35,
   seoAxis: {
     label: 'SEO',
     description: '검색엔진이 이 페이지를 크롤링·인덱싱하고 검색 결과에 노출할 기술적 준비 상태',
