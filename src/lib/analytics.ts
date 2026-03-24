@@ -27,12 +27,12 @@ export async function trackEvent(
   url?: string
 ) {
   try {
-    await supabase.from("analytics_events").insert({
+    await supabase.from("analytics_events").insert([{
       event_name: eventName,
-      event_data: eventData,
+      event_data: eventData as Record<string, unknown>,
       session_id: getSessionId(),
       url: url ?? window.location.href,
-    });
+    }]);
   } catch (e) {
     console.warn("[analytics] failed to track event:", eventName, e);
   }
