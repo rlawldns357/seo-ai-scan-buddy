@@ -144,11 +144,11 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
 
   return (
     <div
-      className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col`}
+      className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full`}
       style={{ animationDelay: `${delay / 1000}s` }}
     >
       {/* ─ Score summary (fixed height area) ─ */}
-      <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1 min-h-[320px]">
+      <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
         {/* Badge + label row */}
         <div className="flex items-center gap-2 mb-1">
           <Icon className={`w-4 h-4 ${config.accent}`} />
@@ -327,7 +327,7 @@ function InlineCTA() {
 export default function ScoreDashboard({ result }: ScoreDashboardProps) {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-3 items-start">
+      <div className="grid gap-4 sm:grid-cols-3 sm:items-stretch">
         <AxisCard axis={result.seoAxis} score={result.seoScore} delay={200} />
         <AxisCard axis={result.aeoAxis} score={result.aeoScore} delay={400} />
         <AxisCard axis={result.geoAxis} score={result.geoScore} delay={600} />
