@@ -146,7 +146,6 @@ const Index = () => {
               psi={psiMobile || psiDesktop}
               psiError={psiError}
               url={normalizedUrl}
-              result={result}
             />
 
             {/* PSI Error */}
