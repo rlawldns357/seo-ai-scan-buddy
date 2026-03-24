@@ -109,8 +109,8 @@ const Index = () => {
       {screen === "home" && (
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="max-w-2xl w-full text-center animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/8 text-primary text-sm font-semibold mb-8">
-              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold mb-8">
+              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               무료 베타 서비스
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground leading-[1.25] mb-5 tracking-tight">
@@ -130,7 +130,7 @@ const Index = () => {
               />
               <button
                 onClick={handleAnalyze}
-                className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-colors whitespace-nowrap"
+                className="h-14 px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base hover:opacity-90 transition-opacity whitespace-nowrap"
               >
                 무료로 분석하기
               </button>
