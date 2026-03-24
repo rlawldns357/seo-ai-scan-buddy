@@ -149,10 +149,10 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
     >
       {/* ─ Score summary (fixed height area) ─ */}
       <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
-        {/* Badge + label row */}
-        <div className="flex items-center gap-2 mb-1">
-          <Icon className={`w-4 h-4 ${config.accent}`} />
-          <span className="text-sm font-bold text-foreground">{axis.label}</span>
+        {/* Axis title — bold emphasis */}
+        <div className="flex items-center gap-2.5 mb-2">
+          <Icon className={`w-6 h-6 ${config.accent}`} />
+          <span className="text-2xl font-extrabold tracking-tight text-foreground">{axis.label}</span>
         </div>
 
         {/* Severity badge — always rendered, reserving consistent space */}
