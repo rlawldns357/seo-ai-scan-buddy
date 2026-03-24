@@ -343,15 +343,15 @@ function InlineCTA() {
 
 /* ── Main ── */
 export default function ScoreDashboard({ result }: ScoreDashboardProps) {
-  // Default to the worst-scoring axis
-  const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
-  const [selected, setSelected] = useState<AxisLabel>(worstKey);
-
   const axes: { axis: AxisAnalysis; score: number; key: AxisLabel }[] = [
     { axis: result.seoAxis, score: result.seoScore, key: "SEO" },
     { axis: result.aeoAxis, score: result.aeoScore, key: "AEO" },
     { axis: result.geoAxis, score: result.geoScore, key: "GEO" },
   ];
+
+  // Default to the worst-scoring axis
+  const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
+  const [selected, setSelected] = useState<AxisLabel>(worstKey);
 
   const selectedEntry = axes.find((a) => a.key === selected)!;
 
