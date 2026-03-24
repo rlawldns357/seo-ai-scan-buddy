@@ -179,12 +179,12 @@ const resultB: DemoResult = {
     label: 'GEO',
     description: '생성형 검색 엔진에서 이 사이트와 브랜드가 발견·인용·참조될 준비 상태',
     subSignals: [
-      { name: 'AI 접근 가능성', score: 58, weight: 20 },
-      { name: 'Citation Eligibility', score: 45, weight: 20 },
-      { name: 'Source Clarity', score: 42, weight: 20 },
-      { name: '주제 커버리지', score: 60, weight: 15 },
-      { name: 'Evidence·Freshness', score: 50, weight: 15 },
-      { name: 'AI 가시성 추적', score: 55, weight: 10 },
+      { name: 'AI 접근 가능성', score: 40, weight: 20 },
+      { name: 'Citation Eligibility', score: 28, weight: 20 },
+      { name: 'Source Clarity', score: 25, weight: 20 },
+      { name: '주제 커버리지', score: 42, weight: 15 },
+      { name: 'Evidence·Freshness', score: 35, weight: 15 },
+      { name: 'AI 가시성 추적', score: 38, weight: 10 },
     ],
     scoreRationale: '브랜드 신뢰 신호가 약하고, 인용 가능한 구조화된 출처 정보가 부족합니다.',
     issues: [

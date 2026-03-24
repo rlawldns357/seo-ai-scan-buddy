@@ -155,16 +155,18 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
           <span className="text-sm font-bold text-foreground">{axis.label}</span>
         </div>
 
-        {/* Severity badge */}
-        <div className="mb-2">{getSeverityBadge(severity)}</div>
+        {/* Severity badge — always rendered, reserving consistent space */}
+        <div className="mb-1 min-h-[22px] flex items-center">{getSeverityBadge(severity)}</div>
 
-        {/* Loss message for critical/warning */}
-        {isCritical && (
-          <p className="text-[11px] font-medium text-score-poor text-center mb-1 leading-snug">{config.lossDesc}</p>
-        )}
-        {isWarning && (
-          <p className="text-[11px] text-score-warning text-center mb-1 leading-snug">{config.warnDesc}</p>
-        )}
+        {/* Loss/warn message — fixed height slot */}
+        <div className="min-h-[30px] flex items-center justify-center">
+          {isCritical && (
+            <p className="text-[11px] font-medium text-score-poor text-center leading-snug">{config.lossDesc}</p>
+          )}
+          {isWarning && (
+            <p className="text-[11px] text-score-warning text-center leading-snug">{config.warnDesc}</p>
+          )}
+        </div>
 
         {/* Gauge — compact */}
         <SemiCircleGauge score={score} size={120} delay={delay} />
