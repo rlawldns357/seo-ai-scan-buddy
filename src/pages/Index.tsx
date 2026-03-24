@@ -163,13 +163,13 @@ const Index = () => {
             </div>
 
             {/* Page thumbnail + URL */}
-            <PageThumbnail psi={psiResult} psiError={psiError} url={normalizedUrl} />
+            <PageThumbnail psi={psiMobile || psiDesktop} psiError={psiError} url={normalizedUrl} />
 
             {/* PSI Error */}
             {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
 
             {/* Lighthouse real scores */}
-            {psiResult && <LighthouseScores psi={psiResult} strategy={strategy} />}
+            {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
 
             {/* Demo scores */}
             <div className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
