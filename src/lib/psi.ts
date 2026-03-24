@@ -22,7 +22,7 @@ async function fetchPsiOnce(url: string, strategy: PsiStrategy): Promise<{ data?
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 50000);
+    const timeout = setTimeout(() => controller.abort(), 100000);
 
     const res = await fetch(functionUrl, {
       method: 'POST',
