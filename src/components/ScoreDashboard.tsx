@@ -147,19 +147,24 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
       className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full`}
       style={{ animationDelay: `${delay / 1000}s` }}
     >
-      {/* ─ Score summary (fixed height area) ─ */}
+      {/* ─ Score summary ─ */}
       <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
-        {/* Axis title */}
-        <div className="flex items-center gap-2 mb-2">
-          <Icon className={`w-5 h-5 ${config.accent}`} />
-          <span className={`text-2xl font-semibold tracking-tight ${config.accent}`}>{axis.label}</span>
-        </div>
+        {/* Axis title — small label, not competing */}
+        <span className={`text-[11px] font-bold uppercase tracking-widest ${config.accent} mb-1`}>{axis.label}</span>
 
-        {/* Severity badge — always rendered, reserving consistent space */}
-        <div className="mb-1 min-h-[22px] flex items-center">{getSeverityBadge(severity)}</div>
+        {/* Gauge — hero element, biggest visual weight */}
+        <SemiCircleGauge score={score} size={140} delay={delay} />
 
-        {/* Loss/warn message — fixed height slot */}
-        <div className="min-h-[30px] flex items-center justify-center">
+        {/* Grade */}
+        <span className={`text-sm font-bold ${getGradeColorClass(score)} -mt-1`}>
+          {getGradeLabel(score)}
+        </span>
+
+        {/* Severity badge */}
+        <div className="mt-2 min-h-[22px] flex items-center">{getSeverityBadge(severity)}</div>
+
+        {/* Loss/warn message — below badge, secondary */}
+        <div className="min-h-[28px] flex items-center justify-center mt-1">
           {isCritical && (
             <p className="text-[11px] font-medium text-score-poor text-center leading-snug">{config.lossDesc}</p>
           )}
@@ -168,16 +173,8 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
           )}
         </div>
 
-        {/* Gauge — compact */}
-        <SemiCircleGauge score={score} size={120} delay={delay} />
-
-        {/* Grade */}
-        <span className={`text-xs font-semibold ${getGradeColorClass(score)} -mt-0.5`}>
-          {getGradeLabel(score)}
-        </span>
-
-        {/* Description */}
-        <p className="text-[11px] text-muted-foreground text-center mt-1.5 leading-relaxed line-clamp-2">
+        {/* Description — tertiary */}
+        <p className="text-[10px] text-muted-foreground/70 text-center mt-1 leading-relaxed line-clamp-2">
           {axis.description}
         </p>
 
