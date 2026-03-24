@@ -134,6 +134,12 @@ const Index = () => {
             {urlError && (
               <p className="mt-3 text-sm text-destructive">{urlError}</p>
             )}
+            <button
+              onClick={() => navigate("/design-test")}
+              className="mt-6 text-xs text-muted-foreground/60 hover:text-muted-foreground underline underline-offset-4 transition-colors"
+            >
+              🎨 디자인 테스트 모드
+            </button>
           </div>
         </main>
       )}
