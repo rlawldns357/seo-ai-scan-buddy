@@ -360,9 +360,9 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
 
   // Default to the worst-scoring axis
   const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
-  const [selected, setSelected] = useState<AxisLabel>(worstKey);
+  const [selected, setSelected] = useState<AxisLabel | null>(worstKey);
 
-  const selectedEntry = axes.find((a) => a.key === selected)!;
+  const selectedEntry = axes.find((a) => a.key === selected);
 
   return (
     <div className="space-y-5">
@@ -375,7 +375,7 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
               score={score}
               delay={200 + i * 200}
               selected={selected === key}
-              onClick={() => setSelected(selected === key ? key : key)}
+              onClick={() => setSelected(selected === key ? null : key)}
             />
             {selected === key && (
               <DetailPanel axis={axis} score={score} />
@@ -394,11 +394,13 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
               score={score}
               delay={200 + i * 200}
               selected={selected === key}
-              onClick={() => setSelected(key)}
+            onClick={() => setSelected(selected === key ? null : key)}
             />
           ))}
         </div>
-        <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+        {selectedEntry && (
+          <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+        )}
       </div>
 
       {/* CTA */}
