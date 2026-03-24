@@ -16,6 +16,7 @@ import { trackEvent } from "@/lib/analytics";
 type Screen = "home" | "loading" | "result";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [screen, setScreen] = useState<Screen>("home");
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
