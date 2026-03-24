@@ -40,6 +40,7 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
   };
 
   const scrollToForm = () => {
+    trackEvent("cta_click", { cta: "search_os_news" });
     formRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
