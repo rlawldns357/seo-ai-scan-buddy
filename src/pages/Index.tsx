@@ -181,7 +181,7 @@ const Index = () => {
             {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
 
             {/* Lighthouse real scores */}
-            {psiResult && <LighthouseScores psi={psiResult} />}
+            {psiResult && <LighthouseScores psi={psiResult} strategy={strategy} />}
 
             {/* Demo scores */}
             <div className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
