@@ -1,8 +1,9 @@
-import { type PsiResult } from "@/lib/psi";
+import { type PsiResult, type PsiStrategy } from "@/lib/psi";
 import ScoreRing from "@/components/ScoreRing";
 
 interface LighthouseScoresProps {
   psi: PsiResult;
+  strategy: PsiStrategy;
 }
 
 export default function LighthouseScores({ psi }: LighthouseScoresProps) {
