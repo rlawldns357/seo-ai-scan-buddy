@@ -15,7 +15,9 @@ export interface PsiError {
 
 export type PsiStrategy = 'mobile' | 'desktop';
 
-export async function fetchPsi(url: string, strategy: PsiStrategy = 'mobile'): Promise<{ data?: PsiResult; error?: PsiError }> {
+const RETRYABLE: Set<PsiError['type']> = new Set(['unreachable', 'timeout']);
+
+async function fetchPsiOnce(url: string, strategy: PsiStrategy): Promise<{ data?: PsiResult; error?: PsiError }> {
   const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/psi-proxy`;
 
   try {
