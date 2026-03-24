@@ -128,7 +128,7 @@ export default function LighthouseScores({ mobile, desktop }: LighthouseScoresPr
   const totalAvg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
 
   return (
-    <div className="bg-card rounded-xl shadow-card px-5 py-3 animate-fade-up" style={{ animationDelay: '0.15s' }}>
+    <div className="bg-card rounded-2xl shadow-card px-5 py-4 animate-fade-up" style={{ animationDelay: '0.15s' }}>
       {/* Desktop layout */}
       <div className="hidden sm:flex items-center gap-4">
         <div className="flex-1 min-w-0 space-y-2">
