@@ -10,7 +10,7 @@ import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError, type PsiStrategy } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
-import { AlertTriangle, CheckCircle, Lightbulb, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle, Lightbulb, Loader2, Monitor, Smartphone } from "lucide-react";
 
 type Screen = "home" | "loading" | "result";
 
