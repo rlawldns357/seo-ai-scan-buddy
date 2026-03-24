@@ -15,7 +15,9 @@ export interface PsiError {
 
 export type PsiStrategy = 'mobile' | 'desktop';
 
-export async function fetchPsi(url: string, strategy: PsiStrategy = 'mobile'): Promise<{ data?: PsiResult; error?: PsiError }> {
+const RETRYABLE: Set<PsiError['type']> = new Set(['unreachable', 'timeout']);
+
+async function fetchPsiOnce(url: string, strategy: PsiStrategy): Promise<{ data?: PsiResult; error?: PsiError }> {
   const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/psi-proxy`;
 
   try {
@@ -86,4 +88,19 @@ export async function fetchPsi(url: string, strategy: PsiStrategy = 'mobile'): P
     }
     return { error: { type: 'unknown', message: '네트워크 오류가 발생했어요. 인터넷 연결을 확인해 주세요.' } };
   }
+}
+
+export async function fetchPsi(url: string, strategy: PsiStrategy = 'mobile'): Promise<{ data?: PsiResult; error?: PsiError }> {
+  const first = await fetchPsiOnce(url, strategy);
+  if (first.data) return first;
+
+  // 자동 재시도: SPA 등에서 NO_FCP 류 에러 시 캐시 덕에 두 번째 성공 가능
+  if (first.error && RETRYABLE.has(first.error.type)) {
+    console.log(`[psi] Retrying ${strategy} for ${url} (${first.error.type})`);
+    const second = await fetchPsiOnce(url, strategy);
+    if (second.data) return second;
+    return second;
+  }
+
+  return first;
 }
