@@ -79,15 +79,17 @@ function DeviceRow({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode
 
 function DeviceColumnMobile({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex-1 min-w-0 space-y-1.5">
-      <div className="flex items-center gap-1.5 pb-1 border-b border-border">
+    <div className="flex-1 min-w-0 space-y-2 px-3 py-2.5 rounded-lg bg-muted/40">
+      <div className="flex items-center gap-1.5">
         {icon}
         <span className="text-[11px] font-semibold text-foreground">{label}</span>
       </div>
-      <MiniScoreMobile score={psi.performance} label="성능" />
-      <MiniScoreMobile score={psi.accessibility} label="접근성" />
-      <MiniScoreMobile score={psi.bestPractices} label="권장사항" />
-      <MiniScoreMobile score={psi.seo} label="SEO" />
+      <div className="space-y-1.5">
+        <MiniScoreMobile score={psi.performance} label="성능" />
+        <MiniScoreMobile score={psi.accessibility} label="접근성" />
+        <MiniScoreMobile score={psi.bestPractices} label="권장사항" />
+        <MiniScoreMobile score={psi.seo} label="SEO" />
+      </div>
     </div>
   );
 }
