@@ -149,7 +149,7 @@ function SummaryCard({
   return (
     <button
       onClick={onClick}
-      className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full text-center transition-all duration-200 hover:shadow-elevated`}
+      className={`rounded-2xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full text-center transition-all duration-200 hover:shadow-elevated`}
       style={{ animationDelay: `${delay / 1000}s` }}
     >
       <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
