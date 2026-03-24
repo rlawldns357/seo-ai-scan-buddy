@@ -100,6 +100,7 @@ function ImprovementRow({ icon, label, item, urgent }: { icon: React.ReactNode; 
 
 /* ── Main axis block ── */
 function AxisBlock({ axis, score, delay }: { axis: AxisAnalysis; score: number; delay: number }) {
+  const [open, setOpen] = useState(false);
   const config = axisConfig[axis.label];
   const Icon = config.icon;
   const grade = getGradeLabel(score);
@@ -113,7 +114,7 @@ function AxisBlock({ axis, score, delay }: { axis: AxisAnalysis; score: number; 
       className={`rounded-xl overflow-hidden animate-fade-up flex flex-col ${getCardClasses(score)}`}
       style={{ animationDelay: `${delay / 1000}s` }}
     >
-      {/* Score header */}
+      {/* Score header — always visible */}
       <div className="pt-6 px-6 pb-4 flex flex-col items-center">
         <div className="flex items-center gap-2 mb-1.5">
           <Icon className={`w-5 h-5 ${config.accent}`} />
@@ -129,7 +130,7 @@ function AxisBlock({ axis, score, delay }: { axis: AxisAnalysis; score: number; 
         </p>
       </div>
 
-      {/* Score cap warning */}
+      {/* Score cap warning — always visible */}
       {axis.scoreCap && (
         <div className={`mx-5 mb-3 flex items-start gap-2 px-3.5 py-2.5 rounded-lg border ${
           isCritical
@@ -143,85 +144,95 @@ function AxisBlock({ axis, score, delay }: { axis: AxisAnalysis; score: number; 
         </div>
       )}
 
-      {/* Sub-signals */}
-      <div className="border-t border-border px-5 py-4 space-y-2">
-        <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-          <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />
-          하위 신호
-        </span>
-        {(axis.subSignals || []).map((s, i) => (
-          <SignalBar key={i} name={s.name} score={s.score} weight={s.weight} />
-        ))}
-      </div>
+      {/* Mobile toggle button */}
+      <button
+        onClick={() => setOpen(!open)}
+        className="sm:hidden flex items-center justify-center gap-1.5 py-2.5 border-t border-border text-xs font-semibold text-primary hover:bg-muted/50 transition-colors"
+      >
+        {open ? "접기" : "상세 보기"}
+        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
 
-      {/* Rationale */}
-      <div className="border-t border-border px-5 py-4">
-        <span className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
-          <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
-          점수 사유
-        </span>
-        <p className="text-[13px] text-muted-foreground leading-relaxed">{axis.scoreRationale}</p>
-      </div>
-
-      {/* Issues & Strengths */}
-      <div className="border-t border-border px-5 py-4 space-y-4">
-        {/* Issues */}
-        <div className={`space-y-1.5 ${(isCritical || isWarning) ? "px-3 py-2.5 -mx-1 rounded-lg bg-score-poor/[0.04] border border-score-poor/10" : ""}`}>
-          <span className={`text-xs font-semibold flex items-center gap-1.5 ${
-            isCritical ? "text-score-poor" : "text-foreground"
-          }`}>
-            <AlertTriangle className={`w-3.5 h-3.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />
-            핵심 이슈
-            {isCritical && <span className="text-[11px] font-bold text-score-poor ml-1">— 우선 해결</span>}
-          </span>
-          <ul className="space-y-1 pl-5">
-            {(axis.issues || []).map((item, i) => (
-              <li key={i} className={`text-[13px] leading-relaxed list-disc ${
-                isCritical ? "text-foreground font-medium" : "text-muted-foreground"
-              }`}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Strengths */}
-        <div className="space-y-1.5">
+      {/* Detail sections — collapsible on mobile, always visible on desktop */}
+      <div className={`flex flex-col ${open ? "" : "hidden"} sm:flex`}>
+        {/* Sub-signals */}
+        <div className="border-t border-border px-5 py-4 space-y-2">
           <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-score-excellent" />
-            잘된 점
+            <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />
+            하위 신호
           </span>
-          <ul className="space-y-1 pl-5">
-            {(axis.strengths || []).map((item, i) => (
-              <li key={i} className="text-[13px] text-muted-foreground leading-relaxed list-disc">{item}</li>
-            ))}
-          </ul>
+          {(axis.subSignals || []).map((s, i) => (
+            <SignalBar key={i} name={s.name} score={s.score} weight={s.weight} />
+          ))}
         </div>
-      </div>
 
-      {/* Improvements */}
-      <div className="border-t border-border px-5 py-4 space-y-3 flex-1">
-        {axis.priorityFix && (
-          <ImprovementRow
-            icon={<Zap className={`w-4 h-4 shrink-0 mt-0.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />}
-            label="가장 먼저 할 개선"
-            item={axis.priorityFix}
-            urgent={isCritical}
-          />
-        )}
-        {axis.quickFix && (
-          <ImprovementRow
-            icon={<Wrench className="w-4 h-4 text-primary shrink-0 mt-0.5" />}
-            label="빠르게 할 수 있는 개선"
-            item={axis.quickFix}
-          />
-        )}
-        {(axis.additionalFixes || []).map((fix, i) => (
-          <ImprovementRow
-            key={i}
-            icon={<Plus className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />}
-            label="추가 개선"
-            item={fix}
-          />
-        ))}
+        {/* Rationale */}
+        <div className="border-t border-border px-5 py-4">
+          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
+            <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
+            점수 사유
+          </span>
+          <p className="text-[13px] text-muted-foreground leading-relaxed">{axis.scoreRationale}</p>
+        </div>
+
+        {/* Issues & Strengths */}
+        <div className="border-t border-border px-5 py-4 space-y-4">
+          <div className={`space-y-1.5 ${(isCritical || isWarning) ? "px-3 py-2.5 -mx-1 rounded-lg bg-score-poor/[0.04] border border-score-poor/10" : ""}`}>
+            <span className={`text-xs font-semibold flex items-center gap-1.5 ${
+              isCritical ? "text-score-poor" : "text-foreground"
+            }`}>
+              <AlertTriangle className={`w-3.5 h-3.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />
+              핵심 이슈
+              {isCritical && <span className="text-[11px] font-bold text-score-poor ml-1">— 우선 해결</span>}
+            </span>
+            <ul className="space-y-1 pl-5">
+              {(axis.issues || []).map((item, i) => (
+                <li key={i} className={`text-[13px] leading-relaxed list-disc ${
+                  isCritical ? "text-foreground font-medium" : "text-muted-foreground"
+                }`}>{item}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-score-excellent" />
+              잘된 점
+            </span>
+            <ul className="space-y-1 pl-5">
+              {(axis.strengths || []).map((item, i) => (
+                <li key={i} className="text-[13px] text-muted-foreground leading-relaxed list-disc">{item}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Improvements */}
+        <div className="border-t border-border px-5 py-4 space-y-3 flex-1">
+          {axis.priorityFix && (
+            <ImprovementRow
+              icon={<Zap className={`w-4 h-4 shrink-0 mt-0.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />}
+              label="가장 먼저 할 개선"
+              item={axis.priorityFix}
+              urgent={isCritical}
+            />
+          )}
+          {axis.quickFix && (
+            <ImprovementRow
+              icon={<Wrench className="w-4 h-4 text-primary shrink-0 mt-0.5" />}
+              label="빠르게 할 수 있는 개선"
+              item={axis.quickFix}
+            />
+          )}
+          {(axis.additionalFixes || []).map((fix, i) => (
+            <ImprovementRow
+              key={i}
+              icon={<Plus className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />}
+              label="추가 개선"
+              item={fix}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
