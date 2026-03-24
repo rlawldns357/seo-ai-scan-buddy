@@ -94,9 +94,14 @@ const Index = () => {
   const handleRetryPsi = () => {
     if (normalizedUrl) {
       setPsiError(null);
-      fetchPsi(normalizedUrl, strategy).then(res => {
-        if (res.data) setPsiResult(res.data);
-        else if (res.error) setPsiError(res.error);
+      Promise.all([
+        fetchPsi(normalizedUrl, 'mobile'),
+        fetchPsi(normalizedUrl, 'desktop'),
+      ]).then(([mobileRes, desktopRes]) => {
+        if (mobileRes.data) setPsiMobile(mobileRes.data);
+        if (desktopRes.data) setPsiDesktop(desktopRes.data);
+        const err = mobileRes.error || desktopRes.error;
+        if (err && !mobileRes.data && !desktopRes.data) setPsiError(err);
       });
     }
   };
