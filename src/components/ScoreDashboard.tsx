@@ -13,6 +13,13 @@ const axisConfig = {
 };
 
 function AxisBlock({ axis, score, delay }: { axis: AxisAnalysis; score: number; delay: number }) {
+  const safeAxis = {
+    ...axis,
+    strengths: axis.strengths || [],
+    impactEstimates: axis.impactEstimates || [],
+    findings: axis.findings || [],
+    quickFixes: axis.quickFixes || [],
+  };
   const config = axisConfig[axis.label as keyof typeof axisConfig] || axisConfig.SEO;
   const Icon = config.icon;
   const grade = getGradeLabel(score);
