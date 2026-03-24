@@ -60,8 +60,8 @@ export default function SemiCircleGauge({ score, size = 140, delay = 0 }: SemiCi
     return () => clearTimeout(timer);
   }, [score, delay]);
 
-  const strokeWidth = 10;
-  const viewBoxSize = size;
+  const strokeWidth = effectiveSize < 130 ? 8 : 10;
+  const viewBoxSize = effectiveSize;
   const cx = viewBoxSize / 2;
   const cy = viewBoxSize / 2 + 8;
   const radius = (viewBoxSize - strokeWidth * 2) / 2 - 4;
@@ -84,10 +84,10 @@ export default function SemiCircleGauge({ score, size = 140, delay = 0 }: SemiCi
   const arcPath = `M ${startX} ${startY} A ${radius} ${radius} 0 0 1 ${endX} ${endY}`;
 
   return (
-    <div className="flex flex-col items-center" style={{ width: size }}>
+    <div className="flex flex-col items-center" style={{ width: effectiveSize }}>
       <svg
-        width={size}
-        height={size / 2 + 20}
+        width={effectiveSize}
+        height={effectiveSize / 2 + 20}
         viewBox={`0 0 ${viewBoxSize} ${viewBoxSize / 2 + 24}`}
       >
         {/* Track */}
