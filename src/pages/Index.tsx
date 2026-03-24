@@ -124,6 +124,30 @@ const Index = () => {
                 무료로 분석하기
               </button>
             </div>
+            <div className="flex items-center justify-center gap-1 mt-4">
+              <button
+                onClick={() => setStrategy("mobile")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-l-lg text-xs font-medium border transition-colors ${
+                  strategy === "mobile"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground border-input hover:text-foreground"
+                }`}
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                모바일
+              </button>
+              <button
+                onClick={() => setStrategy("desktop")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-r-lg text-xs font-medium border border-l-0 transition-colors ${
+                  strategy === "desktop"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground border-input hover:text-foreground"
+                }`}
+              >
+                <Monitor className="w-3.5 h-3.5" />
+                데스크톱
+              </button>
+            </div>
             {urlError && (
               <p className="mt-3 text-sm text-destructive">{urlError}</p>
             )}
