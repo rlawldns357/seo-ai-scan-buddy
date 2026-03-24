@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, CheckCircle } from "lucide-react";
+import { Search, CheckCircle } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 
 export default function StickyBottomCTA() {
@@ -21,39 +21,47 @@ export default function StickyBottomCTA() {
 
   if (status === "success") {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-40 gradient-primary">
-        <div className="container max-w-4xl mx-auto flex items-center justify-center gap-2 px-4 py-4">
-          <CheckCircle className="w-5 h-5 text-primary-foreground shrink-0" />
-          <p className="text-sm font-semibold text-primary-foreground">등록 완료! 출시되면 가장 먼저 알려드릴게요.</p>
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border">
+        <div className="container max-w-4xl mx-auto flex items-center justify-center gap-2 px-4 py-3.5">
+          <CheckCircle className="w-4 h-4 text-score-excellent shrink-0" />
+          <p className="text-sm font-medium text-foreground">등록 완료! 출시되면 가장 먼저 알려드릴게요.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 gradient-primary">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border">
       <div className="container max-w-4xl mx-auto flex items-center gap-4 px-4 py-3">
-        <div className="hidden sm:flex items-center gap-2 shrink-0">
-          <Bell className="w-4 h-4 text-primary-foreground/80" />
-          <span className="text-sm font-semibold text-primary-foreground whitespace-nowrap">정식 출시 알림</span>
+        {/* Logo + description (desktop) */}
+        <div className="hidden sm:flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="gradient-primary rounded-lg p-1.5">
+              <Search className="w-3 h-3 text-primary-foreground" />
+            </div>
+            <span className="text-sm font-bold text-foreground">Search OS</span>
+          </div>
+          <div className="w-px h-6 bg-border" />
+          <p className="text-xs text-muted-foreground leading-tight">
+            정식 출시되면 가장 먼저<br />알려드릴게요
+          </p>
         </div>
-        <div className="sm:hidden flex items-center gap-1.5 shrink-0">
-          <Bell className="w-4 h-4 text-primary-foreground/80" />
-        </div>
-        <div className="flex-1 flex gap-2">
+
+        {/* Email input + button */}
+        <div className="flex-1 flex gap-2 justify-end">
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             placeholder="you@company.com"
-            className="flex-1 min-w-0 h-10 px-4 rounded-xl bg-primary-foreground/15 text-primary-foreground placeholder:text-primary-foreground/50 focus:outline-none focus:bg-primary-foreground/20 text-sm font-medium border-0 transition-colors"
+            className="flex-1 sm:max-w-[240px] min-w-0 h-9 px-3.5 rounded-lg border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
           />
           <button
             onClick={handleSubmit}
-            className="shrink-0 h-10 px-5 rounded-xl bg-primary-foreground text-primary font-bold text-sm hover:bg-primary-foreground/90 transition-colors whitespace-nowrap"
+            className="shrink-0 h-9 px-4 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            알림 받기
+            출시 알림 받기
           </button>
         </div>
       </div>
