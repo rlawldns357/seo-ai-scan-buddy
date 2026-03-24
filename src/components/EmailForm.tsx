@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { CheckCircle, ArrowRight } from "lucide-react";
+import { trackEvent } from "@/lib/analytics";
 
 interface EmailFormProps {
   onSubmitted: () => void;
