@@ -36,6 +36,7 @@ const axisConfig = {
 };
 
 type Severity = "critical" | "warning" | "ok" | "good";
+type AxisLabel = "SEO" | "AEO" | "GEO";
 
 function getSeverity(score: number): Severity {
   if (score < 40) return "critical";
@@ -76,7 +77,7 @@ function getSeverityBadge(severity: Severity) {
   }
 }
 
-/* ── Sub-signal bar (compact) ── */
+/* ── Sub-signal bar ── */
 function SignalBar({ name, score, weight }: { name: string; score: number; weight: number }) {
   const color =
     score >= 75 ? "bg-score-excellent" :
@@ -85,8 +86,8 @@ function SignalBar({ name, score, weight }: { name: string; score: number; weigh
     "bg-score-poor";
   const isCritical = score < 40;
   return (
-    <div className={`flex items-center gap-2 py-0.5 ${isCritical ? "px-1.5 -mx-1.5 rounded bg-score-poor/[0.06]" : ""}`}>
-      <span className={`text-[11px] w-[100px] shrink-0 truncate ${isCritical ? "font-semibold text-score-poor" : "text-muted-foreground"}`}>{name}</span>
+    <div className={`flex items-center gap-2.5 py-0.5 ${isCritical ? "px-2 -mx-2 rounded bg-score-poor/[0.06]" : ""}`}>
+      <span className={`text-[11px] w-[120px] shrink-0 truncate ${isCritical ? "font-semibold text-score-poor" : "text-muted-foreground"}`}>{name}</span>
       <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
         <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
       </div>
@@ -96,10 +97,10 @@ function SignalBar({ name, score, weight }: { name: string; score: number; weigh
   );
 }
 
-/* ── Improvement row (compact) ── */
+/* ── Improvement row ── */
 function ImprovementRow({ icon, label, item, urgent }: { icon: React.ReactNode; label: string; item: Improvement; urgent?: boolean }) {
   return (
-    <div className={`flex items-start gap-2 ${urgent ? "px-2.5 py-2 -mx-1 rounded-lg bg-score-poor/[0.04] border border-score-poor/10" : ""}`}>
+    <div className={`flex items-start gap-2 ${urgent ? "px-3 py-2 -mx-1 rounded-lg bg-score-poor/[0.04] border border-score-poor/10" : ""}`}>
       {icon}
       <div className="flex-1 min-w-0">
         <span className={`text-[11px] font-semibold ${urgent ? "text-score-poor" : "text-foreground"}`}>{label}</span>
@@ -116,46 +117,40 @@ function ImprovementRow({ icon, label, item, urgent }: { icon: React.ReactNode; 
   );
 }
 
-/* ── Compact summary line for toggle preview ── */
-function getToggleSummary(axis: AxisAnalysis, severity: Severity): string {
-  if (severity === "critical") {
-    return `핵심 이슈 ${axis.issues.length}건 · 우선 개선 시 ${axis.priorityFix?.pointRange || ""} 상승 예상`;
-  }
-  if (severity === "warning") {
-    return `이슈 ${axis.issues.length}건 · 개선 시 ${axis.priorityFix?.pointRange || ""} 상승 가능`;
-  }
-  return `하위 신호 ${axis.subSignals.length}개 · 잘된 점 ${axis.strengths.length}건`;
-}
-
-/* ── Unified axis card ── */
-function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; delay: number }) {
-  const [open, setOpen] = useState(false);
+/* ── Summary card (clickable, no detail inside) ── */
+function SummaryCard({
+  axis, score, delay, selected, onClick,
+}: {
+  axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void;
+}) {
   const config = axisConfig[axis.label];
   const Icon = config.icon;
   const severity = getSeverity(score);
   const isCritical = severity === "critical";
   const isWarning = severity === "warning";
 
-  const cardRing = isCritical
+  const cardRing = selected
+    ? "ring-2 ring-primary/50 shadow-elevated"
+    : isCritical
     ? "ring-2 ring-score-poor/30"
     : isWarning
     ? "ring-1 ring-score-warning/25"
     : "ring-1 ring-border";
 
   return (
-    <div
-      className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full`}
+    <button
+      onClick={onClick}
+      className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full text-center transition-all duration-200 hover:shadow-elevated`}
       style={{ animationDelay: `${delay / 1000}s` }}
     >
-      {/* ─ Score summary ─ */}
       <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
-        {/* Axis title — small label, not competing */}
+        {/* Title */}
         <div className="flex items-center gap-1.5 mb-1">
           <Icon className={`w-4 h-4 ${config.accent}`} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">{axis.label}</span>
         </div>
 
-        {/* Gauge — hero element, biggest visual weight */}
+        {/* Gauge */}
         <SemiCircleGauge score={score} size={140} delay={delay} />
 
         {/* Grade */}
@@ -163,27 +158,27 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
           {getGradeLabel(score)}
         </span>
 
-        {/* Severity badge */}
+        {/* Badge */}
         <div className="mt-2 min-h-[22px] flex items-center">{getSeverityBadge(severity)}</div>
 
-        {/* Loss/warn message — below badge, secondary */}
+        {/* Loss message */}
         <div className="min-h-[28px] flex items-center justify-center mt-1">
           {isCritical && (
-            <p className="text-[11px] font-medium text-score-poor text-center leading-snug">{config.lossDesc}</p>
+            <p className="text-[11px] font-medium text-score-poor leading-snug">{config.lossDesc}</p>
           )}
           {isWarning && (
-            <p className="text-[11px] text-score-warning text-center leading-snug">{config.warnDesc}</p>
+            <p className="text-[11px] text-score-warning leading-snug">{config.warnDesc}</p>
           )}
         </div>
 
-        {/* Description — tertiary */}
-        <p className="text-[10px] text-muted-foreground/70 text-center mt-1 leading-relaxed line-clamp-2">
+        {/* Description */}
+        <p className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">
           {axis.description}
         </p>
 
         {/* Score cap */}
         {axis.scoreCap && (
-          <div className={`w-full mt-2 flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] leading-snug ${
+          <div className={`w-full mt-2 flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] leading-snug text-left ${
             isCritical
               ? "bg-score-poor/6 border-score-poor/15 text-score-poor font-medium"
               : "bg-score-warning/6 border-score-warning/12 text-score-warning"
@@ -194,26 +189,44 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
         )}
       </div>
 
-      {/* ─ Toggle with summary preview ─ */}
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between gap-2 px-4 py-2.5 border-t border-border text-left hover:bg-muted/30 transition-colors"
-      >
-        <div className="flex-1 min-w-0">
-          <span className="text-[11px] font-semibold text-primary">상세 분석</span>
-          <p className="text-[10px] text-muted-foreground truncate">
-            {getToggleSummary(axis, severity)}
-          </p>
-        </div>
-        <ChevronDown className={`w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
+      {/* Bottom hint */}
+      <div className={`flex items-center justify-center gap-1 py-2.5 border-t border-border text-[11px] font-semibold ${
+        selected ? "text-primary bg-primary/5" : "text-muted-foreground"
+      }`}>
+        {selected ? "상세 분석 보는 중" : "상세 분석 보기"}
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${selected ? "rotate-180" : ""}`} />
+      </div>
+    </button>
+  );
+}
 
-      {/* ─ Detail sections ─ */}
-      {open && (
-        <div className="border-t border-border">
+/* ── Full-width detail panel ── */
+function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
+  const config = axisConfig[axis.label];
+  const Icon = config.icon;
+  const severity = getSeverity(score);
+  const isCritical = severity === "critical";
+
+  return (
+    <div className="rounded-xl bg-card ring-1 ring-border overflow-hidden animate-fade-up">
+      {/* Header */}
+      <div className="flex items-center gap-2.5 px-6 py-4 border-b border-border bg-muted/30">
+        <Icon className={`w-5 h-5 ${config.accent}`} />
+        <span className="text-base font-bold text-foreground">{axis.label} 상세 분석</span>
+        {isCritical && (
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
+            우선 확인
+          </span>
+        )}
+      </div>
+
+      {/* Content grid: 2 columns on desktop */}
+      <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
+        {/* Left: Issues + Rationale + Strengths */}
+        <div className="divide-y divide-border">
           {/* Issues */}
-          <div className={`px-4 py-3 space-y-1.5 ${isCritical ? "bg-score-poor/[0.02]" : ""}`}>
-            <span className={`text-[11px] font-bold flex items-center gap-1 ${
+          <div className={`px-5 py-4 space-y-2 ${isCritical ? "bg-score-poor/[0.02]" : ""}`}>
+            <span className={`text-[11px] font-bold flex items-center gap-1.5 ${
               isCritical ? "text-score-poor" : "text-foreground"
             }`}>
               <AlertCircle className={`w-3.5 h-3.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />
@@ -235,7 +248,7 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
           </div>
 
           {/* Rationale */}
-          <div className="border-t border-border px-4 py-3">
+          <div className="px-5 py-4">
             <span className="text-[11px] font-semibold text-foreground flex items-center gap-1 mb-1">
               <AlertCircle className="w-3 h-3 text-muted-foreground" />
               점수 사유
@@ -243,19 +256,8 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
             <p className="text-[12px] text-muted-foreground leading-relaxed">{axis.scoreRationale}</p>
           </div>
 
-          {/* Sub-signals */}
-          <div className="border-t border-border px-4 py-3 space-y-1">
-            <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
-              <TrendingUp className="w-3 h-3 text-muted-foreground" />
-              하위 신호
-            </span>
-            {(axis.subSignals || []).map((s, i) => (
-              <SignalBar key={i} name={s.name} score={s.score} weight={s.weight} />
-            ))}
-          </div>
-
           {/* Strengths */}
-          <div className="border-t border-border px-4 py-3 space-y-1">
+          <div className="px-5 py-4 space-y-1">
             <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
               <CheckCircle className="w-3 h-3 text-score-excellent" />
               잘된 점
@@ -266,9 +268,23 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
               ))}
             </ul>
           </div>
+        </div>
+
+        {/* Right: Sub-signals + Improvements */}
+        <div className="divide-y divide-border">
+          {/* Sub-signals */}
+          <div className="px-5 py-4 space-y-1">
+            <span className="text-[11px] font-semibold text-foreground flex items-center gap-1">
+              <TrendingUp className="w-3 h-3 text-muted-foreground" />
+              하위 신호
+            </span>
+            {(axis.subSignals || []).map((s, i) => (
+              <SignalBar key={i} name={s.name} score={s.score} weight={s.weight} />
+            ))}
+          </div>
 
           {/* Improvements */}
-          <div className="border-t border-border px-4 py-3 space-y-2">
+          <div className="px-5 py-4 space-y-2.5">
             <span className="text-[11px] font-bold text-foreground">개선 과제</span>
             {axis.priorityFix && (
               <ImprovementRow
@@ -295,7 +311,7 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
             ))}
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
@@ -327,13 +343,36 @@ function InlineCTA() {
 
 /* ── Main ── */
 export default function ScoreDashboard({ result }: ScoreDashboardProps) {
+  const [selected, setSelected] = useState<AxisLabel>("SEO");
+
+  const axes: { axis: AxisAnalysis; score: number; key: AxisLabel }[] = [
+    { axis: result.seoAxis, score: result.seoScore, key: "SEO" },
+    { axis: result.aeoAxis, score: result.aeoScore, key: "AEO" },
+    { axis: result.geoAxis, score: result.geoScore, key: "GEO" },
+  ];
+
+  const selectedEntry = axes.find((a) => a.key === selected)!;
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-3 sm:items-stretch">
-        <AxisCard axis={result.seoAxis} score={result.seoScore} delay={200} />
-        <AxisCard axis={result.aeoAxis} score={result.aeoScore} delay={400} />
-        <AxisCard axis={result.geoAxis} score={result.geoScore} delay={600} />
+        {axes.map(({ axis, score, key }, i) => (
+          <SummaryCard
+            key={key}
+            axis={axis}
+            score={score}
+            delay={200 + i * 200}
+            selected={selected === key}
+            onClick={() => setSelected(key)}
+          />
+        ))}
       </div>
+
+      {/* Full-width detail panel */}
+      <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+
+      {/* CTA */}
       <InlineCTA />
     </div>
   );
