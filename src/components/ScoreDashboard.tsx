@@ -328,9 +328,9 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 /* ── Inline CTA ── */
 function InlineCTA() {
   return (
-    <div className="rounded-xl bg-gradient-to-br from-primary/5 via-accent/5 to-primary/5 border border-primary/15 p-6 sm:p-8 text-center space-y-4 animate-fade-up" style={{ animationDelay: "0.5s" }}>
+    <div className="rounded-2xl bg-primary/5 border border-primary/10 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
       <div className="space-y-2">
-        <h3 className="text-lg font-bold text-foreground">
+        <h3 className="text-lg font-bold text-foreground tracking-tight">
           놓치고 있는 검색 기회, 확인하셨나요?
         </h3>
         <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
@@ -338,11 +338,11 @@ function InlineCTA() {
         </p>
       </div>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <button className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity">
+        <button className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
           우선 개선 과제 받기
           <ArrowRight className="w-4 h-4" />
         </button>
-        <button className="inline-flex items-center justify-center gap-2 h-11 px-6 rounded-lg border border-primary/20 text-primary font-medium text-sm hover:bg-primary/5 transition-colors">
+        <button className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors">
           지금 가장 큰 문제 진단 받기
         </button>
       </div>
