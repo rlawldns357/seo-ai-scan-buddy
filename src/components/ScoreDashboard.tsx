@@ -366,22 +366,40 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
 
   return (
     <div className="space-y-5">
-      {/* Summary cards */}
-      <div className="grid gap-4 sm:grid-cols-3 sm:items-stretch">
+      {/* Mobile: card + inline detail for each axis */}
+      <div className="sm:hidden space-y-4">
         {axes.map(({ axis, score, key }, i) => (
-          <SummaryCard
-            key={key}
-            axis={axis}
-            score={score}
-            delay={200 + i * 200}
-            selected={selected === key}
-            onClick={() => setSelected(key)}
-          />
+          <div key={key} className="space-y-2">
+            <SummaryCard
+              axis={axis}
+              score={score}
+              delay={200 + i * 200}
+              selected={selected === key}
+              onClick={() => setSelected(selected === key ? key : key)}
+            />
+            {selected === key && (
+              <DetailPanel axis={axis} score={score} />
+            )}
+          </div>
         ))}
       </div>
 
-      {/* Full-width detail panel */}
-      <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+      {/* Desktop: 3-column grid + shared detail panel */}
+      <div className="hidden sm:block space-y-5">
+        <div className="grid gap-4 sm:grid-cols-3 sm:items-stretch">
+          {axes.map(({ axis, score, key }, i) => (
+            <SummaryCard
+              key={key}
+              axis={axis}
+              score={score}
+              delay={200 + i * 200}
+              selected={selected === key}
+              onClick={() => setSelected(key)}
+            />
+          ))}
+        </div>
+        <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+      </div>
 
       {/* CTA */}
       <InlineCTA />
