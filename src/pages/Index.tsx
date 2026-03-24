@@ -34,20 +34,6 @@ const Index = () => {
     setPsiError(null);
     trackEvent("analysis_start", { url: finalUrl });
 
-    const texts = [
-      "페이지 구조 확인 중…",
-      "기술 SEO 신호 점검 중…",
-      "모바일 Lighthouse 측정 중…",
-      "데스크톱 Lighthouse 측정 중…",
-      "AI 준비도 요약 생성 중…",
-    ];
-    let i = 0;
-    setLoadingText(texts[0]);
-    const interval = setInterval(() => {
-      i++;
-      if (i < texts.length) setLoadingText(texts[i]);
-    }, 800);
-
     const [mobileRes, desktopRes] = await Promise.all([
       fetchPsi(finalUrl, 'mobile'),
       fetchPsi(finalUrl, 'desktop'),
