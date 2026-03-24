@@ -55,6 +55,9 @@ export async function fetchPsi(url: string, strategy: PsiStrategy = 'mobile'): P
       if (errMsg.includes('ERRORED_DOCUMENT_REQUEST') || errMsg.includes('robots')) {
         return { error: { type: 'blocked', message: 'robots.txt 또는 서버 설정으로 접근이 차단되었어요. robots.txt를 확인해 주세요.' } };
       }
+      if (errMsg.includes('NO_FCP') || errMsg.includes('NO_NAVSTART') || errMsg.includes('no content')) {
+        return { error: { type: 'unreachable', message: '페이지가 콘텐츠를 렌더링하지 못했어요. JS만으로 구성된 SPA이거나 로딩이 매우 느릴 수 있어요. 잠시 후 다시 시도해 주세요.' } };
+      }
       return { error: { type: 'unknown', message: `측정 중 오류가 발생했어요. (${status})` } };
     }
 
