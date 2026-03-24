@@ -88,7 +88,7 @@ const Index = () => {
   const handleRetryPsi = () => {
     if (normalizedUrl) {
       setPsiError(null);
-      fetchPsi(normalizedUrl).then(res => {
+      fetchPsi(normalizedUrl, strategy).then(res => {
         if (res.data) setPsiResult(res.data);
         else if (res.error) setPsiError(res.error);
       });
