@@ -1,10 +1,10 @@
 import { type AxisAnalysis } from "@/data/demoResults";
-import { Search, Bot, MapPin } from "lucide-react";
+import { Search, Bot, Sparkles } from "lucide-react";
 
 const axisIcons = {
   SEO: Search,
   AEO: Bot,
-  GEO: MapPin,
+  GEO: Sparkles,
 };
 
 const axisColors = {
@@ -18,8 +18,8 @@ interface AxisCardProps {
 }
 
 export default function AxisCard({ axis }: AxisCardProps) {
-  const Icon = axisIcons[axis.label as keyof typeof axisIcons] || Search;
-  const colorClass = axisColors[axis.label as keyof typeof axisColors] || 'text-primary';
+  const Icon = axisIcons[axis.label] || Search;
+  const colorClass = axisColors[axis.label] || 'text-primary';
 
   return (
     <div className="bg-card rounded-xl shadow-card p-5 space-y-3">
@@ -30,9 +30,9 @@ export default function AxisCard({ axis }: AxisCardProps) {
       <p className="text-xs text-muted-foreground leading-relaxed">{axis.description}</p>
 
       <div className="space-y-1.5">
-        <span className="text-[11px] font-medium text-foreground">진단 결과</span>
+        <span className="text-[11px] font-medium text-foreground">핵심 이슈</span>
         <ul className="space-y-1">
-          {axis.findings.map((item, i) => (
+          {(axis.issues || []).map((item, i) => (
             <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
               <span className="text-muted-foreground/60 mt-0.5 shrink-0">•</span>
               {item}
@@ -41,17 +41,15 @@ export default function AxisCard({ axis }: AxisCardProps) {
         </ul>
       </div>
 
-      <div className="space-y-1.5 pt-1 border-t border-border">
-        <span className="text-[11px] font-medium text-primary">🔧 바로 고칠 것</span>
-        <ul className="space-y-1">
-          {axis.quickFixes.map((item, i) => (
-            <li key={i} className="text-xs text-foreground leading-relaxed flex gap-2">
-              <span className="text-primary mt-0.5 shrink-0">{i + 1}.</span>
-              {item}
-            </li>
-          ))}
-        </ul>
-      </div>
+      {axis.priorityFix && (
+        <div className="space-y-1.5 pt-1 border-t border-border">
+          <span className="text-[11px] font-medium text-primary">⚡ 가장 먼저 할 개선</span>
+          <p className="text-xs text-foreground leading-relaxed">
+            {axis.priorityFix.label}
+            <span className="ml-1 text-primary font-medium">{axis.priorityFix.pointRange}</span>
+          </p>
+        </div>
+      )}
     </div>
   );
 }

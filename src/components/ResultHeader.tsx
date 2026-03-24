@@ -1,23 +1,18 @@
 import { type PsiResult, type PsiError } from "@/lib/psi";
-import { type DemoResult } from "@/data/demoResults";
-import { getGradeLabel, getGradeColorClass } from "@/components/SemiCircleGauge";
-import { Globe, ImageOff, ShieldCheck, Clock } from "lucide-react";
+import { Globe, ImageOff, Clock, ShieldCheck } from "lucide-react";
 
 interface ResultHeaderProps {
   psi: PsiResult | null;
   psiError: PsiError | null;
   url: string;
-  result: DemoResult;
 }
 
-export default function ResultHeader({ psi, psiError, url, result }: ResultHeaderProps) {
+export default function ResultHeader({ psi, psiError, url }: ResultHeaderProps) {
   const domain = (() => {
     try { return new URL(url).hostname; } catch { return url; }
   })();
 
   const faviconUrl = `https://www.google.com/s2/favicons?domain=${domain}&sz=64`;
-  const overallGrade = getGradeLabel(result.overall);
-  const overallColor = getGradeColorClass(result.overall);
 
   const fetchTime = psi?.fetchTime
     ? new Date(psi.fetchTime).toLocaleString('ko-KR', {
@@ -56,7 +51,6 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
 
         {/* Info */}
         <div className="min-w-0 flex-1 space-y-2">
-          {/* URL */}
           <div>
             <div className="flex items-center gap-1 mb-0.5">
               <Globe className="w-3 h-3 text-muted-foreground shrink-0" />
@@ -67,7 +61,6 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
             </p>
           </div>
 
-          {/* Meta row: time + badge + overall score */}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
               <Clock className="w-3 h-3" />
@@ -77,11 +70,6 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
               <ShieldCheck className="w-3 h-3" />
               분석 완료
             </span>
-            <span className={`text-sm font-bold tabular-nums ${overallColor}`}>
-              종합 {result.overall}
-            </span>
-            <span className="text-[10px] text-muted-foreground">·</span>
-            <span className={`text-xs font-medium ${overallColor}`}>{overallGrade}</span>
           </div>
         </div>
       </div>
