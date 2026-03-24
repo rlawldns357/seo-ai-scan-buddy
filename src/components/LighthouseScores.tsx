@@ -6,7 +6,7 @@ interface LighthouseScoresProps {
   strategy: PsiStrategy;
 }
 
-export default function LighthouseScores({ psi }: LighthouseScoresProps) {
+export default function LighthouseScores({ psi, strategy }: LighthouseScoresProps) {
   const formatted = new Date(psi.fetchTime).toLocaleString('ko-KR', {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit',
