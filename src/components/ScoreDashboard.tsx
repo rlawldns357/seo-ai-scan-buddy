@@ -360,9 +360,9 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
 
   // Default to the worst-scoring axis
   const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
-  const [selected, setSelected] = useState<AxisLabel>(worstKey);
+  const [selected, setSelected] = useState<AxisLabel | null>(worstKey);
 
-  const selectedEntry = axes.find((a) => a.key === selected)!;
+  const selectedEntry = axes.find((a) => a.key === selected);
 
   return (
     <div className="space-y-5">
