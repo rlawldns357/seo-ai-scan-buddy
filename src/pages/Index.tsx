@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import ScoreRing from "@/components/ScoreRing";
+import LoadingScreen from "@/components/LoadingScreen";
 import LighthouseScores from "@/components/LighthouseScores";
 import PageThumbnail from "@/components/PageThumbnail";
 import AxisCard from "@/components/AxisCard";
