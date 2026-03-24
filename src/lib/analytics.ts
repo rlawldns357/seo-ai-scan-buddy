@@ -7,6 +7,7 @@ type EventName =
   | "email_submit_success"
   | "email_submit_duplicate"
   | "email_submit_fail"
+  | "sticky_email_submit"
   | "cta_click";
 
 let sessionId: string | null = null;
