@@ -104,16 +104,18 @@ const resultA: DemoResult = {
     issues: [
       '브랜드·조직 소개가 흩어져 있어 출처 명확성이 약해요.',
       '인용 가능한 핵심 문장 구조가 부족해요.',
+      '인용 적합 데이터(통계, 근거)가 거의 없어요.',
     ],
     strengths: [
       '주제별 콘텐츠 커버리지가 양호해요.',
       'AI 봇 접근이 허용되어 있어요.',
     ],
-    priorityFix: { label: '브랜드·조직 소개를 한 블록으로 통합', pointRange: '+4~+7' },
-    quickFix: { label: '핵심 주장에 출처·근거 문장 추가', pointRange: '+2~+4' },
+    priorityFix: { label: '브랜드·조직 소개를 한 블록으로 통합', pointRange: '+5~+8' },
+    quickFix: { label: '핵심 주장에 출처·근거 문장 추가', pointRange: '+3~+5' },
     additionalFixes: [
-      { label: '콘텐츠 최신성 표시(날짜, 업데이트 기록)', pointRange: '+1~+2' },
+      { label: '콘텐츠 최신성 표시(날짜, 업데이트 기록)', pointRange: '+2~+4' },
     ],
+    scoreCap: '출처 명확성이 부족해 GEO 점수 상한이 제한됩니다.',
   },
 };
 
