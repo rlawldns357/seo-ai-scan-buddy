@@ -109,11 +109,15 @@ const Index = () => {
       {screen === "home" && (
         <main className="flex-1 flex items-center justify-center px-4">
           <div className="max-w-2xl w-full text-center animate-fade-up">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground leading-tight mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/8 text-primary text-sm font-semibold mb-8">
+              <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+              무료 베타 서비스
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-foreground leading-[1.25] mb-5 tracking-tight">
               내 사이트, 검색엔진과 AI가<br className="hidden sm:block" /> 제대로 이해하고 있을까?
             </h1>
-            <p className="text-muted-foreground text-base sm:text-lg mb-10">
-              URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를 빠르게 확인할 수 있어요.
+            <p className="text-muted-foreground text-base sm:text-lg mb-10 leading-relaxed">
+              URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
               <input
@@ -122,22 +126,22 @@ const Index = () => {
                 onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                 placeholder="https://example.com"
-                className="flex-1 h-12 px-4 rounded-lg border border-input bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-base"
+                className="flex-1 h-14 px-5 rounded-2xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-base transition-all"
               />
               <button
                 onClick={handleAnalyze}
-                className="h-12 px-6 rounded-lg gradient-primary text-primary-foreground font-semibold text-base hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-colors whitespace-nowrap"
               >
                 무료로 분석하기
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mt-3">모바일 + 데스크톱 동시 측정</p>
+            <p className="text-xs text-muted-foreground mt-4 font-medium">모바일 + 데스크톱 동시 측정 · 10초 완료</p>
             {urlError && (
-              <p className="mt-3 text-sm text-destructive">{urlError}</p>
+              <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
             )}
             <button
               onClick={() => navigate("/design-test")}
-              className="mt-6 text-xs text-muted-foreground/60 hover:text-muted-foreground underline underline-offset-4 transition-colors"
+              className="mt-8 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
             >
               🎨 디자인 테스트 모드
             </button>
