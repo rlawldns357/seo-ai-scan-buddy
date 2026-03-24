@@ -21,7 +21,7 @@ const Index = () => {
   const [urlError, setUrlError] = useState("");
   const [normalizedUrl, setNormalizedUrl] = useState("");
   const [result, setResult] = useState<DemoResult | null>(null);
-  const [loadingText, setLoadingText] = useState("");
+  
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
