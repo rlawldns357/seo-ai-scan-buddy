@@ -1,5 +1,4 @@
 import { type PsiResult } from "@/lib/psi";
-import ScoreRing from "@/components/ScoreRing";
 import { Smartphone, Monitor } from "lucide-react";
 
 interface LighthouseScoresProps {
@@ -7,72 +6,78 @@ interface LighthouseScoresProps {
   desktop: PsiResult | null;
 }
 
-function formatTime(fetchTime: string) {
-  return new Date(fetchTime).toLocaleString('ko-KR', {
-    year: 'numeric', month: 'short', day: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  });
+const getBarColor = (score: number) => {
+  if (score >= 75) return "bg-score-excellent";
+  if (score >= 60) return "bg-score-good";
+  if (score >= 40) return "bg-score-warning";
+  return "bg-score-poor";
+};
+
+const getTextColor = (score: number) => {
+  if (score >= 75) return "text-score-excellent";
+  if (score >= 60) return "text-score-good";
+  if (score >= 40) return "text-score-warning";
+  return "text-score-poor";
+};
+
+function MiniScore({ score, label }: { score: number; label: string }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[11px] text-muted-foreground w-[52px] shrink-0">{label}</span>
+      <div className="w-16 h-1.5 rounded-full bg-muted overflow-hidden">
+        <div className={`h-full rounded-full ${getBarColor(score)}`} style={{ width: `${score}%` }} />
+      </div>
+      <span className={`text-[11px] font-semibold tabular-nums w-5 text-right ${getTextColor(score)}`}>{score}</span>
+    </div>
+  );
 }
 
-function ScoreColumn({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode; label: string }) {
+function DeviceRow({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex-1 min-w-0">
-      <div className="flex items-center gap-1.5 justify-center mb-4">
+    <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1 shrink-0 w-[72px]">
         {icon}
-        <span className="text-xs font-semibold text-foreground">{label}</span>
+        <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
       </div>
-      <div className="grid grid-cols-2 gap-4 justify-items-center">
-        <ScoreRing score={psi.performance} label="성능" delay={200} size={80} />
-        <ScoreRing score={psi.accessibility} label="접근성" delay={400} size={80} />
-        <ScoreRing score={psi.bestPractices} label="권장사항" delay={600} size={80} />
-        <ScoreRing score={psi.seo} label="SEO" delay={800} size={80} />
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
+        <MiniScore score={psi.performance} label="성능" />
+        <MiniScore score={psi.accessibility} label="접근성" />
+        <MiniScore score={psi.bestPractices} label="권장사항" />
+        <MiniScore score={psi.seo} label="SEO" />
       </div>
     </div>
   );
 }
 
 export default function LighthouseScores({ mobile, desktop }: LighthouseScoresProps) {
-  const hasBoth = mobile && desktop;
   const single = mobile || desktop;
-
   if (!single) return null;
 
-  const fetchTime = formatTime(single.fetchTime);
-
   return (
-    <div className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: '0.15s' }}>
-      <div className="flex items-center gap-2 mb-1">
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
-          ✓ 실제 측정
+    <div className="bg-card rounded-xl shadow-card px-5 py-3 animate-fade-up space-y-2" style={{ animationDelay: '0.15s' }}>
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] font-semibold text-muted-foreground">Lighthouse</span>
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
+          실측
         </span>
-        <span className="text-[11px] text-muted-foreground">Google Lighthouse</span>
       </div>
-      <p className="text-[11px] text-muted-foreground mb-5">
-        측정 시각: {fetchTime}
-      </p>
 
-      {hasBoth ? (
-        <div className="flex gap-6">
-          <ScoreColumn
+      <div className="space-y-1.5">
+        {mobile && (
+          <DeviceRow
             psi={mobile}
-            icon={<Smartphone className="w-4 h-4 text-muted-foreground" />}
+            icon={<Smartphone className="w-3.5 h-3.5 text-muted-foreground" />}
             label="모바일"
           />
-          <div className="w-px bg-border shrink-0" />
-          <ScoreColumn
+        )}
+        {desktop && (
+          <DeviceRow
             psi={desktop}
-            icon={<Monitor className="w-4 h-4 text-muted-foreground" />}
+            icon={<Monitor className="w-3.5 h-3.5 text-muted-foreground" />}
             label="데스크톱"
           />
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 justify-items-center">
-          <ScoreRing score={single.performance} label="성능" delay={200} size={100} />
-          <ScoreRing score={single.accessibility} label="접근성" delay={400} size={100} />
-          <ScoreRing score={single.bestPractices} label="권장사항" delay={600} size={100} />
-          <ScoreRing score={single.seo} label="SEO" delay={800} size={100} />
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
