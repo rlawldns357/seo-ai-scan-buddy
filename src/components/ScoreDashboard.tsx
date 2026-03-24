@@ -379,9 +379,10 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
       {/* Full-width detail panel — visually connected */}
       <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
 
-      {/* CTA — needs spacing */}
+      {/* CTA */}
       <div className="pt-6">
-      <InlineCTA />
+        <InlineCTA />
+      </div>
     </div>
   );
 }
