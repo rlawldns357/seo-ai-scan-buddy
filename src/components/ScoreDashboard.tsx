@@ -150,7 +150,10 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
       {/* ─ Score summary ─ */}
       <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
         {/* Axis title — small label, not competing */}
-        <span className={`text-[11px] font-bold uppercase tracking-widest ${config.accent} mb-1`}>{axis.label}</span>
+        <div className="flex items-center gap-1.5 mb-1">
+          <Icon className={`w-4 h-4 ${config.accent}`} />
+          <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">{axis.label}</span>
+        </div>
 
         {/* Gauge — hero element, biggest visual weight */}
         <SemiCircleGauge score={score} size={140} delay={delay} />
