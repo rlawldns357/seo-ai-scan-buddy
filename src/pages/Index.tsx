@@ -8,9 +8,9 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
-import { fetchPsi, type PsiResult, type PsiError, type PsiStrategy } from "@/lib/psi";
+import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
-import { AlertTriangle, CheckCircle, Lightbulb, Loader2, Monitor, Smartphone } from "lucide-react";
+import { AlertTriangle, CheckCircle, Lightbulb, Loader2 } from "lucide-react";
 
 type Screen = "home" | "loading" | "result";
 
@@ -21,21 +21,23 @@ const Index = () => {
   const [normalizedUrl, setNormalizedUrl] = useState("");
   const [result, setResult] = useState<DemoResult | null>(null);
   const [loadingText, setLoadingText] = useState("");
-  const [psiResult, setPsiResult] = useState<PsiResult | null>(null);
+  const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
+  const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
-  const [strategy, setStrategy] = useState<PsiStrategy>("mobile");
 
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
     setScreen("loading");
-    setPsiResult(null);
+    setPsiMobile(null);
+    setPsiDesktop(null);
     setPsiError(null);
     trackEvent("analysis_start", { url: finalUrl });
 
     const texts = [
       "페이지 구조 확인 중…",
       "기술 SEO 신호 점검 중…",
-      "Lighthouse 성능 측정 중…",
+      "모바일 Lighthouse 측정 중…",
+      "데스크톱 Lighthouse 측정 중…",
       "AI 준비도 요약 생성 중…",
     ];
     let i = 0;
@@ -45,20 +47,24 @@ const Index = () => {
       if (i < texts.length) setLoadingText(texts[i]);
     }, 800);
 
-    // Fetch PSI in parallel with minimum wait
-    const [psiResponse] = await Promise.all([
-      fetchPsi(finalUrl, strategy),
-      new Promise(resolve => setTimeout(resolve, 2500)),
+    const [mobileRes, desktopRes] = await Promise.all([
+      fetchPsi(finalUrl, 'mobile'),
+      fetchPsi(finalUrl, 'desktop'),
     ]);
 
     clearInterval(interval);
 
-    if (psiResponse.data) {
-      setPsiResult(psiResponse.data);
+    if (mobileRes.data) setPsiMobile(mobileRes.data);
+    if (desktopRes.data) setPsiDesktop(desktopRes.data);
+
+    if (mobileRes.data || desktopRes.data) {
       trackEvent("analysis_complete", { url: finalUrl });
-    } else if (psiResponse.error) {
-      setPsiError(psiResponse.error);
-      trackEvent("analysis_fail", { url: finalUrl, error: psiResponse.error.type });
+    } else {
+      const err = mobileRes.error || desktopRes.error;
+      if (err) {
+        setPsiError(err);
+        trackEvent("analysis_fail", { url: finalUrl, error: err.type });
+      }
     }
 
     setResult(getDemoResult(finalUrl));
@@ -88,9 +94,14 @@ const Index = () => {
   const handleRetryPsi = () => {
     if (normalizedUrl) {
       setPsiError(null);
-      fetchPsi(normalizedUrl, strategy).then(res => {
-        if (res.data) setPsiResult(res.data);
-        else if (res.error) setPsiError(res.error);
+      Promise.all([
+        fetchPsi(normalizedUrl, 'mobile'),
+        fetchPsi(normalizedUrl, 'desktop'),
+      ]).then(([mobileRes, desktopRes]) => {
+        if (mobileRes.data) setPsiMobile(mobileRes.data);
+        if (desktopRes.data) setPsiDesktop(desktopRes.data);
+        const err = mobileRes.error || desktopRes.error;
+        if (err && !mobileRes.data && !desktopRes.data) setPsiError(err);
       });
     }
   };
@@ -124,30 +135,7 @@ const Index = () => {
                 무료로 분석하기
               </button>
             </div>
-            <div className="flex items-center justify-center gap-1 mt-4">
-              <button
-                onClick={() => setStrategy("mobile")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-l-lg text-xs font-medium border transition-colors ${
-                  strategy === "mobile"
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-muted-foreground border-input hover:text-foreground"
-                }`}
-              >
-                <Smartphone className="w-3.5 h-3.5" />
-                모바일
-              </button>
-              <button
-                onClick={() => setStrategy("desktop")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-r-lg text-xs font-medium border border-l-0 transition-colors ${
-                  strategy === "desktop"
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-card text-muted-foreground border-input hover:text-foreground"
-                }`}
-              >
-                <Monitor className="w-3.5 h-3.5" />
-                데스크톱
-              </button>
-            </div>
+            <p className="text-xs text-muted-foreground mt-3">모바일 + 데스크톱 동시 측정</p>
             {urlError && (
               <p className="mt-3 text-sm text-destructive">{urlError}</p>
             )}
@@ -175,13 +163,13 @@ const Index = () => {
             </div>
 
             {/* Page thumbnail + URL */}
-            <PageThumbnail psi={psiResult} psiError={psiError} url={normalizedUrl} />
+            <PageThumbnail psi={psiMobile || psiDesktop} psiError={psiError} url={normalizedUrl} />
 
             {/* PSI Error */}
             {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
 
             {/* Lighthouse real scores */}
-            {psiResult && <LighthouseScores psi={psiResult} strategy={strategy} />}
+            {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
 
             {/* Demo scores */}
             <div className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
