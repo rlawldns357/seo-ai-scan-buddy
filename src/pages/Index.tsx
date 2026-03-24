@@ -5,14 +5,12 @@ import ScoreDashboard from "@/components/ScoreDashboard";
 import LoadingScreen from "@/components/LoadingScreen";
 import LighthouseScores from "@/components/LighthouseScores";
 import PageThumbnail from "@/components/PageThumbnail";
-import AxisCard from "@/components/AxisCard";
 import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
-import { AlertTriangle, CheckCircle, Lightbulb } from "lucide-react";
 
 type Screen = "home" | "loading" | "result";
 
@@ -146,13 +144,6 @@ const Index = () => {
       {screen === "result" && result && (
         <main className="flex-1 py-8 sm:py-12 px-4">
           <div className="container max-w-3xl mx-auto space-y-6">
-            {/* Header badge */}
-            <div className="animate-fade-up text-center space-y-2">
-              <span className="inline-block px-3 py-1 rounded-full text-xs font-medium gradient-subtle text-primary border border-primary/20">
-                데모 결과(샘플)
-              </span>
-            </div>
-
             {/* Page thumbnail + URL */}
             <PageThumbnail psi={psiMobile || psiDesktop} psiError={psiError} url={normalizedUrl} />
 
@@ -162,34 +153,8 @@ const Index = () => {
             {/* Lighthouse real scores */}
             {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
 
-            {/* Score Dashboard: total + SEO/AEO/GEO bars */}
+            {/* Score Dashboard: total summary + SEO/AEO/GEO blocks with inline insights */}
             <ScoreDashboard result={result} />
-
-            {/* Summary Cards */}
-            <div className="grid gap-4 sm:grid-cols-3 animate-fade-up" style={{ animationDelay: "0.25s" }}>
-              <SummaryCard
-                icon={<AlertTriangle className="w-5 h-5 text-score-warning" />}
-                title="핵심 이슈"
-                items={result.issues}
-              />
-              <SummaryCard
-                icon={<CheckCircle className="w-5 h-5 text-score-excellent" />}
-                title="강점"
-                items={result.strengths}
-              />
-              <SummaryCard
-                icon={<Lightbulb className="w-5 h-5 text-primary" />}
-                title="권장 개선 방향"
-                items={result.recommendations}
-              />
-            </div>
-
-            {/* SEO / AEO / GEO Axis Cards */}
-            <div className="grid gap-4 sm:grid-cols-3 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-              <AxisCard axis={result.seoAxis} />
-              <AxisCard axis={result.aeoAxis} />
-              <AxisCard axis={result.geoAxis} />
-            </div>
 
             {/* Verification Links */}
             <VerificationLinks url={normalizedUrl} />
@@ -202,24 +167,5 @@ const Index = () => {
     </div>
   );
 };
-
-function SummaryCard({ icon, title, items }: { icon: React.ReactNode; title: string; items: string[] }) {
-  return (
-    <div className="bg-card rounded-xl shadow-card p-5 space-y-3">
-      <div className="flex items-center gap-2">
-        {icon}
-        <h3 className="font-semibold text-foreground text-sm">{title}</h3>
-      </div>
-      <ul className="space-y-2">
-        {items.map((item, i) => (
-          <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
-            <span className="text-primary mt-0.5 shrink-0">•</span>
-            {item}
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
 
 export default Index;
