@@ -130,7 +130,7 @@ const Index = () => {
               />
               <button
                 onClick={handleAnalyze}
-                className="h-14 px-8 rounded-2xl bg-primary text-primary-foreground font-bold text-base hover:bg-primary/90 transition-colors whitespace-nowrap"
+                className="h-14 px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base hover:opacity-90 transition-opacity whitespace-nowrap"
               >
                 무료로 분석하기
               </button>
