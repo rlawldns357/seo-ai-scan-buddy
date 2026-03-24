@@ -361,7 +361,7 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
   const selectedEntry = axes.find((a) => a.key === selected)!;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-0">
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-3 sm:items-stretch">
         {axes.map(({ axis, score, key }, i) => (
