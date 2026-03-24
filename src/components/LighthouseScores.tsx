@@ -50,12 +50,14 @@ function MiniScore({ score, label }: { score: number; label: string }) {
 /* ── Mobile: compact dot + number ── */
 function MiniScoreMobile({ score, label }: { score: number; label: string }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-[11px] text-muted-foreground">{label}</span>
       <div className="flex items-center gap-1.5">
-        <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(score)}`} />
-        <span className="text-[11px] text-muted-foreground">{label}</span>
+        <div className="w-10 h-1 rounded-full bg-muted overflow-hidden">
+          <div className={`h-full rounded-full ${getBarColor(score)}`} style={{ width: `${score}%` }} />
+        </div>
+        <span className={`text-[11px] font-bold tabular-nums w-5 text-right ${getTextColor(score)}`}>{score}</span>
       </div>
-      <span className={`text-[11px] font-bold tabular-nums ${getTextColor(score)}`}>{score}</span>
     </div>
   );
 }
@@ -79,15 +81,17 @@ function DeviceRow({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode
 
 function DeviceColumnMobile({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex-1 min-w-0 space-y-1.5">
-      <div className="flex items-center gap-1.5 pb-1 border-b border-border">
+    <div className="flex-1 min-w-0 space-y-2 px-3 py-2.5 rounded-lg bg-muted/40">
+      <div className="flex items-center gap-1.5">
         {icon}
         <span className="text-[11px] font-semibold text-foreground">{label}</span>
       </div>
-      <MiniScoreMobile score={psi.performance} label="성능" />
-      <MiniScoreMobile score={psi.accessibility} label="접근성" />
-      <MiniScoreMobile score={psi.bestPractices} label="권장사항" />
-      <MiniScoreMobile score={psi.seo} label="SEO" />
+      <div className="space-y-1.5">
+        <MiniScoreMobile score={psi.performance} label="성능" />
+        <MiniScoreMobile score={psi.accessibility} label="접근성" />
+        <MiniScoreMobile score={psi.bestPractices} label="권장사항" />
+        <MiniScoreMobile score={psi.seo} label="SEO" />
+      </div>
     </div>
   );
 }
