@@ -27,6 +27,14 @@ const getTextColor = (score: number) => {
   return "text-score-poor";
 };
 
+const getDotColor = (score: number) => {
+  if (score >= 75) return "bg-score-excellent";
+  if (score >= 60) return "bg-score-good";
+  if (score >= 40) return "bg-score-warning";
+  return "bg-score-poor";
+};
+
+/* ── Desktop: horizontal bar style ── */
 function MiniScore({ score, label }: { score: number; label: string }) {
   return (
     <div className="flex items-center gap-1.5">
@@ -39,14 +47,27 @@ function MiniScore({ score, label }: { score: number; label: string }) {
   );
 }
 
+/* ── Mobile: compact dot + number ── */
+function MiniScoreMobile({ score, label }: { score: number; label: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-1.5">
+        <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(score)}`} />
+        <span className="text-[11px] text-muted-foreground">{label}</span>
+      </div>
+      <span className={`text-[11px] font-bold tabular-nums ${getTextColor(score)}`}>{score}</span>
+    </div>
+  );
+}
+
 function DeviceRow({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-start sm:items-center gap-3">
+    <div className="hidden sm:flex items-center gap-3">
       <div className="flex items-center gap-1 shrink-0 w-[72px]">
         {icon}
         <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
       </div>
-      <div className="flex-1 min-w-0 grid grid-cols-2 sm:flex sm:flex-wrap gap-x-4 gap-y-1">
+      <div className="flex flex-wrap gap-x-4 gap-y-1">
         <MiniScore score={psi.performance} label="성능" />
         <MiniScore score={psi.accessibility} label="접근성" />
         <MiniScore score={psi.bestPractices} label="권장사항" />
@@ -56,12 +77,26 @@ function DeviceRow({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode
   );
 }
 
+function DeviceColumnMobile({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode; label: string }) {
+  return (
+    <div className="flex-1 min-w-0 space-y-1.5">
+      <div className="flex items-center gap-1.5 pb-1 border-b border-border">
+        {icon}
+        <span className="text-[11px] font-semibold text-foreground">{label}</span>
+      </div>
+      <MiniScoreMobile score={psi.performance} label="성능" />
+      <MiniScoreMobile score={psi.accessibility} label="접근성" />
+      <MiniScoreMobile score={psi.bestPractices} label="권장사항" />
+      <MiniScoreMobile score={psi.seo} label="SEO" />
+    </div>
+  );
+}
+
 function avgScore(psi: PsiResult) {
   return Math.round((psi.performance + psi.accessibility + psi.bestPractices + psi.seo) / 4);
 }
 
-function AvgRing({ score }: { score: number }) {
-  const size = 56;
+function AvgRing({ score, size = 56 }: { score: number; size?: number }) {
   const sw = 5;
   const r = (size - sw) / 2;
   const circ = 2 * Math.PI * r;
@@ -90,8 +125,8 @@ export default function LighthouseScores({ mobile, desktop }: LighthouseScoresPr
 
   return (
     <div className="bg-card rounded-xl shadow-card px-5 py-3 animate-fade-up" style={{ animationDelay: '0.15s' }}>
-      <div className="flex items-center gap-4">
-        {/* Left: labels + bars */}
+      {/* Desktop layout */}
+      <div className="hidden sm:flex items-center gap-4">
         <div className="flex-1 min-w-0 space-y-2">
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-semibold text-muted-foreground">Lighthouse</span>
@@ -108,9 +143,29 @@ export default function LighthouseScores({ mobile, desktop }: LighthouseScoresPr
             )}
           </div>
         </div>
-
-        {/* Right: average ring */}
         <AvgRing score={totalAvg} />
+      </div>
+
+      {/* Mobile layout: side-by-side columns with center ring */}
+      <div className="sm:hidden space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-semibold text-muted-foreground">Lighthouse</span>
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-medium bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
+              실측
+            </span>
+          </div>
+          <AvgRing score={totalAvg} size={40} />
+        </div>
+
+        <div className="flex gap-4">
+          {mobile && (
+            <DeviceColumnMobile psi={mobile} icon={<Smartphone className="w-3 h-3 text-muted-foreground" />} label="모바일" />
+          )}
+          {desktop && (
+            <DeviceColumnMobile psi={desktop} icon={<Monitor className="w-3 h-3 text-muted-foreground" />} label="데스크톱" />
+          )}
+        </div>
       </div>
     </div>
   );
