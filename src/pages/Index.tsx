@@ -28,14 +28,16 @@ const Index = () => {
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
     setScreen("loading");
-    setPsiResult(null);
+    setPsiMobile(null);
+    setPsiDesktop(null);
     setPsiError(null);
     trackEvent("analysis_start", { url: finalUrl });
 
     const texts = [
       "페이지 구조 확인 중…",
       "기술 SEO 신호 점검 중…",
-      "Lighthouse 성능 측정 중…",
+      "모바일 Lighthouse 측정 중…",
+      "데스크톱 Lighthouse 측정 중…",
       "AI 준비도 요약 생성 중…",
     ];
     let i = 0;
@@ -45,20 +47,24 @@ const Index = () => {
       if (i < texts.length) setLoadingText(texts[i]);
     }, 800);
 
-    // Fetch PSI in parallel with minimum wait
-    const [psiResponse] = await Promise.all([
-      fetchPsi(finalUrl, strategy),
-      new Promise(resolve => setTimeout(resolve, 2500)),
+    const [mobileRes, desktopRes] = await Promise.all([
+      fetchPsi(finalUrl, 'mobile'),
+      fetchPsi(finalUrl, 'desktop'),
     ]);
 
     clearInterval(interval);
 
-    if (psiResponse.data) {
-      setPsiResult(psiResponse.data);
+    if (mobileRes.data) setPsiMobile(mobileRes.data);
+    if (desktopRes.data) setPsiDesktop(desktopRes.data);
+
+    if (mobileRes.data || desktopRes.data) {
       trackEvent("analysis_complete", { url: finalUrl });
-    } else if (psiResponse.error) {
-      setPsiError(psiResponse.error);
-      trackEvent("analysis_fail", { url: finalUrl, error: psiResponse.error.type });
+    } else {
+      const err = mobileRes.error || desktopRes.error;
+      if (err) {
+        setPsiError(err);
+        trackEvent("analysis_fail", { url: finalUrl, error: err.type });
+      }
     }
 
     setResult(getDemoResult(finalUrl));
