@@ -1,7 +1,7 @@
 import { useState } from "react";
 import confetti from "canvas-confetti";
 import Navbar from "@/components/Navbar";
-import ScoreRing from "@/components/ScoreRing";
+import ScoreDashboard from "@/components/ScoreDashboard";
 import LoadingScreen from "@/components/LoadingScreen";
 import LighthouseScores from "@/components/LighthouseScores";
 import PageThumbnail from "@/components/PageThumbnail";
@@ -162,18 +162,8 @@ const Index = () => {
             {/* Lighthouse real scores */}
             {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
 
-            {/* Demo scores */}
-            <div className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 justify-items-center">
-                <ScoreRing score={result.overall} label="전체 점수" delay={200} />
-                <ScoreRing score={result.techSeo} label="기술 SEO" delay={400} />
-                <ScoreRing score={result.contentClarity} label="콘텐츠 명확성" delay={600} />
-                <ScoreRing score={result.aiReadiness} label="AI 검색 준비도" delay={800} />
-              </div>
-              <p className="text-xs text-muted-foreground text-center mt-6">
-                점수는 핵심 신호를 요약한 값이며, 개선하면 검색/AI 노출에 도움이 될 수 있어요.
-              </p>
-            </div>
+            {/* Score Dashboard: total + SEO/AEO/GEO bars */}
+            <ScoreDashboard result={result} />
 
             {/* Summary Cards */}
             <div className="grid gap-4 sm:grid-cols-3 animate-fade-up" style={{ animationDelay: "0.25s" }}>
