@@ -35,7 +35,6 @@ const axisConfig = {
   },
 };
 
-/* ── Severity ── */
 type Severity = "critical" | "warning" | "ok" | "good";
 
 function getSeverity(score: number): Severity {
@@ -43,96 +42,6 @@ function getSeverity(score: number): Severity {
   if (score < 60) return "warning";
   if (score < 75) return "ok";
   return "good";
-}
-
-/* ── Summary card at top ── */
-function ScoreSummaryCard({
-  axis,
-  score,
-  delay,
-}: {
-  axis: AxisAnalysis;
-  score: number;
-  delay: number;
-}) {
-  const config = axisConfig[axis.label];
-  const Icon = config.icon;
-  const severity = getSeverity(score);
-  const isCritical = severity === "critical";
-  const isWarning = severity === "warning";
-
-  const cardBorder = isCritical
-    ? "ring-2 ring-score-poor/40 animate-pulse-glow"
-    : isWarning
-    ? "ring-1 ring-score-warning/30"
-    : "ring-1 ring-border";
-
-  const cardBg = isCritical
-    ? "bg-gradient-to-b from-score-poor/[0.05] to-card"
-    : isWarning
-    ? "bg-gradient-to-b from-score-warning/[0.03] to-card"
-    : "bg-card";
-
-  return (
-    <div
-      className={`rounded-xl overflow-hidden ${cardBorder} ${cardBg} animate-fade-up flex flex-col items-center p-5 sm:p-6`}
-      style={{ animationDelay: `${delay / 1000}s` }}
-    >
-      {/* Danger zone — shown first for low scores */}
-      {isCritical && (
-        <div className="w-full mb-4 px-3.5 py-3 rounded-lg bg-score-poor/8 border border-score-poor/20 text-center space-y-1.5">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/15 text-score-poor border border-score-poor/25 animate-pulse">
-            <ShieldAlert className="w-3.5 h-3.5" />
-            즉시 개선 필요
-          </span>
-          <p className="text-sm font-semibold text-score-poor">{config.lossLabel}</p>
-          <p className="text-xs text-score-poor/80">{config.lossDesc}</p>
-        </div>
-      )}
-      {isWarning && (
-        <div className="w-full mb-4 px-3.5 py-2.5 rounded-lg bg-score-warning/8 border border-score-warning/15 text-center space-y-1">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20">
-            <AlertTriangle className="w-3.5 h-3.5" />
-            개선 권장
-          </span>
-          <p className="text-xs text-score-warning/80">{config.warnDesc}</p>
-        </div>
-      )}
-
-      {/* Axis label */}
-      <div className="flex items-center gap-2 mb-1">
-        <Icon className={`w-5 h-5 ${config.accent}`} />
-        <span className="text-base font-bold text-foreground">{axis.label}</span>
-      </div>
-
-      {/* Gauge */}
-      <SemiCircleGauge score={score} size={140} delay={delay} />
-
-      {/* Grade */}
-      <span className={`text-sm font-semibold ${getGradeColorClass(score)} -mt-1`}>
-        {getGradeLabel(score)}
-      </span>
-
-      {/* Description */}
-      <p className="text-xs text-muted-foreground text-center mt-2 leading-relaxed">
-        {axis.description}
-      </p>
-
-      {/* Score cap */}
-      {axis.scoreCap && (
-        <div className={`w-full mt-3 flex items-start gap-2 px-3 py-2 rounded-lg border ${
-          isCritical
-            ? "bg-score-poor/8 border-score-poor/20"
-            : "bg-score-warning/8 border-score-warning/15"
-        }`}>
-          <Lock className={`w-4 h-4 shrink-0 mt-0.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />
-          <span className={`text-xs leading-relaxed ${isCritical ? "text-score-poor font-semibold" : "text-score-warning"}`}>
-            {axis.scoreCap}
-          </span>
-        </div>
-      )}
-    </div>
-  );
 }
 
 /* ── Sub-signal bar ── */
@@ -155,7 +64,7 @@ function SignalBar({ name, score, weight }: { name: string; score: number; weigh
   );
 }
 
-/* ── Issue row with loss framing ── */
+/* ── Issue row ── */
 function IssueRow({ text, severity, index }: { text: string; severity: Severity; index: number }) {
   const isCritical = severity === "critical";
   const isFirst = index === 0;
@@ -195,8 +104,8 @@ function ImprovementRow({ icon, label, item, urgent }: { icon: React.ReactNode; 
   );
 }
 
-/* ── Detail block (below summary cards) ── */
-function DetailBlock({ axis, score }: { axis: AxisAnalysis; score: number }) {
+/* ── Unified axis card: summary + detail in one card ── */
+function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; delay: number }) {
   const [open, setOpen] = useState(false);
   const config = axisConfig[axis.label];
   const Icon = config.icon;
@@ -204,112 +113,164 @@ function DetailBlock({ axis, score }: { axis: AxisAnalysis; score: number }) {
   const isCritical = severity === "critical";
   const isWarning = severity === "warning";
 
-  const headerBorder = isCritical
-    ? "border-score-poor/20"
+  const cardRing = isCritical
+    ? "ring-2 ring-score-poor/40 animate-pulse-glow"
     : isWarning
-    ? "border-score-warning/15"
-    : "border-border";
+    ? "ring-1 ring-score-warning/30"
+    : "ring-1 ring-border";
+
+  const cardBg = isCritical
+    ? "bg-gradient-to-b from-score-poor/[0.05] to-card"
+    : isWarning
+    ? "bg-gradient-to-b from-score-warning/[0.03] to-card"
+    : "bg-card";
 
   return (
-    <div className={`rounded-xl bg-card overflow-hidden ring-1 ${
-      isCritical ? "ring-score-poor/20" : isWarning ? "ring-score-warning/15" : "ring-border"
-    }`}>
-      {/* Header — always visible */}
+    <div
+      className={`rounded-xl overflow-hidden ${cardRing} ${cardBg} animate-fade-up`}
+      style={{ animationDelay: `${delay / 1000}s` }}
+    >
+      {/* ─ Score summary section ─ */}
+      <div className="flex flex-col items-center p-5 sm:p-6">
+        {/* Danger banner */}
+        {isCritical && (
+          <div className="w-full mb-4 px-3.5 py-3 rounded-lg bg-score-poor/8 border border-score-poor/20 text-center space-y-1.5">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/15 text-score-poor border border-score-poor/25 animate-pulse">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              즉시 개선 필요
+            </span>
+            <p className="text-sm font-semibold text-score-poor">{config.lossLabel}</p>
+            <p className="text-xs text-score-poor/80">{config.lossDesc}</p>
+          </div>
+        )}
+        {isWarning && (
+          <div className="w-full mb-4 px-3.5 py-2.5 rounded-lg bg-score-warning/8 border border-score-warning/15 text-center space-y-1">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              개선 권장
+            </span>
+            <p className="text-xs text-score-warning/80">{config.warnDesc}</p>
+          </div>
+        )}
+
+        {/* Label + gauge */}
+        <div className="flex items-center gap-2 mb-1">
+          <Icon className={`w-5 h-5 ${config.accent}`} />
+          <span className="text-base font-bold text-foreground">{axis.label}</span>
+        </div>
+        <SemiCircleGauge score={score} size={140} delay={delay} />
+        <span className={`text-sm font-semibold ${getGradeColorClass(score)} -mt-1`}>
+          {getGradeLabel(score)}
+        </span>
+        <p className="text-xs text-muted-foreground text-center mt-2 leading-relaxed">
+          {axis.description}
+        </p>
+
+        {/* Score cap */}
+        {axis.scoreCap && (
+          <div className={`w-full mt-3 flex items-start gap-2 px-3 py-2 rounded-lg border ${
+            isCritical
+              ? "bg-score-poor/8 border-score-poor/20"
+              : "bg-score-warning/8 border-score-warning/15"
+          }`}>
+            <Lock className={`w-4 h-4 shrink-0 mt-0.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />
+            <span className={`text-xs leading-relaxed ${isCritical ? "text-score-poor font-semibold" : "text-score-warning"}`}>
+              {axis.scoreCap}
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* ─ Toggle for detail ─ */}
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-5 py-4 border-b ${headerBorder} hover:bg-muted/30 transition-colors`}
+        className="w-full flex items-center justify-center gap-1.5 py-3 border-t border-border text-xs font-semibold text-primary hover:bg-muted/30 transition-colors"
       >
-        <div className="flex items-center gap-2.5">
-          <Icon className={`w-5 h-5 ${config.accent}`} />
-          <span className="text-sm font-bold text-foreground">{axis.label} 상세 분석</span>
-          {isCritical && (
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
-              우선 확인
-            </span>
-          )}
-        </div>
-        <ChevronDown className={`w-5 h-5 text-muted-foreground transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+        {open ? "접기" : "상세 분석 보기"}
+        <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
 
-      {/* Collapsible detail */}
-      <div className={`${open ? "" : "hidden"}`}>
-        {/* Issues — sorted by severity, framed as losses */}
-        <div className={`px-5 py-4 space-y-2 ${isCritical ? "bg-score-poor/[0.02]" : ""}`}>
-          <span className={`text-xs font-bold flex items-center gap-1.5 ${
-            isCritical ? "text-score-poor" : "text-foreground"
-          }`}>
-            <AlertCircle className={`w-4 h-4 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />
-            핵심 이슈
-            {isCritical && <span className="text-[10px] ml-1 text-score-poor/70">— 심각도 순</span>}
-          </span>
-          <ul className="space-y-2">
-            {(axis.issues || []).map((item, i) => (
-              <IssueRow key={i} text={item} severity={severity} index={i} />
+      {/* ─ Detail sections ─ */}
+      {open && (
+        <div className="border-t border-border">
+          {/* Issues */}
+          <div className={`px-5 py-4 space-y-2 ${isCritical ? "bg-score-poor/[0.02]" : ""}`}>
+            <span className={`text-xs font-bold flex items-center gap-1.5 ${
+              isCritical ? "text-score-poor" : "text-foreground"
+            }`}>
+              <AlertCircle className={`w-4 h-4 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />
+              핵심 이슈
+              {isCritical && <span className="text-[10px] ml-1 text-score-poor/70">— 심각도 순</span>}
+            </span>
+            <ul className="space-y-2">
+              {(axis.issues || []).map((item, i) => (
+                <IssueRow key={i} text={item} severity={severity} index={i} />
+              ))}
+            </ul>
+          </div>
+
+          {/* Rationale */}
+          <div className="border-t border-border px-5 py-4">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
+              <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
+              점수 사유
+            </span>
+            <p className="text-[13px] text-muted-foreground leading-relaxed">{axis.scoreRationale}</p>
+          </div>
+
+          {/* Sub-signals */}
+          <div className="border-t border-border px-5 py-4 space-y-1.5">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />
+              하위 신호 점수
+            </span>
+            {(axis.subSignals || []).map((s, i) => (
+              <SignalBar key={i} name={s.name} score={s.score} weight={s.weight} />
             ))}
-          </ul>
-        </div>
+          </div>
 
-        {/* Rationale */}
-        <div className="border-t border-border px-5 py-4">
-          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1.5">
-            <AlertCircle className="w-3.5 h-3.5 text-muted-foreground" />
-            점수 사유
-          </span>
-          <p className="text-[13px] text-muted-foreground leading-relaxed">{axis.scoreRationale}</p>
-        </div>
+          {/* Strengths */}
+          <div className="border-t border-border px-5 py-4 space-y-1.5">
+            <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-score-excellent" />
+              잘된 점
+            </span>
+            <ul className="space-y-1 pl-5">
+              {(axis.strengths || []).map((item, i) => (
+                <li key={i} className="text-[13px] text-muted-foreground leading-relaxed list-disc">{item}</li>
+              ))}
+            </ul>
+          </div>
 
-        {/* Sub-signals */}
-        <div className="border-t border-border px-5 py-4 space-y-1.5">
-          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5 text-muted-foreground" />
-            하위 신호 점수
-          </span>
-          {(axis.subSignals || []).map((s, i) => (
-            <SignalBar key={i} name={s.name} score={s.score} weight={s.weight} />
-          ))}
-        </div>
-
-        {/* Strengths */}
-        <div className="border-t border-border px-5 py-4 space-y-1.5">
-          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
-            <CheckCircle className="w-3.5 h-3.5 text-score-excellent" />
-            잘된 점
-          </span>
-          <ul className="space-y-1 pl-5">
-            {(axis.strengths || []).map((item, i) => (
-              <li key={i} className="text-[13px] text-muted-foreground leading-relaxed list-disc">{item}</li>
+          {/* Improvements */}
+          <div className="border-t border-border px-5 py-4 space-y-3">
+            <span className="text-xs font-bold text-foreground">개선 과제</span>
+            {axis.priorityFix && (
+              <ImprovementRow
+                icon={<Zap className={`w-4 h-4 shrink-0 mt-0.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />}
+                label="🔥 가장 먼저 할 개선"
+                item={axis.priorityFix}
+                urgent={isCritical}
+              />
+            )}
+            {axis.quickFix && (
+              <ImprovementRow
+                icon={<Wrench className="w-4 h-4 text-primary shrink-0 mt-0.5" />}
+                label="⚡ 빠르게 할 수 있는 개선"
+                item={axis.quickFix}
+              />
+            )}
+            {(axis.additionalFixes || []).map((fix, i) => (
+              <ImprovementRow
+                key={i}
+                icon={<Plus className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />}
+                label="추가 개선"
+                item={fix}
+              />
             ))}
-          </ul>
+          </div>
         </div>
-
-        {/* Improvements — with point ranges */}
-        <div className="border-t border-border px-5 py-4 space-y-3">
-          <span className="text-xs font-bold text-foreground">개선 과제</span>
-          {axis.priorityFix && (
-            <ImprovementRow
-              icon={<Zap className={`w-4 h-4 shrink-0 mt-0.5 ${isCritical ? "text-score-poor" : "text-score-warning"}`} />}
-              label="🔥 가장 먼저 할 개선"
-              item={axis.priorityFix}
-              urgent={isCritical}
-            />
-          )}
-          {axis.quickFix && (
-            <ImprovementRow
-              icon={<Wrench className="w-4 h-4 text-primary shrink-0 mt-0.5" />}
-              label="⚡ 빠르게 할 수 있는 개선"
-              item={axis.quickFix}
-            />
-          )}
-          {(axis.additionalFixes || []).map((fix, i) => (
-            <ImprovementRow
-              key={i}
-              icon={<Plus className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />}
-              label="추가 개선"
-              item={fix}
-            />
-          ))}
-        </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -341,37 +302,16 @@ function InlineCTA() {
 
 /* ── Main ── */
 export default function ScoreDashboard({ result }: ScoreDashboardProps) {
-  const axes: { axis: AxisAnalysis; score: number }[] = [
-    { axis: result.seoAxis, score: result.seoScore },
-    { axis: result.aeoAxis, score: result.aeoScore },
-    { axis: result.geoAxis, score: result.geoScore },
-  ];
-
-  // Sort so critical scores come first
-  const sortedAxes = [...axes].sort((a, b) => a.score - b.score);
-
   return (
     <div className="space-y-6">
-      {/* 1. Top-level score summary cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {axes.map(({ axis, score }, i) => (
-          <ScoreSummaryCard
-            key={axis.label}
-            axis={axis}
-            score={score}
-            delay={200 + i * 200}
-          />
-        ))}
+      {/* Each axis: summary + detail integrated in one card */}
+      <div className="grid gap-5 sm:grid-cols-3">
+        <AxisCard axis={result.seoAxis} score={result.seoScore} delay={200} />
+        <AxisCard axis={result.aeoAxis} score={result.aeoScore} delay={400} />
+        <AxisCard axis={result.geoAxis} score={result.geoScore} delay={600} />
       </div>
 
-      {/* 2. Detail blocks — sorted by severity (worst first) */}
-      <div className="space-y-4">
-        {sortedAxes.map(({ axis, score }) => (
-          <DetailBlock key={axis.label} axis={axis} score={score} />
-        ))}
-      </div>
-
-      {/* 3. Inline CTA — right after the analysis */}
+      {/* CTA */}
       <InlineCTA />
     </div>
   );
