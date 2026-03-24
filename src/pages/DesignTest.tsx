@@ -13,7 +13,8 @@ const fakePsi: PsiResult = {
   bestPractices: 91,
   seo: 85,
   screenshot: null,
-  fetchTime: "2.4 s",
+  finalUrl: "https://example.com",
+  fetchTime: "2025-01-01T00:00:00Z",
 };
 
 const demoUrl = "https://example.com";
