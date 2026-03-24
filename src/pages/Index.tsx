@@ -1,4 +1,5 @@
 import { useState } from "react";
+import confetti from "canvas-confetti";
 import Navbar from "@/components/Navbar";
 import ScoreRing from "@/components/ScoreRing";
 import LoadingScreen from "@/components/LoadingScreen";
