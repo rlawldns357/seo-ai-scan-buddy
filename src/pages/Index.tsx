@@ -39,7 +39,7 @@ const Index = () => {
       fetchPsi(finalUrl, 'desktop'),
     ]);
 
-    clearInterval(interval);
+    
 
     if (mobileRes.data) setPsiMobile(mobileRes.data);
     if (desktopRes.data) setPsiDesktop(desktopRes.data);
