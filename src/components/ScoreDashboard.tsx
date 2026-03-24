@@ -1,9 +1,10 @@
+import { useState } from "react";
 import { type DemoResult, type AxisAnalysis, type Improvement } from "@/data/demoResults";
 import SemiCircleGauge, { getGradeLabel, getGradeColorClass } from "@/components/SemiCircleGauge";
 import {
   Search, Bot, Sparkles,
   AlertTriangle, CheckCircle, Zap, Wrench, Plus, TrendingUp, AlertCircle,
-  Lock, ShieldAlert,
+  Lock, ShieldAlert, ChevronDown,
 } from "lucide-react";
 
 interface ScoreDashboardProps {
