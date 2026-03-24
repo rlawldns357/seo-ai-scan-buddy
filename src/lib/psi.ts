@@ -14,30 +14,36 @@ export interface PsiError {
 }
 
 export async function fetchPsi(url: string): Promise<{ data?: PsiResult; error?: PsiError }> {
-  const endpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
-  const params = new URLSearchParams({
-    url,
-    category: 'performance',
-    strategy: 'mobile',
-  });
-  // PSI only accepts one category param per key, need to append multiples
-  ['accessibility', 'best-practices', 'seo'].forEach(c => params.append('category', c));
+  const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/psi-proxy`;
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
+    const timeout = setTimeout(() => controller.abort(), 50000);
 
-    const res = await fetch(`${endpoint}?${params.toString()}`, {
+    const res = await fetch(functionUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+      },
+      body: JSON.stringify({ url }),
       signal: controller.signal,
     });
     clearTimeout(timeout);
 
-    if (res.status === 429) {
+    if (!res.ok) {
+      return { error: { type: 'unknown', message: `프록시 오류 (${res.status})` } };
+    }
+
+    const json = await res.json();
+    const status = json.status as number;
+    const body = json.body;
+
+    if (status === 429) {
       return { error: { type: 'quota', message: 'Lighthouse API 요청 한도를 초과했어요. 잠시 후 다시 시도해 주세요.' } };
     }
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
+    if (status !== 200) {
       const errMsg = body?.error?.message || '';
       if (errMsg.includes('DNS_FAILURE') || errMsg.includes('FAILED_DOCUMENT_REQUEST')) {
         return { error: { type: 'unreachable', message: '해당 URL에 접근할 수 없어요. URL이 정확한지, 사이트가 정상 운영 중인지 확인해 주세요.' } };
@@ -45,11 +51,10 @@ export async function fetchPsi(url: string): Promise<{ data?: PsiResult; error?:
       if (errMsg.includes('ERRORED_DOCUMENT_REQUEST') || errMsg.includes('robots')) {
         return { error: { type: 'blocked', message: 'robots.txt 또는 서버 설정으로 접근이 차단되었어요. robots.txt를 확인해 주세요.' } };
       }
-      return { error: { type: 'unknown', message: `측정 중 오류가 발생했어요. (${res.status})` } };
+      return { error: { type: 'unknown', message: `측정 중 오류가 발생했어요. (${status})` } };
     }
 
-    const data = await res.json();
-    const lhr = data.lighthouseResult;
+    const lhr = body.lighthouseResult;
     if (!lhr) {
       return { error: { type: 'unknown', message: '측정 결과를 가져올 수 없었어요.' } };
     }
