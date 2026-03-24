@@ -47,7 +47,7 @@ const Index = () => {
 
     // Fetch PSI in parallel with minimum wait
     const [psiResponse] = await Promise.all([
-      fetchPsi(finalUrl),
+      fetchPsi(finalUrl, strategy),
       new Promise(resolve => setTimeout(resolve, 2500)),
     ]);
 
