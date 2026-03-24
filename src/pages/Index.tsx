@@ -144,14 +144,7 @@ const Index = () => {
         </main>
       )}
 
-      {screen === "loading" && (
-        <main className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center animate-fade-up">
-            <Loader2 className="w-12 h-12 text-primary mx-auto animate-spin-slow mb-6" />
-            <p className="text-lg text-foreground font-medium">{loadingText}</p>
-          </div>
-        </main>
-      )}
+      {screen === "loading" && <LoadingScreen />}
 
       {screen === "result" && result && (
         <main className="flex-1 py-8 sm:py-12 px-4">
