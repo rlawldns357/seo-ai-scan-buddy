@@ -1,0 +1,134 @@
+import { useState, useEffect } from "react";
+import { Search, MessageCircle, Globe, Loader2 } from "lucide-react";
+
+interface InsightCard {
+  icon: React.ReactNode;
+  tag: string;
+  tagColor: string;
+  title: string;
+  description: string;
+}
+
+const insights: InsightCard[] = [
+  {
+    icon: <Search className="w-5 h-5" />,
+    tag: "SEO",
+    tagColor: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    title: "검색엔진 최적화",
+    description: "Google·Naver 등 검색엔진이 내 사이트를 잘 이해하고 상위에 노출할 수 있도록 기술적·콘텐츠적 요소를 최적화하는 것입니다.",
+  },
+  {
+    icon: <MessageCircle className="w-5 h-5" />,
+    tag: "AEO",
+    tagColor: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    title: "AI 답변 최적화",
+    description: "ChatGPT·Perplexity 같은 AI가 내 콘텐츠를 인용하거나 답변 소스로 채택할 수 있도록, 명확하고 구조화된 정보를 제공하는 전략입니다.",
+  },
+  {
+    icon: <Globe className="w-5 h-5" />,
+    tag: "GEO",
+    tagColor: "bg-violet-500/10 text-violet-400 border-violet-500/20",
+    title: "AI 생성 검색 최적화",
+    description: "Google SGE·AI Overview 등 생성형 검색 결과에서 내 사이트가 신뢰할 수 있는 출처로 선택되도록 권위와 신뢰 신호를 강화하는 것입니다.",
+  },
+  {
+    icon: <Search className="w-5 h-5" />,
+    tag: "Tip",
+    tagColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    title: "왜 SEO만으로는 부족할까?",
+    description: "검색의 40% 이상이 AI 기반으로 전환되고 있어요. 기존 SEO에 AEO·GEO를 더해야 AI 시대에도 검색 노출을 유지할 수 있습니다.",
+  },
+  {
+    icon: <MessageCircle className="w-5 h-5" />,
+    tag: "Tip",
+    tagColor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    title: "구조화된 데이터란?",
+    description: "Schema.org 마크업으로 페이지 내용을 기계가 이해할 수 있게 표현한 것이에요. FAQ, How-to, Article 등의 스키마가 AI 인용 확률을 높여줍니다.",
+  },
+];
+
+const loadingSteps = [
+  "페이지 구조 확인 중…",
+  "기술 SEO 신호 점검 중…",
+  "모바일 Lighthouse 측정 중…",
+  "데스크톱 Lighthouse 측정 중…",
+  "AI 준비도 요약 생성 중…",
+];
+
+export default function LoadingScreen() {
+  const [stepIndex, setStepIndex] = useState(0);
+  const [cardIndex, setCardIndex] = useState(0);
+  const [fadeIn, setFadeIn] = useState(true);
+
+  useEffect(() => {
+    const stepTimer = setInterval(() => {
+      setStepIndex((prev) => Math.min(prev + 1, loadingSteps.length - 1));
+    }, 800);
+    return () => clearInterval(stepTimer);
+  }, []);
+
+  useEffect(() => {
+    const cardTimer = setInterval(() => {
+      setFadeIn(false);
+      setTimeout(() => {
+        setCardIndex((prev) => (prev + 1) % insights.length);
+        setFadeIn(true);
+      }, 300);
+    }, 4000);
+    return () => clearInterval(cardTimer);
+  }, []);
+
+  const card = insights[cardIndex];
+
+  return (
+    <main className="flex-1 flex items-center justify-center px-4">
+      <div className="max-w-md w-full text-center space-y-8">
+        {/* Spinner + step */}
+        <div className="space-y-4">
+          <Loader2 className="w-10 h-10 text-primary mx-auto animate-spin-slow" />
+          <p className="text-sm text-muted-foreground font-medium">
+            {loadingSteps[stepIndex]}
+          </p>
+          {/* Progress dots */}
+          <div className="flex items-center justify-center gap-1.5">
+            {loadingSteps.map((_, i) => (
+              <div
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  i <= stepIndex
+                    ? "w-6 bg-primary"
+                    : "w-1.5 bg-muted-foreground/20"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Info card */}
+        <div
+          className={`bg-card rounded-xl border border-border p-5 text-left transition-all duration-300 ${
+            fadeIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
+          }`}
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold border ${card.tagColor}`}>
+              {card.icon}
+              {card.tag}
+            </span>
+          </div>
+          <h3 className="text-sm font-semibold text-foreground mb-1.5">
+            {card.title}
+          </h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {card.description}
+          </p>
+        </div>
+
+        {/* Subtle hint */}
+        <p className="text-[11px] text-muted-foreground/60">
+          모바일 + 데스크톱 동시 측정 중이에요
+        </p>
+      </div>
+    </main>
+  );
+}

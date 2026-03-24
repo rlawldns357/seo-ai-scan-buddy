@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import ScoreRing from "@/components/ScoreRing";
+import LoadingScreen from "@/components/LoadingScreen";
 import LighthouseScores from "@/components/LighthouseScores";
 import PageThumbnail from "@/components/PageThumbnail";
 import AxisCard from "@/components/AxisCard";
@@ -10,7 +11,7 @@ import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
-import { AlertTriangle, CheckCircle, Lightbulb, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle, Lightbulb } from "lucide-react";
 
 type Screen = "home" | "loading" | "result";
 
@@ -20,7 +21,7 @@ const Index = () => {
   const [urlError, setUrlError] = useState("");
   const [normalizedUrl, setNormalizedUrl] = useState("");
   const [result, setResult] = useState<DemoResult | null>(null);
-  const [loadingText, setLoadingText] = useState("");
+  
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
@@ -33,26 +34,12 @@ const Index = () => {
     setPsiError(null);
     trackEvent("analysis_start", { url: finalUrl });
 
-    const texts = [
-      "페이지 구조 확인 중…",
-      "기술 SEO 신호 점검 중…",
-      "모바일 Lighthouse 측정 중…",
-      "데스크톱 Lighthouse 측정 중…",
-      "AI 준비도 요약 생성 중…",
-    ];
-    let i = 0;
-    setLoadingText(texts[0]);
-    const interval = setInterval(() => {
-      i++;
-      if (i < texts.length) setLoadingText(texts[i]);
-    }, 800);
-
     const [mobileRes, desktopRes] = await Promise.all([
       fetchPsi(finalUrl, 'mobile'),
       fetchPsi(finalUrl, 'desktop'),
     ]);
 
-    clearInterval(interval);
+    
 
     if (mobileRes.data) setPsiMobile(mobileRes.data);
     if (desktopRes.data) setPsiDesktop(desktopRes.data);
@@ -143,14 +130,7 @@ const Index = () => {
         </main>
       )}
 
-      {screen === "loading" && (
-        <main className="flex-1 flex items-center justify-center px-4">
-          <div className="text-center animate-fade-up">
-            <Loader2 className="w-12 h-12 text-primary mx-auto animate-spin-slow mb-6" />
-            <p className="text-lg text-foreground font-medium">{loadingText}</p>
-          </div>
-        </main>
-      )}
+      {screen === "loading" && <LoadingScreen />}
 
       {screen === "result" && result && (
         <main className="flex-1 py-8 sm:py-12 px-4">
