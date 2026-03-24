@@ -24,10 +24,10 @@ const result = getDemoResult(demoUrl);
 const DesignTest = () => (
   <div className="min-h-screen flex flex-col bg-background">
     <Navbar />
-    <main className="flex-1 py-8 sm:py-12 px-4">
+    <main className="flex-1 py-8 sm:py-12 px-4 pb-24">
       <div className="container max-w-4xl mx-auto space-y-5">
         <div className="text-center mb-4">
-          <span className="inline-block px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold">
+          <span className="inline-block px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20 text-xs font-semibold">
             🎨 디자인 테스트 모드
           </span>
         </div>
@@ -37,6 +37,8 @@ const DesignTest = () => (
         <VerificationLinks url={demoUrl} />
         <EmailForm onSubmitted={() => {}} />
       </div>
+
+      <StickyBottomCTA />
     </main>
   </div>
 );
