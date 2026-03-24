@@ -18,6 +18,9 @@ const axisConfig = {
     lossLabel: "검색 노출 손실 가능성",
     lossDesc: "지금 검색 노출 기회를 놓치고 있습니다",
     warnDesc: "검색 노출 효율을 더 높일 수 있습니다",
+    ring: "ring-primary/30",
+    shadow: "shadow-[0_4px_24px_-6px_hsl(230,80%,56%,0.12)]",
+    headerBg: "bg-primary/5",
   },
   AEO: {
     icon: Bot,
@@ -25,6 +28,9 @@ const axisConfig = {
     lossLabel: "답변 채택 손실 가능성",
     lossDesc: "답변형 검색에서 선택될 가능성이 낮습니다",
     warnDesc: "AI 답변 채택률을 개선할 여지가 있습니다",
+    ring: "ring-accent/30",
+    shadow: "shadow-[0_4px_24px_-6px_hsl(268,70%,58%,0.12)]",
+    headerBg: "bg-accent/5",
   },
   GEO: {
     icon: Sparkles,
@@ -32,6 +38,9 @@ const axisConfig = {
     lossLabel: "인용 기회 손실 가능성",
     lossDesc: "생성형 검색 엔진이 신뢰 가능한 출처로 인식하기 어려운 상태입니다",
     warnDesc: "생성형 검색에서의 인용 가능성을 높일 수 있습니다",
+    ring: "ring-score-excellent/30",
+    shadow: "shadow-[0_4px_24px_-6px_hsl(142,72%,42%,0.12)]",
+    headerBg: "bg-score-excellent/5",
   },
 };
 
