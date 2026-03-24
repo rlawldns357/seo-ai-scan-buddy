@@ -42,11 +42,24 @@ serve(async (req) => {
     );
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 45000);
+    const timeout = setTimeout(() => controller.abort(), 90000);
 
-    const res = await fetch(`${endpoint}?${params.toString()}`, {
-      signal: controller.signal,
-    });
+    let res: Response;
+    try {
+      res = await fetch(`${endpoint}?${params.toString()}`, {
+        signal: controller.signal,
+      });
+    } catch (fetchErr: unknown) {
+      clearTimeout(timeout);
+      const msg = fetchErr instanceof Error ? fetchErr.message : "Fetch failed";
+      if (msg.includes("aborted")) {
+        return new Response(
+          JSON.stringify({ status: 408, body: { error: { message: "TIMEOUT" } } }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      throw fetchErr;
+    }
     clearTimeout(timeout);
 
     const body = await res.json();
