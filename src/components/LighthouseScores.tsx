@@ -13,6 +13,13 @@ const getBarColor = (score: number) => {
   return "bg-score-poor";
 };
 
+const getBarColorVar = (score: number) => {
+  if (score >= 75) return "var(--score-excellent)";
+  if (score >= 60) return "var(--score-good)";
+  if (score >= 40) return "var(--score-warning)";
+  return "var(--score-poor)";
+};
+
 const getTextColor = (score: number) => {
   if (score >= 75) return "text-score-excellent";
   if (score >= 60) return "text-score-good";
