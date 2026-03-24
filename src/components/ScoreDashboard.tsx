@@ -394,11 +394,13 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
               score={score}
               delay={200 + i * 200}
               selected={selected === key}
-              onClick={() => setSelected(key)}
+            onClick={() => setSelected(selected === key ? null : key)}
             />
           ))}
         </div>
-        <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+        {selectedEntry && (
+          <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+        )}
       </div>
 
       {/* CTA */}

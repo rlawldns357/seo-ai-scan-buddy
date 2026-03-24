@@ -41,12 +41,12 @@ function MiniScore({ score, label }: { score: number; label: string }) {
 
 function DeviceRow({ psi, icon, label }: { psi: PsiResult; icon: React.ReactNode; label: string }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-start sm:items-center gap-3">
       <div className="flex items-center gap-1 shrink-0 w-[72px]">
         {icon}
         <span className="text-[11px] font-medium text-muted-foreground">{label}</span>
       </div>
-      <div className="flex flex-wrap gap-x-4 gap-y-1">
+      <div className="flex-1 min-w-0 grid grid-cols-2 sm:flex sm:flex-wrap gap-x-4 gap-y-1">
         <MiniScore score={psi.performance} label="성능" />
         <MiniScore score={psi.accessibility} label="접근성" />
         <MiniScore score={psi.bestPractices} label="권장사항" />
