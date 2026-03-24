@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { url } = await req.json();
+    const { url, strategy = "mobile" } = await req.json();
     if (!url || typeof url !== "string") {
       return new Response(JSON.stringify({ error: "url is required" }), {
         status: 400,
@@ -30,11 +30,12 @@ serve(async (req) => {
     }
 
     const endpoint = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
+    const validStrategy = strategy === "desktop" ? "desktop" : "mobile";
     const params = new URLSearchParams({
       url,
       key: apiKey,
       category: "performance",
-      strategy: "mobile",
+      strategy: validStrategy,
     });
     ["accessibility", "best-practices", "seo"].forEach((c) =>
       params.append("category", c)

@@ -8,9 +8,9 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
-import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
+import { fetchPsi, type PsiResult, type PsiError, type PsiStrategy } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
-import { AlertTriangle, CheckCircle, Lightbulb, Loader2 } from "lucide-react";
+import { AlertTriangle, CheckCircle, Lightbulb, Loader2, Monitor, Smartphone } from "lucide-react";
 
 type Screen = "home" | "loading" | "result";
 
@@ -23,6 +23,7 @@ const Index = () => {
   const [loadingText, setLoadingText] = useState("");
   const [psiResult, setPsiResult] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
+  const [strategy, setStrategy] = useState<PsiStrategy>("mobile");
 
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
@@ -46,7 +47,7 @@ const Index = () => {
 
     // Fetch PSI in parallel with minimum wait
     const [psiResponse] = await Promise.all([
-      fetchPsi(finalUrl),
+      fetchPsi(finalUrl, strategy),
       new Promise(resolve => setTimeout(resolve, 2500)),
     ]);
 
@@ -87,7 +88,7 @@ const Index = () => {
   const handleRetryPsi = () => {
     if (normalizedUrl) {
       setPsiError(null);
-      fetchPsi(normalizedUrl).then(res => {
+      fetchPsi(normalizedUrl, strategy).then(res => {
         if (res.data) setPsiResult(res.data);
         else if (res.error) setPsiError(res.error);
       });
@@ -123,6 +124,30 @@ const Index = () => {
                 무료로 분석하기
               </button>
             </div>
+            <div className="flex items-center justify-center gap-1 mt-4">
+              <button
+                onClick={() => setStrategy("mobile")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-l-lg text-xs font-medium border transition-colors ${
+                  strategy === "mobile"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground border-input hover:text-foreground"
+                }`}
+              >
+                <Smartphone className="w-3.5 h-3.5" />
+                모바일
+              </button>
+              <button
+                onClick={() => setStrategy("desktop")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-r-lg text-xs font-medium border border-l-0 transition-colors ${
+                  strategy === "desktop"
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card text-muted-foreground border-input hover:text-foreground"
+                }`}
+              >
+                <Monitor className="w-3.5 h-3.5" />
+                데스크톱
+              </button>
+            </div>
             {urlError && (
               <p className="mt-3 text-sm text-destructive">{urlError}</p>
             )}
@@ -156,7 +181,7 @@ const Index = () => {
             {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
 
             {/* Lighthouse real scores */}
-            {psiResult && <LighthouseScores psi={psiResult} />}
+            {psiResult && <LighthouseScores psi={psiResult} strategy={strategy} />}
 
             {/* Demo scores */}
             <div className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>

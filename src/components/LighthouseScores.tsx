@@ -1,11 +1,12 @@
-import { type PsiResult } from "@/lib/psi";
+import { type PsiResult, type PsiStrategy } from "@/lib/psi";
 import ScoreRing from "@/components/ScoreRing";
 
 interface LighthouseScoresProps {
   psi: PsiResult;
+  strategy: PsiStrategy;
 }
 
-export default function LighthouseScores({ psi }: LighthouseScoresProps) {
+export default function LighthouseScores({ psi, strategy }: LighthouseScoresProps) {
   const formatted = new Date(psi.fetchTime).toLocaleString('ko-KR', {
     year: 'numeric', month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit',
@@ -17,7 +18,7 @@ export default function LighthouseScores({ psi }: LighthouseScoresProps) {
         <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
           ✓ 실제 측정
         </span>
-        <span className="text-[11px] text-muted-foreground">Google Lighthouse (모바일)</span>
+        <span className="text-[11px] text-muted-foreground">Google Lighthouse ({strategy === 'mobile' ? '모바일' : '데스크톱'})</span>
       </div>
       <p className="text-[11px] text-muted-foreground mb-5">
         측정 시각: {formatted}
