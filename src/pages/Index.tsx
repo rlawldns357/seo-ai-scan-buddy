@@ -23,6 +23,7 @@ const Index = () => {
   const [loadingText, setLoadingText] = useState("");
   const [psiResult, setPsiResult] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
+  const [strategy, setStrategy] = useState<PsiStrategy>("mobile");
 
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
