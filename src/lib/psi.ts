@@ -34,7 +34,9 @@ export async function fetchPsi(url: string, strategy: PsiStrategy = 'mobile'): P
     clearTimeout(timeout);
 
     if (!res.ok) {
-      return { error: { type: 'unknown', message: `프록시 오류 (${res.status})` } };
+      const errBody = await res.text().catch(() => '');
+      console.error('psi-proxy HTTP error:', res.status, errBody);
+      return { error: { type: 'unknown', message: `프록시 오류 (${res.status}): ${errBody}` } };
     }
 
     const json = await res.json();
