@@ -13,7 +13,9 @@ export interface PsiError {
   message: string;
 }
 
-export async function fetchPsi(url: string): Promise<{ data?: PsiResult; error?: PsiError }> {
+export type PsiStrategy = 'mobile' | 'desktop';
+
+export async function fetchPsi(url: string, strategy: PsiStrategy = 'mobile'): Promise<{ data?: PsiResult; error?: PsiError }> {
   const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/psi-proxy`;
 
   try {
