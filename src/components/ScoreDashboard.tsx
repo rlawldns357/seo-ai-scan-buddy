@@ -148,7 +148,7 @@ function AxisCard({ axis, score, delay }: { axis: AxisAnalysis; score: number; d
       style={{ animationDelay: `${delay / 1000}s` }}
     >
       {/* ─ Score summary (fixed height area) ─ */}
-      <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
+      <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1 min-h-[320px]">
         {/* Badge + label row */}
         <div className="flex items-center gap-2 mb-1">
           <Icon className={`w-4 h-4 ${config.accent}`} />
