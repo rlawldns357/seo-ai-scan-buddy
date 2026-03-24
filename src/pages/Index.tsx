@@ -5,14 +5,12 @@ import ScoreDashboard from "@/components/ScoreDashboard";
 import LoadingScreen from "@/components/LoadingScreen";
 import LighthouseScores from "@/components/LighthouseScores";
 import PageThumbnail from "@/components/PageThumbnail";
-import AxisCard from "@/components/AxisCard";
 import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
-import { AlertTriangle, CheckCircle, Lightbulb } from "lucide-react";
 
 type Screen = "home" | "loading" | "result";
 
