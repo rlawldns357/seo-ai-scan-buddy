@@ -49,7 +49,7 @@ function AxisBlock({ axis, score, delay }: { axis: AxisAnalysis; score: number; 
         <InsightSection
           icon={<AlertTriangle className="w-3 h-3 text-score-warning" />}
           title="핵심 이슈"
-          items={axis.findings}
+          items={safeAxis.findings}
           itemColor="text-muted-foreground"
         />
 
@@ -57,7 +57,7 @@ function AxisBlock({ axis, score, delay }: { axis: AxisAnalysis; score: number; 
         <InsightSection
           icon={<CheckCircle className="w-3 h-3 text-score-excellent" />}
           title="강점"
-          items={axis.strengths}
+          items={safeAxis.strengths}
           itemColor="text-muted-foreground"
         />
 
@@ -65,19 +65,19 @@ function AxisBlock({ axis, score, delay }: { axis: AxisAnalysis; score: number; 
         <InsightSection
           icon={<Wrench className="w-3 h-3 text-primary" />}
           title="권장 개선"
-          items={axis.quickFixes}
+          items={safeAxis.quickFixes}
           itemColor="text-foreground"
         />
 
         {/* Impact estimates */}
-        {axis.impactEstimates.length > 0 && (
+        {safeAxis.impactEstimates.length > 0 && (
           <div className="space-y-1.5 pt-2 border-t border-border">
             <div className="flex items-center gap-1">
               <TrendingUp className="w-3 h-3 text-score-good" />
               <span className="text-[10px] font-semibold text-foreground">예상 효과</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              {axis.impactEstimates.map((est, i) => (
+              {safeAxis.impactEstimates.map((est, i) => (
                 <span
                   key={i}
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-score-good/8 text-[10px] font-medium text-score-good border border-score-good/15"
