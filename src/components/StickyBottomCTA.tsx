@@ -31,7 +31,7 @@ export default function StickyBottomCTA() {
   }
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-primary">
+    <div className="fixed bottom-0 left-0 right-0 z-40 gradient-primary">
       <div className="container max-w-4xl mx-auto flex items-center gap-4 px-4 py-3">
         <div className="hidden sm:flex items-center gap-2 shrink-0">
           <Bell className="w-4 h-4 text-primary-foreground/80" />

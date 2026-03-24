@@ -9,7 +9,7 @@ export default function Navbar() {
             <Search className="w-4 h-4 text-primary-foreground" />
           </div>
           <span className="text-lg font-bold text-foreground tracking-tight">Search OS</span>
-          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-primary/8 text-primary">Beta</span>
+          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent">Beta</span>
         </div>
         <a
           href="mailto:hello@example.com"
