@@ -61,7 +61,7 @@ export default function StickyBottomCTA() {
             onClick={handleSubmit}
             className="shrink-0 h-9 px-4 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
           >
-            출시 알림 받기
+            알림 받기
           </button>
         </div>
       </div>
