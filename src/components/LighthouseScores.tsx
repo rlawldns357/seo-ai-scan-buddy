@@ -50,12 +50,14 @@ function MiniScore({ score, label }: { score: number; label: string }) {
 /* ── Mobile: compact dot + number ── */
 function MiniScoreMobile({ score, label }: { score: number; label: string }) {
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-[11px] text-muted-foreground">{label}</span>
       <div className="flex items-center gap-1.5">
-        <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(score)}`} />
-        <span className="text-[11px] text-muted-foreground">{label}</span>
+        <div className="w-10 h-1 rounded-full bg-muted overflow-hidden">
+          <div className={`h-full rounded-full ${getBarColor(score)}`} style={{ width: `${score}%` }} />
+        </div>
+        <span className={`text-[11px] font-bold tabular-nums w-5 text-right ${getTextColor(score)}`}>{score}</span>
       </div>
-      <span className={`text-[11px] font-bold tabular-nums ${getTextColor(score)}`}>{score}</span>
     </div>
   );
 }
