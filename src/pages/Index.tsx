@@ -21,9 +21,9 @@ const Index = () => {
   const [normalizedUrl, setNormalizedUrl] = useState("");
   const [result, setResult] = useState<DemoResult | null>(null);
   const [loadingText, setLoadingText] = useState("");
-  const [psiResult, setPsiResult] = useState<PsiResult | null>(null);
+  const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
+  const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
-  const [strategy, setStrategy] = useState<PsiStrategy>("mobile");
 
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
