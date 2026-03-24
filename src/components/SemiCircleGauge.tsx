@@ -115,7 +115,7 @@ export default function SemiCircleGauge({ score, size = 140, delay = 0 }: SemiCi
           y={cy - 4}
           textAnchor="middle"
           className={`${colorClass} font-bold`}
-          style={{ fontSize: size * 0.22, fill: color }}
+          style={{ fontSize: effectiveSize * 0.22, fill: color }}
         >
           {animated}
         </text>
