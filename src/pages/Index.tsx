@@ -1,8 +1,15 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import ScoreRing from "@/components/ScoreRing";
+import LighthouseScores from "@/components/LighthouseScores";
+import PageThumbnail from "@/components/PageThumbnail";
+import AxisCard from "@/components/AxisCard";
+import VerificationLinks from "@/components/VerificationLinks";
+import EmailForm from "@/components/EmailForm";
+import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
-import { AlertTriangle, CheckCircle, Lightbulb, Loader2, ArrowRight } from "lucide-react";
+import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
+import { AlertTriangle, CheckCircle, Lightbulb, Loader2 } from "lucide-react";
 
 type Screen = "home" | "loading" | "result";
 
@@ -13,15 +20,45 @@ const Index = () => {
   const [normalizedUrl, setNormalizedUrl] = useState("");
   const [result, setResult] = useState<DemoResult | null>(null);
   const [loadingText, setLoadingText] = useState("");
+  const [psiResult, setPsiResult] = useState<PsiResult | null>(null);
+  const [psiError, setPsiError] = useState<PsiError | null>(null);
 
-  // Email state
-  const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
-  const [agreed, setAgreed] = useState(false);
-  const [agreeError, setAgreeError] = useState("");
-  const [emailSubmitted, setEmailSubmitted] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<"" | "success" | "duplicate" | "error">("");
-  const emailFormRef = useRef<HTMLDivElement>(null);
+  const runAnalysis = async (finalUrl: string) => {
+    setNormalizedUrl(finalUrl);
+    setScreen("loading");
+    setPsiResult(null);
+    setPsiError(null);
+
+    const texts = [
+      "페이지 구조 확인 중…",
+      "기술 SEO 신호 점검 중…",
+      "Lighthouse 성능 측정 중…",
+      "AI 준비도 요약 생성 중…",
+    ];
+    let i = 0;
+    setLoadingText(texts[0]);
+    const interval = setInterval(() => {
+      i++;
+      if (i < texts.length) setLoadingText(texts[i]);
+    }, 800);
+
+    // Fetch PSI in parallel with minimum wait
+    const [psiResponse] = await Promise.all([
+      fetchPsi(finalUrl),
+      new Promise(resolve => setTimeout(resolve, 2500)),
+    ]);
+
+    clearInterval(interval);
+
+    if (psiResponse.data) {
+      setPsiResult(psiResponse.data);
+    } else if (psiResponse.error) {
+      setPsiError(psiResponse.error);
+    }
+
+    setResult(getDemoResult(finalUrl));
+    setScreen("result");
+  };
 
   const handleAnalyze = () => {
     setUrlError("");
@@ -40,57 +77,17 @@ const Index = () => {
       setUrlError("URL 형식을 확인해 주세요. 예: https://example.com");
       return;
     }
-
-    setNormalizedUrl(finalUrl);
-    setScreen("loading");
-
-    const texts = [
-      "페이지 구조 확인 중…",
-      "기술 SEO 신호 점검 중…",
-      "AI 준비도 요약 생성 중…",
-    ];
-    let i = 0;
-    setLoadingText(texts[0]);
-    const interval = setInterval(() => {
-      i++;
-      if (i < texts.length) {
-        setLoadingText(texts[i]);
-      }
-    }, 800);
-
-    setTimeout(() => {
-      clearInterval(interval);
-      setResult(getDemoResult(finalUrl));
-      setScreen("result");
-    }, 2500);
+    runAnalysis(finalUrl);
   };
 
-  const handleEmailSubmit = () => {
-    setEmailError("");
-    setAgreeError("");
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
-      setEmailError("이메일 형식을 확인해 주세요.");
-      return;
+  const handleRetryPsi = () => {
+    if (normalizedUrl) {
+      setPsiError(null);
+      fetchPsi(normalizedUrl).then(res => {
+        if (res.data) setPsiResult(res.data);
+        else if (res.error) setPsiError(res.error);
+      });
     }
-    if (!agreed) {
-      setAgreeError("동의가 필요해요.");
-      return;
-    }
-    // Demo: simulate success (use localStorage to detect "duplicate")
-    const stored = JSON.parse(localStorage.getItem("demo_emails") || "[]") as string[];
-    if (stored.includes(email.trim().toLowerCase())) {
-      setEmailStatus("duplicate");
-      return;
-    }
-    stored.push(email.trim().toLowerCase());
-    localStorage.setItem("demo_emails", JSON.stringify(stored));
-    setEmailStatus("success");
-    setEmailSubmitted(true);
-  };
-
-  const scrollToEmailForm = () => {
-    emailFormRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -140,19 +137,25 @@ const Index = () => {
 
       {screen === "result" && result && (
         <main className="flex-1 py-8 sm:py-12 px-4">
-          <div className="container max-w-3xl mx-auto space-y-8">
-            {/* Header */}
+          <div className="container max-w-3xl mx-auto space-y-6">
+            {/* Header badge */}
             <div className="animate-fade-up text-center space-y-2">
               <span className="inline-block px-3 py-1 rounded-full text-xs font-medium gradient-subtle text-primary border border-primary/20">
                 데모 결과(샘플)
               </span>
-              <p className="text-sm text-muted-foreground">
-                분석 대상: <span className="font-medium text-foreground">{normalizedUrl}</span>
-              </p>
             </div>
 
-            {/* Scores */}
-            <div className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.1s" }}>
+            {/* Page thumbnail + URL */}
+            <PageThumbnail psi={psiResult} psiError={psiError} url={normalizedUrl} />
+
+            {/* PSI Error */}
+            {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
+
+            {/* Lighthouse real scores */}
+            {psiResult && <LighthouseScores psi={psiResult} />}
+
+            {/* Demo scores */}
+            <div className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.2s" }}>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 justify-items-center">
                 <ScoreRing score={result.overall} label="전체 점수" delay={200} />
                 <ScoreRing score={result.techSeo} label="기술 SEO" delay={400} />
@@ -165,7 +168,7 @@ const Index = () => {
             </div>
 
             {/* Summary Cards */}
-            <div className="grid gap-4 sm:grid-cols-3 animate-fade-up" style={{ animationDelay: "0.2s" }}>
+            <div className="grid gap-4 sm:grid-cols-3 animate-fade-up" style={{ animationDelay: "0.25s" }}>
               <SummaryCard
                 icon={<AlertTriangle className="w-5 h-5 text-score-warning" />}
                 title="핵심 이슈"
@@ -183,74 +186,18 @@ const Index = () => {
               />
             </div>
 
-            {/* Email Form */}
-            <div ref={emailFormRef} className="bg-card rounded-xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.3s" }}>
-              <h2 className="text-lg font-semibold text-foreground mb-1">업데이트/리포트 받기</h2>
-              <p className="text-sm text-muted-foreground mb-5">
-                추가로 출시되는 상품과 리포트 업데이트를 이메일로 보내드릴게요.
-              </p>
-
-              {emailStatus === "success" ? (
-                <div className="text-center py-4">
-                  <CheckCircle className="w-8 h-8 text-score-excellent mx-auto mb-2" />
-                  <p className="text-foreground font-medium">등록 완료!</p>
-                  <p className="text-sm text-muted-foreground">업데이트가 준비되면 이메일로 알려드릴게요.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => { setEmail(e.target.value); setEmailError(""); setEmailStatus(""); }}
-                      placeholder="you@company.com"
-                      className="w-full h-11 px-4 rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                    />
-                    {emailError && <p className="mt-1 text-xs text-destructive">{emailError}</p>}
-                  </div>
-                  <label className="flex items-start gap-2 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={agreed}
-                      onChange={(e) => { setAgreed(e.target.checked); setAgreeError(""); }}
-                      className="mt-0.5 accent-primary"
-                    />
-                    <span className="text-xs text-muted-foreground leading-relaxed">
-                      개인정보 수집 및 마케팅 수신에 동의합니다.
-                    </span>
-                  </label>
-                  {agreeError && <p className="text-xs text-destructive -mt-2">{agreeError}</p>}
-                  {emailStatus === "duplicate" && (
-                    <p className="text-xs text-score-warning">이미 등록된 이메일이에요. 업데이트를 기다려 주세요.</p>
-                  )}
-                  {emailStatus === "error" && (
-                    <p className="text-xs text-destructive">일시적으로 저장에 실패했어요. 잠시 후 다시 시도해 주세요.</p>
-                  )}
-                  <button
-                    onClick={handleEmailSubmit}
-                    className="w-full h-11 rounded-lg gradient-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"
-                  >
-                    이메일로 받기
-                  </button>
-                </div>
-              )}
+            {/* SEO / AEO / GEO Axis Cards */}
+            <div className="grid gap-4 sm:grid-cols-3 animate-fade-up" style={{ animationDelay: "0.3s" }}>
+              <AxisCard axis={result.seoAxis} />
+              <AxisCard axis={result.aeoAxis} />
+              <AxisCard axis={result.geoAxis} />
             </div>
 
-            {/* CTA after email submit */}
-            {emailSubmitted && (
-              <div className="bg-card rounded-xl border border-primary/20 shadow-elevated p-6 text-center animate-fade-up">
-                <p className="text-foreground font-medium mb-3">
-                  Search OS에서 더 깊게 개선안을 받아보세요 <span className="text-muted-foreground text-sm">(출시 준비 중)</span>
-                </p>
-                <button
-                  onClick={scrollToEmailForm}
-                  className="inline-flex items-center gap-2 px-5 h-10 rounded-lg border border-primary text-primary font-medium text-sm hover:bg-primary/5 transition-colors"
-                >
-                  Search OS 소식 받기
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
-            )}
+            {/* Verification Links */}
+            <VerificationLinks url={normalizedUrl} />
+
+            {/* Email Form */}
+            <EmailForm onSubmitted={() => {}} />
           </div>
         </main>
       )}
