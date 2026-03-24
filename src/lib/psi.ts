@@ -28,7 +28,7 @@ export async function fetchPsi(url: string, strategy: PsiStrategy = 'mobile'): P
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url, strategy }),
       signal: controller.signal,
     });
     clearTimeout(timeout);
