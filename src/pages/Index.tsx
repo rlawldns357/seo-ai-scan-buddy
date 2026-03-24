@@ -9,6 +9,7 @@ import EmailForm from "@/components/EmailForm";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import { getDemoResult, type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
+import { trackEvent } from "@/lib/analytics";
 import { AlertTriangle, CheckCircle, Lightbulb, Loader2 } from "lucide-react";
 
 type Screen = "home" | "loading" | "result";
@@ -28,6 +29,7 @@ const Index = () => {
     setScreen("loading");
     setPsiResult(null);
     setPsiError(null);
+    trackEvent("analysis_start", { url: finalUrl });
 
     const texts = [
       "페이지 구조 확인 중…",
@@ -52,8 +54,10 @@ const Index = () => {
 
     if (psiResponse.data) {
       setPsiResult(psiResponse.data);
+      trackEvent("analysis_complete", { url: finalUrl });
     } else if (psiResponse.error) {
       setPsiError(psiResponse.error);
+      trackEvent("analysis_fail", { url: finalUrl, error: psiResponse.error.type });
     }
 
     setResult(getDemoResult(finalUrl));
