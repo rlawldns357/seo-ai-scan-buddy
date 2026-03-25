@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
-import { Search, MessageCircle, Globe, Loader2 } from "lucide-react";
+import { Search, MessageCircle, Globe, Loader2, CheckCircle2 } from "lucide-react";
 import FaqSection from "@/components/FaqSection";
+
+export type AnalysisPhase = "crawling" | "ai-analyzing" | "psi-measuring" | "done";
+
+interface LoadingScreenProps {
+  completedPhases?: Set<AnalysisPhase>;
+}
 
 interface InsightCard {
   icon: React.ReactNode;
@@ -48,25 +54,20 @@ const insights: InsightCard[] = [
   },
 ];
 
-const loadingSteps = [
-  "페이지 구조 확인 중…",
-  "기술 SEO 신호 점검 중…",
-  "모바일 Lighthouse 측정 중…",
-  "데스크톱 Lighthouse 측정 중…",
-  "AI 준비도 요약 생성 중…",
+interface Step {
+  phase: AnalysisPhase;
+  label: string;
+}
+
+const steps: Step[] = [
+  { phase: "crawling", label: "페이지 크롤링 중…" },
+  { phase: "ai-analyzing", label: "AI 분석 중…" },
+  { phase: "psi-measuring", label: "Lighthouse 측정 중…" },
 ];
 
-export default function LoadingScreen() {
-  const [stepIndex, setStepIndex] = useState(0);
+export default function LoadingScreen({ completedPhases = new Set() }: LoadingScreenProps) {
   const [cardIndex, setCardIndex] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
-
-  useEffect(() => {
-    const stepTimer = setInterval(() => {
-      setStepIndex((prev) => Math.min(prev + 1, loadingSteps.length - 1));
-    }, 800);
-    return () => clearInterval(stepTimer);
-  }, []);
 
   useEffect(() => {
     const cardTimer = setInterval(() => {
@@ -80,28 +81,57 @@ export default function LoadingScreen() {
   }, []);
 
   const card = insights[cardIndex];
+  const allDone = steps.every((s) => completedPhases.has(s.phase));
 
   return (
     <main className="flex-1 flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center space-y-8">
-        {/* Spinner + step */}
-        <div className="space-y-4">
+        {/* Steps */}
+        <div className="space-y-3">
           <Loader2 className="w-10 h-10 text-primary mx-auto animate-spin-slow" />
-          <p className="text-sm text-muted-foreground font-medium">
-            {loadingSteps[stepIndex]}
-          </p>
-          {/* Progress dots */}
-          <div className="flex items-center justify-center gap-1.5">
-            {loadingSteps.map((_, i) => (
+          <div className="flex flex-col gap-2 items-start max-w-[260px] mx-auto mt-4">
+            {steps.map((step, i) => {
+              const done = completedPhases.has(step.phase);
+              // Active = not done, but previous steps are done (or first step)
+              const active = !done && (i === 0 || steps.slice(0, i).every((s) => completedPhases.has(s.phase)));
+              return (
+                <div
+                  key={step.phase}
+                  className={`flex items-center gap-2.5 transition-all duration-500 ${
+                    done
+                      ? "text-primary"
+                      : active
+                        ? "text-foreground"
+                        : "text-muted-foreground/40"
+                  }`}
+                >
+                  {done ? (
+                    <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                  ) : active ? (
+                    <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                  ) : (
+                    <div className="w-4 h-4 rounded-full border border-muted-foreground/20 shrink-0" />
+                  )}
+                  <span className={`text-sm font-medium ${active ? "animate-pulse" : ""}`}>
+                    {done ? step.label.replace("…", " ✓") : step.label}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Progress bar */}
+          <div className="w-full max-w-[260px] mx-auto mt-2">
+            <div className="h-1.5 rounded-full bg-muted-foreground/10 overflow-hidden">
               <div
-                key={i}
-                className={`h-1.5 rounded-full transition-all duration-500 ${
-                  i <= stepIndex
-                    ? "w-6 bg-primary"
-                    : "w-1.5 bg-muted-foreground/20"
-                }`}
+                className="h-full rounded-full bg-primary transition-all duration-700 ease-out"
+                style={{
+                  width: allDone
+                    ? "100%"
+                    : `${(Array.from(completedPhases).filter((p) => steps.some((s) => s.phase === p)).length / steps.length) * 85 + 5}%`,
+                }}
               />
-            ))}
+            </div>
           </div>
         </div>
 
@@ -127,7 +157,7 @@ export default function LoadingScreen() {
 
         {/* Subtle hint */}
         <p className="text-[11px] text-muted-foreground/60">
-          모바일 + 데스크톱 동시 측정 중이에요
+          모바일 + 데스크톱 동시 측정 · 보통 15~30초 소요
         </p>
 
         {/* FAQ */}
