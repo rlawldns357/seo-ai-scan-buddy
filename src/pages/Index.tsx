@@ -123,6 +123,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <WebSiteJsonLd />
+      <FAQPageJsonLd faqs={faqs} />
       <Navbar />
 
       {screen === "home" && (
