@@ -36,6 +36,11 @@ const DesignTest = () => (
         <ScoreDashboard result={result} />
         <VerificationLinks url={demoUrl} />
         <EmailForm onSubmitted={() => {}} />
+
+        {/* FAQ */}
+        <div className="max-w-lg mx-auto text-left">
+          <FaqSection />
+        </div>
       </div>
 
       <StickyBottomCTA />
