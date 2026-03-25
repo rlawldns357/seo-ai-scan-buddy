@@ -3,7 +3,7 @@ import { useState } from "react";
 import confetti from "canvas-confetti";
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
-import LoadingScreen from "@/components/LoadingScreen";
+import LoadingScreen, { type AnalysisPhase } from "@/components/LoadingScreen";
 import LighthouseScores from "@/components/LighthouseScores";
 import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
