@@ -426,6 +426,15 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
             )}
           </div>
         )}
+        <button
+          onClick={() => {
+            document.getElementById("email-form-section")?.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
+        >
+          맞춤 개선 리포트 받기
+          <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
       {/* Mobile: card + inline detail for each axis */}
