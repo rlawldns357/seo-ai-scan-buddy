@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { Loader2, Zap } from "lucide-react";
 import confetti from "canvas-confetti";
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
@@ -36,6 +36,11 @@ const Index = () => {
   const [psiError, setPsiError] = useState<PsiError | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
+  // Skip Lighthouse toggle
+  const [skipLighthouse, setSkipLighthouse] = useState(false);
+  const [psiLazyLoading, setPsiLazyLoading] = useState(false);
+  const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
+
   // Subpage warning state
   const [subpageWarning, setSubpageWarning] = useState<{ inputUrl: string; rootUrl: string } | null>(null);
 
@@ -61,19 +66,22 @@ const Index = () => {
     setPsiError(null);
     setAnalyzeError(null);
     setCompletedPhases(new Set());
-    trackEvent("analysis_start", { url: finalUrl });
+    setLighthouseSkipped(skipLighthouse);
+    trackEvent("analysis_start", { url: finalUrl, skipLighthouse });
 
     const addPhase = (phase: AnalysisPhase) =>
       setCompletedPhases((prev) => new Set([...prev, phase]));
 
     // Run PSI and Firecrawl+AI analysis in parallel
-    const psiPromise = Promise.all([
-      fetchPsi(finalUrl, 'mobile'),
-      fetchPsi(finalUrl, 'desktop'),
-    ]).then((res) => {
-      addPhase("psi-measuring");
-      return res;
-    });
+    const psiPromise = skipLighthouse
+      ? Promise.resolve([{ data: null, error: undefined }, { data: null, error: undefined }] as const)
+      : Promise.all([
+          fetchPsi(finalUrl, 'mobile'),
+          fetchPsi(finalUrl, 'desktop'),
+        ]).then((res) => {
+          addPhase("psi-measuring");
+          return res;
+        });
 
     const analyzePromise = analyzeSite(finalUrl).then((res) => {
       addPhase("crawling");
@@ -81,7 +89,8 @@ const Index = () => {
       return res;
     });
 
-    const [[mobileRes, desktopRes], analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
+    const [psiResults, analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
+    const [mobileRes, desktopRes] = psiResults;
 
     if (mobileRes.data) setPsiMobile(mobileRes.data);
     if (desktopRes.data) setPsiDesktop(desktopRes.data);
@@ -146,6 +155,7 @@ const Index = () => {
   const handleRetryPsi = () => {
     if (normalizedUrl) {
       setPsiError(null);
+      setPsiLazyLoading(true);
       Promise.all([
         fetchPsi(normalizedUrl, 'mobile'),
         fetchPsi(normalizedUrl, 'desktop'),
@@ -154,6 +164,8 @@ const Index = () => {
         if (desktopRes.data) setPsiDesktop(desktopRes.data);
         const err = mobileRes.error || desktopRes.error;
         if (err && !mobileRes.data && !desktopRes.data) setPsiError(err);
+        setPsiLazyLoading(false);
+        setLighthouseSkipped(false);
       });
     }
   };
@@ -195,7 +207,23 @@ const Index = () => {
                 무료로 분석하기
               </button>
             </div>
-            <p className="text-xs text-muted-foreground mt-4 font-medium">모바일 + 데스크톱 동시 측정 · 10초 완료</p>
+            <label className="flex items-center gap-2 justify-center mt-3 cursor-pointer select-none group">
+              <input
+                type="checkbox"
+                checked={skipLighthouse}
+                onChange={(e) => setSkipLighthouse(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-4 h-4 rounded border border-muted-foreground/30 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+                {skipLighthouse && <Zap className="w-3 h-3 text-primary-foreground" />}
+              </div>
+              <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                ⚡ 빠른 분석 <span className="text-muted-foreground/60">(Lighthouse 건너뛰기)</span>
+              </span>
+            </label>
+            <p className="text-xs text-muted-foreground mt-2 font-medium">
+              {skipLighthouse ? "AI 분석만 실행 · 약 10초 완료" : "모바일 + 데스크톱 동시 측정 · 약 30초 소요"}
+            </p>
             {urlError && (
               <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
             )}
@@ -231,7 +259,7 @@ const Index = () => {
         </main>
       )}
 
-      {screen === "loading" && <LoadingScreen completedPhases={completedPhases} />}
+      {screen === "loading" && <LoadingScreen completedPhases={completedPhases} skipLighthouse={lighthouseSkipped} />}
 
       {screen === "result" && (
         <main className="flex-1 py-8 sm:py-12 px-4 pb-24">
@@ -246,8 +274,33 @@ const Index = () => {
             {/* PSI Error */}
             {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
 
-            {/* Lighthouse real scores */}
+            {/* Lighthouse real scores or lazy load button */}
             {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
+            {lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && (
+              <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  Lighthouse 성능 측정을 건너뛰었어요
+                </p>
+                <button
+                  onClick={handleRetryPsi}
+                  disabled={psiLazyLoading}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
+                >
+                  {psiLazyLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      측정 중…
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-4 h-4" />
+                      Lighthouse 측정 추가하기
+                    </>
+                  )}
+                </button>
+                <p className="text-[11px] text-muted-foreground/60">모바일 + 데스크톱 · 약 20~30초 소요</p>
+              </div>
+            )}
 
             {/* Analyze Error */}
             {analyzeError && (
