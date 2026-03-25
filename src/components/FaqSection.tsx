@@ -36,23 +36,23 @@ export default function FaqSection({ compact = false }: FaqSectionProps) {
   const items = compact ? faqs.slice(0, 3) : faqs;
 
   return (
-    <section className={compact ? "" : "mt-12"}>
+    <section className={compact ? "" : "mt-8"}>
       {!compact && (
-        <h2 className="text-lg font-bold text-foreground text-center mb-5">
+        <h2 className="text-xs font-medium text-muted-foreground/60 text-center mb-4 uppercase tracking-widest">
           자주 묻는 질문
         </h2>
       )}
-      <Accordion type="single" collapsible className="w-full space-y-2">
+      <Accordion type="single" collapsible className="w-full space-y-1.5">
         {items.map((faq, i) => (
           <AccordionItem
             key={i}
             value={`faq-${i}`}
-            className="border border-border rounded-xl px-4 bg-card/60 backdrop-blur-sm"
+            className="border-0 border-b border-border/50 px-1"
           >
-            <AccordionTrigger className="text-sm font-semibold text-foreground hover:no-underline py-3">
+            <AccordionTrigger className="text-xs font-medium text-muted-foreground hover:text-foreground hover:no-underline py-2.5">
               {faq.q}
             </AccordionTrigger>
-            <AccordionContent className="text-xs text-muted-foreground leading-relaxed pb-3">
+            <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
               {faq.a}
             </AccordionContent>
           </AccordionItem>
