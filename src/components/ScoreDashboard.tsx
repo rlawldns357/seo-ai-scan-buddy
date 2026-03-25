@@ -413,16 +413,34 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
         {(critical > 0 || recommended > 0) && (
           <div className="flex items-center justify-center gap-3 flex-wrap">
             {critical > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
+              <button
+                onClick={() => {
+                  const criticalAxis = axes.find(a => a.score < 40);
+                  if (criticalAxis) {
+                    setSelected(criticalAxis.key);
+                    setTimeout(() => document.getElementById(`detail-${criticalAxis.key}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+                  }
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/10 text-score-poor border border-score-poor/20 hover:bg-score-poor/20 transition-colors cursor-pointer"
+              >
                 <AlertCircle className="w-3.5 h-3.5" />
                 긴급 수정 {critical}개
-              </span>
+              </button>
             )}
             {recommended > 0 && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20">
+              <button
+                onClick={() => {
+                  const recAxis = axes.find(a => a.score >= 40 && a.score < 75);
+                  if (recAxis) {
+                    setSelected(recAxis.key);
+                    setTimeout(() => document.getElementById(`detail-${recAxis.key}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+                  }
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20 hover:bg-score-warning/20 transition-colors cursor-pointer"
+              >
                 <AlertTriangle className="w-3.5 h-3.5" />
                 권장 개선 {recommended}개
-              </span>
+              </button>
             )}
             <button
               onClick={() => {
@@ -430,8 +448,8 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
               }}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
             >
+              <Search className="w-3.5 h-3.5" />
               개선하기
-              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </div>
         )}
