@@ -231,7 +231,7 @@ const Index = () => {
         </main>
       )}
 
-      {screen === "loading" && <LoadingScreen />}
+      {screen === "loading" && <LoadingScreen completedPhases={completedPhases} />}
 
       {screen === "result" && (
         <main className="flex-1 py-8 sm:py-12 px-4 pb-24">
