@@ -150,7 +150,7 @@ const Index = () => {
               />
               <button
                 onClick={handleAnalyze}
-                className="h-10 sm:h-14 px-6 sm:px-8 rounded-xl sm:rounded-2xl gradient-primary text-primary-foreground font-bold text-sm sm:text-base hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="h-12 sm:h-[52px] px-6 sm:px-8 rounded-xl sm:rounded-2xl gradient-primary text-primary-foreground font-semibold text-sm sm:text-base hover:opacity-90 transition-opacity whitespace-nowrap"
               >
                 무료로 분석하기
               </button>
