@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
 import { CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
 
 interface EmailFormProps {
@@ -12,13 +13,15 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
   const [agreed, setAgreed] = useState(false);
   const [agreeError, setAgreeError] = useState("");
   const [emailStatus, setEmailStatus] = useState<"" | "success" | "duplicate" | "error">("");
+  const [loading, setLoading] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     setEmailError("");
     setAgreeError("");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) {
+    const trimmed = email.trim().toLowerCase();
+    if (!emailRegex.test(trimmed)) {
       setEmailError("이메일 형식을 확인해 주세요.");
       return;
     }
@@ -26,17 +29,32 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
       setAgreeError("동의가 필요해요.");
       return;
     }
-    const stored = JSON.parse(localStorage.getItem("demo_emails") || "[]") as string[];
-    if (stored.includes(email.trim().toLowerCase())) {
-      setEmailStatus("duplicate");
-      trackEvent("email_submit_duplicate", { email: email.trim().toLowerCase() });
-      return;
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.from("email_leads").insert({
+        email: trimmed,
+        source: "result_form",
+      });
+
+      if (error) {
+        if (error.code === "23505") {
+          setEmailStatus("duplicate");
+          trackEvent("email_submit_duplicate", { email: trimmed });
+        } else {
+          setEmailStatus("error");
+          trackEvent("email_submit_fail", { email: trimmed, reason: error.message });
+        }
+      } else {
+        setEmailStatus("success");
+        trackEvent("email_submit_success", { email: trimmed });
+        onSubmitted();
+      }
+    } catch {
+      setEmailStatus("error");
+    } finally {
+      setLoading(false);
     }
-    stored.push(email.trim().toLowerCase());
-    localStorage.setItem("demo_emails", JSON.stringify(stored));
-    setEmailStatus("success");
-    trackEvent("email_submit_success", { email: email.trim().toLowerCase() });
-    onSubmitted();
   };
 
   return (
@@ -83,9 +101,10 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
           )}
           <button
             onClick={handleSubmit}
-            className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
+            disabled={loading}
+            className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
-            이메일로 받기
+            {loading ? "등록 중..." : "이메일로 받기"}
           </button>
         </div>
       )}

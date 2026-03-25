@@ -1,22 +1,32 @@
 import { useState } from "react";
 import { Search, CheckCircle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
 
 export default function StickyBottomCTA() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "success">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmed = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return;
 
-    const stored = JSON.parse(localStorage.getItem("demo_emails") || "[]") as string[];
-    if (!stored.includes(trimmed)) {
-      stored.push(trimmed);
-      localStorage.setItem("demo_emails", JSON.stringify(stored));
+    setStatus("loading");
+    try {
+      const { error } = await supabase.from("email_leads").insert({
+        email: trimmed,
+        source: "sticky_cta",
+      });
+
+      if (!error || error.code === "23505") {
+        setStatus("success");
+        trackEvent("sticky_email_submit", { email: trimmed });
+      } else {
+        setStatus("idle");
+      }
+    } catch {
+      setStatus("idle");
     }
-    setStatus("success");
-    trackEvent("sticky_email_submit", { email: trimmed });
   };
 
   if (status === "success") {
@@ -33,7 +43,6 @@ export default function StickyBottomCTA() {
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40 bg-card border-t border-border">
       <div className="container max-w-4xl mx-auto flex items-center gap-4 px-4 py-3">
-        {/* Logo + description (desktop) */}
         <div className="hidden sm:flex items-center gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <div className="gradient-primary rounded-lg p-1.5">
@@ -47,7 +56,6 @@ export default function StickyBottomCTA() {
           </p>
         </div>
 
-        {/* Email input + button */}
         <div className="flex-1 flex gap-2 justify-end">
           <input
             type="email"
@@ -59,9 +67,10 @@ export default function StickyBottomCTA() {
           />
           <button
             onClick={handleSubmit}
-            className="shrink-0 h-9 px-4 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+            disabled={status === "loading"}
+            className="shrink-0 h-9 px-4 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-50"
           >
-            알림 받기
+            {status === "loading" ? "..." : "알림 받기"}
           </button>
         </div>
       </div>
