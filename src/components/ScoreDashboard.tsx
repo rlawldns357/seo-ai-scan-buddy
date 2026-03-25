@@ -339,11 +339,11 @@ function InlineCTA() {
       </div>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <button className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
-          우선 개선 과제 받기
+          점수 올리는 우선순위 보기
           <ArrowRight className="w-4 h-4" />
         </button>
         <button className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors">
-          지금 가장 큰 문제 진단 받기
+          내 점수 깎는 핵심 원인 보기
         </button>
       </div>
     </div>
