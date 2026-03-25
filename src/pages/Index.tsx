@@ -39,6 +39,9 @@ const Index = () => {
   // Subpage warning state
   const [subpageWarning, setSubpageWarning] = useState<{ inputUrl: string; rootUrl: string } | null>(null);
 
+  // Loading phases
+  const [completedPhases, setCompletedPhases] = useState<Set<AnalysisPhase>>(new Set());
+
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
 
