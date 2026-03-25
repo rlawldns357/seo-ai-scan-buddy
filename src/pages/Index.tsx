@@ -100,7 +100,7 @@ const Index = () => {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     setUrlError("");
     setSubpageWarning(null);
 
@@ -108,6 +108,13 @@ const Index = () => {
 
     if (!validation.isValid) {
       setUrlError(validation.errorMessage || "URL을 확인해 주세요.");
+      return;
+    }
+
+    // Check rate limit before proceeding
+    const usage = await checkRateLimit();
+    if (!usage.allowed) {
+      setRateLimit(usage);
       return;
     }
 
