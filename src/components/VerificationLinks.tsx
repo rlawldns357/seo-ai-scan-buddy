@@ -55,9 +55,13 @@ export default function VerificationLinks({ url }: VerificationLinksProps) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="bg-card rounded-xl shadow-card p-5 animate-fade-up" style={{ animationDelay: '0.35s' }}>
-        <h3 className="text-sm font-semibold text-foreground mb-3">🔗 외부 도구에서 확인하기</h3>
-        <div className="flex flex-wrap gap-2">
+      <div className="bg-card rounded-2xl shadow-card border border-border/60 p-6 animate-fade-up" style={{ animationDelay: '0.35s' }}>
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="text-lg">🔗</span>
+          <h3 className="text-base font-bold text-foreground">외부 도구에서 직접 확인하기</h3>
+        </div>
+        <p className="text-xs text-muted-foreground mb-4">분석 결과를 외부 도구에서 교차 검증해 보세요.</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
           {links.map((link) => (
             <Tooltip key={link.label}>
               <TooltipTrigger asChild>
@@ -65,10 +69,10 @@ export default function VerificationLinks({ url }: VerificationLinksProps) {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary/30 transition-colors"
+                  className="flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl border border-border bg-muted/30 text-sm font-medium text-muted-foreground hover:text-foreground hover:border-primary/40 hover:bg-primary/5 transition-all"
                 >
                   {link.label}
-                  <ExternalLink className="w-3 h-3" />
+                  <ExternalLink className="w-3.5 h-3.5 shrink-0" />
                 </a>
               </TooltipTrigger>
               <TooltipContent side="bottom" className="max-w-[220px] text-xs">
@@ -77,7 +81,7 @@ export default function VerificationLinks({ url }: VerificationLinksProps) {
             </Tooltip>
           ))}
         </div>
-        <p className="text-[10px] text-muted-foreground mt-2">
+        <p className="text-[10px] text-muted-foreground mt-3">
           위 링크는 외부 도구로 연결됩니다. 결과의 책임은 해당 서비스에 있어요.
         </p>
       </div>
