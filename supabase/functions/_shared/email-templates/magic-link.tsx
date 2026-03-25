@@ -40,6 +40,9 @@ export const MagicLinkEmail = ({
       </Container>
     </Body>
   </Html>
+)
+
+export default MagicLinkEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Noto Sans KR', Arial, sans-serif" }
 const container = { padding: '20px 25px' }

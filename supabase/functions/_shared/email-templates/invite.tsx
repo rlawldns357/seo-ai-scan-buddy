@@ -46,6 +46,9 @@ export const InviteEmail = ({
       </Container>
     </Body>
   </Html>
+)
+
+export default InviteEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Noto Sans KR', Arial, sans-serif" }
 const container = { padding: '20px 25px' }

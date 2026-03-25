@@ -40,6 +40,9 @@ export const RecoveryEmail = ({
       </Container>
     </Body>
   </Html>
+)
+
+export default RecoveryEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Noto Sans KR', Arial, sans-serif" }
 const container = { padding: '20px 25px' }

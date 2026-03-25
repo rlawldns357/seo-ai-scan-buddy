@@ -55,6 +55,9 @@ export const SignupEmail = ({
       </Container>
     </Body>
   </Html>
+)
+
+export default SignupEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Noto Sans KR', Arial, sans-serif" }
 const container = { padding: '20px 25px' }

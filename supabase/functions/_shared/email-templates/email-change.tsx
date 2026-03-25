@@ -51,6 +51,9 @@ export const EmailChangeEmail = ({
       </Container>
     </Body>
   </Html>
+)
+
+export default EmailChangeEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Noto Sans KR', Arial, sans-serif" }
 const container = { padding: '20px 25px' }

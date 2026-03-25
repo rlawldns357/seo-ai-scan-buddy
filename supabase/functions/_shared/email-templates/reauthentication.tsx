@@ -33,6 +33,8 @@ export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => 
   </Html>
 )
 
+export default ReauthenticationEmail
+
 const main = { backgroundColor: '#ffffff', fontFamily: "'Noto Sans KR', Arial, sans-serif" }
 const container = { padding: '20px 25px' }
 const h1 = { fontSize: '22px', fontWeight: 'bold' as const, color: 'hsl(220, 15%, 13%)', margin: '0 0 20px' }
