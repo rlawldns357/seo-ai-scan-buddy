@@ -52,6 +52,7 @@ const Index = () => {
     setRateLimit(usage);
 
     setNormalizedUrl(finalUrl);
+    setScreen("loading");
     setPsiMobile(null);
     setPsiDesktop(null);
     setPsiError(null);
