@@ -467,7 +467,9 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
               onClick={() => setSelected(selected === key ? null : key)}
             />
             {selected === key && (
-              <DetailPanel axis={axis} score={score} />
+              <div id={`detail-${key}`}>
+                <DetailPanel axis={axis} score={score} />
+              </div>
             )}
           </div>
         ))}
@@ -488,7 +490,9 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
           ))}
         </div>
         {selectedEntry && (
-          <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+          <div id={`detail-${selected}`}>
+            <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+          </div>
         )}
       </div>
 
