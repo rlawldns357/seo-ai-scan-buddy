@@ -43,8 +43,15 @@ const Index = () => {
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
 
   const runAnalysis = async (finalUrl: string) => {
+    // Increment usage before running
+    const usage = await incrementUsage();
+    if (!usage.allowed) {
+      setRateLimit(usage);
+      return;
+    }
+    setRateLimit(usage);
+
     setNormalizedUrl(finalUrl);
-    setScreen("loading");
     setPsiMobile(null);
     setPsiDesktop(null);
     setPsiError(null);
