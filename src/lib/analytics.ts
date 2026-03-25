@@ -4,6 +4,7 @@ type EventName =
   | "analysis_start"
   | "analysis_complete"
   | "analysis_fail"
+  | "analyze_fail"
   | "email_submit_success"
   | "email_submit_duplicate"
   | "email_submit_fail"
