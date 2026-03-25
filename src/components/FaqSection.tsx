@@ -5,7 +5,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const faqs = [
+export const faqs = [
   {
     q: "SEO, AEO, GEO가 뭔가요?",
     a: "SEO(검색엔진 최적화)는 Google·Naver 등에서 상위 노출을 위한 기술이고, AEO(AI 답변 최적화)는 ChatGPT·Perplexity 같은 AI가 내 콘텐츠를 인용하도록 최적화하는 것, GEO(생성형 검색 최적화)는 Google SGE 등 AI 검색 결과에 출처로 선택되도록 하는 전략입니다.",
