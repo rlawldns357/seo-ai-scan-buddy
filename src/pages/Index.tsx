@@ -177,6 +177,10 @@ const Index = () => {
             >
               🎨 디자인 테스트 모드
             </button>
+
+            <div className="mt-10 max-w-lg mx-auto text-left">
+              <FaqSection />
+            </div>
           </div>
         </main>
       )}
