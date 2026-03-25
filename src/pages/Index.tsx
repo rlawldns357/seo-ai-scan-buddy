@@ -10,8 +10,9 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
-import { getDemoResult, type DemoResult } from "@/data/demoResults";
+import { type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
+import { analyzeSite } from "@/lib/analyze";
 import { trackEvent } from "@/lib/analytics";
 
 type Screen = "home" | "loading" | "result";
