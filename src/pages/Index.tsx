@@ -28,6 +28,7 @@ const Index = () => {
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
@@ -35,11 +36,14 @@ const Index = () => {
     setPsiMobile(null);
     setPsiDesktop(null);
     setPsiError(null);
+    setAnalyzeError(null);
     trackEvent("analysis_start", { url: finalUrl });
 
-    const [mobileRes, desktopRes] = await Promise.all([
+    // Run PSI and Firecrawl analysis in parallel
+    const [mobileRes, desktopRes, analyzeRes] = await Promise.all([
       fetchPsi(finalUrl, 'mobile'),
       fetchPsi(finalUrl, 'desktop'),
+      analyzeSite(finalUrl),
     ]);
 
     if (mobileRes.data) setPsiMobile(mobileRes.data);
@@ -55,17 +59,25 @@ const Index = () => {
       }
     }
 
-    setResult(getDemoResult(finalUrl));
+    if (analyzeRes.data) {
+      setResult(analyzeRes.data);
+    } else {
+      setAnalyzeError(analyzeRes.error?.message || "분석에 실패했어요.");
+      trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
+    }
+
     setScreen("result");
 
-    const end = Date.now() + 800;
-    const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#34d399', '#fbbf24'];
-    const frame = () => {
-      confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
-      confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    };
-    frame();
+    if (analyzeRes.data) {
+      const end = Date.now() + 800;
+      const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#34d399', '#fbbf24'];
+      const frame = () => {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    }
   };
 
   const handleAnalyze = () => {
