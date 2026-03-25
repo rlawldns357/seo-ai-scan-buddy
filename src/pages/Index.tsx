@@ -11,6 +11,7 @@ import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import SubpageWarning from "@/components/SubpageWarning";
+import RateLimitBanner from "@/components/RateLimitBanner";
 import FaqSection, { faqs } from "@/components/FaqSection";
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
@@ -18,6 +19,7 @@ import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { analyzeSite } from "@/lib/analyze";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
+import { checkRateLimit, incrementUsage, type RateLimitStatus } from "@/lib/rateLimit";
 
 type Screen = "home" | "loading" | "result";
 
