@@ -11,7 +11,8 @@ import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import SubpageWarning from "@/components/SubpageWarning";
-import FaqSection from "@/components/FaqSection";
+import FaqSection, { faqs } from "@/components/FaqSection";
+import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { analyzeSite } from "@/lib/analyze";
@@ -122,6 +123,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <WebSiteJsonLd />
+      <FAQPageJsonLd faqs={faqs} />
       <Navbar />
 
       {screen === "home" && (
