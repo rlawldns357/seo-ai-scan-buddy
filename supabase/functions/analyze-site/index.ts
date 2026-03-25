@@ -197,7 +197,7 @@ ${truncatedMarkdown}
 ${links.slice(0, 20).join("\n")}
 `;
 
-    const aiRes = await fetch("https://ai.lovable.dev/api/generate", {
+    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${lovableApiKey}`,
@@ -209,7 +209,6 @@ ${links.slice(0, 20).join("\n")}
           { role: "system", content: ANALYSIS_PROMPT },
           { role: "user", content: analysisInput },
         ],
-        temperature: 0.3,
       }),
     });
 
