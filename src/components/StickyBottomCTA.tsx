@@ -61,8 +61,8 @@ export default function StickyBottomCTA() {
             <span className="text-sm font-bold text-foreground">Search OS</span>
           </div>
           <div className="w-px h-6 bg-border" />
-          <p className="text-xs text-muted-foreground leading-tight">
-            정식 출시되면 가장 먼저<br />알려드릴게요
+          <p className="text-xs text-muted-foreground">
+            정식 출시되면 가장 먼저 알려드릴게요
           </p>
         </div>
 
