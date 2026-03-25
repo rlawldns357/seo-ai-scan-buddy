@@ -277,28 +277,24 @@ const Index = () => {
             {/* Lighthouse real scores or lazy load button */}
             {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
             {lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && (
-              <div className="rounded-2xl border border-border bg-card p-6 text-center space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Lighthouse 성능 측정을 건너뛰었어요
-                </p>
+              <div className="flex justify-center">
                 <button
                   onClick={handleRetryPsi}
                   disabled={psiLazyLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-muted/50 transition-colors disabled:opacity-60"
                 >
                   {psiLazyLoading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      측정 중…
+                      Lighthouse 측정 중…
                     </>
                   ) : (
                     <>
                       <Zap className="w-4 h-4" />
-                      Lighthouse 측정 추가하기
+                      Lighthouse 성능도 측정하기
                     </>
                   )}
                 </button>
-                <p className="text-[11px] text-muted-foreground/60">모바일 + 데스크톱 · 약 20~30초 소요</p>
               </div>
             )}
 
