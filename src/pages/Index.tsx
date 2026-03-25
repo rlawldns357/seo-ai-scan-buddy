@@ -32,6 +32,9 @@ const Index = () => {
   const [psiError, setPsiError] = useState<PsiError | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
+  // Subpage warning state
+  const [subpageWarning, setSubpageWarning] = useState<{ inputUrl: string; rootUrl: string } | null>(null);
+
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
     setScreen("loading");
