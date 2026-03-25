@@ -6,6 +6,7 @@ export type AnalysisPhase = "crawling" | "ai-analyzing" | "psi-measuring" | "don
 
 interface LoadingScreenProps {
   completedPhases?: Set<AnalysisPhase>;
+  skipLighthouse?: boolean;
 }
 
 interface InsightCard {

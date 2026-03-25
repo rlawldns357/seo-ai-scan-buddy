@@ -36,6 +36,11 @@ const Index = () => {
   const [psiError, setPsiError] = useState<PsiError | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
+  // Skip Lighthouse toggle
+  const [skipLighthouse, setSkipLighthouse] = useState(false);
+  const [psiLazyLoading, setPsiLazyLoading] = useState(false);
+  const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
+
   // Subpage warning state
   const [subpageWarning, setSubpageWarning] = useState<{ inputUrl: string; rootUrl: string } | null>(null);
 
