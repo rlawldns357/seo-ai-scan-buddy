@@ -344,7 +344,7 @@ function InlineCTA() {
             놓치고 있는 검색 기회, 확인하셨나요?
           </h3>
           <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
-            위 분석은 무료 요약입니다. 더 구체적인 개선 우선순위와 실행 가이드를 받아보세요.
+            위 분석은 베타 기간 무료 요약입니다. 더 구체적인 개선 우선순위와 실행 가이드를 받아보세요.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
