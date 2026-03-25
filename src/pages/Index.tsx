@@ -173,14 +173,7 @@ const Index = () => {
                 }}
               />
             )}
-            <button
-              onClick={() => navigate("/design-test")}
-              className="mt-8 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-            >
-              🎨 디자인 테스트 모드
-            </button>
-
-            <div className="mt-10 max-w-lg mx-auto text-left">
+            <div className="mt-14 max-w-lg mx-auto text-left">
               <FaqSection />
             </div>
           </div>
