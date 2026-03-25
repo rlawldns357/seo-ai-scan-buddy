@@ -23,8 +23,12 @@ export default function VerificationLinks({ url }: VerificationLinksProps) {
       href: `https://search.google.com/test/rich-results?url=${encodeURIComponent(url)}`,
     },
     {
-      label: '모바일 친화성 테스트',
-      href: `https://search.google.com/test/mobile-friendly?url=${encodeURIComponent(url)}`,
+      label: 'PageSpeed Insights',
+      href: `https://pagespeed.web.dev/analysis?url=${encodeURIComponent(url)}`,
+    },
+    {
+      label: 'OG 태그 미리보기',
+      href: `https://www.opengraph.xyz/${encodeURIComponent(url)}`,
     },
   ];
 
