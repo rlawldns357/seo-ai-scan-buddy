@@ -48,7 +48,7 @@ export default function VerificationLinks({ url }: VerificationLinksProps) {
     },
     {
       label: '네이버 사이트 검증',
-      href: `https://searchadvisor.naver.com/tools/sitecheck?url=${encodeURIComponent(formattedUrl)}`,
+      href: `https://searchadvisor.naver.com/tools/sitecheck?url=${encodeURIComponent(url)}`,
       desc: '네이버 서치어드바이저에서 사이트의 검색 등록 상태와 robots.txt 등을 확인합니다.',
     },
   ];
