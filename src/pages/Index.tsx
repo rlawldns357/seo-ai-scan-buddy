@@ -146,7 +146,7 @@ const Index = () => {
                 onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                 placeholder="https://example.com"
-                className="flex-1 h-14 sm:h-12 px-4 sm:px-5 rounded-xl sm:rounded-2xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-base sm:text-base transition-all"
+                className="w-full sm:flex-1 h-14 sm:h-12 px-4 sm:px-5 rounded-xl sm:rounded-2xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-base sm:text-base transition-all"
               />
               <button
                 onClick={handleAnalyze}
