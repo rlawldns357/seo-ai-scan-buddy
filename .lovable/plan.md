@@ -1,35 +1,39 @@
 
 
-## URL 검증 강화 + 하위 페이지 처리 구현
+## Lighthouse 건너뛰기 기능
 
-### 하위 페이지 처리 방식 설명
+### 변경 사항
 
-사용자가 `https://example.com/blog/post-1` 같은 하위 페이지를 입력하면:
-- **배너가 나타나서 선택지를 제공**합니다
-- "메인 페이지 분석하기" → URL을 `https://example.com`으로 자동 변경 후 분석
-- "이 페이지 분석하기" → 입력한 하위 페이지를 그대로 분석
-- SEO/AEO/GEO 분석은 보통 메인 페이지 기준이 더 정확하므로 메인을 추천하되, 강제하지 않음
+**1. Index.tsx — 빠른 분석 토글 + 분석 로직 분기**
+- `skipLighthouse` state 추가
+- 입력창 아래에 "⚡ 빠른 분석 (Lighthouse 건너뛰기)" 체크박스/토글 추가 — 작고 깔끔하게
+- `runAnalysis`에서 `skipLighthouse`가 true이면 PSI 호출을 건너뛰고 crawling + AI 분석만 실행
+- 결과 화면으로 넘어갈 때 `skipLighthouse` 상태를 유지
 
-### 구현 계획
+**2. Index.tsx — 결과 화면에 "Lighthouse 측정 추가" 버튼**
+- Lighthouse 데이터가 없을 때 (건너뛴 경우) LighthouseScores 자리에 "Lighthouse 측정 추가" 버튼 카드 표시
+- 클릭 시 `fetchPsi` 호출하여 mobile/desktop 데이터 로딩 → 완료되면 기존 LighthouseScores 컴포넌트로 교체
+- 로딩 중 상태 표시 (스피너)
 
-**1. `src/lib/urlValidation.ts` 생성**
-- `validateUrl(input)` 함수: 아래 검증 수행 후 결과 객체 반환
-  - 빈 값 → 에러
-  - `https://` 자동 추가 (기존 로직 이관)
-  - `ftp://`, `file://` 등 비지원 스킴 → 에러
-  - `localhost`, `127.0.0.1`, `192.168.*` 등 내부 주소 → 에러
-  - `.pdf`, `.jpg`, `.png`, `.zip` 등 파일 직링크 → 에러
-  - `new URL()` 파싱 실패 → 에러
-  - pathname이 `/` 가 아닌 경우 → `isSubpage: true` + `rootUrl` 제공
-- 반환: `{ isValid, finalUrl, isSubpage, rootUrl, errorMessage? }`
+**3. LoadingScreen.tsx — 빠른 분석 모드 대응**
+- `skipLighthouse` prop 추가
+- true일 경우 "Lighthouse 측정 중…" 단계를 표시하지 않음 (2단계만 표시)
+- 진행률 계산도 2단계 기준으로 조정
 
-**2. `src/components/SubpageWarning.tsx` 생성**
-- 인라인 배너 컴포넌트
-- 입력된 URL과 메인 도메인 표시
-- "메인 페이지 분석하기" / "이 페이지 그대로 분석하기" 두 버튼
+### 기술 상세
 
-**3. `src/pages/Index.tsx` 수정**
-- `handleAnalyze`의 기존 검증 로직을 `validateUrl()` 호출로 교체
-- 하위 페이지 감지 시 `showSubpageWarning` 상태로 배너 표시
-- 배너에서 선택 시 해당 URL로 `runAnalysis` 호출
+```text
+Index.tsx state 추가:
+  skipLighthouse: boolean (default false)
+  psiLoading: boolean (나중에 측정 버튼용)
+
+runAnalysis 분기:
+  if skipLighthouse → psiPromise = Promise.resolve([{data:null}, {data:null}])
+  else → 기존 로직
+
+결과 화면:
+  !psiMobile && !psiDesktop && !psiError
+    → "Lighthouse 성능 측정" 버튼 카드 렌더
+    → 클릭 시 psiLoading=true, fetchPsi 실행, 완료 시 setPsi + psiLoading=false
+```
 
