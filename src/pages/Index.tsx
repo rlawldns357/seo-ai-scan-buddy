@@ -11,6 +11,7 @@ import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import SubpageWarning from "@/components/SubpageWarning";
+import FaqSection from "@/components/FaqSection";
 import { type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { analyzeSite } from "@/lib/analyze";
