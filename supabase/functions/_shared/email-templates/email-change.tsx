@@ -27,32 +27,26 @@ export const EmailChangeEmail = ({
   newEmail,
   confirmationUrl,
 }: EmailChangeEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="ko" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for {siteName}</Preview>
+    <Preview>{siteName} 이메일 변경 확인</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email change</Heading>
+        <Heading style={h1}>이메일 변경 확인</Heading>
         <Text style={text}>
-          You requested to change your email address for {siteName} from{' '}
-          <Link href={`mailto:${email}`} style={link}>
-            {email}
-          </Link>{' '}
-          to{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>
-            {newEmail}
-          </Link>
-          .
+          {siteName}의 이메일 주소를{' '}
+          <Link href={`mailto:${email}`} style={link}>{email}</Link>에서{' '}
+          <Link href={`mailto:${newEmail}`} style={link}>{newEmail}</Link>
+          (으)로 변경하는 요청이 접수되었습니다.
         </Text>
         <Text style={text}>
-          Click the button below to confirm this change:
+          아래 버튼을 클릭하여 변경을 확인해 주세요.
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Confirm Email Change
+          이메일 변경 확인하기
         </Button>
         <Text style={footer}>
-          If you didn't request this change, please secure your account
-          immediately.
+          본인이 요청하지 않으셨다면 즉시 계정 보안을 확인해 주세요.
         </Text>
       </Container>
     </Body>

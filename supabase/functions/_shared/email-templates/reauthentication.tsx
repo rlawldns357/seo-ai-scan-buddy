@@ -17,17 +17,16 @@ interface ReauthenticationEmailProps {
 }
 
 export const ReauthenticationEmail = ({ token }: ReauthenticationEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="ko" dir="ltr">
     <Head />
-    <Preview>Your verification code</Preview>
+    <Preview>인증 코드</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm reauthentication</Heading>
-        <Text style={text}>Use the code below to confirm your identity:</Text>
+        <Heading style={h1}>본인 인증</Heading>
+        <Text style={text}>아래 코드를 입력하여 본인 확인을 완료해 주세요.</Text>
         <Text style={codeStyle}>{token}</Text>
         <Text style={footer}>
-          This code will expire shortly. If you didn't request this, you can
-          safely ignore this email.
+          이 코드는 곧 만료됩니다. 본인이 요청하지 않으셨다면 이 이메일을 무시하셔도 됩니다.
         </Text>
       </Container>
     </Body>
