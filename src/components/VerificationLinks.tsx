@@ -27,9 +27,9 @@ export default function VerificationLinks({ url }: VerificationLinksProps) {
       desc: '네이버 검색에 사이트가 등록되어 있는지 확인합니다.',
     },
     {
-      label: '구글 추가노출 확인',
+      label: '리치 결과 테스트',
       href: `https://search.google.com/test/rich-results?url=${encodeURIComponent(url)}`,
-      desc: '검색결과에 FAQ, 별점, 경로 같은 추가 정보가 표시될 수 있는지 확인합니다.',
+      desc: '구조화된 데이터(JSON-LD 등)가 올바른지, 리치 스니펫이 표시되는지 테스트합니다.',
     },
     {
       label: 'PageSpeed Insights',
