@@ -46,6 +46,11 @@ export default function VerificationLinks({ url }: VerificationLinksProps) {
       href: `https://developers.kakao.com/tool/debugger/sharing?url=${encodeURIComponent(url)}`,
       desc: '카카오톡 공유 시 표시되는 미리보기(제목·설명·이미지)를 확인하고 캐시를 초기화합니다.',
     },
+    {
+      label: '네이버 사이트 검증',
+      href: `https://searchadvisor.naver.com/tools/sitecheck?url=${encodeURIComponent(formattedUrl)}`,
+      desc: '네이버 서치어드바이저에서 사이트의 검색 등록 상태와 robots.txt 등을 확인합니다.',
+    },
   ];
 
   return (
