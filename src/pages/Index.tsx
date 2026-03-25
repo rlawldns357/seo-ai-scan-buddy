@@ -66,7 +66,8 @@ const Index = () => {
     setPsiError(null);
     setAnalyzeError(null);
     setCompletedPhases(new Set());
-    trackEvent("analysis_start", { url: finalUrl });
+    setLighthouseSkipped(skipLighthouse);
+    trackEvent("analysis_start", { url: finalUrl, skipLighthouse });
 
     const addPhase = (phase: AnalysisPhase) =>
       setCompletedPhases((prev) => new Set([...prev, phase]));
