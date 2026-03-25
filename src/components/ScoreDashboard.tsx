@@ -1,4 +1,5 @@
 import { useState } from "react";
+import LeadModal from "@/components/LeadModal";
 import { type DemoResult, type AxisAnalysis, type Improvement } from "@/data/demoResults";
 import SemiCircleGauge, { getGradeLabel, getGradeColorClass } from "@/components/SemiCircleGauge";
 import {
