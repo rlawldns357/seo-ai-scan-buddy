@@ -222,7 +222,8 @@ const Index = () => {
             <EmailForm onSubmitted={() => {}} />
 
             {/* FAQ */}
-            <FaqSection />
+            <FaqSection expanded />
+            <div className="h-24" />
           </div>
 
           <StickyBottomCTA />
