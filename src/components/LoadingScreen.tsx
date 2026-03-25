@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, MessageCircle, Globe, Loader2 } from "lucide-react";
+import FaqSection from "@/components/FaqSection";
 
 interface InsightCard {
   icon: React.ReactNode;
