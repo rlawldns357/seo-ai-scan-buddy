@@ -73,13 +73,15 @@ const Index = () => {
       setCompletedPhases((prev) => new Set([...prev, phase]));
 
     // Run PSI and Firecrawl+AI analysis in parallel
-    const psiPromise = Promise.all([
-      fetchPsi(finalUrl, 'mobile'),
-      fetchPsi(finalUrl, 'desktop'),
-    ]).then((res) => {
-      addPhase("psi-measuring");
-      return res;
-    });
+    const psiPromise = skipLighthouse
+      ? Promise.resolve([{ data: null, error: undefined }, { data: null, error: undefined }] as const)
+      : Promise.all([
+          fetchPsi(finalUrl, 'mobile'),
+          fetchPsi(finalUrl, 'desktop'),
+        ]).then((res) => {
+          addPhase("psi-measuring");
+          return res;
+        });
 
     const analyzePromise = analyzeSite(finalUrl).then((res) => {
       addPhase("crawling");
@@ -87,7 +89,8 @@ const Index = () => {
       return res;
     });
 
-    const [[mobileRes, desktopRes], analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
+    const [psiResults, analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
+    const [mobileRes, desktopRes] = psiResults;
 
     if (mobileRes.data) setPsiMobile(mobileRes.data);
     if (desktopRes.data) setPsiDesktop(desktopRes.data);
