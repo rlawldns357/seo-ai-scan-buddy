@@ -39,9 +39,7 @@ const DesignTest = () => (
         <EmailForm onSubmitted={() => {}} />
 
         {/* FAQ */}
-        <div className="max-w-lg mx-auto text-left">
-          <FaqSection />
-        </div>
+        <FaqSection />
       </div>
 
       <StickyBottomCTA />
