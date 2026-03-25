@@ -202,7 +202,7 @@ function SummaryCard({
       <div className={`flex items-center justify-center gap-1 py-2.5 border-t border-border text-[11px] font-semibold ${
         selected ? `${config.accent} ${config.headerBg}` : "text-muted-foreground"
       }`}>
-        {selected ? "상세 분석 보는 중" : "상세 분석 보기"}
+        {selected ? "원인 분석 보는 중" : "점수 깎는 원인 보기"}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
       </div>
     </button>
