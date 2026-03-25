@@ -11,12 +11,12 @@ const features = [
   {
     icon: BarChart3,
     title: "AEO 준비도",
-    desc: "ChatGPT, Perplexity 등 AI가 내 콘텐츠를 답변으로 인용할 수 있는지 분석합니다.",
+    desc: "ChatGPT, Perplexity, 뤼튼, 클로바X, 코파일럿, Gemini 등 AI가 내 콘텐츠를 답변으로 인용할 수 있는지 분석합니다.",
   },
   {
     icon: Shield,
     title: "GEO 가시성",
-    desc: "Google SGE 등 생성형 검색에서 출처로 선택될 준비가 되었는지 평가합니다.",
+    desc: "Google SGE, Naver Cue:, Bing Copilot 등 생성형 검색에서 출처로 선택될 준비가 되었는지 평가합니다.",
   },
   {
     icon: Zap,
