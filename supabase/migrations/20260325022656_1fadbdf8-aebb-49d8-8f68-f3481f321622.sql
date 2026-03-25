@@ -1,0 +1,1 @@
+DELETE FROM public.email_leads WHERE email = 'hello@apic.work';
