@@ -30,34 +30,54 @@ const faqs = [
 
 interface FaqSectionProps {
   compact?: boolean;
+  expanded?: boolean;
 }
 
-export default function FaqSection({ compact = false }: FaqSectionProps) {
+export default function FaqSection({ compact = false, expanded = false }: FaqSectionProps) {
   const items = compact ? faqs.slice(0, 3) : faqs;
 
   return (
     <section className={compact ? "" : "mt-10 mb-6"}>
       {!compact && (
-        <h2 className="text-sm font-bold text-foreground text-center mb-4 tracking-tight">
+        <h2 className={`text-center mb-4 tracking-tight ${expanded ? "text-sm font-bold text-foreground" : "text-xs font-medium text-muted-foreground/60 uppercase tracking-widest"}`}>
           자주 묻는 질문
         </h2>
       )}
-      <Accordion type="multiple" defaultValue={items.map((_, i) => `faq-${i}`)} className="w-full space-y-1.5">
-        {items.map((faq, i) => (
-          <AccordionItem
-            key={i}
-            value={`faq-${i}`}
-            className="border-0 border-b border-border/50 px-1"
-          >
-            <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-foreground hover:no-underline py-2.5">
-              {faq.q}
-            </AccordionTrigger>
-            <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
-              {faq.a}
-            </AccordionContent>
-          </AccordionItem>
-        ))}
-      </Accordion>
+      {expanded ? (
+        <Accordion type="multiple" defaultValue={items.map((_, i) => `faq-${i}`)} className="w-full space-y-1.5">
+          {items.map((faq, i) => (
+            <AccordionItem
+              key={i}
+              value={`faq-${i}`}
+              className="border-0 border-b border-border/50 px-1"
+            >
+              <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-foreground hover:no-underline py-2.5">
+                {faq.q}
+              </AccordionTrigger>
+              <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
+                {faq.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      ) : (
+        <Accordion type="single" collapsible className="w-full space-y-1.5">
+          {items.map((faq, i) => (
+            <AccordionItem
+              key={i}
+              value={`faq-${i}`}
+              className="border-0 border-b border-border/50 px-1"
+            >
+              <AccordionTrigger className="text-xs font-medium text-muted-foreground hover:text-foreground hover:no-underline py-2.5">
+                {faq.q}
+              </AccordionTrigger>
+              <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
+                {faq.a}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+      )}
     </section>
   );
 }
