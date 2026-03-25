@@ -5,6 +5,7 @@ import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
+import FaqSection from "@/components/FaqSection";
 import { getDemoResult } from "@/data/demoResults";
 import type { PsiResult } from "@/lib/psi";
 
