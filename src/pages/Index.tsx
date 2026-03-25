@@ -39,6 +39,9 @@ const Index = () => {
   // Subpage warning state
   const [subpageWarning, setSubpageWarning] = useState<{ inputUrl: string; rootUrl: string } | null>(null);
 
+  // Rate limit state
+  const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
+
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
     setScreen("loading");
