@@ -10,10 +10,12 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
+import SubpageWarning from "@/components/SubpageWarning";
 import { type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { analyzeSite } from "@/lib/analyze";
 import { trackEvent } from "@/lib/analytics";
+import { validateUrl } from "@/lib/urlValidation";
 
 type Screen = "home" | "loading" | "result";
 
