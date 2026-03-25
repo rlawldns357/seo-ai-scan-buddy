@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      analysis_usage: {
+        Row: {
+          created_at: string
+          email_unlocked: boolean
+          id: string
+          ip_address: string
+          updated_at: string
+          usage_count: number
+          used_date: string
+        }
+        Insert: {
+          created_at?: string
+          email_unlocked?: boolean
+          id?: string
+          ip_address: string
+          updated_at?: string
+          usage_count?: number
+          used_date?: string
+        }
+        Update: {
+          created_at?: string
+          email_unlocked?: boolean
+          id?: string
+          ip_address?: string
+          updated_at?: string
+          usage_count?: number
+          used_date?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string

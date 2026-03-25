@@ -11,6 +11,7 @@ import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import SubpageWarning from "@/components/SubpageWarning";
+import RateLimitBanner from "@/components/RateLimitBanner";
 import FaqSection, { faqs } from "@/components/FaqSection";
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
@@ -18,6 +19,7 @@ import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { analyzeSite } from "@/lib/analyze";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
+import { checkRateLimit, incrementUsage, type RateLimitStatus } from "@/lib/rateLimit";
 
 type Screen = "home" | "loading" | "result";
 
@@ -37,7 +39,18 @@ const Index = () => {
   // Subpage warning state
   const [subpageWarning, setSubpageWarning] = useState<{ inputUrl: string; rootUrl: string } | null>(null);
 
+  // Rate limit state
+  const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
+
   const runAnalysis = async (finalUrl: string) => {
+    // Increment usage before running
+    const usage = await incrementUsage();
+    if (!usage.allowed) {
+      setRateLimit(usage);
+      return;
+    }
+    setRateLimit(usage);
+
     setNormalizedUrl(finalUrl);
     setScreen("loading");
     setPsiMobile(null);
@@ -87,7 +100,7 @@ const Index = () => {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
     setUrlError("");
     setSubpageWarning(null);
 
@@ -95,6 +108,13 @@ const Index = () => {
 
     if (!validation.isValid) {
       setUrlError(validation.errorMessage || "URL을 확인해 주세요.");
+      return;
+    }
+
+    // Check rate limit before proceeding
+    const usage = await checkRateLimit();
+    if (!usage.allowed) {
+      setRateLimit(usage);
       return;
     }
 
@@ -173,6 +193,16 @@ const Index = () => {
                 onAnalyzeCurrent={() => {
                   setSubpageWarning(null);
                   runAnalysis(subpageWarning.inputUrl);
+                }}
+              />
+            )}
+            {rateLimit && !rateLimit.allowed && (
+              <RateLimitBanner
+                remaining={rateLimit.remaining}
+                emailUnlocked={rateLimit.emailUnlocked}
+                onUnlocked={async () => {
+                  const updated = await checkRateLimit();
+                  setRateLimit(updated);
                 }}
               />
             )}
