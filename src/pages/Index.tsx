@@ -3,7 +3,7 @@ import { useState } from "react";
 import confetti from "canvas-confetti";
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
-import LoadingScreen from "@/components/LoadingScreen";
+import LoadingScreen, { type AnalysisPhase } from "@/components/LoadingScreen";
 import LighthouseScores from "@/components/LighthouseScores";
 import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
@@ -39,6 +39,9 @@ const Index = () => {
   // Subpage warning state
   const [subpageWarning, setSubpageWarning] = useState<{ inputUrl: string; rootUrl: string } | null>(null);
 
+  // Loading phases
+  const [completedPhases, setCompletedPhases] = useState<Set<AnalysisPhase>>(new Set());
+
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
 
@@ -57,14 +60,28 @@ const Index = () => {
     setPsiDesktop(null);
     setPsiError(null);
     setAnalyzeError(null);
+    setCompletedPhases(new Set());
     trackEvent("analysis_start", { url: finalUrl });
 
-    // Run PSI and Firecrawl analysis in parallel
-    const [mobileRes, desktopRes, analyzeRes] = await Promise.all([
+    const addPhase = (phase: AnalysisPhase) =>
+      setCompletedPhases((prev) => new Set([...prev, phase]));
+
+    // Run PSI and Firecrawl+AI analysis in parallel
+    const psiPromise = Promise.all([
       fetchPsi(finalUrl, 'mobile'),
       fetchPsi(finalUrl, 'desktop'),
-      analyzeSite(finalUrl),
-    ]);
+    ]).then((res) => {
+      addPhase("psi-measuring");
+      return res;
+    });
+
+    const analyzePromise = analyzeSite(finalUrl).then((res) => {
+      addPhase("crawling");
+      addPhase("ai-analyzing");
+      return res;
+    });
+
+    const [[mobileRes, desktopRes], analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
 
     if (mobileRes.data) setPsiMobile(mobileRes.data);
     if (desktopRes.data) setPsiDesktop(desktopRes.data);
@@ -214,7 +231,7 @@ const Index = () => {
         </main>
       )}
 
-      {screen === "loading" && <LoadingScreen />}
+      {screen === "loading" && <LoadingScreen completedPhases={completedPhases} />}
 
       {screen === "result" && (
         <main className="flex-1 py-8 sm:py-12 px-4 pb-24">
