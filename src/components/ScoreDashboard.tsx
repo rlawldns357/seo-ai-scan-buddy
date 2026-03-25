@@ -408,36 +408,32 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
   return (
     <div className="space-y-5">
       {/* One-line verdict */}
-      <div className="rounded-xl bg-card shadow-card px-5 py-4 animate-fade-up flex flex-col sm:flex-row items-center justify-between gap-3" style={{ animationDelay: "0.1s" }}>
-        <div className="flex flex-col sm:flex-row items-center gap-3">
-          <p className="text-base sm:text-lg font-bold text-foreground">{verdict}</p>
-          {(critical > 0 || recommended > 0) && (
-            <div className="flex items-center gap-2">
-              {critical > 0 && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  긴급 수정 {critical}개
-                </span>
-              )}
-              {recommended > 0 && (
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20">
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  권장 개선 {recommended}개
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+      <div className="rounded-xl bg-card shadow-card px-5 py-4 animate-fade-up text-center space-y-2" style={{ animationDelay: "0.1s" }}>
+        <p className="text-base sm:text-lg font-bold text-foreground">{verdict}</p>
         {(critical > 0 || recommended > 0) && (
-          <button
-            onClick={() => {
-              document.getElementById("email-form-section")?.scrollIntoView({ behavior: "smooth" });
-            }}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors shrink-0"
-          >
-            개선하기
-            <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            {critical > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
+                <AlertCircle className="w-3.5 h-3.5" />
+                긴급 수정 {critical}개
+              </span>
+            )}
+            {recommended > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                권장 개선 {recommended}개
+              </span>
+            )}
+            <button
+              onClick={() => {
+                document.getElementById("email-form-section")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+            >
+              개선하기
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         )}
       </div>
 
