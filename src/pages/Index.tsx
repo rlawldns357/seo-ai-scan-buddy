@@ -10,8 +10,9 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
-import { getDemoResult, type DemoResult } from "@/data/demoResults";
+import { type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
+import { analyzeSite } from "@/lib/analyze";
 import { trackEvent } from "@/lib/analytics";
 
 type Screen = "home" | "loading" | "result";
@@ -27,6 +28,7 @@ const Index = () => {
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
@@ -34,11 +36,14 @@ const Index = () => {
     setPsiMobile(null);
     setPsiDesktop(null);
     setPsiError(null);
+    setAnalyzeError(null);
     trackEvent("analysis_start", { url: finalUrl });
 
-    const [mobileRes, desktopRes] = await Promise.all([
+    // Run PSI and Firecrawl analysis in parallel
+    const [mobileRes, desktopRes, analyzeRes] = await Promise.all([
       fetchPsi(finalUrl, 'mobile'),
       fetchPsi(finalUrl, 'desktop'),
+      analyzeSite(finalUrl),
     ]);
 
     if (mobileRes.data) setPsiMobile(mobileRes.data);
@@ -54,17 +59,25 @@ const Index = () => {
       }
     }
 
-    setResult(getDemoResult(finalUrl));
+    if (analyzeRes.data) {
+      setResult(analyzeRes.data);
+    } else {
+      setAnalyzeError(analyzeRes.error?.message || "분석에 실패했어요.");
+      trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
+    }
+
     setScreen("result");
 
-    const end = Date.now() + 800;
-    const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#34d399', '#fbbf24'];
-    const frame = () => {
-      confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
-      confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    };
-    frame();
+    if (analyzeRes.data) {
+      const end = Date.now() + 800;
+      const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#34d399', '#fbbf24'];
+      const frame = () => {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    }
   };
 
   const handleAnalyze = () => {
@@ -151,7 +164,7 @@ const Index = () => {
 
       {screen === "loading" && <LoadingScreen />}
 
-      {screen === "result" && result && (
+      {screen === "result" && (
         <main className="flex-1 py-8 sm:py-12 px-4 pb-24">
           <div className="container max-w-4xl mx-auto space-y-5">
             {/* Result header: URL, time, badge */}
@@ -167,8 +180,21 @@ const Index = () => {
             {/* Lighthouse real scores */}
             {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
 
+            {/* Analyze Error */}
+            {analyzeError && (
+              <div className="rounded-2xl bg-score-poor/5 border border-score-poor/20 p-4 text-center">
+                <p className="text-sm text-score-poor font-medium">{analyzeError}</p>
+                <button
+                  onClick={() => normalizedUrl && runAnalysis(normalizedUrl)}
+                  className="mt-2 text-xs text-primary font-semibold hover:underline"
+                >
+                  다시 분석하기
+                </button>
+              </div>
+            )}
+
             {/* Main: SEO/AEO/GEO gauge cards with inline insights */}
-            <ScoreDashboard result={result} />
+            {result && <ScoreDashboard result={result} />}
 
             {/* Verification Links */}
             <VerificationLinks url={normalizedUrl} />
