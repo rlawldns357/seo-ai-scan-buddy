@@ -83,7 +83,7 @@ export default function About() {
                 비용이 드나요?
               </h2>
               <p>
-                현재 베타 기간 무료로 제공되고 있습니다.
+                현재 베타 서비스로 무료 이용할 수 있습니다.
               </p>
             </div>
           </section>
