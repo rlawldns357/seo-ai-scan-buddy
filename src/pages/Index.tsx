@@ -196,6 +196,16 @@ const Index = () => {
                 }}
               />
             )}
+            {rateLimit && !rateLimit.allowed && (
+              <RateLimitBanner
+                remaining={rateLimit.remaining}
+                emailUnlocked={rateLimit.emailUnlocked}
+                onUnlocked={async () => {
+                  const updated = await checkRateLimit();
+                  setRateLimit(updated);
+                }}
+              />
+            )}
             <div className="mt-14 max-w-lg mx-auto text-left">
               <FaqSection />
             </div>
