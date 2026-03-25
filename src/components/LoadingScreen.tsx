@@ -66,7 +66,7 @@ const steps: Step[] = [
   { phase: "psi-measuring", label: "Lighthouse 측정 중…" },
 ];
 
-export default function LoadingScreen({ completedPhases = new Set() }: LoadingScreenProps) {
+export default function LoadingScreen({ completedPhases = new Set(), skipLighthouse = false }: LoadingScreenProps) {
   const [cardIndex, setCardIndex] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
 
@@ -82,7 +82,8 @@ export default function LoadingScreen({ completedPhases = new Set() }: LoadingSc
   }, []);
 
   const card = insights[cardIndex];
-  const allDone = steps.every((s) => completedPhases.has(s.phase));
+  const activeSteps = skipLighthouse ? steps.filter((s) => s.phase !== "psi-measuring") : steps;
+  const allDone = activeSteps.every((s) => completedPhases.has(s.phase));
 
   return (
     <main className="flex-1 flex items-center justify-center px-4">
@@ -91,10 +92,9 @@ export default function LoadingScreen({ completedPhases = new Set() }: LoadingSc
         <div className="space-y-3">
           <Loader2 className="w-10 h-10 text-primary mx-auto animate-spin-slow" />
           <div className="flex flex-col gap-2 items-start max-w-[260px] mx-auto mt-4">
-            {steps.map((step, i) => {
+            {activeSteps.map((step, i) => {
               const done = completedPhases.has(step.phase);
-              // Active = not done, but previous steps are done (or first step)
-              const active = !done && (i === 0 || steps.slice(0, i).every((s) => completedPhases.has(s.phase)));
+              const active = !done && (i === 0 || activeSteps.slice(0, i).every((s) => completedPhases.has(s.phase)));
               return (
                 <div
                   key={step.phase}
@@ -129,7 +129,7 @@ export default function LoadingScreen({ completedPhases = new Set() }: LoadingSc
                 style={{
                   width: allDone
                     ? "100%"
-                    : `${(Array.from(completedPhases).filter((p) => steps.some((s) => s.phase === p)).length / steps.length) * 85 + 5}%`,
+                    : `${(Array.from(completedPhases).filter((p) => activeSteps.some((s) => s.phase === p)).length / activeSteps.length) * 85 + 5}%`,
                 }}
               />
             </div>
