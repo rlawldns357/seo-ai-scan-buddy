@@ -60,14 +60,28 @@ const Index = () => {
     setPsiDesktop(null);
     setPsiError(null);
     setAnalyzeError(null);
+    setCompletedPhases(new Set());
     trackEvent("analysis_start", { url: finalUrl });
 
-    // Run PSI and Firecrawl analysis in parallel
-    const [mobileRes, desktopRes, analyzeRes] = await Promise.all([
+    const addPhase = (phase: AnalysisPhase) =>
+      setCompletedPhases((prev) => new Set([...prev, phase]));
+
+    // Run PSI and Firecrawl+AI analysis in parallel
+    const psiPromise = Promise.all([
       fetchPsi(finalUrl, 'mobile'),
       fetchPsi(finalUrl, 'desktop'),
-      analyzeSite(finalUrl),
-    ]);
+    ]).then((res) => {
+      addPhase("psi-measuring");
+      return res;
+    });
+
+    const analyzePromise = analyzeSite(finalUrl).then((res) => {
+      addPhase("crawling");
+      addPhase("ai-analyzing");
+      return res;
+    });
+
+    const [[mobileRes, desktopRes], analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
 
     if (mobileRes.data) setPsiMobile(mobileRes.data);
     if (desktopRes.data) setPsiDesktop(desktopRes.data);
