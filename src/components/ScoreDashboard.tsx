@@ -1,4 +1,5 @@
 import { useState } from "react";
+import LeadModal from "@/components/LeadModal";
 import { type DemoResult, type AxisAnalysis, type Improvement } from "@/data/demoResults";
 import SemiCircleGauge, { getGradeLabel, getGradeColorClass } from "@/components/SemiCircleGauge";
 import {
@@ -327,26 +328,43 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 
 /* ── Inline CTA ── */
 function InlineCTA() {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+
+  const openModal = (title: string) => {
+    setModalTitle(title);
+    setModalOpen(true);
+  };
+
   return (
-    <div className="rounded-2xl bg-primary/5 border border-primary/10 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
-      <div className="space-y-2">
-        <h3 className="text-lg font-bold text-foreground tracking-tight">
-          놓치고 있는 검색 기회, 확인하셨나요?
-        </h3>
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
-          위 분석은 무료 요약입니다. 더 구체적인 개선 우선순위와 실행 가이드를 받아보세요.
-        </p>
+    <>
+      <div className="rounded-2xl bg-primary/5 border border-primary/10 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
+        <div className="space-y-2">
+          <h3 className="text-lg font-bold text-foreground tracking-tight">
+            놓치고 있는 검색 기회, 확인하셨나요?
+          </h3>
+          <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
+            위 분석은 무료 요약입니다. 더 구체적인 개선 우선순위와 실행 가이드를 받아보세요.
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => openModal("점수 올리는 우선순위 받기")}
+            className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
+          >
+            점수 올리는 우선순위 보기
+            <ArrowRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => openModal("내 점수 깎는 핵심 원인 받기")}
+            className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors"
+          >
+            내 점수 깎는 핵심 원인 보기
+          </button>
+        </div>
       </div>
-      <div className="flex flex-col sm:flex-row gap-3 justify-center">
-        <button className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
-          점수 올리는 우선순위 보기
-          <ArrowRight className="w-4 h-4" />
-        </button>
-        <button className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors">
-          내 점수 깎는 핵심 원인 보기
-        </button>
-      </div>
-    </div>
+      <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} />
+    </>
   );
 }
 
