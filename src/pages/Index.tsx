@@ -10,10 +10,12 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
+import SubpageWarning from "@/components/SubpageWarning";
 import { type DemoResult } from "@/data/demoResults";
 import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
 import { analyzeSite } from "@/lib/analyze";
 import { trackEvent } from "@/lib/analytics";
+import { validateUrl } from "@/lib/urlValidation";
 
 type Screen = "home" | "loading" | "result";
 
@@ -29,6 +31,9 @@ const Index = () => {
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+
+  // Subpage warning state
+  const [subpageWarning, setSubpageWarning] = useState<{ inputUrl: string; rootUrl: string } | null>(null);
 
   const runAnalysis = async (finalUrl: string) => {
     setNormalizedUrl(finalUrl);
@@ -82,22 +87,21 @@ const Index = () => {
 
   const handleAnalyze = () => {
     setUrlError("");
-    const trimmed = url.trim();
-    if (!trimmed) {
-      setUrlError("URL을 입력해 주세요.");
+    setSubpageWarning(null);
+
+    const validation = validateUrl(url);
+
+    if (!validation.isValid) {
+      setUrlError(validation.errorMessage || "URL을 확인해 주세요.");
       return;
     }
-    let finalUrl = trimmed;
-    if (!/^https?:\/\//i.test(finalUrl)) {
-      finalUrl = "https://" + finalUrl;
-    }
-    try {
-      new URL(finalUrl);
-    } catch {
-      setUrlError("URL 형식을 확인해 주세요. 예: https://example.com");
+
+    if (validation.isSubpage) {
+      setSubpageWarning({ inputUrl: validation.finalUrl, rootUrl: validation.rootUrl });
       return;
     }
-    runAnalysis(finalUrl);
+
+    runAnalysis(validation.finalUrl);
   };
 
   const handleRetryPsi = () => {
@@ -151,6 +155,20 @@ const Index = () => {
             <p className="text-xs text-muted-foreground mt-4 font-medium">모바일 + 데스크톱 동시 측정 · 10초 완료</p>
             {urlError && (
               <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
+            )}
+            {subpageWarning && (
+              <SubpageWarning
+                inputUrl={subpageWarning.inputUrl}
+                rootUrl={subpageWarning.rootUrl}
+                onAnalyzeRoot={() => {
+                  setSubpageWarning(null);
+                  runAnalysis(subpageWarning.rootUrl);
+                }}
+                onAnalyzeCurrent={() => {
+                  setSubpageWarning(null);
+                  runAnalysis(subpageWarning.inputUrl);
+                }}
+              />
             )}
             <button
               onClick={() => navigate("/design-test")}
