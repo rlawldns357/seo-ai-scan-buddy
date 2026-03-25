@@ -221,7 +221,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
       {/* Header */}
       <div className={`flex items-center gap-2.5 px-6 py-4 border-b border-border ${config.headerBg}`}>
         <Icon className={`w-5 h-5 ${config.accent}`} />
-        <span className="text-base font-bold text-foreground">{axis.label} 상세 분석</span>
+        <span className="text-base font-bold text-foreground">{axis.label} — 점수 깎는 원인</span>
         {isCritical && (
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
             우선 확인
