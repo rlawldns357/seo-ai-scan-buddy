@@ -202,7 +202,7 @@ function SummaryCard({
       <div className={`flex items-center justify-center gap-1 py-2.5 border-t border-border text-[11px] font-semibold ${
         selected ? `${config.accent} ${config.headerBg}` : "text-muted-foreground"
       }`}>
-        {selected ? "상세 분석 보는 중" : "상세 분석 보기"}
+        {selected ? "원인 분석 보는 중" : "점수 깎는 원인 보기"}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
       </div>
     </button>
@@ -221,7 +221,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
       {/* Header */}
       <div className={`flex items-center gap-2.5 px-6 py-4 border-b border-border ${config.headerBg}`}>
         <Icon className={`w-5 h-5 ${config.accent}`} />
-        <span className="text-base font-bold text-foreground">{axis.label} 상세 분석</span>
+        <span className="text-base font-bold text-foreground">{axis.label} — 점수 깎는 원인</span>
         {isCritical && (
           <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
             우선 확인
@@ -339,15 +339,36 @@ function InlineCTA() {
       </div>
       <div className="flex flex-col sm:flex-row gap-3 justify-center">
         <button className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors">
-          우선 개선 과제 받기
+          점수 올리는 우선순위 보기
           <ArrowRight className="w-4 h-4" />
         </button>
         <button className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors">
-          지금 가장 큰 문제 진단 받기
+          내 점수 깎는 핵심 원인 보기
         </button>
       </div>
     </div>
   );
+}
+
+/* ── One-line verdict helper ── */
+function getVerdict(seo: number, aeo: number, geo: number): string {
+  const avg = (seo + aeo + geo) / 3;
+  if (avg >= 75) return "AI 검색 반영 가능성이 높아요. 현재 상태를 유지하세요!";
+  if (avg >= 60) return "기본 SEO는 양호하지만 AEO·GEO 보강이 필요해요.";
+  if (avg >= 40) return "검색 노출과 AI 답변 채택 모두 개선이 시급해요.";
+  return "검색엔진과 AI가 이 사이트를 거의 인식하지 못하고 있어요.";
+}
+
+/* ── Issue count summary helper ── */
+function countIssues(axes: { axis: AxisAnalysis; score: number }[]) {
+  let critical = 0;
+  let recommended = 0;
+  for (const { axis, score } of axes) {
+    const issues = axis.issues?.length || 0;
+    if (score < 40) critical += issues;
+    else if (score < 75) recommended += issues;
+  }
+  return { critical, recommended };
 }
 
 /* ── Main ── */
@@ -363,9 +384,32 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
   const [selected, setSelected] = useState<AxisLabel | null>(worstKey);
 
   const selectedEntry = axes.find((a) => a.key === selected);
+  const verdict = getVerdict(result.seoScore, result.aeoScore, result.geoScore);
+  const { critical, recommended } = countIssues(axes);
 
   return (
     <div className="space-y-5">
+      {/* One-line verdict */}
+      <div className="rounded-xl bg-card shadow-card px-5 py-4 animate-fade-up text-center space-y-2" style={{ animationDelay: "0.1s" }}>
+        <p className="text-base sm:text-lg font-bold text-foreground">{verdict}</p>
+        {(critical > 0 || recommended > 0) && (
+          <div className="flex items-center justify-center gap-3">
+            {critical > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
+                <AlertCircle className="w-3.5 h-3.5" />
+                긴급 수정 {critical}개
+              </span>
+            )}
+            {recommended > 0 && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20">
+                <AlertTriangle className="w-3.5 h-3.5" />
+                권장 개선 {recommended}개
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Mobile: card + inline detail for each axis */}
       <div className="sm:hidden space-y-4">
         {axes.map(({ axis, score, key }, i) => (
