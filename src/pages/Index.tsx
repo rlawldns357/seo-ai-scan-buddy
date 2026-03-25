@@ -139,18 +139,18 @@ const Index = () => {
             <p className="text-muted-foreground text-base sm:text-lg mb-10 leading-relaxed">
               URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-lg mx-auto">
               <input
                 type="url"
                 value={url}
                 onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                 onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-                placeholder="https://example.com"
-                className="flex-1 h-14 px-5 rounded-2xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-base transition-all"
+                placeholder="https://www.example.com"
+                className="flex-1 h-12 sm:h-14 px-4 sm:px-5 rounded-xl sm:rounded-2xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm sm:text-base transition-all"
               />
               <button
                 onClick={handleAnalyze}
-                className="h-14 px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="h-10 sm:h-14 px-6 sm:px-8 rounded-xl sm:rounded-2xl gradient-primary text-primary-foreground font-bold text-sm sm:text-base hover:opacity-90 transition-opacity whitespace-nowrap"
               >
                 무료로 분석하기
               </button>
