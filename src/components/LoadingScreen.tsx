@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, MessageCircle, Globe, Loader2 } from "lucide-react";
+import FaqSection from "@/components/FaqSection";
 
 interface InsightCard {
   icon: React.ReactNode;
@@ -128,6 +129,11 @@ export default function LoadingScreen() {
         <p className="text-[11px] text-muted-foreground/60">
           모바일 + 데스크톱 동시 측정 중이에요
         </p>
+
+        {/* FAQ */}
+        <div className="text-left">
+          <FaqSection compact />
+        </div>
       </div>
     </main>
   );
