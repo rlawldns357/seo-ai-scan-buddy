@@ -87,22 +87,21 @@ const Index = () => {
 
   const handleAnalyze = () => {
     setUrlError("");
-    const trimmed = url.trim();
-    if (!trimmed) {
-      setUrlError("URL을 입력해 주세요.");
+    setSubpageWarning(null);
+
+    const validation = validateUrl(url);
+
+    if (!validation.isValid) {
+      setUrlError(validation.errorMessage || "URL을 확인해 주세요.");
       return;
     }
-    let finalUrl = trimmed;
-    if (!/^https?:\/\//i.test(finalUrl)) {
-      finalUrl = "https://" + finalUrl;
-    }
-    try {
-      new URL(finalUrl);
-    } catch {
-      setUrlError("URL 형식을 확인해 주세요. 예: https://example.com");
+
+    if (validation.isSubpage) {
+      setSubpageWarning({ inputUrl: validation.finalUrl, rootUrl: validation.rootUrl });
       return;
     }
-    runAnalysis(finalUrl);
+
+    runAnalysis(validation.finalUrl);
   };
 
   const handleRetryPsi = () => {
