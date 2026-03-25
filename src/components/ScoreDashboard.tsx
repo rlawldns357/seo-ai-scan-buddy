@@ -338,7 +338,7 @@ function InlineCTA() {
 
   return (
     <>
-      <div className="rounded-2xl bg-primary/5 border border-primary/10 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
+      <div id="inline-cta-section" className="rounded-2xl bg-primary/5 border border-primary/10 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
         <div className="space-y-2">
           <h3 className="text-lg font-bold text-foreground tracking-tight">
             놓치고 있는 검색 기회, 확인하셨나요?
@@ -444,7 +444,7 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
             )}
             <button
               onClick={() => {
-                document.getElementById("email-form-section")?.scrollIntoView({ behavior: "smooth" });
+                document.getElementById("inline-cta-section")?.scrollIntoView({ behavior: "smooth" });
               }}
               className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
             >
