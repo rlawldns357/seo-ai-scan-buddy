@@ -227,8 +227,12 @@ ${links.slice(0, 20).join("\n")}
     // Extract JSON from response
     let analysis;
     try {
+      // Strip markdown code fences if present
+      let cleaned = content.trim();
+      cleaned = cleaned.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
+      
       // Try to find JSON in the response
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         analysis = JSON.parse(jsonMatch[0]);
       } else {
