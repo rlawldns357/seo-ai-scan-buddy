@@ -164,7 +164,7 @@ const Index = () => {
 
       {screen === "loading" && <LoadingScreen />}
 
-      {screen === "result" && result && (
+      {screen === "result" && (
         <main className="flex-1 py-8 sm:py-12 px-4 pb-24">
           <div className="container max-w-4xl mx-auto space-y-5">
             {/* Result header: URL, time, badge */}
@@ -180,8 +180,21 @@ const Index = () => {
             {/* Lighthouse real scores */}
             {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
 
+            {/* Analyze Error */}
+            {analyzeError && (
+              <div className="rounded-2xl bg-score-poor/5 border border-score-poor/20 p-4 text-center">
+                <p className="text-sm text-score-poor font-medium">{analyzeError}</p>
+                <button
+                  onClick={() => normalizedUrl && runAnalysis(normalizedUrl)}
+                  className="mt-2 text-xs text-primary font-semibold hover:underline"
+                >
+                  다시 분석하기
+                </button>
+              </div>
+            )}
+
             {/* Main: SEO/AEO/GEO gauge cards with inline insights */}
-            <ScoreDashboard result={result} />
+            {result && <ScoreDashboard result={result} />}
 
             {/* Verification Links */}
             <VerificationLinks url={normalizedUrl} />
