@@ -8,7 +8,7 @@ export default function Navbar() {
           <div className="gradient-primary rounded-xl p-2">
             <Search className="w-4 h-4 text-primary-foreground" />
           </div>
-          <span className="text-lg font-bold text-foreground tracking-tight">서치튠</span>
+          <span className="text-lg font-bold text-foreground tracking-tight">SearchTune</span>
           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent">Beta</span>
         </div>
         <a
