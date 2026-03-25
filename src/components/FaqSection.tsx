@@ -36,7 +36,7 @@ export default function FaqSection({ compact = false }: FaqSectionProps) {
   const items = compact ? faqs.slice(0, 3) : faqs;
 
   return (
-    <section className={compact ? "" : "mt-8"}>
+    <section className={compact ? "" : "mt-10 mb-6"}>
       {!compact && (
         <h2 className="text-sm font-bold text-foreground text-center mb-4 tracking-tight">
           자주 묻는 질문
