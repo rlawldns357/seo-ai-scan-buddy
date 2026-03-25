@@ -4,7 +4,7 @@ import {
 } from 'npm:@react-email/components@0.0.22'
 import type { TemplateEntry } from './registry.ts'
 
-const SITE_NAME = "SearchTune"
+const SITE_NAME = "SearchTune OS"
 
 const LeadConfirmationEmail = () => (
   <Html lang="ko" dir="ltr">
