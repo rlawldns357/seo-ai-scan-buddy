@@ -58,7 +58,7 @@ export default function StickyBottomCTA() {
             <div className="gradient-primary rounded-lg p-1.5">
               <Search className="w-3 h-3 text-primary-foreground" />
             </div>
-            <span className="text-sm font-bold text-foreground">SearchTune</span>
+            <span className="text-sm font-bold text-foreground">SearchTune OS</span>
           </div>
           <div className="w-px h-6 bg-border" />
           <p className="text-xs text-muted-foreground">
