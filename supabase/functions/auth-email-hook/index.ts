@@ -36,7 +36,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "AI SEO Score"
+const SITE_NAME = "서치튠"
 const SENDER_DOMAIN = "notify.apic.work"
 const ROOT_DOMAIN = "apic.work"
 const FROM_DOMAIN = "apic.work" // Domain shown in From address (may be root or sender subdomain)
