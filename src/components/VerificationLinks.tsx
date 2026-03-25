@@ -1,4 +1,4 @@
-import { ExternalLink, Info } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
