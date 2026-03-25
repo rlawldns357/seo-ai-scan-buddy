@@ -156,6 +156,20 @@ const Index = () => {
             {urlError && (
               <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
             )}
+            {subpageWarning && (
+              <SubpageWarning
+                inputUrl={subpageWarning.inputUrl}
+                rootUrl={subpageWarning.rootUrl}
+                onAnalyzeRoot={() => {
+                  setSubpageWarning(null);
+                  runAnalysis(subpageWarning.rootUrl);
+                }}
+                onAnalyzeCurrent={() => {
+                  setSubpageWarning(null);
+                  runAnalysis(subpageWarning.inputUrl);
+                }}
+              />
+            )}
             <button
               onClick={() => navigate("/design-test")}
               className="mt-8 text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
