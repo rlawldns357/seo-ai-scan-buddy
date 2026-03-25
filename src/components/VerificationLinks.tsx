@@ -39,7 +39,12 @@ export default function VerificationLinks({ url }: VerificationLinksProps) {
     {
       label: 'OG 태그 미리보기',
       href: `https://developers.facebook.com/tools/debug/?q=${encodeURIComponent(url)}`,
-      desc: 'SNS 공유 시 표시되는 제목·설명·이미지(Open Graph 메타태그)를 미리 확인합니다.',
+      desc: 'Facebook 공유 시 표시되는 제목·설명·이미지(Open Graph 메타태그)를 확인합니다.',
+    },
+    {
+      label: '카카오 공유 디버거',
+      href: `https://developers.kakao.com/tool/debugger/sharing?url=${encodeURIComponent(url)}`,
+      desc: '카카오톡 공유 시 표시되는 미리보기(제목·설명·이미지)를 확인하고 캐시를 초기화합니다.',
     },
   ];
 
