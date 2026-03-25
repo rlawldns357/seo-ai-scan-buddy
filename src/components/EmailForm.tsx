@@ -48,6 +48,14 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
       } else {
         setEmailStatus("success");
         trackEvent("email_submit_success", { email: trimmed });
+        // Send confirmation email (fire-and-forget)
+        supabase.functions.invoke("send-transactional-email", {
+          body: {
+            templateName: "lead-confirmation",
+            recipientEmail: trimmed,
+            idempotencyKey: `lead-confirm-${trimmed}`,
+          },
+        });
         onSubmitted();
       }
     } catch {

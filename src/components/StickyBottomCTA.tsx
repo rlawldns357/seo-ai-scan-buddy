@@ -21,6 +21,16 @@ export default function StickyBottomCTA() {
       if (!error || error.code === "23505") {
         setStatus("success");
         trackEvent("sticky_email_submit", { email: trimmed });
+        if (!error) {
+          // Send confirmation email (fire-and-forget)
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "lead-confirmation",
+              recipientEmail: trimmed,
+              idempotencyKey: `lead-confirm-${trimmed}`,
+            },
+          });
+        }
       } else {
         setStatus("idle");
       }
