@@ -10,6 +10,7 @@ interface RateLimitBannerProps {
 
 const RateLimitBanner = ({ remaining, emailUnlocked, onUnlocked }: RateLimitBannerProps) => {
   const [email, setEmail] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -18,6 +19,10 @@ const RateLimitBanner = ({ remaining, emailUnlocked, onUnlocked }: RateLimitBann
   const handleUnlock = async () => {
     if (!email || !email.includes("@")) {
       setError("올바른 이메일을 입력해 주세요.");
+      return;
+    }
+    if (!agreed) {
+      setError("동의 후 진행할 수 있어요.");
       return;
     }
 
@@ -64,12 +69,23 @@ const RateLimitBanner = ({ remaining, emailUnlocked, onUnlocked }: RateLimitBann
             />
             <button
               onClick={handleUnlock}
-              disabled={loading}
+              disabled={loading || !agreed}
               className="h-10 px-5 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
             >
               {loading ? "처리 중..." : "추가 분석 받기"}
             </button>
           </div>
+          <label className="flex items-center gap-2 justify-center mt-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => { setAgreed(e.target.checked); setError(""); }}
+              className="accent-primary w-3.5 h-3.5"
+            />
+            <span className="text-[11px] text-muted-foreground leading-relaxed">
+              개인정보 수집 및 분석 리포트 수신에 동의합니다.
+            </span>
+          </label>
           {error && <p className="mt-2 text-xs text-destructive">{error}</p>}
         </>
       ) : (
