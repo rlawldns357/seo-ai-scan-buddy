@@ -339,28 +339,25 @@ function InlineCTA({ avgScore }: { avgScore: number }) {
   // 점수 기반 팩트 퍼센트 (실제 점수 갭)
   const gapPercent = Math.max(5, 100 - avgScore);
 
-  // 업계 통계 기반 멘트 (Google / Backlinko 연구 인용)
-  const stat = avgScore < 40
-    ? { text: "모바일 사용자 53%는 3초 안에 로딩되지 않으면 떠납니다", source: "Google, 2018" }
+  // 업계 통계 기반 이탈 수치 (Google/Backlinko 연구 기반 추정)
+  const lostStat = avgScore < 40
+    ? { visitors: "100명 이상", source: "Google, 2018" }
     : avgScore < 60
-    ? { text: "검색 1페이지 밖 사이트는 클릭의 0.63%만 받습니다", source: "Backlinko, 2023" }
-    : { text: "Core Web Vitals 미충족 시 이탈률이 24% 증가합니다", source: "Google, 2021" };
+    ? { visitors: "50~100명", source: "Backlinko, 2023" }
+    : { visitors: "20~50명", source: "Google, 2021" };
 
   return (
     <>
       <div id="inline-cta-section" className="rounded-2xl bg-gradient-to-br from-primary/8 via-primary/5 to-accent/5 border border-primary/15 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
         <div className="space-y-3">
           <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-            현재 최적화 수준이 <span className="text-primary">{gapPercent}%</span> 부족합니다
+            매일 <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> 경쟁사로 가고 있습니다
           </p>
           <p className="text-sm text-muted-foreground">
-            귀사 랜딩페이지에 유입된 고객, 지금 이대로면 이탈합니다.
+            내 사이트 최적화 수준이 <span className="font-bold text-foreground">{gapPercent}%</span> 부족한 상태예요.
           </p>
-          <p className="text-xs text-muted-foreground/70 leading-relaxed">
-            {stat.text} <span className="text-muted-foreground/40">— {stat.source}</span>
-          </p>
-          <p className="text-xs font-semibold text-foreground/80">
-            경쟁사는 이미 개선하고 있습니다. 늦으면 격차는 더 벌어집니다.
+          <p className="text-xs text-muted-foreground/50">
+            — 업계 평균 기반 추정 · {lostStat.source}
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
