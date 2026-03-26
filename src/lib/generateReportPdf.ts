@@ -15,20 +15,43 @@ function addWatermark(doc: jsPDF) {
   
   doc.saveGraphicsState();
   // @ts-ignore - jsPDF supports this
-  doc.setGState(new doc.GState({ opacity: 0.06 }));
-  doc.setTextColor(100, 100, 100);
-  doc.setFontSize(72);
+  doc.setGState(new doc.GState({ opacity: 0.09 }));
+  doc.setTextColor(120, 120, 140);
   
-  // Diagonal watermark
+  // Large diagonal watermarks covering the entire page
   const text = "SearchTune OS";
   const centerX = pageWidth / 2;
   const centerY = pageHeight / 2;
   
-  doc.text(text, centerX, centerY - 40, {
+  // Main massive watermark
+  doc.setFontSize(96);
+  doc.text(text, centerX, centerY, {
     align: "center",
     angle: 35,
   });
-  doc.text(text, centerX, centerY + 80, {
+  
+  // Repeating pattern for full coverage
+  doc.setFontSize(48);
+  const positions = [
+    { x: centerX - 60, y: centerY - 100 },
+    { x: centerX + 60, y: centerY - 100 },
+    { x: centerX - 60, y: centerY + 100 },
+    { x: centerX + 60, y: centerY + 100 },
+    { x: centerX, y: centerY - 50 },
+    { x: centerX, y: centerY + 50 },
+    { x: centerX - 40, y: 40 },
+    { x: centerX + 40, y: pageHeight - 40 },
+  ];
+  positions.forEach(({ x, y }) => {
+    doc.text(text, x, y, { align: "center", angle: 35 });
+  });
+  
+  // "BETA" stamp
+  doc.setFontSize(120);
+  // @ts-ignore
+  doc.setGState(new doc.GState({ opacity: 0.05 }));
+  doc.setTextColor(100, 100, 120);
+  doc.text("BETA", centerX, centerY + 20, {
     align: "center",
     angle: 35,
   });
