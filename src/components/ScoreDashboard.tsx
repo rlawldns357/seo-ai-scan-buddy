@@ -327,7 +327,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 }
 
 /* ── Inline CTA ── */
-function InlineCTA({ avgScore }: { avgScore: number }) {
+function InlineCTA() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
 
@@ -336,19 +336,14 @@ function InlineCTA({ avgScore }: { avgScore: number }) {
     setModalOpen(true);
   };
 
-  // 점수 기반 동적 손실 수치
-  const lostPercent = Math.max(10, Math.round((100 - avgScore) * 0.8));
-  const lostVisitors = avgScore < 40 ? "100명 이상" : avgScore < 60 ? "50~100명" : "20~50명";
-
   return (
     <>
       <div id="inline-cta-section" className="rounded-2xl bg-gradient-to-br from-primary/8 via-primary/5 to-accent/5 border border-primary/15 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
-        <div className="space-y-3">
-          <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-            지금 이 순간에도<br className="sm:hidden" /> 하루 방문자 <span className="text-primary">{lostVisitors}</span>을<br className="hidden sm:block" /> 경쟁사에게 넘기고 있습니다
+        <div className="space-y-2">
+          <p className="text-lg sm:text-xl font-extrabold text-foreground">
+            경쟁사는 이미 고치고 있습니다
           </p>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            현재 점수 기준, 검색 노출 효율이 약 <span className="font-bold text-foreground">{lostPercent}%</span> 낮은 상태예요.<br className="hidden sm:block" />
+          <p className="text-sm text-muted-foreground">
             어디부터 고쳐야 할지, 우선순위를 정리해 드릴게요.
           </p>
         </div>
@@ -502,7 +497,7 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
       </div>
 
       {/* CTA */}
-      <InlineCTA avgScore={Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3)} />
+      <InlineCTA />
     </div>
   );
 }
