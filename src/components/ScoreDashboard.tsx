@@ -409,7 +409,7 @@ function countIssues(axes: { axis: AxisAnalysis; score: number }[]) {
 }
 
 /* ── Main ── */
-export default function ScoreDashboard({ result }: ScoreDashboardProps) {
+export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
   const axes: { axis: AxisAnalysis; score: number; key: AxisLabel }[] = [
     { axis: result.seoAxis, score: result.seoScore, key: "SEO" },
     { axis: result.aeoAxis, score: result.aeoScore, key: "AEO" },
