@@ -327,7 +327,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 }
 
 /* ── Inline CTA ── */
-function InlineCTA() {
+function InlineCTA({ avgScore }: { avgScore: number }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
 
@@ -336,15 +336,26 @@ function InlineCTA() {
     setModalOpen(true);
   };
 
+  // 점수 기반 팩트 퍼센트 (실제 점수 갭)
+  const gapPercent = Math.max(5, 100 - avgScore);
+
+  // 업계 통계 기반 멘트 (Google / Backlinko 연구 인용)
+  const stat = avgScore < 40
+    ? { text: "모바일 사용자 53%는 3초 안에 로딩되지 않으면 떠납니다", source: "Google, 2018" }
+    : avgScore < 60
+    ? { text: "검색 1페이지 밖 사이트는 클릭의 0.63%만 받습니다", source: "Backlinko, 2023" }
+    : { text: "Core Web Vitals 미충족 시 이탈률이 24% 증가합니다", source: "Google, 2021" };
+
   return (
     <>
       <div id="inline-cta-section" className="rounded-2xl bg-gradient-to-br from-primary/8 via-primary/5 to-accent/5 border border-primary/15 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
-        <div className="space-y-2">
-          <p className="text-lg sm:text-xl font-extrabold text-foreground">
-            경쟁사는 이미 고치고 있습니다
+        <div className="space-y-3">
+          <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
+            현재 최적화 수준이 <span className="text-primary">{gapPercent}%</span> 부족합니다
           </p>
-          <p className="text-sm text-muted-foreground">
-            어디부터 고쳐야 할지, 우선순위를 정리해 드릴게요.
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            {stat.text}
+            <span className="block mt-1 text-[11px] text-muted-foreground/50">— {stat.source}</span>
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
