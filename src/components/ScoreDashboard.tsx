@@ -497,7 +497,7 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
       </div>
 
       {/* CTA */}
-      <InlineCTA avgScore={Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3)} />
+      <InlineCTA />
     </div>
   );
 }
