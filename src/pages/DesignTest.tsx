@@ -28,7 +28,7 @@ const DesignTest = () => (
       <div className="container max-w-4xl mx-auto space-y-5">
         <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} />
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
-        <ScoreDashboard result={resultA} url={DEMO_URL} />
+        <ScoreDashboard result={demoResult} url={DEMO_URL} />
         <VerificationLinks url={DEMO_URL} />
         <EmailForm onSubmitted={() => {}} />
         <FaqSection expanded />
