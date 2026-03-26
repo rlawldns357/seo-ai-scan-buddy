@@ -85,7 +85,7 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
               value={email}
               onChange={(e) => { setEmail(e.target.value); setEmailError(""); setEmailStatus(""); }}
               placeholder="you@company.com"
-              className="w-full h-12 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all"
+              className="w-full h-12 px-4 rounded-xl border bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm transition-all border-primary-foreground"
             />
             {emailError && <p className="mt-1.5 text-xs text-destructive font-medium">{emailError}</p>}
           </div>
