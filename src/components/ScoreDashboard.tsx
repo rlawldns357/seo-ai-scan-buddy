@@ -354,7 +354,7 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
         <div className="space-y-3">
           {url && (
             <p className="text-sm font-medium text-muted-foreground">
-              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>, 지금 최적화 <span className="font-bold text-primary">{gapPercent}%</span> 부족해요
+              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화 <span className="font-bold text-destructive">{gapPercent}%</span> 부족한 상태
             </p>
           )}
           <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
