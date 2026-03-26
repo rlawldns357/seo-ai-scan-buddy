@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { CheckCircle, X } from "lucide-react";
+import { CheckCircle, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { downloadReportPdf } from "@/lib/generateReportPdf";
+import { type DemoResult } from "@/data/demoResults";
 
 interface LeadModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
+  result?: DemoResult | null;
+  url?: string;
 }
 
-export default function LeadModal({ open, onClose, title = "맞춤 개선 리포트 받기" }: LeadModalProps) {
+export default function LeadModal({ open, onClose, title = "맞춤 개선 리포트 받기", result, url }: LeadModalProps) {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [agreed, setAgreed] = useState(false);
