@@ -327,7 +327,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 }
 
 /* ── Inline CTA ── */
-function InlineCTA({ avgScore }: { avgScore: number }) {
+function InlineCTA() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
 
