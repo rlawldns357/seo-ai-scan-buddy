@@ -380,7 +380,7 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
           </button>
         </div>
       </div>
-      <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} />
+      <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} result={result} url={url} />
     </>
   );
 }
