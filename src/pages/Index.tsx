@@ -146,11 +146,13 @@ const Index = () => {
       return;
     }
 
-    // Check rate limit before proceeding
-    const usage = await checkRateLimit();
-    if (!usage.allowed) {
-      setRateLimit(usage);
-      return;
+    // Check rate limit before proceeding (skip for admin)
+    if (!isAdmin) {
+      const usage = await checkRateLimit();
+      if (!usage.allowed) {
+        setRateLimit(usage);
+        return;
+      }
     }
 
     if (validation.isSubpage) {
