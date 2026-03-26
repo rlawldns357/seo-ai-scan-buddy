@@ -328,7 +328,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 }
 
 /* ── Inline CTA ── */
-function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
+function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; result?: DemoResult }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
 
@@ -514,7 +514,7 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
       </div>
 
       {/* CTA */}
-      <InlineCTA avgScore={Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3)} url={url} />
+      <InlineCTA avgScore={Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3)} url={url} result={result} />
     </div>
   );
 }
