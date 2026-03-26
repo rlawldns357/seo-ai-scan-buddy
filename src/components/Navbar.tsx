@@ -30,6 +30,12 @@ export default function Navbar() {
           >
             소개
           </Link>
+          <a
+            href="mailto:contact@searchtuneos.com"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+          >
+            Contact
+          </a>
         </div>
       </div>
     </nav>
