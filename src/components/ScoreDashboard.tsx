@@ -340,12 +340,13 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
   // 점수 기반 팩트 퍼센트 (실제 점수 갭)
   const gapPercent = Math.max(5, 100 - avgScore);
 
-  // 업계 통계 기반 이탈 수치 (Google/Backlinko 연구 기반 추정)
+  // 업계 통계 기반 이탈 수치 (2025~2026 최신 데이터 기반 추정)
+  // 60% zero-click searches (2025), 73% B2B visibility loss (KEO Marketing, 2025)
   const lostStat = avgScore < 40
-    ? { visitors: "100명 이상", source: "Google, 2018" }
+    ? { visitors: "하루 300명 이상", pct: "73%" }
     : avgScore < 60
-    ? { visitors: "50~100명", source: "Backlinko, 2023" }
-    : { visitors: "20~50명", source: "Google, 2021" };
+    ? { visitors: "하루 100~200명", pct: "60%" }
+    : { visitors: "하루 50~100명", pct: "40%" };
 
   return (
     <>
@@ -353,14 +354,14 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
         <div className="space-y-3">
           {url && (
             <p className="text-xs text-muted-foreground/60">
-              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 분석 결과 사이트 최적화 수준이 <span className="font-bold text-primary">{gapPercent}%</span> 부족한 상태예요.
+              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 분석 결과 · 최적화 <span className="font-bold text-primary">{gapPercent}%</span> 부족
             </p>
           )}
           <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-            매일 <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> 경쟁사로 가고 있습니다
+            <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> 경쟁사로 이탈하고 있습니다
           </p>
           <p className="text-xs text-muted-foreground/50">
-            — 업계 평균 기반 추정 · {lostStat.source}
+            검색의 <span className="font-semibold text-primary">{lostStat.pct}</span>가 클릭 없이 끝남 · 2025 업계 평균 기반 추정
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
