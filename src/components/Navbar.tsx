@@ -1,6 +1,8 @@
-import { Search } from "lucide-react";
+import { Search, ShieldCheck } from "lucide-react";
 
 export default function Navbar() {
+  const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
+
   return (
     <nav className="w-full bg-background sticky top-0 z-50">
       <div className="container flex items-center justify-between h-16">
@@ -10,6 +12,12 @@ export default function Navbar() {
           </div>
           <span className="text-lg font-bold text-foreground tracking-tight">SearchTune <span className="font-extrabold">OS</span></span>
           <span className="px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent">Beta</span>
+          {isAdmin && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
+              <ShieldCheck className="w-3 h-3" />
+              Admin
+            </span>
+          )}
         </div>
         <a
           href="mailto:hello@example.com"
