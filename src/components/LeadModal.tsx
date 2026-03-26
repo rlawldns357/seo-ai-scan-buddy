@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { CheckCircle, X } from "lucide-react";
+import { CheckCircle, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { downloadReportPdf } from "@/lib/generateReportPdf";
+import { type DemoResult } from "@/data/demoResults";
 
 interface LeadModalProps {
   open: boolean;
   onClose: () => void;
   title?: string;
+  result?: DemoResult | null;
+  url?: string;
 }
 
-export default function LeadModal({ open, onClose, title = "맞춤 개선 리포트 받기" }: LeadModalProps) {
+export default function LeadModal({ open, onClose, title = "맞춤 개선 리포트 받기", result, url }: LeadModalProps) {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -81,9 +85,22 @@ export default function LeadModal({ open, onClose, title = "맞춤 개선 리포
             <CheckCircle className="w-12 h-12 text-score-excellent mx-auto mb-3" />
             <p className="text-foreground font-bold text-lg">등록 완료!</p>
             <p className="text-sm text-muted-foreground mt-1">맞춤 개선 리포트가 준비되면 이메일로 알려드릴게요.</p>
+            {result && url && (
+              <button
+                onClick={() => {
+                  downloadReportPdf(result, url);
+                  trackEvent("report_pdf_download", { url });
+                }}
+                className="mt-4 inline-flex items-center gap-2 h-10 px-5 rounded-xl gradient-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+              >
+                <Download className="w-4 h-4" />
+                분석 리포트 PDF 저장
+              </button>
+            )}
+            <br />
             <button
               onClick={onClose}
-              className="mt-5 h-10 px-6 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="mt-3 h-10 px-6 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
               닫기
             </button>
