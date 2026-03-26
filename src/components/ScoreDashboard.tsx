@@ -353,8 +353,8 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
       <div id="inline-cta-section" className="rounded-2xl bg-gradient-to-br from-primary/8 via-primary/5 to-accent/5 border border-primary/15 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
         <div className="space-y-3">
           {url && (
-            <p className="text-xs text-muted-foreground/60">
-              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 분석 결과 · 최적화 <span className="font-bold text-primary">{gapPercent}%</span> 부족
+            <p className="text-sm font-medium text-muted-foreground">
+              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>, 지금 최적화 <span className="font-bold text-primary">{gapPercent}%</span> 부족해요
             </p>
           )}
           <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
