@@ -339,14 +339,9 @@ function InlineCTA() {
   return (
     <>
       <div id="inline-cta-section" className="rounded-2xl bg-primary/5 border border-primary/10 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
-        <div className="space-y-2">
-          <h3 className="text-lg font-bold text-foreground tracking-tight">
-            놓치고 있는 검색 기회, 확인하셨나요?
-          </h3>
-          <p className="text-sm text-muted-foreground leading-relaxed max-w-md mx-auto">
-            위 분석은 베타 기간 무료 요약입니다. 더 구체적인 개선 우선순위와 실행 가이드를 받아보세요.
-          </p>
-        </div>
+        <p className="text-sm sm:text-base font-bold text-foreground">
+          이 점수 그대로면, 경쟁사에게 매일 검색 트래픽을 빼앗기고 있는 겁니다 — 지금 바로 개선 우선순위를 확인하세요.
+        </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => openModal("점수 올리는 우선순위 받기")}
