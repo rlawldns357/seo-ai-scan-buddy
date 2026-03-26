@@ -442,17 +442,17 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
                 권장 개선 {recommended}개
               </button>
             )}
+            <button
+              onClick={() => {
+                document.getElementById("inline-cta-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
+              }}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
+            >
+              <Search className="w-3.5 h-3.5" />
+              개선하기
+            </button>
           </div>
         )}
-        <button
-          onClick={() => {
-            document.getElementById("inline-cta-section")?.scrollIntoView({ behavior: "smooth" });
-          }}
-          className="inline-flex items-center justify-center gap-1.5 px-5 py-2 rounded-full text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-        >
-          <TrendingUp className="w-4 h-4" />
-          점수 올리는 우선순위 보기
-        </button>
       </div>
 
       {/* Mobile: card + inline detail for each axis */}
