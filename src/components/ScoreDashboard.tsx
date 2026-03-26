@@ -10,6 +10,7 @@ import {
 
 interface ScoreDashboardProps {
   result: DemoResult;
+  url?: string;
 }
 
 const axisConfig = {
@@ -327,7 +328,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 }
 
 /* ── Inline CTA ── */
-function InlineCTA({ avgScore }: { avgScore: number }) {
+function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
 
@@ -350,11 +351,16 @@ function InlineCTA({ avgScore }: { avgScore: number }) {
     <>
       <div id="inline-cta-section" className="rounded-2xl bg-gradient-to-br from-primary/8 via-primary/5 to-accent/5 border border-primary/15 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
         <div className="space-y-3">
+          {url && (
+            <p className="text-xs text-muted-foreground/60">
+              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 분석 결과
+            </p>
+          )}
           <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
             매일 <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> 경쟁사로 가고 있습니다
           </p>
           <p className="text-sm text-muted-foreground">
-            내 사이트 최적화 수준이 <span className="font-bold text-foreground">{gapPercent}%</span> 부족한 상태예요.
+            사이트 최적화 수준이 <span className="font-bold text-primary">{gapPercent}%</span> 부족한 상태예요.
           </p>
           <p className="text-xs text-muted-foreground/50">
             — 업계 평균 기반 추정 · {lostStat.source}
@@ -403,7 +409,7 @@ function countIssues(axes: { axis: AxisAnalysis; score: number }[]) {
 }
 
 /* ── Main ── */
-export default function ScoreDashboard({ result }: ScoreDashboardProps) {
+export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
   const axes: { axis: AxisAnalysis; score: number; key: AxisLabel }[] = [
     { axis: result.seoAxis, score: result.seoScore, key: "SEO" },
     { axis: result.aeoAxis, score: result.aeoScore, key: "AEO" },
@@ -510,7 +516,7 @@ export default function ScoreDashboard({ result }: ScoreDashboardProps) {
       </div>
 
       {/* CTA */}
-      <InlineCTA avgScore={Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3)} />
+      <InlineCTA avgScore={Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3)} url={url} />
     </div>
   );
 }

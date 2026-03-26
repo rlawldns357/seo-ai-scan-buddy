@@ -317,7 +317,7 @@ const Index = () => {
             )}
 
             {/* Main: SEO/AEO/GEO gauge cards with inline insights */}
-            {result && <ScoreDashboard result={result} />}
+            {result && <ScoreDashboard result={result} url={normalizedUrl} />}
 
             {/* Verification Links */}
             <VerificationLinks url={normalizedUrl} />
