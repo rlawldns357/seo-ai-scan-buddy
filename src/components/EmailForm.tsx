@@ -66,7 +66,7 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
   };
 
   return (
-    <div id="email-form-section" ref={formRef} className="bg-card rounded-2xl shadow-card p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.4s" }}>
+    <div id="email-form-section" ref={formRef} <div id="email-form-section" ref={formRef} className="bg-primary/[0.03] rounded-2xl shadow-card border border-border p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.4s" }}> style={{ animationDelay: "0.4s" }}>
       <h2 className="text-lg font-bold text-foreground mb-1">맞춤 개선 리포트 받기</h2>
       <p className="text-sm text-muted-foreground mb-6">
         내 사이트 맞춤 개선 우선순위를 이메일로 받아보세요.
