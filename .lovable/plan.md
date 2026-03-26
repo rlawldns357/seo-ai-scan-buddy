@@ -15,6 +15,21 @@
 - 로고 → 홈 링크
 - 워터마크 PDF 리포트 (이메일 등록 후 다운로드)
 - 베타 출시 & 배포
+- email_leads SELECT 정책 service_role 전용으로 보안 강화
+- **정적 JSON-LD 5종 index.html 직접 주입** (WebSite, SoftwareApplication, Organization, BreadcrumbList, FAQPage)
+- **noscript 폴백** (JS 미실행 크롤러용 핵심 텍스트 + FAQ 전문)
+
+## ✅ SEO 인프라 점검 결과
+
+| 항목 | 상태 | 비고 |
+|------|------|------|
+| robots.txt | ✅ 정상 | 모든 주요 봇 Allow, AI봇(GPTBot, OAI-SearchBot) 포함 |
+| noindex 태그 | ✅ 없음 | 인덱싱 차단 메타 태그 없음 |
+| canonical | ✅ 정상 | `<link rel="canonical" href="https://searchtuneos.com/">` 설정됨 |
+| sitemap.xml | ✅ 정상 | `/`, `/about` 2개 URL 포함, robots.txt에서 참조 |
+| 구조화 데이터 | ✅ 정적 주입 완료 | 5종 JSON-LD가 초기 HTML에 포함 |
+| noscript 폴백 | ✅ 추가 완료 | JS 없이도 핵심 콘텐츠 제공 |
+| SSR/SSG | ⚠️ 미적용 | Vite SPA 구조상 프레임워크 전환 필요 (향후 과제) |
 
 ## 🔲 예정 — 아이디어 / 퍼널 확장
 
@@ -33,6 +48,11 @@
 - 무료 분석 → 이메일 수집 → PDF 리포트 → 프롬프트 복사 → 유료 컨설팅 연결
 - 리포트 내 "전문가 컨설팅 받기" CTA 삽입
 - 단계별 가치 제공으로 자연스러운 업셀 구조
+
+### 보안
+- analytics_events SELECT 정책 강화
+- INSERT always true 정책 범위 축소
+- DB 함수 search_path 설정
 
 ## 📝 텍스트 수정 이력
 
