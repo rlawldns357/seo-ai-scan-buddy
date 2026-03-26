@@ -49,12 +49,16 @@ const Index = () => {
 
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const runAnalysis = async (finalUrl: string) => {
+    if (isAnalyzing) return;
+    setIsAnalyzing(true);
     // Increment usage before running
     const usage = await incrementUsage();
     if (!usage.allowed) {
       setRateLimit(usage);
+      setIsAnalyzing(false);
       return;
     }
     setRateLimit(usage);
@@ -124,6 +128,7 @@ const Index = () => {
       };
       frame();
     }
+    setIsAnalyzing(false);
   };
 
   const handleAnalyze = async () => {
