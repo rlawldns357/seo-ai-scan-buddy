@@ -89,14 +89,7 @@ export default function About() {
             </div>
           </section>
 
-          <div className="mt-16 mb-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a
-              href="mailto:contact@searchtuneos.com"
-              className="inline-flex items-center justify-center gap-2 h-12 w-full sm:w-auto px-8 rounded-2xl border border-border text-foreground font-semibold text-sm hover:bg-muted/50 transition-colors"
-            >
-              <Mail className="w-4 h-4" />
-              문의하기
-            </a>
+          <div className="mt-16 mb-8 flex items-center justify-center">
             <a
               href="/"
               className="inline-flex items-center justify-center gap-2 h-12 w-full sm:w-auto px-8 rounded-2xl gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
