@@ -50,18 +50,22 @@ const Index = () => {
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const isAdmin = sessionStorage.getItem("admin_pw") !== null;
 
   const runAnalysis = async (finalUrl: string) => {
     if (isAnalyzing) return;
     setIsAnalyzing(true);
-    // Increment usage before running
-    const usage = await incrementUsage();
-    if (!usage.allowed) {
+
+    if (!isAdmin) {
+      // Increment usage before running (skip for admin)
+      const usage = await incrementUsage();
+      if (!usage.allowed) {
+        setRateLimit(usage);
+        setIsAnalyzing(false);
+        return;
+      }
       setRateLimit(usage);
-      setIsAnalyzing(false);
-      return;
     }
-    setRateLimit(usage);
 
     setNormalizedUrl(finalUrl);
     setScreen("loading");
@@ -142,11 +146,13 @@ const Index = () => {
       return;
     }
 
-    // Check rate limit before proceeding
-    const usage = await checkRateLimit();
-    if (!usage.allowed) {
-      setRateLimit(usage);
-      return;
+    // Check rate limit before proceeding (skip for admin)
+    if (!isAdmin) {
+      const usage = await checkRateLimit();
+      if (!usage.allowed) {
+        setRateLimit(usage);
+        return;
+      }
     }
 
     if (validation.isSubpage) {
