@@ -361,7 +361,7 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
             <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> 경쟁사로 이탈하고 있습니다
           </p>
           <p className="text-xs text-muted-foreground/50">
-            검색의 <span className="font-semibold text-primary">{lostStat.pct}</span>가 클릭 없이 끝남 · 2025 업계 평균 기반 추정
+            — 출처: zero-click 검색 {lostStat.pct} · <a href="https://thedigitalbloom.com/learn/2025-organic-traffic-crisis-analysis-report/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-muted-foreground transition-colors">SparkToro & Datos, 2025</a>
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
