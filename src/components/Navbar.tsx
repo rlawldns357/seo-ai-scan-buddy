@@ -28,7 +28,7 @@ export default function Navbar() {
             to="/about"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
           >
-            소개
+            About
           </Link>
           <a
             href="mailto:contact@searchtuneos.com"
