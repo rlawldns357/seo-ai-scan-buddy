@@ -6,9 +6,10 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import FaqSection from "@/components/FaqSection";
-import { resultA } from "@/data/demoResults";
+import { getDemoResult } from "@/data/demoResults";
 
 const DEMO_URL = "https://example.com";
+const demoResult = getDemoResult(DEMO_URL);
 
 const fakePsi = {
   performance: 72,
@@ -16,6 +17,8 @@ const fakePsi = {
   bestPractices: 91,
   seo: 85,
   screenshot: null,
+  finalUrl: DEMO_URL,
+  fetchTime: new Date().toISOString(),
 };
 
 const DesignTest = () => (
