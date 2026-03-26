@@ -350,7 +350,7 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
 
   return (
     <>
-      <div id="inline-cta-section" className="rounded-xl bg-card shadow-card border border-border p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
+      <div id="inline-cta-section" className="rounded-xl bg-primary/[0.03] shadow-card border border-border p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
         <div className="space-y-3">
           {url && (
             <p className="text-sm font-medium text-muted-foreground">
