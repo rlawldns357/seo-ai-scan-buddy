@@ -350,7 +350,7 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
 
   return (
     <>
-      <div id="inline-cta-section" className="rounded-2xl bg-gradient-to-br from-primary/8 via-primary/5 to-accent/5 border border-primary/15 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
+      <div id="inline-cta-section" className="rounded-2xl bg-gradient-to-br from-primary/15 via-primary/10 to-accent/10 border border-primary/15 p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
         <div className="space-y-3">
           {url && (
             <p className="text-sm font-medium text-muted-foreground">
@@ -358,7 +358,7 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
             </p>
           )}
           <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-            <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> 경쟁사로 이탈하고 있습니다
+            <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
           </p>
           <p className="text-xs text-muted-foreground/50">
             — 출처: zero-click 검색 {lostStat.pct} · <a href="https://thedigitalbloom.com/learn/2025-organic-traffic-crisis-analysis-report/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-muted-foreground transition-colors">SparkToro & Datos, 2025</a>
