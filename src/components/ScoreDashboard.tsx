@@ -353,14 +353,11 @@ function InlineCTA({ avgScore, url }: { avgScore: number; url?: string }) {
         <div className="space-y-3">
           {url && (
             <p className="text-xs text-muted-foreground/60">
-              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 분석 결과
+              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 분석 결과 사이트 최적화 수준이 <span className="font-bold text-primary">{gapPercent}%</span> 부족한 상태예요.
             </p>
           )}
           <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
             매일 <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> 경쟁사로 가고 있습니다
-          </p>
-          <p className="text-sm text-muted-foreground">
-            사이트 최적화 수준이 <span className="font-bold text-primary">{gapPercent}%</span> 부족한 상태예요.
           </p>
           <p className="text-xs text-muted-foreground/50">
             — 업계 평균 기반 추정 · {lostStat.source}
