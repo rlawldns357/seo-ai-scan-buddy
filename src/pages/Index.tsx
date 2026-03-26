@@ -129,6 +129,7 @@ const Index = () => {
       frame();
     }
     setIsAnalyzing(false);
+  };
 
   const handleAnalyze = async () => {
     setUrlError("");
