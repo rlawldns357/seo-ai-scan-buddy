@@ -353,9 +353,14 @@ function InlineCTA({ avgScore }: { avgScore: number }) {
           <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
             현재 최적화 수준이 <span className="text-primary">{gapPercent}%</span> 부족합니다
           </p>
-          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-            {stat.text}
-            <span className="block mt-1 text-[11px] text-muted-foreground/50">— {stat.source}</span>
+          <p className="text-sm text-muted-foreground">
+            귀사 랜딩페이지에 유입된 고객, 지금 이대로면 이탈합니다.
+          </p>
+          <p className="text-xs text-muted-foreground/70 leading-relaxed">
+            {stat.text} <span className="text-muted-foreground/40">— {stat.source}</span>
+          </p>
+          <p className="text-xs font-semibold text-foreground/80">
+            경쟁사는 이미 개선하고 있습니다. 늦으면 격차는 더 벌어집니다.
           </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
