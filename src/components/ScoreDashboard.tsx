@@ -331,113 +331,137 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; result?: DemoResult }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
+  const [dailyVisitors, setDailyVisitors] = useState(5000);
 
   const openModal = (title: string) => {
     setModalTitle(title);
     setModalOpen(true);
   };
 
-  // 점수 기반 팩트 퍼센트 (실제 점수 갭)
   const gapPercent = Math.max(5, 100 - avgScore);
-
-  // 4단계 점수 구간: critical(<40), warning(40-59), decent(60-74), good(75+)
   const tier = avgScore >= 75 ? "good" : avgScore >= 60 ? "decent" : avgScore >= 40 ? "warning" : "critical";
 
-  // 퍼센트 기반 이탈 추정 — 사용자가 자기 트래픽 규모에 대입 가능
+  const lossRate = tier === "critical" ? 0.73 : tier === "warning" ? 0.60 : tier === "decent" ? 0.35 : 0;
+  const lostVisitors = Math.round(dailyVisitors * lossRate);
+  const lostMonthly = (lostVisitors * 30).toLocaleString();
+
   const tierConfig = {
     critical: {
-      lossPct: "73%", lossLabel: "73%의 방문자",
-      headline: (
-        <>검색 유입의 <span className="text-destructive">73%</span>가 경쟁사로 빠지고 있습니다</>
-      ),
-      subtext: "검색엔진과 AI 모두 이 사이트를 신뢰할 수 없는 상태입니다",
+      lossPct: "73%",
       source: "zero-click 검색 73% · KEO Marketing, 2025",
       statusLabel: "위험",
-      statusColor: "text-destructive",
     },
     warning: {
-      lossPct: "60%", lossLabel: "60%의 방문자",
-      headline: (
-        <>방문자의 <span className="text-destructive">60%</span>가 다른 사이트로 이탈할 수 있습니다</>
-      ),
-      subtext: "기본 구조는 있지만 AI 검색 최적화가 부족합니다",
+      lossPct: "60%",
       source: "zero-click 검색 60% · SparkToro & Datos, 2025",
       statusLabel: "개선 필요",
-      statusColor: "text-score-warning",
     },
     decent: {
-      lossPct: "35%", lossLabel: "35%의 방문자",
-      headline: (
-        <>잠재 유입의 <span className="text-score-warning">35%</span>를 아직 놓치고 있습니다</>
-      ),
-      subtext: "기본기는 탄탄합니다. 세부 최적화로 더 끌어올릴 수 있어요",
+      lossPct: "35%",
       source: "AI 검색 미반영 트래픽 추정 35% · 업계 평균, 2025",
       statusLabel: "양호",
-      statusColor: "text-score-good",
     },
     good: {
-      lossPct: "", lossLabel: "",
-      headline: (
-        <>🎉 <span className="text-primary">잘 하고 있어요!</span> AI 검색 반영 가능성이 높습니다</>
-      ),
-      subtext: "현재 상태를 유지하면서 세부 항목을 더 강화해 보세요",
+      lossPct: "",
       source: "",
       statusLabel: "우수",
-      statusColor: "text-primary",
     },
   };
 
   const t = tierConfig[tier];
   const isGoodScore = tier === "good";
 
+  const sliderStops = [100, 500, 1000, 3000, 5000, 10000, 30000, 50000, 100000];
+  const sliderIndex = sliderStops.findIndex((s) => s >= dailyVisitors);
+  const handleSlider = (val: number) => setDailyVisitors(sliderStops[val] || 5000);
+
   return (
     <>
       <div id="inline-cta-section" className="rounded-xl bg-primary/[0.03] shadow-card border border-border p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
-        <div className="space-y-3">
-          {url && (
-            <p className="text-sm font-medium text-muted-foreground">
-              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화{" "}
-              <span className={`font-bold ${isGoodScore ? "text-primary" : "text-destructive"}`}>{isGoodScore ? `${avgScore}점` : `${gapPercent}% 부족`}</span>
-              {" "}— {t.statusLabel}
-            </p>
-          )}
-          <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-            {t.headline}
-          </p>
-          {!isGoodScore && t.lossPct && (
-            <p className="text-xs text-muted-foreground mt-1">
-              💡 내 사이트에 하루 1,000명이 방문한다면, <span className="font-bold text-foreground">{t.lossPct}인 {tier === "critical" ? "730명" : tier === "warning" ? "600명" : "350명"}</span>을 놓치는 셈입니다
-            </p>
-          )}
-          <p className="text-xs text-muted-foreground/50">
-            {t.source ? (
-              <>— 출처: {t.source}</>
-            ) : (
-              <>{t.subtext}</>
+        {isGoodScore ? (
+          <div className="space-y-3">
+            {url && (
+              <p className="text-sm font-medium text-muted-foreground">
+                <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화 <span className="font-bold text-primary">{avgScore}점</span> — 우수
+              </p>
             )}
-          </p>
-        </div>
+            <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
+              🎉 <span className="text-primary">잘 하고 있어요!</span> AI 검색 반영 가능성이 높습니다
+            </p>
+            <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* 1) 큰 숫자 후킹 — 손실 인원 */}
+            <div>
+              <p className="text-3xl sm:text-4xl font-black text-destructive tabular-nums leading-none">
+                하루 {lostVisitors.toLocaleString()}명 손실
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                매달 약 <span className="font-bold text-foreground">{lostMonthly}명</span>의 잠재고객을 경쟁사에 넘기고 있습니다
+              </p>
+            </div>
+
+            {/* 2) 수식 설명 */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-muted/50 text-xs text-muted-foreground font-mono">
+              <span className="text-foreground font-semibold">{dailyVisitors.toLocaleString()}</span>
+              <span>×</span>
+              <span className="text-destructive font-semibold">{t.lossPct}</span>
+              <span>=</span>
+              <span className="text-destructive font-bold">{lostVisitors.toLocaleString()}명/일</span>
+            </div>
+
+            {/* 3) 슬라이더 */}
+            <div className="max-w-sm mx-auto space-y-2">
+              <label className="text-[11px] text-muted-foreground">내 사이트 일일 방문자 수</label>
+              <input
+                type="range"
+                min={0}
+                max={sliderStops.length - 1}
+                value={sliderIndex >= 0 ? sliderIndex : 4}
+                onChange={(e) => handleSlider(Number(e.target.value))}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer bg-muted accent-primary"
+              />
+              <div className="flex justify-between text-[9px] text-muted-foreground/50 px-0.5">
+                <span>100</span>
+                <span>1K</span>
+                <span>5K</span>
+                <span>30K</span>
+                <span>100K</span>
+              </div>
+              <p className="text-xs font-semibold text-foreground">{dailyVisitors.toLocaleString()}명/일 기준</p>
+            </div>
+
+            {/* 4) URL + 상태 */}
+            {url && (
+              <p className="text-xs text-muted-foreground">
+                <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a>{" "}
+                최적화 <span className="font-bold text-destructive">{gapPercent}% 부족</span> — {t.statusLabel}
+              </p>
+            )}
+            <p className="text-[10px] text-muted-foreground/40">— 출처: {t.source}</p>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             onClick={() => openModal(
               isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기"
-              : tier === "decent" ? "나머지 35% 잡는 개선 포인트 받기"
+              : tier === "decent" ? `매달 ${lostMonthly}명 잡는 개선 포인트 받기`
               : "점수 올리는 우선순위 받기"
             )}
             className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
           >
-            {isGoodScore ? "추가 개선 포인트 보기" : tier === "decent" ? "나머지 35% 잡는 법 보기" : "점수 올리는 우선순위 보기"}
+            {isGoodScore ? "추가 개선 포인트 보기" : `${lostVisitors.toLocaleString()}명 되찾는 법 보기`}
             <ArrowRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => openModal(
-              isGoodScore ? "내 점수 세부 분석 받기"
-              : tier === "decent" ? "내 점수 세부 분석 받기"
-              : "내 점수 깎는 핵심 원인 받기"
+              isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기"
             )}
             className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors"
           >
-            {isGoodScore ? "세부 분석 리포트 보기" : tier === "decent" ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
+            {isGoodScore ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
           </button>
         </div>
       </div>
