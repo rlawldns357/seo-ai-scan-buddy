@@ -376,7 +376,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </p>
           ) : (
             <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-              하루 <span className="text-destructive">{lostVisitors.toLocaleString()}명</span>의 잠재고객이 경쟁사로 이탈하고 있습니다
+              하루 <span className="text-destructive">{lostVisitors.toLocaleString()}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
             </p>
           )}
           {!isGoodScore && (
