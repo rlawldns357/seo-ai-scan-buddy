@@ -195,11 +195,13 @@ serve(async (req) => {
       } catch { /* ignore about page errors */ }
     }
 
-    // Extract JSON-LD structured data before truncation
+    // Extract JSON-LD from rawHtml (preserves script tags) first, fall back to html
+    const rawHtml = scrapeData.data?.rawHtml || scrapeData.rawHtml || "";
+    const htmlForJsonLd = rawHtml || html;
     const jsonLdBlocks: string[] = [];
     const jsonLdRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
     let jsonLdMatch;
-    while ((jsonLdMatch = jsonLdRegex.exec(html)) !== null) {
+    while ((jsonLdMatch = jsonLdRegex.exec(htmlForJsonLd)) !== null) {
       jsonLdBlocks.push(jsonLdMatch[1].trim());
     }
     const jsonLdSummary = jsonLdBlocks.length > 0
