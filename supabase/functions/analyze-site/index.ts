@@ -143,7 +143,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         url: formattedUrl,
-        formats: ["markdown", "html", "links"],
+        formats: ["markdown", "html", "rawHtml", "links"],
         onlyMainContent: false,
         waitFor: 3000,
       }),
