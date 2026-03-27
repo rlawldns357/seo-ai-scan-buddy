@@ -136,6 +136,18 @@ Deno.serve(async (req) => {
       ? Math.round((sessionsWithEmail.size / sessions.size) * 100)
       : 0;
 
+    // Recent analyzed URLs (deduplicated, most recent first)
+    const recentUrls: { url: string; created_at: string }[] = [];
+    const seenUrls = new Set<string>();
+    events
+      ?.filter((e: any) => e.event_name === "analysis_start" && e.url)
+      .forEach((e: any) => {
+        if (!seenUrls.has(e.url)) {
+          seenUrls.add(e.url);
+          recentUrls.push({ url: e.url, created_at: e.created_at });
+        }
+      });
+
     return new Response(
       JSON.stringify({
         summary: {
@@ -150,6 +162,7 @@ Deno.serve(async (req) => {
         eventCounts,
         dailyData,
         recentLeads: leads?.slice(0, 20) || [],
+        recentUrls: recentUrls.slice(0, 30),
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

@@ -27,6 +27,7 @@ interface InsightsData {
   eventCounts: Record<string, number>;
   dailyData: { date: string; sessions: number; analyses: number; leads: number }[];
   recentLeads: { email: string; source: string; created_at: string }[];
+  recentUrls: { url: string; created_at: string }[];
 }
 
 const chartConfig: ChartConfig = {
