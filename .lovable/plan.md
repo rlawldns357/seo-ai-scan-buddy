@@ -23,10 +23,17 @@
 - **정적 JSON-LD 5종 index.html 직접 주입** (WebSite, SoftwareApplication, Organization, BreadcrumbList, FAQPage)
 - **noscript 폴백** (JS 미실행 크롤러용 핵심 텍스트 + FAQ 전문)
 - **메타태그 최적화** (title/description 네이버 권장 길이 준수)
-- **GSC 인증 메타태그 추가** (google-site-verification)
-- **GSC 사이트맵 제출 완료**
-- **네이버 사이트 간단 체크 전항목 통과** (접속, robots.txt, 로봇 메타, 제목, 설명, OG)
-- **분석 엔진 JSON-LD 감지 개선** (HTML 잘림과 무관하게 JSON-LD 별도 추출 → AI 전달)
+- **GSC 인증 메타태그 추가** + 사이트맵 제출 완료
+- **네이버 서치어드바이저** 전항목 통과 (접속/robots/메타/제목/설명/OG)
+- **Bing Webmaster Tools** 등록 + 사이트맵 제출 (Status: Success, 2 URLs)
+- **분석 엔진 JSON-LD 감지 개선** (HTML 잘림 무관하게 별도 추출 → AI 전달)
+- **이미지 alt 텍스트 점검 완료** (Google 가이드 기준 적합)
+
+## ⏳ 확인 필요 (인덱싱 대기)
+
+- **Google 색인생성**: GSC에서 "데이터 처리 중" — 1~3일 대기 후 확인
+- **Bing 인덱싱**: 최대 48시간 대기 후 Search Performance 확인
+- **네이버 인덱싱**: SPA 특성상 수일~2주 소요, `site:searchtuneos.com` 검색으로 확인
 
 ## ✅ SEO 인프라 점검 결과
 
