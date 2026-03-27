@@ -331,7 +331,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; result?: DemoResult }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [dailyVisitors, setDailyVisitors] = useState(5000);
+  const [dailyVisitors, setDailyVisitors] = useState(10000);
 
   const openModal = (title: string) => {
     setModalTitle(title);
