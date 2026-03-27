@@ -339,63 +339,105 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   // 점수 기반 팩트 퍼센트 (실제 점수 갭)
   const gapPercent = Math.max(5, 100 - avgScore);
-  const isGoodScore = avgScore >= 75;
 
-  // 업계 통계 기반 이탈 수치 (2025~2026 최신 데이터 기반 추정)
-  // 60% zero-click searches (2025), 73% B2B visibility loss (KEO Marketing, 2025)
-  const lostStat = avgScore < 40
-    ? { visitors: "하루 300명 이상", pct: "73%" }
-    : avgScore < 60
-    ? { visitors: "하루 100~200명", pct: "60%" }
-    : { visitors: "하루 50~100명", pct: "40%" };
+  // 4단계 점수 구간: critical(<40), warning(40-59), decent(60-74), good(75+)
+  const tier = avgScore >= 75 ? "good" : avgScore >= 60 ? "decent" : avgScore >= 40 ? "warning" : "critical";
+
+  // 퍼센트 기반 이탈 추정 — 사용자가 자기 트래픽 규모에 대입 가능
+  const tierConfig = {
+    critical: {
+      lossPct: "73%", lossLabel: "73%의 방문자",
+      headline: (
+        <>검색 유입의 <span className="text-destructive">73%</span>가 경쟁사로 빠지고 있습니다</>
+      ),
+      subtext: "검색엔진과 AI 모두 이 사이트를 신뢰할 수 없는 상태입니다",
+      source: "zero-click 검색 73% · KEO Marketing, 2025",
+      statusLabel: "위험",
+      statusColor: "text-destructive",
+    },
+    warning: {
+      lossPct: "60%", lossLabel: "60%의 방문자",
+      headline: (
+        <>방문자의 <span className="text-destructive">60%</span>가 다른 사이트로 이탈할 수 있습니다</>
+      ),
+      subtext: "기본 구조는 있지만 AI 검색 최적화가 부족합니다",
+      source: "zero-click 검색 60% · SparkToro & Datos, 2025",
+      statusLabel: "개선 필요",
+      statusColor: "text-score-warning",
+    },
+    decent: {
+      lossPct: "35%", lossLabel: "35%의 방문자",
+      headline: (
+        <>잠재 유입의 <span className="text-score-warning">35%</span>를 아직 놓치고 있습니다</>
+      ),
+      subtext: "기본기는 탄탄합니다. 세부 최적화로 더 끌어올릴 수 있어요",
+      source: "AI 검색 미반영 트래픽 추정 35% · 업계 평균, 2025",
+      statusLabel: "양호",
+      statusColor: "text-score-good",
+    },
+    good: {
+      lossPct: "", lossLabel: "",
+      headline: (
+        <>🎉 <span className="text-primary">잘 하고 있어요!</span> AI 검색 반영 가능성이 높습니다</>
+      ),
+      subtext: "현재 상태를 유지하면서 세부 항목을 더 강화해 보세요",
+      source: "",
+      statusLabel: "우수",
+      statusColor: "text-primary",
+    },
+  };
+
+  const t = tierConfig[tier];
+  const isGoodScore = tier === "good";
 
   return (
     <>
       <div id="inline-cta-section" className="rounded-xl bg-primary/[0.03] shadow-card border border-border p-6 sm:p-8 text-center space-y-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
         <div className="space-y-3">
-          {isGoodScore ? (
-            <>
-              {url && (
-                <p className="text-sm font-medium text-muted-foreground">
-                  <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화 <span className="font-bold text-primary">{avgScore}점</span> — 우수한 상태
-                </p>
-              )}
-              <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-                🎉 <span className="text-primary">잘 하고 있어요!</span> AI 검색 반영 가능성이 높습니다
-              </p>
-              <p className="text-xs text-muted-foreground/50">
-                현재 상태를 유지하면서 세부 항목을 더 강화해 보세요
-              </p>
-            </>
-          ) : (
-            <>
-              {url && (
-                <p className="text-sm font-medium text-muted-foreground">
-                  <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화 <span className="font-bold text-destructive">{gapPercent}%</span> 부족한 상태
-                </p>
-              )}
-              <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-                <span className="text-primary">{lostStat.visitors}</span>의 잠재고객이<br className="sm:hidden" /> <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
-              </p>
-              <p className="text-xs text-muted-foreground/50">
-                — 출처: zero-click 검색 {lostStat.pct} · <a href="https://thedigitalbloom.com/learn/2025-organic-traffic-crisis-analysis-report/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-muted-foreground transition-colors">SparkToro & Datos, 2025</a>
-              </p>
-            </>
+          {url && (
+            <p className="text-sm font-medium text-muted-foreground">
+              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화{" "}
+              <span className={`font-bold ${isGoodScore ? "text-primary" : "text-destructive"}`}>{isGoodScore ? `${avgScore}점` : `${gapPercent}% 부족`}</span>
+              {" "}— {t.statusLabel}
+            </p>
           )}
+          <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
+            {t.headline}
+          </p>
+          {!isGoodScore && t.lossPct && (
+            <p className="text-xs text-muted-foreground mt-1">
+              💡 내 사이트에 하루 1,000명이 방문한다면, <span className="font-bold text-foreground">{t.lossPct}인 {tier === "critical" ? "730명" : tier === "warning" ? "600명" : "350명"}</span>을 놓치는 셈입니다
+            </p>
+          )}
+          <p className="text-xs text-muted-foreground/50">
+            {t.source ? (
+              <>— 출처: {t.source}</>
+            ) : (
+              <>{t.subtext}</>
+            )}
+          </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
-            onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
+            onClick={() => openModal(
+              isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기"
+              : tier === "decent" ? "나머지 35% 잡는 개선 포인트 받기"
+              : "점수 올리는 우선순위 받기"
+            )}
             className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
           >
-            {isGoodScore ? "추가 개선 포인트 보기" : "점수 올리는 우선순위 보기"}
+            {isGoodScore ? "추가 개선 포인트 보기" : tier === "decent" ? "나머지 35% 잡는 법 보기" : "점수 올리는 우선순위 보기"}
             <ArrowRight className="w-4 h-4" />
           </button>
           <button
-            onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
+            onClick={() => openModal(
+              isGoodScore ? "내 점수 세부 분석 받기"
+              : tier === "decent" ? "내 점수 세부 분석 받기"
+              : "내 점수 깎는 핵심 원인 받기"
+            )}
             className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors"
           >
-            {isGoodScore ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
+            {isGoodScore ? "세부 분석 리포트 보기" : tier === "decent" ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
           </button>
         </div>
       </div>
