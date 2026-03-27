@@ -126,7 +126,7 @@ serve(async (req) => {
       );
     }
 
-    // Step 1: Scrape with Firecrawl
+    // Step 1: Scrape main page with Firecrawl
     let formattedUrl = url.trim();
     if (!formattedUrl.startsWith("http://") && !formattedUrl.startsWith("https://")) {
       formattedUrl = `https://${formattedUrl}`;
@@ -134,7 +134,8 @@ serve(async (req) => {
 
     console.log("Scraping URL:", formattedUrl);
 
-    const scrapeRes = await fetch("https://api.firecrawl.dev/v1/scrape", {
+    // Scrape main page and /about in parallel
+    const scrapeMain = fetch("https://api.firecrawl.dev/v1/scrape", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${firecrawlKey}`,
@@ -148,12 +149,31 @@ serve(async (req) => {
       }),
     });
 
-    const scrapeData = await scrapeRes.json();
+    // Build /about URL from the base
+    const urlObj = new URL(formattedUrl);
+    const aboutUrl = `${urlObj.origin}/about`;
+    const scrapeAbout = fetch("https://api.firecrawl.dev/v1/scrape", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${firecrawlKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: aboutUrl,
+        formats: ["markdown"],
+        onlyMainContent: true,
+        waitFor: 3000,
+      }),
+    }).catch(() => null);
 
-    if (!scrapeRes.ok || !scrapeData.success) {
+    const [mainRes, aboutRes] = await Promise.all([scrapeMain, scrapeAbout]);
+
+    const scrapeData = await mainRes.json();
+
+    if (!mainRes.ok || !scrapeData.success) {
       console.error("Firecrawl error:", scrapeData);
       return new Response(
-        JSON.stringify({ success: false, error: `크롤링 실패: ${scrapeData.error || scrapeRes.status}` }),
+        JSON.stringify({ success: false, error: `크롤링 실패: ${scrapeData.error || mainRes.status}` }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -162,6 +182,18 @@ serve(async (req) => {
     const html = scrapeData.data?.html || scrapeData.html || "";
     const metadata = scrapeData.data?.metadata || scrapeData.metadata || {};
     const links = scrapeData.data?.links || scrapeData.links || [];
+
+    // Extract about page content if available
+    let aboutMarkdown = "";
+    if (aboutRes) {
+      try {
+        const aboutData = await aboutRes.json();
+        if (aboutData.success) {
+          aboutMarkdown = aboutData.data?.markdown || aboutData.markdown || "";
+          console.log("About page scraped successfully, length:", aboutMarkdown.length);
+        }
+      } catch { /* ignore about page errors */ }
+    }
 
     // Extract JSON-LD structured data before truncation
     const jsonLdBlocks: string[] = [];
