@@ -263,7 +263,7 @@ const Index = () => {
               />
             )}
             <div className="mt-14 max-w-lg mx-auto text-left">
-              <FaqSection />
+              <FaqSection compact />
             </div>
           </div>
           <StickyBottomCTA />
