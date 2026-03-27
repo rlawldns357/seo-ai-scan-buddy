@@ -279,7 +279,7 @@ const Index = () => {
 
       {screen === "result" && (
         <main className="flex-1 py-8 sm:py-12 px-2 sm:px-4 pb-24">
-          <div className="max-w-4xl mx-auto space-y-5 sm:container">
+          <div className="max-w-4xl mx-auto space-y-5">
             {/* Result header: URL, time, badge */}
             <ResultHeader
               psi={psiMobile || psiDesktop}
