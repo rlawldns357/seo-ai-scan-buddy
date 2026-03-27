@@ -343,7 +343,13 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   const lossRate = tier === "critical" ? 0.73 : tier === "warning" ? 0.60 : tier === "decent" ? 0.35 : 0;
   const lostVisitors = Math.round(dailyVisitors * lossRate);
-  const lostMonthly = (lostVisitors * 30).toLocaleString();
+  const lostMonthly = lostVisitors * 30;
+
+  // 한국어 만 단위 포맷
+  const fmtKr = (n: number) => {
+    if (n >= 10000) return `${(n / 10000).toFixed(n % 10000 === 0 ? 0 : 1)}만`;
+    return n.toLocaleString();
+  };
 
   const tierConfig = {
     critical: { lossPct: "73%", source: "zero-click 검색 73% · KEO Marketing, 2025", statusLabel: "위험" },
@@ -357,7 +363,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   const sliderStops = [100, 500, 1000, 3000, 5000, 10000, 30000, 50000, 100000];
   const sliderIndex = sliderStops.findIndex((s) => s >= dailyVisitors);
-  const handleSlider = (val: number) => setDailyVisitors(sliderStops[val] || 5000);
+  const handleSlider = (val: number) => setDailyVisitors(sliderStops[val] || 10000);
 
   return (
     <>
@@ -376,12 +382,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </p>
           ) : (
             <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-              하루 <span className="text-destructive">{lostVisitors.toLocaleString()}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
-            </p>
-          )}
-          {!isGoodScore && (
-            <p className="text-xs text-muted-foreground">
-              {dailyVisitors.toLocaleString()}명/일 × {t.lossPct} = <span className="font-semibold text-foreground">{lostVisitors.toLocaleString()}명/일</span> · 월 <span className="font-semibold text-foreground">{lostMonthly}명</span> 손실
+              하루 <span className="text-destructive">{fmtKr(lostVisitors)}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
             </p>
           )}
           {!isGoodScore && (
@@ -390,14 +391,14 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 type="range"
                 min={0}
                 max={sliderStops.length - 1}
-                value={sliderIndex >= 0 ? sliderIndex : 4}
+                value={sliderIndex >= 0 ? sliderIndex : 5}
                 onChange={(e) => handleSlider(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-muted accent-primary"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-0.5">
                 <span>100명</span>
-                <span className="text-muted-foreground font-medium">내 일일 방문자가 {dailyVisitors >= 1000 ? `${(dailyVisitors / 1000).toFixed(dailyVisitors % 1000 === 0 ? 0 : 1)}K` : dailyVisitors.toLocaleString()}명이라면?</span>
-                <span>100K명</span>
+                <span className="text-muted-foreground font-medium">내 일일 방문자가 {fmtKr(dailyVisitors)}명이라면?</span>
+                <span>10만명</span>
               </div>
             </div>
           )}
