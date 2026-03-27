@@ -28,6 +28,12 @@
 - **Bing Webmaster Tools** 등록 + 사이트맵 제출 (Status: Success, 2 URLs)
 - **분석 엔진 JSON-LD 감지 개선** (HTML 잘림 무관하게 별도 추출 → AI 전달)
 - **이미지 alt 텍스트 점검 완료** (Google 가이드 기준 적합)
+- **보안 린터 전체 해결** — analytics_events SELECT service_role 전용, INSERT anon 전용(검증 추가), DB 함수 search_path 4개 적용 → 경고 0건
+- **AEO/GEO 점수 최적화** (45/50 → 60/60)
+  - FAQ 7→10개 확장 (구조화 데이터, Lighthouse vs SEO 차이, 분석 결과 수령 방법 추가)
+  - About 페이지 Q&A 콘텐츠를 noscript 폴백에 추가
+  - index.html 정적 FAQPage JSON-LD 10문항으로 갱신
+  - analyze-site 엣지 함수: /about 서브페이지 병렬 크롤링 추가 (Firecrawl)
 
 ## ⏳ 확인 필요 (인덱싱 대기)
 
