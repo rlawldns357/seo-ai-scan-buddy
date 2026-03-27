@@ -163,11 +163,22 @@ serve(async (req) => {
     const metadata = scrapeData.data?.metadata || scrapeData.metadata || {};
     const links = scrapeData.data?.links || scrapeData.links || [];
 
+    // Extract JSON-LD structured data before truncation
+    const jsonLdBlocks: string[] = [];
+    const jsonLdRegex = /<script\s+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+    let jsonLdMatch;
+    while ((jsonLdMatch = jsonLdRegex.exec(html)) !== null) {
+      jsonLdBlocks.push(jsonLdMatch[1].trim());
+    }
+    const jsonLdSummary = jsonLdBlocks.length > 0
+      ? `Found ${jsonLdBlocks.length} JSON-LD block(s):\n${jsonLdBlocks.join("\n---\n")}`
+      : "No JSON-LD structured data found in HTML.";
+
     // Truncate content for AI analysis (keep it under token limits)
     const truncatedMarkdown = markdown.slice(0, 8000);
     const truncatedHtml = html.slice(0, 6000);
 
-    console.log("Scrape successful, analyzing with AI...");
+    console.log("Scrape successful, analyzing with AI...", { jsonLdCount: jsonLdBlocks.length });
 
     // Step 2: Analyze with AI
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
