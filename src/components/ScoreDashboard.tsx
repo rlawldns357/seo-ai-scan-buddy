@@ -394,14 +394,13 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 onChange={(e) => handleSlider(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-muted accent-primary"
               />
-              <p className="text-[10px] text-muted-foreground/60 mt-1">내 일일 방문자: {dailyVisitors.toLocaleString()}명</p>
+              <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-0.5">
+                <span>100명</span>
+                <span>100,000명</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground/60 mt-0.5">내 일일 방문자: {dailyVisitors.toLocaleString()}명</p>
             </div>
           )}
-          <p className="text-xs text-muted-foreground/50">
-            {isGoodScore ? "현재 상태를 유지하면서 세부 항목을 더 강화해 보세요" : (
-              <>— 출처: {t.source}</>
-            )}
-          </p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
@@ -418,6 +417,12 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             {isGoodScore ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
           </button>
         </div>
+        {!isGoodScore && t.source && (
+          <p className="text-[10px] text-muted-foreground/40 pt-1">— 출처: {t.source}</p>
+        )}
+        {isGoodScore && (
+          <p className="text-xs text-muted-foreground/50 pt-1">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
+        )}
       </div>
       <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} result={result} url={url} />
     </>
