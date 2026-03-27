@@ -396,7 +396,8 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
               />
               <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-0.5">
                 <span>100명</span>
-                <span>100,000명</span>
+                <span className="text-muted-foreground font-medium">방문자가 {dailyVisitors >= 1000 ? `${(dailyVisitors / 1000).toFixed(dailyVisitors % 1000 === 0 ? 0 : 1)}K` : dailyVisitors.toLocaleString()}명이라면?</span>
+                <span>100K명</span>
               </div>
               <p className="text-[10px] text-muted-foreground/60 mt-0.5">내 일일 방문자: {dailyVisitors.toLocaleString()}명</p>
             </div>
