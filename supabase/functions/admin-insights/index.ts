@@ -136,11 +136,18 @@ Deno.serve(async (req) => {
       ? Math.round((sessionsWithEmail.size / sessions.size) * 100)
       : 0;
 
-    // Recent analyzed URLs (deduplicated, most recent first)
+    // Recent analyzed URLs (deduplicated, most recent first, exclude internal domains)
+    const internalPatterns = [
+      'lovable.app', 'lovableproject.com', 'localhost', '127.0.0.1',
+      'seo-ai-scan-buddy', 'preview--',
+    ];
+    const isInternalUrl = (url: string) =>
+      internalPatterns.some((p) => url.toLowerCase().includes(p));
+
     const recentUrls: { url: string; created_at: string }[] = [];
     const seenUrls = new Set<string>();
     events
-      ?.filter((e: any) => e.event_name === "analysis_start" && e.url)
+      ?.filter((e: any) => e.event_name === "analysis_start" && e.url && !isInternalUrl(e.url))
       .forEach((e: any) => {
         if (!seenUrls.has(e.url)) {
           seenUrls.add(e.url);
