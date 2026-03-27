@@ -1,6 +1,10 @@
 
 # SearchTune OS — 매니페스트
 
+## 📖 SEO 바이블
+- **Google SEO 기본 가이드**: https://developers.google.com/search/docs/fundamentals/seo-starter-guide?hl=ko
+- 모든 SEO 관련 결정의 기준점. 변경 전 반드시 참고할 것.
+
 ## ✅ 완료
 
 - SEO·AEO·GEO 점수 엔진 & 결과 화면 (Beta)
@@ -18,6 +22,11 @@
 - email_leads SELECT 정책 service_role 전용으로 보안 강화
 - **정적 JSON-LD 5종 index.html 직접 주입** (WebSite, SoftwareApplication, Organization, BreadcrumbList, FAQPage)
 - **noscript 폴백** (JS 미실행 크롤러용 핵심 텍스트 + FAQ 전문)
+- **메타태그 최적화** (title/description 네이버 권장 길이 준수)
+- **GSC 인증 메타태그 추가** (google-site-verification)
+- **GSC 사이트맵 제출 완료**
+- **네이버 사이트 간단 체크 전항목 통과** (접속, robots.txt, 로봇 메타, 제목, 설명, OG)
+- **분석 엔진 JSON-LD 감지 개선** (HTML 잘림과 무관하게 JSON-LD 별도 추출 → AI 전달)
 
 ## ✅ SEO 인프라 점검 결과
 
@@ -29,7 +38,11 @@
 | sitemap.xml | ✅ 정상 | `/`, `/about` 2개 URL 포함, robots.txt에서 참조 |
 | 구조화 데이터 | ✅ 정적 주입 완료 | 5종 JSON-LD가 초기 HTML에 포함 |
 | noscript 폴백 | ✅ 추가 완료 | JS 없이도 핵심 콘텐츠 제공 |
+| GSC 인증 | ✅ 메타태그 추가 | google-site-verification 설정 |
+| 네이버 인증 | ✅ 통과 | naver-site-verification + 사이트 간단 체크 전항목 통과 |
+| 메타태그 길이 | ✅ 최적화 | 네이버 권장(title 40자, description 80자) 준수 |
 | SSR/SSG | ⚠️ 미적용 | Vite SPA 구조상 프레임워크 전환 필요 (향후 과제) |
+| 이미지 alt 텍스트 | ⚠️ 점검 필요 | Google 가이드 권장사항 |
 
 ## 🔲 예정 — 아이디어 / 퍼널 확장
 
