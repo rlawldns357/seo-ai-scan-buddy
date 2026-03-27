@@ -388,20 +388,20 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   return (
     <>
-      <div id="inline-cta-section" className={`rounded-xl shadow-card border p-4 sm:p-8 text-center space-y-5 animate-fade-up ${
-        isGoodScore ? "border-border"
-        : tier === "critical" ? "border-destructive/15"
-        : tier === "warning" ? "border-destructive/10"
-        : "border-score-warning/10"
+      <div id="inline-cta-section" className={`rounded-xl border p-4 sm:p-8 text-center space-y-5 animate-fade-up backdrop-blur-md ${
+        isGoodScore ? "border-primary/10 shadow-[0_2px_24px_-4px_hsl(var(--primary)/0.08)]"
+        : tier === "critical" ? "border-destructive/15 shadow-[0_2px_24px_-4px_hsl(var(--destructive)/0.1)]"
+        : tier === "warning" ? "border-destructive/10 shadow-[0_2px_24px_-4px_hsl(var(--destructive)/0.06)]"
+        : "border-score-warning/10 shadow-[0_2px_24px_-4px_hsl(36_96%_49%/0.06)]"
       }`} style={{
         animationDelay: "0.5s",
         background: isGoodScore
-          ? "linear-gradient(135deg, hsl(230 80% 98% / 0.5), hsl(268 70% 98% / 0.3))"
+          ? "hsl(var(--card) / 0.65)"
           : tier === "critical"
-          ? "linear-gradient(135deg, hsl(0 72% 98% / 0.6), hsl(0 72% 96% / 0.3))"
+          ? "hsl(var(--destructive) / 0.03)"
           : tier === "warning"
-          ? "linear-gradient(135deg, hsl(0 72% 98% / 0.4), hsl(36 96% 97% / 0.3))"
-          : "linear-gradient(135deg, hsl(36 96% 98% / 0.4), hsl(230 80% 98% / 0.2))",
+          ? "hsl(var(--destructive) / 0.02)"
+          : "hsl(var(--card) / 0.7)",
       }}>
         <div className="space-y-3">
           {url && (
