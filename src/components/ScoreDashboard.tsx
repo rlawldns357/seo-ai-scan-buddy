@@ -388,11 +388,11 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   return (
     <>
-      <div id="inline-cta-section" className={`rounded-xl shadow-card border p-6 sm:p-8 text-center space-y-5 animate-fade-up ${
-        isGoodScore ? "bg-primary/[0.03] border-border"
-        : tier === "critical" ? "bg-destructive/[0.06] border-destructive/20"
-        : tier === "warning" ? "bg-destructive/[0.04] border-destructive/12"
-        : "bg-score-warning/[0.03] border-score-warning/15"
+      <div id="inline-cta-section" className={`rounded-xl shadow-card border p-4 sm:p-8 text-center space-y-5 animate-fade-up ${
+        isGoodScore ? "bg-primary/[0.02] border-border"
+        : tier === "critical" ? "bg-destructive/[0.04] border-destructive/15"
+        : tier === "warning" ? "bg-destructive/[0.03] border-destructive/10"
+        : "bg-score-warning/[0.02] border-score-warning/10"
       }`} style={{ animationDelay: "0.5s" }}>
         <div className="space-y-3">
           {url && (
