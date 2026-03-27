@@ -49,7 +49,8 @@
 | 네이버 인증 | ✅ 통과 | naver-site-verification + 사이트 간단 체크 전항목 통과 |
 | 메타태그 길이 | ✅ 최적화 | 네이버 권장(title 40자, description 80자) 준수 |
 | SSR/SSG | ⚠️ 미적용 | Vite SPA 구조상 프레임워크 전환 필요 (향후 과제) |
-| 이미지 alt 텍스트 | ⚠️ 점검 필요 | Google 가이드 권장사항 |
+| 이미지 alt 텍스트 | ✅ 점검 완료 | Google 가이드 기준 적합 |
+| 보안 린터 | ✅ 0건 | 모든 RLS 정책 + DB 함수 search_path 해결 |
 
 ## 🔲 예정 — 아이디어 / 퍼널 확장
 
@@ -69,10 +70,10 @@
 - 리포트 내 "전문가 컨설팅 받기" CTA 삽입
 - 단계별 가치 제공으로 자연스러운 업셀 구조
 
-### 보안
-- analytics_events SELECT 정책 강화
-- INSERT always true 정책 범위 축소
-- DB 함수 search_path 설정
+### ~~보안~~ ✅ 완료
+- ~~analytics_events SELECT 정책 강화~~ → service_role 전용
+- ~~INSERT always true 정책 범위 축소~~ → anon 전용 + 검증 추가 (email 형식, event_name 길이)
+- ~~DB 함수 search_path 설정~~ → 4개 함수 모두 적용
 
 ## 📝 텍스트 수정 이력
 
