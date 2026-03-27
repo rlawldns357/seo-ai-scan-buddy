@@ -331,7 +331,7 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; result?: DemoResult }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
-  const [dailyVisitors, setDailyVisitors] = useState(10000);
+  const [dailyVisitors, setDailyVisitors] = useState(3000);
 
   const openModal = (title: string) => {
     setModalTitle(title);
@@ -363,7 +363,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   const sliderStops = [100, 500, 1000, 3000, 5000, 10000, 30000, 50000, 100000];
   const sliderIndex = sliderStops.findIndex((s) => s >= dailyVisitors);
-  const handleSlider = (val: number) => setDailyVisitors(sliderStops[val] || 10000);
+  const handleSlider = (val: number) => setDailyVisitors(sliderStops[val] || 3000);
 
   return (
     <>
@@ -382,7 +382,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </p>
           ) : (
             <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-              하루 <span className="text-destructive">{fmtKr(lostVisitors)}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
+              하루 <span className="text-destructive">{lostVisitors.toLocaleString()}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
             </p>
           )}
           {!isGoodScore && (
@@ -391,16 +391,24 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 type="range"
                 min={0}
                 max={sliderStops.length - 1}
-                value={sliderIndex >= 0 ? sliderIndex : 5}
+                value={sliderIndex >= 0 ? sliderIndex : 3}
                 onChange={(e) => handleSlider(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-muted accent-primary"
               />
               <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-0.5">
                 <span>100명</span>
-                <span className="text-muted-foreground font-medium">내 일일 방문자가 {fmtKr(dailyVisitors)}명이라면?</span>
-                <span>10만명</span>
+                <span className="text-muted-foreground font-medium">하루 방문자가 {dailyVisitors.toLocaleString()}명이라면?</span>
+                <span>100,000명</span>
               </div>
             </div>
+          )}
+          {!isGoodScore && (
+            <p className="text-[10px] text-muted-foreground/40">
+              {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
+            </p>
+          )}
+          {isGoodScore && (
+            <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
           )}
         </div>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -418,12 +426,6 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             {isGoodScore ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
           </button>
         </div>
-        {!isGoodScore && t.source && (
-          <p className="text-[10px] text-muted-foreground/40 pt-1">— 출처: {t.source}</p>
-        )}
-        {isGoodScore && (
-          <p className="text-xs text-muted-foreground/50 pt-1">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
-        )}
       </div>
       <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} result={result} url={url} />
     </>
