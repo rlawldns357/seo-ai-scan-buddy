@@ -198,6 +198,9 @@ serve(async (req) => {
 - Language: ${metadata.language || "N/A"}
 - Status Code: ${metadata.statusCode || "N/A"}
 
+## JSON-LD Structured Data
+${jsonLdSummary}
+
 ## HTML (truncated)
 ${truncatedHtml}
 
