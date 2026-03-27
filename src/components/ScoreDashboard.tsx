@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import LeadModal from "@/components/LeadModal";
 import { type DemoResult, type AxisAnalysis, type Improvement } from "@/data/demoResults";
 import SemiCircleGauge, { getGradeLabel, getGradeColorClass } from "@/components/SemiCircleGauge";
@@ -328,6 +328,32 @@ function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
 }
 
 /* ── Inline CTA ── */
+/* ── Animated number hook ── */
+function useAnimatedNumber(target: number, duration = 400) {
+  const [display, setDisplay] = useState(target);
+  const rafRef = useRef<number>();
+  const startRef = useRef({ value: target, time: 0 });
+
+  useEffect(() => {
+    const start = display;
+    const startTime = performance.now();
+    startRef.current = { value: start, time: startTime };
+
+    const animate = (now: number) => {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      setDisplay(Math.round(start + (target - start) * eased));
+      if (progress < 1) rafRef.current = requestAnimationFrame(animate);
+    };
+
+    rafRef.current = requestAnimationFrame(animate);
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
+  }, [target, duration]);
+
+  return display;
+}
+
 function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; result?: DemoResult }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
@@ -343,13 +369,8 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   const lossRate = tier === "critical" ? 0.73 : tier === "warning" ? 0.60 : tier === "decent" ? 0.35 : 0;
   const lostVisitors = Math.round(dailyVisitors * lossRate);
-  const lostMonthly = lostVisitors * 30;
 
-  // 한국어 만 단위 포맷
-  const fmtKr = (n: number) => {
-    if (n >= 10000) return `${(n / 10000).toFixed(n % 10000 === 0 ? 0 : 1)}만`;
-    return n.toLocaleString();
-  };
+  const animatedLost = useAnimatedNumber(lostVisitors);
 
   const tierConfig = {
     critical: { lossPct: "73%", source: "zero-click 검색 73% · KEO Marketing, 2025", statusLabel: "위험" },
@@ -382,7 +403,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </p>
           ) : (
             <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
-              하루 <span className="text-destructive">{lostVisitors.toLocaleString()}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
+              하루 <span className="text-destructive tabular-nums">{animatedLost.toLocaleString()}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
             </p>
           )}
           {!isGoodScore && (
@@ -401,11 +422,6 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 <span>100,000명</span>
               </div>
             </div>
-          )}
-          {!isGoodScore && (
-            <p className="text-[10px] text-muted-foreground/40">
-              {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
-            </p>
           )}
           {isGoodScore && (
             <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
@@ -426,13 +442,16 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             {isGoodScore ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
           </button>
         </div>
+        {!isGoodScore && (
+          <p className="text-[10px] text-muted-foreground/40">
+            {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
+          </p>
+        )}
       </div>
       <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} result={result} url={url} />
     </>
   );
 }
-
-/* ── One-line verdict helper ── */
 function getVerdict(seo: number, aeo: number, geo: number): string {
   const avg = (seo + aeo + geo) / 3;
   if (avg >= 75) return "AI 검색 반영 가능성이 높아요. 현재 상태를 유지하세요!";
