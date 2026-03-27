@@ -71,6 +71,26 @@ export default function About() {
             </div>
             <div>
               <h2 className="text-base font-bold text-foreground mb-2">
+                AEO(AI 답변 최적화)란 무엇인가요?
+              </h2>
+              <p>
+                AEO는 Answer Engine Optimization의 약자로, ChatGPT·Perplexity·뤼튼·클로바X 같은 AI 답변 엔진이
+                내 콘텐츠를 직접 답변으로 인용하도록 최적화하는 전략입니다.
+                Q&A 구조, 명확한 직접 답변, FAQPage 스키마 적용 등이 핵심입니다.
+              </p>
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-foreground mb-2">
+                GEO(생성형 검색 최적화)란 무엇인가요?
+              </h2>
+              <p>
+                GEO는 Generative Engine Optimization의 약자로, Google SGE·Naver Cue:·Bing Copilot 등
+                생성형 AI 검색에서 브랜드와 콘텐츠가 출처로 인용·참조되도록 준비하는 전략입니다.
+                AI 크롤러 접근 허용, 명확한 출처·엔티티 정보, 데이터 기반 콘텐츠가 중요합니다.
+              </p>
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-foreground mb-2">
                 어떻게 점수를 계산하나요?
               </h2>
               <p>
@@ -85,6 +105,7 @@ export default function About() {
               </h2>
               <p>
                 현재 베타 서비스로 무료 이용할 수 있습니다.
+                별도 회원가입 없이 URL만 입력하면 바로 분석 결과를 확인할 수 있습니다.
               </p>
             </div>
           </section>
