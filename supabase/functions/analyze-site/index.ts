@@ -15,7 +15,7 @@ Evaluate based on these sub-signals (each 0-100):
 - 크롤링 가능성 (weight 25): Are there robots.txt issues? Can search engines access pages?
 - 인덱싱 준비도 (weight 20): Are meta tags (title, description, canonical) properly set?
 - 스니펫 품질 (weight 20): Are title/description optimized for search snippets?
-- 구조화 데이터 (weight 15): Is there JSON-LD/Schema.org structured data?
+- 구조화 데이터 (weight 15): Is there JSON-LD/Schema.org structured data? Score guide: 0-30 = no structured data at all; 40-60 = 1 basic JSON-LD block; 60-75 = 2-3 valid JSON-LD types; 75-90 = 4+ JSON-LD types covering key schemas (WebSite, Organization, FAQPage, BreadcrumbList, SoftwareApplication, Product, etc.); 90-100 = comprehensive structured data with all relevant types and rich detail. Count the JSON-LD blocks provided in the analysis input carefully.
 - 성능·모바일 (weight 20): Mobile-friendly? Fast loading indicators?
 
 ## AEO (Answer Engine Optimization) - AI 답변 최적화
