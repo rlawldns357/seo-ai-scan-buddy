@@ -363,7 +363,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   const sliderStops = [100, 500, 1000, 3000, 5000, 10000, 30000, 50000, 100000];
   const sliderIndex = sliderStops.findIndex((s) => s >= dailyVisitors);
-  const handleSlider = (val: number) => setDailyVisitors(sliderStops[val] || 10000);
+  const handleSlider = (val: number) => setDailyVisitors(sliderStops[val] || 3000);
 
   return (
     <>
@@ -407,9 +407,25 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
               {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
             </p>
           )}
-        {isGoodScore && (
-          <p className="text-xs text-muted-foreground/50 pt-1">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
-        )}
+          {isGoodScore && (
+            <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
+          )}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <button
+            onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
+            className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
+          >
+            {isGoodScore ? "추가 개선 포인트 보기" : "점수 올리는 우선순위 보기"}
+            <ArrowRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
+            className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors"
+          >
+            {isGoodScore ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
+          </button>
+        </div>
       </div>
       <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} result={result} url={url} />
     </>
