@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail } from "lucide-react";
+import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -219,6 +219,39 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Recently Analyzed URLs */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Globe className="w-4 h-4" />
+                  최근 분석된 URL
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {(!data.recentUrls || data.recentUrls.length === 0) ? (
+                    <p className="text-sm text-muted-foreground">분석 기록 없음</p>
+                  ) : (
+                    data.recentUrls.map((item, i) => (
+                      <div key={i} className="flex justify-between items-center text-sm gap-2">
+                        <a
+                          href={item.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary truncate max-w-[300px] hover:underline font-mono text-xs"
+                        >
+                          {item.url}
+                        </a>
+                        <span className="text-muted-foreground text-xs shrink-0">
+                          {new Date(item.created_at).toLocaleDateString("ko-KR")}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </>
         ) : null}
       </div>
