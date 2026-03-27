@@ -209,8 +209,9 @@ serve(async (req) => {
     // Truncate content for AI analysis (keep it under token limits)
     const truncatedMarkdown = markdown.slice(0, 8000);
     const truncatedHtml = html.slice(0, 6000);
+    const truncatedAbout = aboutMarkdown.slice(0, 3000);
 
-    console.log("Scrape successful, analyzing with AI...", { jsonLdCount: jsonLdBlocks.length });
+    console.log("Scrape successful, analyzing with AI...", { jsonLdCount: jsonLdBlocks.length, hasAbout: !!truncatedAbout });
 
     // Step 2: Analyze with AI
     const lovableApiKey = Deno.env.get("LOVABLE_API_KEY");
@@ -239,6 +240,9 @@ ${truncatedHtml}
 ## Markdown Content (truncated)
 ${truncatedMarkdown}
 
+${truncatedAbout ? `## About / Sub-page Content (from ${aboutUrl})
+${truncatedAbout}
+` : ""}
 ## Links found: ${links.length}
 ${links.slice(0, 20).join("\n")}
 `;
