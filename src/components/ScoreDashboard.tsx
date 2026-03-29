@@ -191,7 +191,10 @@ function SummaryCard({
           <Icon className={`w-4 h-4 ${config.accent}`} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">{axis.label}</span>
         </div>
-        <SemiCircleGauge score={score} size={140} delay={delay} />
+        <div className="relative">
+          <div className="absolute inset-0 rounded-full blur-2xl opacity-20" style={{ background: `hsl(var(--primary) / 0.3)` }} />
+          <SemiCircleGauge score={score} size={150} delay={delay} />
+        </div>
         <span className={`text-sm font-bold ${getGradeColorClass(score)} -mt-1`}>{getGradeLabel(score)}</span>
         <div className="mt-2 min-h-[22px] flex items-center">{getSeverityBadge(severity)}</div>
         <div className="min-h-[28px] flex items-center justify-center mt-1">
@@ -395,20 +398,26 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   return (
     <>
-      <div id="inline-cta-section" className={`rounded-xl border p-4 sm:p-8 text-center space-y-5 animate-fade-up backdrop-blur-md ${
-        isGoodScore ? "border-primary/10 shadow-[0_2px_24px_-4px_hsl(var(--primary)/0.08)]"
-        : tier === "critical" ? "border-destructive/15 shadow-[0_2px_24px_-4px_hsl(var(--destructive)/0.1)]"
-        : tier === "warning" ? "border-destructive/10 shadow-[0_2px_24px_-4px_hsl(var(--destructive)/0.06)]"
-        : "border-score-warning/10 shadow-[0_2px_24px_-4px_hsl(36_96%_49%/0.06)]"
+      <div id="inline-cta-section" className={`relative rounded-2xl border p-5 sm:p-8 text-center space-y-5 animate-fade-up overflow-hidden ${
+        isGoodScore ? "border-primary/15"
+        : tier === "critical" ? "border-destructive/20"
+        : tier === "warning" ? "border-destructive/12"
+        : "border-score-warning/12"
       }`} style={{
         animationDelay: "0.5s",
         background: isGoodScore
-          ? "hsl(var(--card) / 0.65)"
+          ? "hsl(var(--card) / 0.85)"
           : tier === "critical"
-          ? "hsl(var(--destructive) / 0.03)"
+          ? "hsl(var(--card) / 0.88)"
           : tier === "warning"
-          ? "hsl(var(--destructive) / 0.02)"
-          : "hsl(var(--card) / 0.7)",
+          ? "hsl(var(--card) / 0.88)"
+          : "hsl(var(--card) / 0.88)",
+        backdropFilter: "blur(16px)",
+        boxShadow: isGoodScore
+          ? "0 1px 20px -4px hsl(var(--primary) / 0.08)"
+          : tier === "critical"
+          ? "inset 0 0 60px -20px hsl(var(--destructive) / 0.06), 0 1px 20px -4px hsl(var(--destructive) / 0.06)"
+          : "0 1px 20px -4px hsl(var(--destructive) / 0.04)",
       }}>
         <div className="space-y-3">
           {url && (
