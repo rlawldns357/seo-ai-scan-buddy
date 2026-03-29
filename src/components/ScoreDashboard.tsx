@@ -156,23 +156,22 @@ function SummaryCard({
         className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <div className="flex items-center gap-2 px-2 py-2">
-          {/* Gauge graph - larger, emphasized */}
-          <div className="shrink-0 -mb-2">
-            <SemiCircleGauge score={score} size={100} delay={delay} />
+        <div className="flex items-center gap-1 px-2 py-1.5">
+          {/* Gauge graph - big & prominent */}
+          <div className="shrink-0 -mb-3">
+            <SemiCircleGauge score={score} size={120} delay={delay} />
           </div>
-          {/* Info - compact text */}
+          {/* Info - minimal text */}
           <div className="flex-1 min-w-0 space-y-0.5">
             <div className="flex items-center gap-1">
               <Icon className={`w-3 h-3 ${config.accent}`} />
-              <span className="text-[11px] font-bold text-foreground">{axis.label}</span>
-              {getSeverityBadge(severity)}
+              <span className="text-[11px] font-extrabold text-foreground tracking-wide">{axis.label}</span>
             </div>
-            {isCritical && <p className="text-[10px] font-medium text-score-poor leading-snug line-clamp-2">{config.lossDesc}</p>}
-            {isWarning && <p className="text-[10px] text-score-warning leading-snug line-clamp-2">{config.warnDesc}</p>}
-            {!isCritical && !isWarning && <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{axis.description}</p>}
+            {getSeverityBadge(severity)}
+            {isCritical && <p className="text-[10px] font-medium text-score-poor leading-tight line-clamp-2 mt-0.5">{config.lossDesc}</p>}
+            {isWarning && <p className="text-[10px] text-score-warning leading-tight line-clamp-2 mt-0.5">{config.warnDesc}</p>}
+            {!isCritical && !isWarning && <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2 mt-0.5">{axis.description}</p>}
           </div>
-          {/* Arrow */}
           <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
         </div>
       </button>
