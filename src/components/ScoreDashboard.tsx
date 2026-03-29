@@ -405,18 +405,20 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
       }`} style={{
         animationDelay: "0.5s",
         background: isGoodScore
-          ? "hsl(var(--card) / 0.85)"
+          ? "linear-gradient(135deg, hsl(var(--card) / 0.9), hsl(var(--primary) / 0.04))"
           : tier === "critical"
-          ? "hsl(var(--card) / 0.88)"
+          ? "linear-gradient(135deg, hsl(var(--card) / 0.88), hsl(var(--destructive) / 0.06))"
           : tier === "warning"
-          ? "hsl(var(--card) / 0.88)"
-          : "hsl(var(--card) / 0.88)",
+          ? "linear-gradient(135deg, hsl(var(--card) / 0.88), hsl(var(--destructive) / 0.04))"
+          : "linear-gradient(135deg, hsl(var(--card) / 0.88), hsl(var(--score-warning) / 0.05))",
         backdropFilter: "blur(16px)",
         boxShadow: isGoodScore
           ? "0 1px 20px -4px hsl(var(--primary) / 0.08)"
           : tier === "critical"
-          ? "inset 0 0 60px -20px hsl(var(--destructive) / 0.06), 0 1px 20px -4px hsl(var(--destructive) / 0.06)"
-          : "0 1px 20px -4px hsl(var(--destructive) / 0.04)",
+          ? "inset 0 0 80px -20px hsl(var(--destructive) / 0.08), 0 1px 20px -4px hsl(var(--destructive) / 0.08)"
+          : tier === "warning"
+          ? "inset 0 0 60px -20px hsl(var(--destructive) / 0.05), 0 1px 20px -4px hsl(var(--destructive) / 0.05)"
+          : "inset 0 0 60px -20px hsl(var(--score-warning) / 0.06), 0 1px 20px -4px hsl(var(--score-warning) / 0.04)",
       }}>
         <div className="space-y-3">
           {url && (
