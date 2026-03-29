@@ -156,24 +156,24 @@ function SummaryCard({
         className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <div className="flex items-center gap-3 px-3 py-3">
-          {/* Gauge graph */}
-          <div className="shrink-0">
-            <SemiCircleGauge score={score} size={76} delay={delay} />
+        <div className="flex items-center gap-2 px-2 py-2">
+          {/* Gauge graph - larger, emphasized */}
+          <div className="shrink-0 -mb-2">
+            <SemiCircleGauge score={score} size={100} delay={delay} />
           </div>
-          {/* Info */}
-          <div className="flex-1 min-w-0 space-y-1">
-            <div className="flex items-center gap-1.5">
-              <Icon className={`w-3.5 h-3.5 ${config.accent}`} />
-              <span className="text-xs font-bold text-foreground">{axis.label}</span>
+          {/* Info - compact text */}
+          <div className="flex-1 min-w-0 space-y-0.5">
+            <div className="flex items-center gap-1">
+              <Icon className={`w-3 h-3 ${config.accent}`} />
+              <span className="text-[11px] font-bold text-foreground">{axis.label}</span>
               {getSeverityBadge(severity)}
             </div>
-            {isCritical && <p className="text-[11px] font-medium text-score-poor leading-snug line-clamp-1">{config.lossDesc}</p>}
-            {isWarning && <p className="text-[11px] text-score-warning leading-snug line-clamp-1">{config.warnDesc}</p>}
-            {!isCritical && !isWarning && <p className="text-[11px] text-muted-foreground leading-snug line-clamp-1">{axis.description}</p>}
+            {isCritical && <p className="text-[10px] font-medium text-score-poor leading-snug line-clamp-2">{config.lossDesc}</p>}
+            {isWarning && <p className="text-[10px] text-score-warning leading-snug line-clamp-2">{config.warnDesc}</p>}
+            {!isCritical && !isWarning && <p className="text-[10px] text-muted-foreground leading-snug line-clamp-2">{axis.description}</p>}
           </div>
           {/* Arrow */}
-          <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
+          <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
         </div>
       </button>
     );
