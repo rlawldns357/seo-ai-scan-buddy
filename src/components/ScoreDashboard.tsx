@@ -130,9 +130,9 @@ function ImprovementRow({ icon, label, item, urgent }: { icon: React.ReactNode; 
 
 /* ── Summary card (clickable, no detail inside) ── */
 function SummaryCard({
-  axis, score, delay, selected, onClick,
+  axis, score, delay, selected, onClick, compact,
 }: {
-  axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void;
+  axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void; compact?: boolean;
 }) {
   const config = axisConfig[axis.label];
   const Icon = config.icon;
@@ -148,6 +148,38 @@ function SummaryCard({
     ? "ring-1 ring-score-warning/25"
     : "ring-1 ring-border";
 
+  /* ── Compact horizontal layout for mobile ── */
+  if (compact) {
+    return (
+      <button
+        onClick={onClick}
+        className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
+        style={{ animationDelay: `${delay / 1000}s` }}
+      >
+        <div className="flex items-center gap-3 px-3 py-3">
+          {/* Gauge – small */}
+          <div className="shrink-0">
+            <SemiCircleGauge score={score} size={90} delay={delay} />
+          </div>
+          {/* Info */}
+          <div className="flex-1 min-w-0 space-y-1">
+            <div className="flex items-center gap-1.5">
+              <Icon className={`w-3.5 h-3.5 ${config.accent}`} />
+              <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">{axis.label}</span>
+              <span className={`text-xs font-bold ${getGradeColorClass(score)} ml-auto`}>{getGradeLabel(score)}</span>
+            </div>
+            <div className="min-h-[18px]">{getSeverityBadge(severity)}</div>
+            {isCritical && <p className="text-[10px] font-medium text-score-poor leading-snug line-clamp-1">{config.lossDesc}</p>}
+            {isWarning && <p className="text-[10px] text-score-warning leading-snug line-clamp-1">{config.warnDesc}</p>}
+          </div>
+          {/* Arrow */}
+          <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
+        </div>
+      </button>
+    );
+  }
+
+  /* ── Desktop vertical layout (unchanged) ── */
   return (
     <button
       onClick={onClick}
@@ -155,52 +187,27 @@ function SummaryCard({
       style={{ animationDelay: `${delay / 1000}s` }}
     >
       <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
-        {/* Title */}
         <div className="flex items-center gap-1.5 mb-1">
           <Icon className={`w-4 h-4 ${config.accent}`} />
           <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">{axis.label}</span>
         </div>
-
-        {/* Gauge */}
         <SemiCircleGauge score={score} size={140} delay={delay} />
-
-        {/* Grade */}
-        <span className={`text-sm font-bold ${getGradeColorClass(score)} -mt-1`}>
-          {getGradeLabel(score)}
-        </span>
-
-        {/* Badge */}
+        <span className={`text-sm font-bold ${getGradeColorClass(score)} -mt-1`}>{getGradeLabel(score)}</span>
         <div className="mt-2 min-h-[22px] flex items-center">{getSeverityBadge(severity)}</div>
-
-        {/* Loss message */}
         <div className="min-h-[28px] flex items-center justify-center mt-1">
-          {isCritical && (
-            <p className="text-[11px] font-medium text-score-poor leading-snug">{config.lossDesc}</p>
-          )}
-          {isWarning && (
-            <p className="text-[11px] text-score-warning leading-snug">{config.warnDesc}</p>
-          )}
+          {isCritical && <p className="text-[11px] font-medium text-score-poor leading-snug">{config.lossDesc}</p>}
+          {isWarning && <p className="text-[11px] text-score-warning leading-snug">{config.warnDesc}</p>}
         </div>
-
-        {/* Description */}
-        <p className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">
-          {axis.description}
-        </p>
-
-        {/* Score cap */}
+        <p className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">{axis.description}</p>
         {axis.scoreCap && (
           <div className={`w-full mt-2 flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] leading-snug text-left ${
-            isCritical
-              ? "bg-score-poor/6 border-score-poor/15 text-score-poor font-medium"
-              : "bg-score-warning/6 border-score-warning/12 text-score-warning"
+            isCritical ? "bg-score-poor/6 border-score-poor/15 text-score-poor font-medium" : "bg-score-warning/6 border-score-warning/12 text-score-warning"
           }`}>
             <Lock className="w-3 h-3 shrink-0 mt-0.5" />
             <span>{axis.scoreCap}</span>
           </div>
         )}
       </div>
-
-      {/* Bottom hint */}
       <div className={`flex items-center justify-center gap-1 py-2.5 border-t border-border text-[11px] font-semibold ${
         selected ? `${config.accent} ${config.headerBg}` : "text-muted-foreground"
       }`}>
