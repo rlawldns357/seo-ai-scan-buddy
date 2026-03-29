@@ -156,22 +156,24 @@ function SummaryCard({
         className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <div className="flex items-center gap-2.5 px-3 py-2.5">
-          {/* Gauge with subtle glow */}
-          <div className="shrink-0 relative">
-            <div className="absolute inset-0 rounded-full blur-xl opacity-15" style={{ background: `hsl(var(--primary) / 0.4)` }} />
-            <SemiCircleGauge score={score} size={80} delay={delay} />
+        <div className="flex items-center gap-3 px-4 py-4">
+          {/* Large score number */}
+          <div className="shrink-0 flex flex-col items-center w-16">
+            <span className={`text-3xl font-extrabold tabular-nums leading-none ${getGradeColorClass(score)}`}>{score}</span>
+            <span className="text-[9px] text-muted-foreground mt-0.5">/ 100</span>
           </div>
+          {/* Divider */}
+          <div className="w-px h-10 bg-border shrink-0" />
           {/* Info */}
-          <div className="flex-1 min-w-0 space-y-0.5">
+          <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-1.5">
               <Icon className={`w-3.5 h-3.5 ${config.accent}`} />
-              <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">{axis.label}</span>
-              <span className={`text-xs font-bold ${getGradeColorClass(score)} ml-auto`}>{getGradeLabel(score)}</span>
+              <span className="text-xs font-bold text-foreground">{axis.label}</span>
+              {getSeverityBadge(severity)}
             </div>
-            <div className="min-h-[16px]">{getSeverityBadge(severity)}</div>
-            {isCritical && <p className="text-[10px] font-medium text-score-poor leading-snug line-clamp-1">{config.lossDesc}</p>}
-            {isWarning && <p className="text-[10px] text-score-warning leading-snug line-clamp-1">{config.warnDesc}</p>}
+            {isCritical && <p className="text-[11px] font-medium text-score-poor leading-snug line-clamp-1">{config.lossDesc}</p>}
+            {isWarning && <p className="text-[11px] text-score-warning leading-snug line-clamp-1">{config.warnDesc}</p>}
+            {!isCritical && !isWarning && <p className="text-[11px] text-muted-foreground leading-snug line-clamp-1">{axis.description}</p>}
           </div>
           {/* Arrow */}
           <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
@@ -458,19 +460,19 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <div className="flex flex-row gap-2 sm:gap-3 justify-center">
           <button
             onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-            className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-12 px-4 sm:px-6 rounded-xl bg-primary text-primary-foreground font-bold text-[13px] sm:text-sm hover:bg-primary/90 transition-colors flex-1 sm:flex-initial"
           >
-            {isGoodScore ? "추가 개선 포인트 보기" : "점수 올리는 우선순위 보기"}
+            {isGoodScore ? "개선 포인트 보기" : "우선순위 보기"}
             <ArrowRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-            className="inline-flex items-center justify-center gap-2 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors"
+            className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-12 px-4 sm:px-6 rounded-xl border border-primary/20 text-primary font-semibold text-[13px] sm:text-sm hover:bg-primary/5 transition-colors flex-1 sm:flex-initial"
           >
-            {isGoodScore ? "세부 분석 리포트 보기" : "내 점수 깎는 핵심 원인 보기"}
+            {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
           </button>
         </div>
         {!isGoodScore && (
