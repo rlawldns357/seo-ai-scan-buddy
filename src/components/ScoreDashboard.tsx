@@ -156,20 +156,20 @@ function SummaryCard({
         className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <div className="flex items-center gap-3 px-3 py-3">
-          {/* Gauge – small with subtle glow */}
+        <div className="flex items-center gap-2.5 px-3 py-2.5">
+          {/* Gauge with subtle glow */}
           <div className="shrink-0 relative">
             <div className="absolute inset-0 rounded-full blur-xl opacity-15" style={{ background: `hsl(var(--primary) / 0.4)` }} />
-            <SemiCircleGauge score={score} size={90} delay={delay} />
+            <SemiCircleGauge score={score} size={80} delay={delay} />
           </div>
           {/* Info */}
-          <div className="flex-1 min-w-0 space-y-1">
+          <div className="flex-1 min-w-0 space-y-0.5">
             <div className="flex items-center gap-1.5">
               <Icon className={`w-3.5 h-3.5 ${config.accent}`} />
               <span className="text-[11px] font-bold uppercase tracking-widest text-foreground">{axis.label}</span>
               <span className={`text-xs font-bold ${getGradeColorClass(score)} ml-auto`}>{getGradeLabel(score)}</span>
             </div>
-            <div className="min-h-[18px]">{getSeverityBadge(severity)}</div>
+            <div className="min-h-[16px]">{getSeverityBadge(severity)}</div>
             {isCritical && <p className="text-[10px] font-medium text-score-poor leading-snug line-clamp-1">{config.lossDesc}</p>}
             {isWarning && <p className="text-[10px] text-score-warning leading-snug line-clamp-1">{config.warnDesc}</p>}
           </div>
@@ -570,7 +570,7 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
       </div>
 
       {/* Mobile: card + inline detail for each axis */}
-      <div className="sm:hidden space-y-2.5">
+      <div className="sm:hidden space-y-2">
         {axes.map(({ axis, score, key }, i) => (
           <div key={key} className="space-y-2">
             <SummaryCard
