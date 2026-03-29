@@ -156,7 +156,7 @@ function SummaryCard({
         className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <div className="flex items-center gap-1 px-2 py-1.5">
+        <div className="flex items-center gap-2 px-3 py-3">
           {/* Gauge graph - big & prominent */}
           <div className="shrink-0 -mb-3">
             <SemiCircleGauge score={score} size={120} delay={delay} />
