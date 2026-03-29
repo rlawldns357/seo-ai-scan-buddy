@@ -39,8 +39,7 @@ export function getGradeColorClass(score: number) {
 }
 
 export default function SemiCircleGauge({ score, size = 140, delay = 0 }: SemiCircleGaugeProps) {
-  // Use smaller gauge on mobile
-  const effectiveSize = typeof window !== "undefined" && window.innerWidth < 640 ? Math.min(size, 120) : size;
+  const effectiveSize = size;
   const [animated, setAnimated] = useState(0);
 
   useEffect(() => {
