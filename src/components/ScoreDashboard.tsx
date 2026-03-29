@@ -157,8 +157,9 @@ function SummaryCard({
         style={{ animationDelay: `${delay / 1000}s` }}
       >
         <div className="flex items-center gap-3 px-3 py-3">
-          {/* Gauge – small */}
-          <div className="shrink-0">
+          {/* Gauge – small with subtle glow */}
+          <div className="shrink-0 relative">
+            <div className="absolute inset-0 rounded-full blur-xl opacity-15" style={{ background: `hsl(var(--primary) / 0.4)` }} />
             <SemiCircleGauge score={score} size={90} delay={delay} />
           </div>
           {/* Info */}
@@ -437,16 +438,16 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </p>
           )}
           {!isGoodScore && (
-            <div className="max-w-xs mx-auto pt-1">
+            <div className="max-w-xs mx-auto pt-2">
               <input
                 type="range"
                 min={0}
                 max={sliderStops.length - 1}
                 value={sliderIndex >= 0 ? sliderIndex : 3}
                 onChange={(e) => handleSlider(Number(e.target.value))}
-                className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-muted accent-primary"
+                className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-border accent-primary"
               />
-              <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-0.5">
+              <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
                 <span>100명</span>
                 <span className="text-muted-foreground font-medium">하루 방문자가 {dailyVisitors.toLocaleString()}명이라면?</span>
                 <span>100,000명</span>
