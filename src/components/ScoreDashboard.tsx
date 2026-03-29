@@ -149,21 +149,18 @@ function SummaryCard({
     : "ring-1 ring-border";
 
   /* ── Compact horizontal layout for mobile ── */
-  if (compact) {
+   if (compact) {
     return (
       <button
         onClick={onClick}
         className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <div className="flex items-center gap-3 px-4 py-4">
-          {/* Large score number */}
-          <div className="shrink-0 flex flex-col items-center w-16">
-            <span className={`text-3xl font-extrabold tabular-nums leading-none ${getGradeColorClass(score)}`}>{score}</span>
-            <span className="text-[9px] text-muted-foreground mt-0.5">/ 100</span>
+        <div className="flex items-center gap-3 px-3 py-3">
+          {/* Gauge graph */}
+          <div className="shrink-0">
+            <SemiCircleGauge score={score} size={76} delay={delay} />
           </div>
-          {/* Divider */}
-          <div className="w-px h-10 bg-border shrink-0" />
           {/* Info */}
           <div className="flex-1 min-w-0 space-y-1">
             <div className="flex items-center gap-1.5">
