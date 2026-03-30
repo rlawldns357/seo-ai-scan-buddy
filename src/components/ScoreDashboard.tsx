@@ -171,7 +171,7 @@ function SummaryCard({
     return (
       <div
         ref={cardRef}
-        className={`rounded-xl bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
+        className={`rounded-xl bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200 scroll-mt-3`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
         <button onClick={() => {
