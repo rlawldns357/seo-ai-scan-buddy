@@ -34,6 +34,12 @@
   - About 페이지 Q&A 콘텐츠를 noscript 폴백에 추가
   - index.html 정적 FAQPage JSON-LD 10문항으로 갱신
   - analyze-site 엣지 함수: /about 서브페이지 병렬 크롤링 추가 (Firecrawl)
+- **모바일 UX 전면 개선** (2026-03-30)
+  - 점수 카드 모바일 기본 접힘 + 토글 시 부드러운 스크롤
+  - 하단 스티키 CTA: 모바일 2줄 풀폭 레이아웃 (토스 스타일)
+  - Navbar 풀네임 복귀 + 베타 버튼 간소화 (아이폰미니 대응)
+  - 인라인 CTA: 미니멀 디자인 + 붉은 그라데이션 배경 강조
+  - ScoreDashboard 모바일 초기화 hydration 버그 수정
 
 ## ⏳ 확인 필요 (인덱싱 대기)
 
