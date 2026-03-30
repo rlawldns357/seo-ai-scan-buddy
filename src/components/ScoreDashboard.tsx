@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import LeadModal from "@/components/LeadModal";
 import { type DemoResult, type AxisAnalysis, type Improvement } from "@/data/demoResults";
 import SemiCircleGauge, { getGradeLabel, getGradeColorClass } from "@/components/SemiCircleGauge";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Search, Bot, Sparkles,
   AlertTriangle, CheckCircle, Zap, Wrench, Plus, TrendingUp, AlertCircle,
@@ -615,8 +616,16 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
   ];
 
   // Default to the worst-scoring axis
+  const isMobile = useIsMobile();
   const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
-  const [selected, setSelected] = useState<AxisLabel | null>(worstKey);
+  const [selected, setSelected] = useState<AxisLabel | null>(null);
+
+  // Desktop: auto-select worst axis on mount
+  useEffect(() => {
+    if (isMobile === false) {
+      setSelected((prev) => prev === null ? worstKey : prev);
+    }
+  }, [isMobile, worstKey]);
 
   const selectedEntry = axes.find((a) => a.key === selected);
   const verdict = getVerdict(result.seoScore, result.aeoScore, result.geoScore);
