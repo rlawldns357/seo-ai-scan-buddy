@@ -571,6 +571,13 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                   {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
                 </p>
               )}
+              <button
+                onClick={() => setMobileExpanded(false)}
+                className="flex items-center justify-center gap-1 w-full text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors py-0.5"
+              >
+                접기
+                <ChevronDown className="w-3.5 h-3.5 rotate-180" />
+              </button>
             </div>
           )}
         </div>
