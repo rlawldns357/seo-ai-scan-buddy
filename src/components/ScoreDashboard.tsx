@@ -399,6 +399,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
   const sliderStops = [100, 500, 1000, 3000, 5000, 10000, 30000, 50000, 100000];
   const sliderIndex = sliderStops.findIndex((s) => s >= dailyVisitors);
   const handleSlider = (val: number) => setDailyVisitors(sliderStops[val] || 3000);
+  const [mobileExpanded, setMobileExpanded] = React.useState(false);
 
   return (
     <>
