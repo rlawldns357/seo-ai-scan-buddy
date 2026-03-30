@@ -400,7 +400,8 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   return (
     <>
-      <div id="inline-cta-section" className={`relative rounded-2xl border p-5 sm:p-8 text-center space-y-5 animate-fade-up overflow-hidden ${
+      <div id="inline-cta-section" className={`relative rounded-2xl sm:rounded-2xl border p-4 sm:p-8 text-center space-y-4 sm:space-y-5 animate-fade-up overflow-hidden
+        sm:static sticky bottom-0 z-30 rounded-b-none sm:rounded-b-2xl ${
         isGoodScore ? "border-primary/15"
         : tier === "critical" ? "border-destructive/20"
         : tier === "warning" ? "border-destructive/12"
