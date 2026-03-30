@@ -432,11 +432,11 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
           )}
           {isGoodScore ? (
             <p className="text-base sm:text-xl font-extrabold text-foreground leading-snug">
-              🎉 <span className="text-primary">잘 하고 있어요!</span> <span className="hidden sm:inline">AI 검색 반영 가능성이 높습니다</span><span className="sm:hidden">AI 검색 반영 가능성 높음</span>
+              🎉 <span className="text-primary">잘 하고 있어요!</span> AI 검색 반영 가능성이 높습니다
             </p>
           ) : (
             <p className="text-base sm:text-xl font-extrabold text-foreground leading-snug">
-              하루 <span className="text-destructive tabular-nums">{animatedLost.toLocaleString()}명</span> <span className="text-destructive">이탈 중</span>
+              하루 <span className="text-destructive tabular-nums">{animatedLost.toLocaleString()}명</span>, <span className="text-destructive">경쟁사로 빠져나가고 있어요</span>
             </p>
           )}
           {!isGoodScore && (
