@@ -616,18 +616,13 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
   ];
 
   // Default to the worst-scoring axis
-  const isMobile = useIsMobile();
   const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
-  const [selected, setSelected] = useState<AxisLabel | null>(null);
-  const [initialized, setInitialized] = useState(false);
-
-  // Set default selection only once after mobile detection is ready
-  useEffect(() => {
-    if (!initialized && isMobile !== undefined) {
-      if (!isMobile) setSelected(worstKey);
-      setInitialized(true);
-    }
-  }, [isMobile, initialized, worstKey]);
+  const isMobile = useIsMobile();
+  const [selected, setSelected] = useState<AxisLabel | null>(() => {
+    // SSR-safe: check window width immediately to avoid flash
+    if (typeof window !== "undefined" && window.innerWidth < 768) return null;
+    return worstKey;
+  });
 
   const selectedEntry = axes.find((a) => a.key === selected);
   const verdict = getVerdict(result.seoScore, result.aeoScore, result.geoScore);
