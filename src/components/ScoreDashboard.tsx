@@ -174,7 +174,14 @@ function SummaryCard({
         className={`rounded-xl bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <button onClick={onClick} className="w-full text-left">
+        <button onClick={() => {
+          onClick();
+          if (!selected) {
+            setTimeout(() => {
+              cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 50);
+          }
+        }} className="w-full text-left">
           <div className="flex items-center gap-2 px-3 pt-3 pb-1">
             <div className="shrink-0 -mb-3">
               <SemiCircleGauge score={score} size={120} delay={delay} />
