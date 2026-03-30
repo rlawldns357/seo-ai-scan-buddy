@@ -440,7 +440,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   return (
     <>
-      <div id="inline-cta-section" className={`relative rounded-2xl sm:rounded-2xl border p-4 sm:p-8 text-center space-y-4 sm:space-y-5 animate-fade-up overflow-hidden
+      <div id="inline-cta-section" className={`relative rounded-2xl sm:rounded-2xl border p-2.5 sm:p-8 text-center space-y-2 sm:space-y-5 animate-fade-up overflow-hidden
         sm:static sticky bottom-0 z-30 rounded-b-none sm:rounded-b-2xl ${
         isGoodScore ? "border-primary/15"
         : tier === "critical" ? "border-destructive/20"
@@ -464,18 +464,18 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
       }}>
         <div className="space-y-3">
           {url && (
-            <p className="text-sm font-medium text-muted-foreground">
+            <p className="text-[11px] sm:text-sm font-medium text-muted-foreground">
               <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화{" "}
               <span className={`font-bold ${isGoodScore ? "text-primary" : "text-destructive"}`}>{isGoodScore ? `${avgScore}점` : `${gapPercent}% 부족`}</span>
               {" "}— {t.statusLabel}
             </p>
           )}
           {isGoodScore ? (
-            <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
+            <p className="text-base sm:text-xl font-extrabold text-foreground leading-snug">
               🎉 <span className="text-primary">잘 하고 있어요!</span> AI 검색 반영 가능성이 높습니다
             </p>
           ) : (
-            <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
+            <p className="text-base sm:text-xl font-extrabold text-foreground leading-snug">
               하루 <span className="text-destructive tabular-nums">{animatedLost.toLocaleString()}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
             </p>
           )}
@@ -533,7 +533,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
           ) : (
-            <div className="space-y-3 animate-fade-up">
+              <div className="space-y-2 animate-fade-up">
               {!isGoodScore && (
                 <div className="max-w-xs mx-auto">
                   <input
@@ -554,14 +554,14 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
               <div className="flex flex-row gap-2 justify-center">
                 <button
                   onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-                  className="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-[13px] hover:bg-primary/90 transition-colors flex-1"
+                  className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-colors flex-1"
                 >
                   {isGoodScore ? "개선 포인트 보기" : "우선순위 보기"}
                   <ArrowRight className="w-4 h-4" />
                 </button>
                 <button
                   onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-                  className="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl border border-primary/20 text-primary font-semibold text-[13px] hover:bg-primary/5 transition-colors flex-1"
+                  className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl border border-primary/20 text-primary font-semibold text-xs hover:bg-primary/5 transition-colors flex-1"
                 >
                   {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
                 </button>
