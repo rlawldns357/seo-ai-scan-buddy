@@ -172,7 +172,10 @@ function SummaryCard({
             {isWarning && <p className="text-[10px] text-score-warning leading-tight line-clamp-2 mt-0.5">{config.warnDesc}</p>}
             {!isCritical && !isWarning && <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2 mt-0.5">{axis.description}</p>}
           </div>
-          <ChevronDown className={`w-3.5 h-3.5 shrink-0 text-muted-foreground transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
+          <div className="flex flex-col items-center shrink-0">
+            <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
+            <span className="text-[9px] text-muted-foreground/70 font-medium">{selected ? "접기" : "자세히"}</span>
+          </div>
         </div>
       </button>
     );
