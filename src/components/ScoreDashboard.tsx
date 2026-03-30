@@ -156,28 +156,21 @@ function SummaryCard({
         className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2 px-3 pt-3 pb-1">
-            {/* Gauge graph - big & prominent */}
-            <div className="shrink-0 -mb-3">
-              <SemiCircleGauge score={score} size={120} delay={delay} />
-            </div>
-            {/* Info - minimal text */}
-            <div className="flex-1 min-w-0 space-y-0.5">
-              <div className="flex items-center gap-1">
-                <Icon className={`w-3 h-3 ${config.accent}`} />
-                <span className="text-[11px] font-extrabold text-foreground tracking-wide">{axis.label}</span>
-              </div>
-              {getSeverityBadge(severity)}
-              {isCritical && <p className="text-[10px] font-medium text-score-poor leading-tight line-clamp-2 mt-0.5">{config.lossDesc}</p>}
-              {isWarning && <p className="text-[10px] text-score-warning leading-tight line-clamp-2 mt-0.5">{config.warnDesc}</p>}
-              {!isCritical && !isWarning && <p className="text-[10px] text-muted-foreground leading-tight line-clamp-2 mt-0.5">{axis.description}</p>}
-            </div>
+        <div className="flex items-center gap-3 px-3 py-2">
+          {/* Small gauge */}
+          <div className="shrink-0 -mb-2">
+            <SemiCircleGauge score={score} size={72} delay={delay} />
           </div>
-          <div className="flex items-center justify-center gap-1 py-1.5 border-t border-border/50">
-            <span className="text-[10px] text-muted-foreground/70 font-medium">{selected ? "접기" : "자세히 보기"}</span>
-            <ChevronDown className={`w-3 h-3 text-muted-foreground/70 transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
+          {/* Score + label + badge */}
+          <div className="flex-1 min-w-0 flex items-center gap-2">
+            <div className="flex items-center gap-1">
+              <Icon className={`w-3 h-3 ${config.accent}`} />
+              <span className="text-[11px] font-extrabold text-foreground">{axis.label}</span>
+            </div>
+            {getSeverityBadge(severity)}
           </div>
+          {/* Toggle indicator */}
+          <ChevronDown className={`w-3.5 h-3.5 text-muted-foreground/60 shrink-0 transition-transform duration-200 ${selected ? "rotate-0" : "-rotate-90"}`} />
         </div>
       </button>
     );
