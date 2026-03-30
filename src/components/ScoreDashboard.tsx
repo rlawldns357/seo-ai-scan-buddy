@@ -452,10 +452,10 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
         background: isGoodScore
           ? "hsl(var(--card) / 0.85)"
           : tier === "critical"
-          ? "hsl(var(--card) / 0.88)"
+          ? "linear-gradient(180deg, hsl(var(--destructive) / 0.06) 0%, hsl(var(--card) / 0.95) 60%)"
           : tier === "warning"
-          ? "hsl(var(--card) / 0.88)"
-          : "hsl(var(--card) / 0.88)",
+          ? "linear-gradient(180deg, hsl(var(--destructive) / 0.04) 0%, hsl(var(--card) / 0.95) 60%)"
+          : "linear-gradient(180deg, hsl(var(--score-warning) / 0.04) 0%, hsl(var(--card) / 0.95) 60%)",
         backdropFilter: "blur(16px)",
         boxShadow: isGoodScore
           ? "0 1px 20px -4px hsl(var(--primary) / 0.08)"
