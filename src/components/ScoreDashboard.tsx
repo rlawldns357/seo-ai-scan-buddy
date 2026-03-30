@@ -151,18 +151,15 @@ function SummaryCard({
   /* ── Compact horizontal layout for mobile ── */
    if (compact) {
     return (
-      <button
-        onClick={onClick}
+      <div
         className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
-        <div className="flex flex-col">
+        <button onClick={onClick} className="w-full text-left">
           <div className="flex items-center gap-2 px-3 pt-3 pb-1">
-            {/* Gauge graph - big & prominent */}
             <div className="shrink-0 -mb-3">
               <SemiCircleGauge score={score} size={120} delay={delay} />
             </div>
-            {/* Info - minimal text */}
             <div className="flex-1 min-w-0 space-y-0.5">
               <div className="flex items-center gap-1">
                 <Icon className={`w-3 h-3 ${config.accent}`} />
@@ -176,10 +173,15 @@ function SummaryCard({
           </div>
           <div className="flex items-center justify-center gap-1 py-1.5 border-t border-border/50">
             <span className="text-[10px] text-muted-foreground/70 font-medium">{selected ? "접기" : "자세히 보기"}</span>
-            <ChevronDown className={`w-3 h-3 text-muted-foreground/70 transition-transform duration-200 ${selected ? "" : "-rotate-90"}`} />
+            <ChevronDown className={`w-3 h-3 text-muted-foreground/70 transition-transform duration-200 ${selected ? "rotate-180" : ""}`} />
           </div>
-        </div>
-      </button>
+        </button>
+        {selected && (
+          <div className="border-t border-border/50">
+            <DetailPanel axis={axis} score={score} inline />
+          </div>
+        )}
+      </div>
     );
   }
 
@@ -226,24 +228,26 @@ function SummaryCard({
 }
 
 /* ── Full-width detail panel ── */
-function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
+function DetailPanel({ axis, score, inline }: { axis: AxisAnalysis; score: number; inline?: boolean }) {
   const config = axisConfig[axis.label];
   const Icon = config.icon;
   const severity = getSeverity(score);
   const isCritical = severity === "critical";
 
   return (
-    <div className={`rounded-2xl bg-card ring-1 ${config.ring} overflow-hidden animate-fade-up ${config.shadow}`}>
-      {/* Header */}
-      <div className={`flex items-center gap-2.5 px-6 py-4 border-b border-border ${config.headerBg}`}>
-        <Icon className={`w-5 h-5 ${config.accent}`} />
-        <span className="text-base font-bold text-foreground">{axis.label} — 원인 분석</span>
-        {isCritical && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
-            우선 확인
-          </span>
-        )}
-      </div>
+    <div className={`${inline ? "animate-fade-up" : `rounded-2xl bg-card ring-1 ${config.ring} overflow-hidden animate-fade-up ${config.shadow}`}`}>
+      {/* Header - hidden when inline (already shown in summary card) */}
+      {!inline && (
+        <div className={`flex items-center gap-2.5 px-6 py-4 border-b border-border ${config.headerBg}`}>
+          <Icon className={`w-5 h-5 ${config.accent}`} />
+          <span className="text-base font-bold text-foreground">{axis.label} — 원인 분석</span>
+          {isCritical && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
+              우선 확인
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Content grid: 2 columns on desktop */}
       <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
@@ -630,9 +634,9 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
 
       {/* Mobile: card + inline detail for each axis */}
       <div className="sm:hidden space-y-2">
-        {axes.map(({ axis, score, key }, i) => (
-          <div key={key} className="space-y-2">
+         {axes.map(({ axis, score, key }, i) => (
             <SummaryCard
+              key={key}
               axis={axis}
               score={score}
               delay={200 + i * 200}
@@ -640,12 +644,6 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
               onClick={() => setSelected(selected === key ? null : key)}
               compact
             />
-            {selected === key && (
-              <div id={`detail-${key}`}>
-                <DetailPanel axis={axis} score={score} />
-              </div>
-            )}
-          </div>
         ))}
       </div>
 
