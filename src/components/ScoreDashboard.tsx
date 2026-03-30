@@ -525,16 +525,16 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
         {/* Mobile: collapsible details */}
         <div className="sm:hidden">
           {/* CTA buttons always visible on mobile */}
-          <div className="flex flex-row gap-2 justify-center">
+          <div className="flex flex-col items-center gap-1.5 pt-1">
             <button
               onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-              className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-colors flex-1"
+              className="inline-flex items-center justify-center gap-1.5 h-10 w-full max-w-[240px] rounded-full bg-primary text-primary-foreground font-bold text-[13px] hover:bg-primary/90 transition-colors"
             >
               {isGoodScore ? "개선 포인트 보기" : "우선순위 보기 →"}
             </button>
             <button
               onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-              className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl border border-primary/20 text-primary font-semibold text-xs hover:bg-primary/5 transition-colors flex-1"
+              className="inline-flex items-center justify-center text-xs text-muted-foreground hover:text-primary transition-colors py-1 underline underline-offset-2 decoration-muted-foreground/30"
             >
               {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
             </button>
