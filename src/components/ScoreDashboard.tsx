@@ -141,7 +141,7 @@ function SummaryCard({
   const isWarning = severity === "warning";
 
   const cardRing = selected
-    ? "ring-2 ring-primary/50 shadow-elevated"
+    ? `ring-2 ${config.selectedRing || "ring-primary/50"} shadow-elevated`
     : isCritical
     ? "ring-2 ring-score-poor/30"
     : isWarning
