@@ -182,6 +182,13 @@ function SummaryCard({
         {selected && (
           <div className={`border-t ${config.border}`}>
             <DetailPanel axis={axis} score={score} inline />
+            <button
+              onClick={onClick}
+              className="flex items-center justify-center gap-1 w-full py-2 border-t border-border/50"
+            >
+              <span className="text-[10px] text-muted-foreground/70 font-medium">접기</span>
+              <ChevronDown className="w-3 h-3 text-muted-foreground/70 rotate-180" />
+            </button>
           </div>
         )}
       </div>
