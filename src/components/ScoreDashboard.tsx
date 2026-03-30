@@ -153,11 +153,17 @@ function SummaryCard({
     : "border border-border ring-1 ring-border";
 
   const handleCollapse = () => {
+    const beforeHeight = cardRef.current?.getBoundingClientRect().height ?? 0;
     onClick();
-    // After collapsing, scroll the card into view
-    setTimeout(() => {
-      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 50);
+
+    requestAnimationFrame(() => {
+      const afterHeight = cardRef.current?.getBoundingClientRect().height ?? 0;
+      const heightDelta = Math.max(0, beforeHeight - afterHeight);
+
+      if (heightDelta > 0) {
+        window.scrollBy({ top: -heightDelta, behavior: "auto" });
+      }
+    });
   };
 
   /* ── Compact horizontal layout for mobile ── */
