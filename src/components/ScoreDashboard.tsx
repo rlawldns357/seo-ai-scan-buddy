@@ -465,14 +465,14 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
             className="inline-flex items-center justify-center gap-1 h-10 sm:h-12 px-3 sm:px-6 rounded-xl bg-primary text-primary-foreground font-bold text-[12px] sm:text-sm hover:bg-primary/90 transition-colors flex-1 sm:flex-initial"
           >
-            {isGoodScore ? "개선 포인트" : "우선순위 보기"}
+            {isGoodScore ? "개선 포인트 받기" : "우선순위 받기"}
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
             className="inline-flex items-center justify-center gap-1 h-10 sm:h-12 px-3 sm:px-6 rounded-xl border border-primary/20 text-primary font-semibold text-[12px] sm:text-sm hover:bg-primary/5 transition-colors flex-1 sm:flex-initial"
           >
-            {isGoodScore ? "세부 분석" : "핵심 원인"}
+            {isGoodScore ? "세부 분석 받기" : "핵심 원인 보기"}
           </button>
         </div>
         {!isGoodScore && (
