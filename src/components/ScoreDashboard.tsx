@@ -137,6 +137,7 @@ function SummaryCard({
 }: {
   axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void; compact?: boolean;
 }) {
+  const cardRef = useRef<HTMLDivElement>(null);
   const config = axisConfig[axis.label];
   const Icon = config.icon;
   const severity = getSeverity(score);
@@ -151,10 +152,19 @@ function SummaryCard({
     ? "border border-score-warning/25 ring-1 ring-score-warning/25"
     : "border border-border ring-1 ring-border";
 
+  const handleCollapse = () => {
+    onClick();
+    // After collapsing, scroll the card into view
+    setTimeout(() => {
+      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }, 50);
+  };
+
   /* ── Compact horizontal layout for mobile ── */
    if (compact) {
     return (
       <div
+        ref={cardRef}
         className={`rounded-xl bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
@@ -183,7 +193,7 @@ function SummaryCard({
           <div className={`border-t ${config.border}`}>
             <DetailPanel axis={axis} score={score} inline />
             <button
-              onClick={onClick}
+              onClick={handleCollapse}
               className="flex items-center justify-center gap-1 w-full py-2 border-t border-border/50"
             >
               <span className="text-[10px] text-muted-foreground/70 font-medium">접기</span>
