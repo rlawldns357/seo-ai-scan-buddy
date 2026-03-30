@@ -21,6 +21,7 @@ const axisConfig = {
     lossDesc: "지금 검색 노출 기회를 놓치고 있습니다",
     warnDesc: "검색 노출 효율을 더 높일 수 있습니다",
     ring: "ring-primary/30",
+    border: "border-primary/60",
     shadow: "shadow-[0_4px_24px_-6px_hsl(230,80%,56%,0.12)]",
     headerBg: "bg-primary/5",
   },
@@ -31,6 +32,7 @@ const axisConfig = {
     lossDesc: "답변형 검색에서 선택될 가능성이 낮습니다",
     warnDesc: "AI 답변 채택률을 개선할 여지가 있습니다",
     ring: "ring-accent/30",
+    border: "border-accent/60",
     shadow: "shadow-[0_4px_24px_-6px_hsl(268,70%,58%,0.12)]",
     headerBg: "bg-accent/5",
   },
@@ -41,6 +43,7 @@ const axisConfig = {
     lossDesc: "생성형 검색 엔진이 신뢰 가능한 출처로 인식하기 어려운 상태입니다",
     warnDesc: "생성형 검색에서의 인용 가능성을 높일 수 있습니다",
     ring: "ring-score-excellent/30",
+    border: "border-score-excellent/60",
     shadow: "shadow-[0_4px_24px_-6px_hsl(142,72%,42%,0.12)]",
     headerBg: "bg-score-excellent/5",
   },
@@ -141,12 +144,12 @@ function SummaryCard({
   const isWarning = severity === "warning";
 
   const cardRing = selected
-    ? `ring-2 ${config.ring.replace("/30", "/60")} shadow-elevated`
+    ? `border-2 ${config.border} ring-2 ${config.ring.replace("/30", "/60")} shadow-elevated`
     : isCritical
-    ? "ring-2 ring-score-poor/30"
+    ? "border border-score-poor/30 ring-2 ring-score-poor/30"
     : isWarning
-    ? "ring-1 ring-score-warning/25"
-    : "ring-1 ring-border";
+    ? "border border-score-warning/25 ring-1 ring-score-warning/25"
+    : "border border-border ring-1 ring-border";
 
   /* ── Compact horizontal layout for mobile ── */
    if (compact) {
@@ -177,7 +180,7 @@ function SummaryCard({
           </div>
         </button>
         {selected && (
-          <div className="border-t border-border/50">
+          <div className={`border-t ${config.border}`}>
             <DetailPanel axis={axis} score={score} inline />
           </div>
         )}
