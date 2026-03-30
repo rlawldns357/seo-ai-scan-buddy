@@ -397,7 +397,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
   return (
     <>
-      <div id="inline-cta-section" className={`relative rounded-2xl border p-4 sm:p-8 text-center space-y-3 sm:space-y-5 animate-fade-up overflow-hidden ${
+      <div id="inline-cta-section" className={`relative rounded-2xl border p-5 sm:p-8 text-center space-y-5 animate-fade-up overflow-hidden ${
         isGoodScore ? "border-primary/15"
         : tier === "critical" ? "border-destructive/20"
         : tier === "warning" ? "border-destructive/12"
@@ -405,42 +405,38 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
       }`} style={{
         animationDelay: "0.5s",
         background: isGoodScore
-          ? "linear-gradient(135deg, hsl(var(--card) / 0.9), hsl(var(--primary) / 0.04))"
+          ? "hsl(var(--card) / 0.85)"
           : tier === "critical"
-          ? "linear-gradient(135deg, hsl(var(--card) / 0.88), hsl(var(--destructive) / 0.06))"
+          ? "hsl(var(--card) / 0.88)"
           : tier === "warning"
-          ? "linear-gradient(135deg, hsl(var(--card) / 0.88), hsl(var(--destructive) / 0.04))"
-          : "linear-gradient(135deg, hsl(var(--card) / 0.88), hsl(var(--score-warning) / 0.05))",
+          ? "hsl(var(--card) / 0.88)"
+          : "hsl(var(--card) / 0.88)",
         backdropFilter: "blur(16px)",
         boxShadow: isGoodScore
           ? "0 1px 20px -4px hsl(var(--primary) / 0.08)"
           : tier === "critical"
-          ? "inset 0 0 80px -20px hsl(var(--destructive) / 0.08), 0 1px 20px -4px hsl(var(--destructive) / 0.08)"
-          : tier === "warning"
-          ? "inset 0 0 60px -20px hsl(var(--destructive) / 0.05), 0 1px 20px -4px hsl(var(--destructive) / 0.05)"
-          : "inset 0 0 60px -20px hsl(var(--score-warning) / 0.06), 0 1px 20px -4px hsl(var(--score-warning) / 0.04)",
+          ? "inset 0 0 60px -20px hsl(var(--destructive) / 0.06), 0 1px 20px -4px hsl(var(--destructive) / 0.06)"
+          : "0 1px 20px -4px hsl(var(--destructive) / 0.04)",
       }}>
-        <div className="space-y-2 sm:space-y-3">
+        <div className="space-y-3">
           {url && (
-            <p className="text-xs sm:text-sm font-medium text-muted-foreground">
-              <span className="sm:inline hidden">
-                <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화{" "}
-              </span>
+            <p className="text-sm font-medium text-muted-foreground">
+              <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground transition-colors">{url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a> 최적화{" "}
               <span className={`font-bold ${isGoodScore ? "text-primary" : "text-destructive"}`}>{isGoodScore ? `${avgScore}점` : `${gapPercent}% 부족`}</span>
               {" "}— {t.statusLabel}
             </p>
           )}
           {isGoodScore ? (
-            <p className="text-base sm:text-xl font-extrabold text-foreground leading-snug">
+            <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
               🎉 <span className="text-primary">잘 하고 있어요!</span> AI 검색 반영 가능성이 높습니다
             </p>
           ) : (
-            <p className="text-base sm:text-xl font-extrabold text-foreground leading-snug">
-              하루 <span className="text-destructive tabular-nums">{animatedLost.toLocaleString()}명</span>, <span className="text-destructive">경쟁사로 빠져나가고 있어요</span>
+            <p className="text-lg sm:text-xl font-extrabold text-foreground leading-snug">
+              하루 <span className="text-destructive tabular-nums">{animatedLost.toLocaleString()}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
             </p>
           )}
           {!isGoodScore && (
-            <div className="max-w-xs mx-auto pt-1 sm:pt-2">
+            <div className="max-w-xs mx-auto pt-2">
               <input
                 type="range"
                 min={0}
@@ -451,34 +447,33 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
               />
               <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
                 <span>100명</span>
-                <span className="text-muted-foreground font-medium">방문자 {dailyVisitors.toLocaleString()}명 기준</span>
+                <span className="text-muted-foreground font-medium">하루 방문자가 {dailyVisitors.toLocaleString()}명이라면?</span>
                 <span>100,000명</span>
               </div>
             </div>
           )}
           {isGoodScore && (
-            <p className="text-[10px] sm:text-xs text-muted-foreground/50">세부 항목을 더 강화해 보세요</p>
+            <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
           )}
         </div>
         <div className="flex flex-row gap-2 sm:gap-3 justify-center">
           <button
             onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-            className="inline-flex items-center justify-center gap-1 h-10 sm:h-12 px-3 sm:px-6 rounded-xl bg-primary text-primary-foreground font-bold text-[12px] sm:text-sm hover:bg-primary/90 transition-colors flex-1 sm:flex-initial"
+            className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-12 px-4 sm:px-6 rounded-xl bg-primary text-primary-foreground font-bold text-[13px] sm:text-sm hover:bg-primary/90 transition-colors flex-1 sm:flex-initial"
           >
-            {isGoodScore ? "개선 포인트 받기" : "우선순위 받기"}
-            <ArrowRight className="w-3.5 h-3.5" />
+            {isGoodScore ? "개선 포인트 보기" : "우선순위 보기"}
+            <ArrowRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-            className="inline-flex items-center justify-center gap-1 h-10 sm:h-12 px-3 sm:px-6 rounded-xl border border-primary/20 text-primary font-semibold text-[12px] sm:text-sm hover:bg-primary/5 transition-colors flex-1 sm:flex-initial"
+            className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-12 px-4 sm:px-6 rounded-xl border border-primary/20 text-primary font-semibold text-[13px] sm:text-sm hover:bg-primary/5 transition-colors flex-1 sm:flex-initial"
           >
-            {isGoodScore ? "세부 분석 받기" : "핵심 원인 보기"}
+            {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
           </button>
         </div>
         {!isGoodScore && (
           <p className="text-[10px] text-muted-foreground/40">
-            <span className="hidden sm:inline">{dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}</span>
-            <span className="sm:hidden">{lostVisitors.toLocaleString()}명/일 손실 · {t.source}</span>
+            {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
           </p>
         )}
       </div>
