@@ -16,7 +16,8 @@ export default function Navbar() {
               SearchTune <span className="font-extrabold">OS</span>
             </span>
           </Link>
-          <span className="px-1.5 py-px rounded text-[8px] font-bold uppercase tracking-wider bg-accent/10 text-accent leading-none">β</span>
+          <span className="hidden sm:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent">Beta</span>
+          <span className="sm:hidden px-1.5 py-px rounded text-[8px] font-bold uppercase tracking-wider bg-accent/10 text-accent leading-none">β</span>
           {isAdmin && (
             <Link
               to="/admin"
