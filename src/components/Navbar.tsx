@@ -12,9 +12,12 @@ export default function Navbar() {
             <div className="gradient-primary rounded-xl p-2">
               <Search className="w-4 h-4 text-primary-foreground" />
             </div>
-            <span className="text-lg font-bold text-foreground tracking-tight">
-              SearchTune <span className="font-extrabold">OS</span>
-            </span>
+            <div className="flex flex-col leading-none">
+              <span className="text-lg font-bold text-foreground tracking-tight">
+                SearchTune <span className="font-extrabold">OS</span>
+              </span>
+              <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide">v0.9.1-beta</span>
+            </div>
           </Link>
           <span className="hidden sm:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent">Beta</span>
           <span className="sm:hidden px-1.5 py-px rounded text-[8px] font-bold uppercase tracking-wider bg-accent/10 text-accent leading-none">β</span>
