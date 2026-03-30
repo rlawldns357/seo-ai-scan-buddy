@@ -476,7 +476,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </p>
           ) : (
             <p className="text-base sm:text-xl font-extrabold text-foreground leading-snug">
-              하루 <span className="text-destructive tabular-nums">{animatedLost.toLocaleString()}명</span>의 잠재고객이 <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
+              하루 <span className="text-destructive tabular-nums">{animatedLost.toLocaleString()}명</span>의 잠재고객이<br className="sm:hidden" /> <span className="text-destructive">경쟁사로 이탈</span>하고 있습니다
             </p>
           )}
           {!isGoodScore && (
@@ -524,13 +524,28 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
         {/* Mobile: collapsible details */}
         <div className="sm:hidden">
+          {/* CTA buttons always visible on mobile */}
+          <div className="flex flex-row gap-2 justify-center">
+            <button
+              onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
+              className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-colors flex-1"
+            >
+              {isGoodScore ? "개선 포인트 보기" : "우선순위 보기 →"}
+            </button>
+            <button
+              onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
+              className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl border border-primary/20 text-primary font-semibold text-xs hover:bg-primary/5 transition-colors flex-1"
+            >
+              {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
+            </button>
+          </div>
           {!mobileExpanded ? (
             <button
               onClick={() => setMobileExpanded(true)}
-              className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors py-1"
+              className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors py-1 mt-1"
             >
-              자세히 보기
-              <ChevronDown className="w-3.5 h-3.5" />
+              상세 수치 보기
+              <ChevronDown className="w-3 h-3" />
             </button>
           ) : (
               <div className="space-y-2 animate-fade-up">
@@ -551,21 +566,6 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                   </div>
                 </div>
               )}
-              <div className="flex flex-row gap-2 justify-center">
-                <button
-                  onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-                  className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-colors flex-1"
-                >
-                  {isGoodScore ? "개선 포인트 보기" : "우선순위 보기"}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-                  className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl border border-primary/20 text-primary font-semibold text-xs hover:bg-primary/5 transition-colors flex-1"
-                >
-                  {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
-                </button>
-              </div>
               {!isGoodScore && (
                 <p className="text-[10px] text-muted-foreground/40">
                   {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
