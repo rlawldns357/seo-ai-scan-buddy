@@ -156,7 +156,7 @@ function SummaryCard({
     onClick();
     // After collapsing, scroll the card into view
     setTimeout(() => {
-      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 50);
   };
 
