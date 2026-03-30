@@ -443,7 +443,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </p>
           )}
           {!isGoodScore && (
-            <div className="max-w-xs mx-auto pt-2">
+            <div className="hidden sm:block max-w-xs mx-auto pt-2">
               <input
                 type="range"
                 min={0}
@@ -463,26 +463,80 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
           )}
         </div>
-        <div className="flex flex-row gap-2 sm:gap-3 justify-center">
+        {/* Desktop: always visible */}
+        <div className="hidden sm:flex flex-row gap-3 justify-center">
           <button
             onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-            className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-12 px-4 sm:px-6 rounded-xl bg-primary text-primary-foreground font-bold text-[13px] sm:text-sm hover:bg-primary/90 transition-colors flex-1 sm:flex-initial"
+            className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
           >
             {isGoodScore ? "개선 포인트 보기" : "우선순위 보기"}
             <ArrowRight className="w-4 h-4" />
           </button>
           <button
             onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-            className="inline-flex items-center justify-center gap-1.5 h-11 sm:h-12 px-4 sm:px-6 rounded-xl border border-primary/20 text-primary font-semibold text-[13px] sm:text-sm hover:bg-primary/5 transition-colors flex-1 sm:flex-initial"
+            className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors"
           >
             {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
           </button>
         </div>
         {!isGoodScore && (
-          <p className="text-[10px] text-muted-foreground/40">
+          <p className="hidden sm:block text-[10px] text-muted-foreground/40">
             {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
           </p>
         )}
+
+        {/* Mobile: collapsible details */}
+        <div className="sm:hidden">
+          {!mobileExpanded ? (
+            <button
+              onClick={() => setMobileExpanded(true)}
+              className="w-full flex items-center justify-center gap-1 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors py-1"
+            >
+              자세히 보기
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+          ) : (
+            <div className="space-y-3 animate-fade-up">
+              {!isGoodScore && (
+                <div className="max-w-xs mx-auto">
+                  <input
+                    type="range"
+                    min={0}
+                    max={sliderStops.length - 1}
+                    value={sliderIndex >= 0 ? sliderIndex : 3}
+                    onChange={(e) => handleSlider(Number(e.target.value))}
+                    className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-border accent-primary"
+                  />
+                  <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
+                    <span>100명</span>
+                    <span className="text-muted-foreground font-medium">하루 방문자가 {dailyVisitors.toLocaleString()}명이라면?</span>
+                    <span>100,000명</span>
+                  </div>
+                </div>
+              )}
+              <div className="flex flex-row gap-2 justify-center">
+                <button
+                  onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
+                  className="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-[13px] hover:bg-primary/90 transition-colors flex-1"
+                >
+                  {isGoodScore ? "개선 포인트 보기" : "우선순위 보기"}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
+                  className="inline-flex items-center justify-center gap-1.5 h-10 px-4 rounded-xl border border-primary/20 text-primary font-semibold text-[13px] hover:bg-primary/5 transition-colors flex-1"
+                >
+                  {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
+                </button>
+              </div>
+              {!isGoodScore && (
+                <p className="text-[10px] text-muted-foreground/40">
+                  {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} result={result} url={url} />
     </>
