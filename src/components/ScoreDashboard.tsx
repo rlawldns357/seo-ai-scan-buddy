@@ -566,21 +566,6 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                   </div>
                 </div>
               )}
-              <div className="flex flex-row gap-2 justify-center">
-                <button
-                  onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-                  className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/90 transition-colors flex-1"
-                >
-                  {isGoodScore ? "개선 포인트 보기" : "우선순위 보기"}
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-                  className="inline-flex items-center justify-center gap-1 h-9 px-3 rounded-xl border border-primary/20 text-primary font-semibold text-xs hover:bg-primary/5 transition-colors flex-1"
-                >
-                  {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
-                </button>
-              </div>
               {!isGoodScore && (
                 <p className="text-[10px] text-muted-foreground/40">
                   {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
