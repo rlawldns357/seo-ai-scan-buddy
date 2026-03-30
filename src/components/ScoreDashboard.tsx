@@ -152,7 +152,7 @@ function SummaryCard({
    if (compact) {
     return (
       <div
-        className={`rounded-xl overflow-hidden bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
+        className={`rounded-xl bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200`}
         style={{ animationDelay: `${delay / 1000}s` }}
       >
         <button onClick={onClick} className="w-full text-left">
