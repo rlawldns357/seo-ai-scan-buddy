@@ -632,9 +632,9 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
 
       {/* Mobile: card + inline detail for each axis */}
       <div className="sm:hidden space-y-2">
-        {axes.map(({ axis, score, key }, i) => (
-          <div key={key} className="space-y-2">
+         {axes.map(({ axis, score, key }, i) => (
             <SummaryCard
+              key={key}
               axis={axis}
               score={score}
               delay={200 + i * 200}
@@ -642,12 +642,6 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
               onClick={() => setSelected(selected === key ? null : key)}
               compact
             />
-            {selected === key && (
-              <div id={`detail-${key}`}>
-                <DetailPanel axis={axis} score={score} />
-              </div>
-            )}
-          </div>
         ))}
       </div>
 
