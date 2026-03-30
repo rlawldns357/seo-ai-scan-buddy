@@ -228,14 +228,14 @@ function SummaryCard({
 }
 
 /* ── Full-width detail panel ── */
-function DetailPanel({ axis, score }: { axis: AxisAnalysis; score: number }) {
+function DetailPanel({ axis, score, inline }: { axis: AxisAnalysis; score: number; inline?: boolean }) {
   const config = axisConfig[axis.label];
   const Icon = config.icon;
   const severity = getSeverity(score);
   const isCritical = severity === "critical";
 
   return (
-    <div className={`rounded-2xl bg-card ring-1 ${config.ring} overflow-hidden animate-fade-up ${config.shadow}`}>
+    <div className={`${inline ? "animate-fade-up" : `rounded-2xl bg-card ring-1 ${config.ring} overflow-hidden animate-fade-up ${config.shadow}`}`}>
       {/* Header */}
       <div className={`flex items-center gap-2.5 px-6 py-4 border-b border-border ${config.headerBg}`}>
         <Icon className={`w-5 h-5 ${config.accent}`} />
