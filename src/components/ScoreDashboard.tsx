@@ -236,16 +236,18 @@ function DetailPanel({ axis, score, inline }: { axis: AxisAnalysis; score: numbe
 
   return (
     <div className={`${inline ? "animate-fade-up" : `rounded-2xl bg-card ring-1 ${config.ring} overflow-hidden animate-fade-up ${config.shadow}`}`}>
-      {/* Header */}
-      <div className={`flex items-center gap-2.5 px-6 py-4 border-b border-border ${config.headerBg}`}>
-        <Icon className={`w-5 h-5 ${config.accent}`} />
-        <span className="text-base font-bold text-foreground">{axis.label} — 원인 분석</span>
-        {isCritical && (
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
-            우선 확인
-          </span>
-        )}
-      </div>
+      {/* Header - hidden when inline (already shown in summary card) */}
+      {!inline && (
+        <div className={`flex items-center gap-2.5 px-6 py-4 border-b border-border ${config.headerBg}`}>
+          <Icon className={`w-5 h-5 ${config.accent}`} />
+          <span className="text-base font-bold text-foreground">{axis.label} — 원인 분석</span>
+          {isCritical && (
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">
+              우선 확인
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Content grid: 2 columns on desktop */}
       <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
