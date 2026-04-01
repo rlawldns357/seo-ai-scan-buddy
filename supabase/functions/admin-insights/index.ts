@@ -153,11 +153,15 @@ Deno.serve(async (req) => {
     const recentUrls: { url: string; created_at: string }[] = [];
     const seenUrls = new Set<string>();
     events
-      ?.filter((e: any) => e.event_name === "analysis_start" && e.url && !isInternalUrl(e.url))
+      ?.filter((e: any) => e.event_name === "analysis_start")
       .forEach((e: any) => {
-        if (!seenUrls.has(e.url)) {
-          seenUrls.add(e.url);
-          recentUrls.push({ url: e.url, created_at: e.created_at });
+        // Check both url column and event_data.url for backward compatibility
+        const analyzedUrl = (e.url && !isInternalUrl(e.url)) ? e.url
+          : (e.event_data?.url && !isInternalUrl(e.event_data.url)) ? e.event_data.url
+          : null;
+        if (analyzedUrl && !seenUrls.has(analyzedUrl) && !isInternalUrl(analyzedUrl)) {
+          seenUrls.add(analyzedUrl);
+          recentUrls.push({ url: analyzedUrl, created_at: e.created_at });
         }
       });
 
