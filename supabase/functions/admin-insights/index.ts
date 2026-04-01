@@ -30,23 +30,29 @@ Deno.serve(async (req) => {
     since.setDate(since.getDate() - days);
     const sinceStr = since.toISOString();
 
-    // Fetch analytics events
-    const { data: events, error: eventsErr } = await supabase
-      .from("analytics_events")
-      .select("*")
-      .gte("created_at", sinceStr)
-      .order("created_at", { ascending: false });
+    // Pagination helper to fetch all rows beyond 1000 limit
+    async function fetchAll(table: string, sinceStr: string) {
+      const all: any[] = [];
+      const pageSize = 1000;
+      let offset = 0;
+      while (true) {
+        const { data, error } = await supabase
+          .from(table)
+          .select("*")
+          .gte("created_at", sinceStr)
+          .order("created_at", { ascending: false })
+          .range(offset, offset + pageSize - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        all.push(...data);
+        if (data.length < pageSize) break;
+        offset += pageSize;
+      }
+      return all;
+    }
 
-    if (eventsErr) throw eventsErr;
-
-    // Fetch email leads
-    const { data: leads, error: leadsErr } = await supabase
-      .from("email_leads")
-      .select("*")
-      .gte("created_at", sinceStr)
-      .order("created_at", { ascending: false });
-
-    if (leadsErr) throw leadsErr;
+    const events = await fetchAll("analytics_events", sinceStr);
+    const leads = await fetchAll("email_leads", sinceStr);
 
     // Process data
     const sessions = new Set(events?.map((e: any) => e.session_id).filter(Boolean));
