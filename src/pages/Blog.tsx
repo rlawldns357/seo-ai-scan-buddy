@@ -109,16 +109,7 @@ function PostCard({ post }: { post: BlogPost }) {
   return (
     <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
       <div className="aspect-[16/9] bg-gradient-to-br from-muted to-secondary flex items-center justify-center relative">
-        {naver ? (
-          <div className="flex flex-col items-center gap-1">
-            <span className="text-3xl font-black" style={{ color: "#03C75A" }}>NAVER</span>
-            <span className="text-xs font-semibold text-muted-foreground">Naver SEO</span>
-          </div>
-        ) : (
-          <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent opacity-60">
-            {post.category}
-          </span>
-        )}
+        {getBrandThumbnail(post.slug, post.category)}
       </div>
       <div className="flex flex-col flex-1 p-5">
         <div className="flex items-center gap-2">
