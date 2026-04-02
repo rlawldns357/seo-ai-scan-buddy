@@ -1,29 +1,23 @@
+# SearchTune OS — v0.10.0-beta
 
+## 버전 이력
 
-# Admin Insights 데이터 누락 수정 — 1000행 제한 해결
+### v0.10.0-beta (2026-04-02)
+- 블로그 자동 생성 시스템 (매일 오전 6시 KST, Gemini AI 기반)
+- IndexNow 프로토콜 적용 (블로그 발행 시 네이버/Bing 자동 제출)
+- Admin 블로그 관리 (공개/비공개 토글)
+- 단계별 퍼널 CTA (출시 알림 → 무료 상담 신청)
+- 컨택트 모달 3탭 구조 (알림 신청 / 상담하기 / 비즈니스 문의)
+- 퍼포먼스 마케팅 서비스 소개 (About 페이지)
+- 상담 신청 DB 저장 (consultation_requests 테이블)
 
-## 문제
-`admin-insights` 엣지 함수가 `analytics_events`를 조회할 때 Supabase SDK 기본 제한인 **최대 1000행**만 가져옵니다. 이벤트가 1000개를 넘으면 최신 1000개만 반환되어, 과거 외부 사용자의 분석 기록이 잘립니다. 본인이 많이 테스트하면 본인 데이터로 1000행이 채워져서 다른 사람 기록이 안 보이는 것입니다.
+### v0.9.1-beta
+- Admin 대시보드 1000행 제한 해결
+- 분석 URL 추출 호환성 개선
+- SEO 메타태그 및 JSON-LD 최적화
 
-## 수정 내용
-
-### `supabase/functions/admin-insights/index.ts`
-- **페이지네이션 헬퍼 추가**: `.range()`를 이용해 1000행씩 반복 조회하여 전체 데이터를 가져오는 `fetchAll` 함수 구현
-- `analytics_events`와 `email_leads` 양쪽 모두 적용
-- 기존 집계/필터 로직은 그대로 유지
-
-```text
-fetchAll(table, sinceStr):
-  offset = 0, pageSize = 1000, result = []
-  loop:
-    query .select("*").gte("created_at", sinceStr)
-          .order("created_at", desc)
-          .range(offset, offset + 999)
-    result.push(...data)
-    if data.length < 1000 → break
-    offset += 1000
-  return result
-```
-
-변경 파일: `supabase/functions/admin-insights/index.ts` (1개)
-
+## 향후 계획
+- 분석 결과 기반 AI 개선 프롬프트 생성
+- PDF 리포트 이메일 자동 발송
+- Lighthouse 점수 PDF 통합
+- SSR/SSG 전환 검토
