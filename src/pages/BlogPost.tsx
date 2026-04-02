@@ -131,7 +131,7 @@ function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev
       </span>
       <div className="flex items-center gap-3">
         {naver ? (
-          <img src={naverLogo} alt="Naver" loading="lazy" width={28} height={28} className="w-7 h-7 shrink-0" />
+          <span className="shrink-0 text-xs font-black" style={{ color: "#03C75A" }}>NAVER</span>
         ) : (
           <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${categoryColor[post.category]}`}>
             {post.category}
