@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Search, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import ConsultationModal from "@/components/ConsultationModal";
 
 export default function StickyBottomCTA() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
+  const [showConsult, setShowConsult] = useState(false);
 
   const handleSubmit = async () => {
     const trimmed = email.trim().toLowerCase();
@@ -19,10 +21,9 @@ export default function StickyBottomCTA() {
       });
 
       if (!error || error.code === "23505") {
-        setStatus("success");
+        setStatus("done");
         trackEvent("sticky_email_submit", { email: trimmed });
         if (!error) {
-          // Send confirmation email (fire-and-forget)
           supabase.functions.invoke("send-transactional-email", {
             body: {
               templateName: "lead-confirmation",
@@ -39,14 +40,28 @@ export default function StickyBottomCTA() {
     }
   };
 
-  if (status === "success") {
+  // Step 2: after email registered, show consultation prompt
+  if (status === "done") {
     return (
-      <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border">
-        <div className="container max-w-4xl mx-auto flex items-center justify-center gap-1.5 px-3 py-2 sm:py-3">
-          <CheckCircle className="w-3.5 h-3.5 text-score-excellent shrink-0" />
-          <p className="text-xs sm:text-sm font-medium text-foreground">등록 완료! 출시되면 가장 먼저 알려드릴게요.</p>
+      <>
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border">
+          <div className="container max-w-4xl mx-auto flex items-center justify-center gap-3 px-3 py-2.5 sm:py-3">
+            <div className="flex items-center gap-1.5">
+              <CheckCircle className="w-3.5 h-3.5 text-score-excellent shrink-0" />
+              <p className="text-xs sm:text-sm font-medium text-foreground">등록 완료!</p>
+            </div>
+            <div className="w-px h-4 bg-border" />
+            <p className="text-xs sm:text-sm text-muted-foreground">전문가 상담도 받아보시겠어요?</p>
+            <button
+              onClick={() => setShowConsult(true)}
+              className="shrink-0 h-8 px-4 rounded-lg gradient-primary text-primary-foreground font-bold text-xs hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
+              무료 상담 신청 →
+            </button>
+          </div>
         </div>
-      </div>
+        <ConsultationModal open={showConsult} onClose={() => setShowConsult(false)} />
+      </>
     );
   }
 
@@ -85,7 +100,7 @@ export default function StickyBottomCTA() {
         </div>
       </div>
 
-      {/* Mobile layout: 2-row full-width */}
+      {/* Mobile layout */}
       <div className="sm:hidden px-3 py-2.5 space-y-2">
         <p className="text-center text-[11px] font-medium text-muted-foreground">
           🚀 <span className="font-bold text-foreground">SearchTune OS</span> 정식 출시 알림을 받아보세요
