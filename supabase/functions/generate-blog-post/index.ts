@@ -102,25 +102,45 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const catGroup = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-    const theme = catGroup.themes[Math.floor(Math.random() * catGroup.themes.length)];
-    const category = catGroup.category;
-
-    console.log(`Generating blog post: [${category}] ${theme}`);
-
     const today = new Date().toISOString().slice(0, 10);
-    const { data: existing } = await supabase
-      .from("blog_posts")
-      .select("id")
-      .eq("date", today)
-      .limit(1);
+    const MAX_POSTS_PER_DAY = 2;
 
-    if (existing && existing.length > 0) {
+    // Check daily limit
+    const { data: todayPosts } = await supabase
+      .from("blog_posts")
+      .select("id, title")
+      .eq("date", today);
+
+    if (todayPosts && todayPosts.length >= MAX_POSTS_PER_DAY) {
       return new Response(
-        JSON.stringify({ success: false, message: "Already generated a post today" }),
+        JSON.stringify({ success: false, message: `Already generated ${MAX_POSTS_PER_DAY} posts today` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Fetch recent titles to avoid duplicate themes
+    const { data: recentPosts } = await supabase
+      .from("blog_posts")
+      .select("title")
+      .order("date", { ascending: false })
+      .limit(30);
+
+    const recentTitles = (recentPosts || []).map((p) => p.title.toLowerCase());
+
+    // Pick a theme that hasn't been covered recently
+    const allThemes = TOPICS.flatMap((t) =>
+      t.themes.map((theme) => ({ category: t.category, theme }))
+    );
+
+    // Shuffle and find first non-duplicate
+    const shuffled = allThemes.sort(() => Math.random() - 0.5);
+    const pick = shuffled.find(
+      (t) => !recentTitles.some((title) => title.includes(t.theme.slice(0, 8).toLowerCase()))
+    ) || shuffled[0];
+
+    const { category, theme } = pick;
+
+    console.log(`Generating blog post: [${category}] ${theme}`);
 
     const systemPrompt = `당신은 SEO, AEO(Answer Engine Optimization), GEO(Generative Engine Optimization) 전문가이자 기술 블로그 작가입니다. 
 한국어로 블로그 글을 작성합니다. SearchTune OS라는 SEO/AEO/GEO 분석 도구의 블로그에 게시될 전문적인 콘텐츠를 생성하세요.
