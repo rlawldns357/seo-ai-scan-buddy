@@ -30,17 +30,19 @@ export default function ScoreRing({ score, label, size = 120, delay = 0 }: Score
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      let current = 0;
-      const interval = setInterval(() => {
-        current += 1;
-        if (current >= score) {
-          setAnimatedScore(score);
-          clearInterval(interval);
-        } else {
-          setAnimatedScore(current);
+      const duration = 600; // ms
+      const start = performance.now();
+      let rafId: number;
+      const step = (now: number) => {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        setAnimatedScore(Math.round(progress * score));
+        if (progress < 1) {
+          rafId = requestAnimationFrame(step);
         }
-      }, 15);
-      return () => clearInterval(interval);
+      };
+      rafId = requestAnimationFrame(step);
+      return () => cancelAnimationFrame(rafId);
     }, delay);
     return () => clearTimeout(timer);
   }, [score, delay]);
