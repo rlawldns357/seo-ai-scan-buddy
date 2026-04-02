@@ -404,14 +404,13 @@ export default function BlogPost() {
             </nav>
           )}
 
-          {/* AI Disclaimer */}
-          <div className="mt-10 flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
-            <span>🤖 AI가 작성한 콘텐츠로 부정확할 수 있습니다.</span>
+          {/* Disclaimer */}
+          <div className="mt-10 flex items-center justify-center">
             <a
               href={`mailto:contact@searchtune.co?subject=블로그 수정 요청: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A수정 내용:%0A`}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors text-[11px] font-medium"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-muted-foreground/60 hover:text-primary hover:border-primary/30 transition-colors text-[11px] font-medium"
             >
-              수정 요청하기
+              ✏️ 수정 요청하기
             </a>
           </div>
 
