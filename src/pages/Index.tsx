@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Loader2, Zap } from "lucide-react";
-import confetti from "canvas-confetti";
+
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
 import LoadingScreen, { type AnalysisPhase } from "@/components/LoadingScreen";
@@ -123,14 +123,16 @@ const Index = () => {
     setScreen("result");
 
     if (analyzeRes.data) {
-      const end = Date.now() + 800;
-      const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#34d399', '#fbbf24'];
-      const frame = () => {
-        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
-        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
-        if (Date.now() < end) requestAnimationFrame(frame);
-      };
-      frame();
+      import("canvas-confetti").then(({ default: confetti }) => {
+        const end = Date.now() + 800;
+        const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#34d399', '#fbbf24'];
+        const frame = () => {
+          confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
+          confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
+          if (Date.now() < end) requestAnimationFrame(frame);
+        };
+        frame();
+      });
     }
     setIsAnalyzing(false);
   };
