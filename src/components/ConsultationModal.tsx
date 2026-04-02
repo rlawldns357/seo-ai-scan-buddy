@@ -149,7 +149,7 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
                     type="text"
                     value={name}
                     onChange={(e) => { setName(e.target.value); clearError("name"); }}
-                    placeholder="홍길동"
+                    placeholder="김서치"
                     className={inputClass}
                   />
                   {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
