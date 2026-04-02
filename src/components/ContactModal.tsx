@@ -14,6 +14,7 @@ const inputClass =
 export default function ContactModal({ open, onClose }: ContactModalProps) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [company, setCompany] = useState("");
   const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -41,6 +42,7 @@ export default function ContactModal({ open, onClose }: ContactModalProps) {
       const { error } = await supabase.from("consultation_requests").insert({
         name: name.trim(),
         email: email.trim().toLowerCase(),
+        phone: phone.trim() || null,
         company: company.trim() || null,
         concerns: message.trim(),
         interests: ["business_inquiry"],
@@ -127,19 +129,33 @@ export default function ContactModal({ open, onClose }: ContactModalProps) {
                 </div>
               </div>
 
-              {/* Email */}
-              <div>
-                <label className="text-xs font-semibold text-foreground mb-1.5 block">
-                  이메일 <span className="text-destructive">*</span>
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); clearError("email"); }}
-                  placeholder="contact@company.com"
-                  className={inputClass}
-                />
-                {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
+              {/* Email & Phone */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
+                    이메일 <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => { setEmail(e.target.value); clearError("email"); }}
+                    placeholder="contact@company.com"
+                    className={inputClass}
+                  />
+                  {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
+                    연락처
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="010-1234-5678"
+                    className={inputClass}
+                  />
+                </div>
               </div>
 
               {/* Message */}
