@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe } from "lucide-react";
+import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
