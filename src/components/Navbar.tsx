@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
-import ConsultationModal from "@/components/ConsultationModal";
+import ContactModal from "@/components/ContactModal";
 
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
@@ -57,7 +57,7 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-      <ConsultationModal open={consultOpen} onClose={() => setConsultOpen(false)} />
+      <ContactModal open={consultOpen} onClose={() => setConsultOpen(false)} />
     </>
   );
 }
