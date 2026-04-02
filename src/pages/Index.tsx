@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Loader2, Zap } from "lucide-react";
-import confetti from "canvas-confetti";
+import type { CreateTypes } from "canvas-confetti";
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
 import LoadingScreen, { type AnalysisPhase } from "@/components/LoadingScreen";
