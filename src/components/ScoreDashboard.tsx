@@ -547,23 +547,108 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
           )}
         </div>
-        {/* Desktop: always visible */}
-        <div className="hidden sm:flex flex-row gap-3 justify-center">
-          <button
-            onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-            className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
-          >
-            {isGoodScore ? "개선 포인트 보기" : "우선순위 보기"}
-            <ArrowRight className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-            className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors"
-          >
-            {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
-          </button>
-        </div>
-        {!isGoodScore && (
+        {/* 2-Step Funnel CTA */}
+        {ctaStep === "idle" && (
+          <>
+            {/* Desktop */}
+            <div className="hidden sm:flex flex-row gap-3 justify-center">
+              <button
+                onClick={() => setCtaStep("email")}
+                className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors"
+              >
+                📩 분석 결과 메일로 받기
+                <ArrowRight className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setCtaStep("consult")}
+                className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-xl border border-primary/20 text-primary font-semibold text-sm hover:bg-primary/5 transition-colors"
+              >
+                무료 상담 신청하기
+              </button>
+            </div>
+            {/* Mobile */}
+            <div className="sm:hidden flex flex-col items-center gap-1.5 pt-1">
+              <button
+                onClick={() => setCtaStep("email")}
+                className="inline-flex items-center justify-center gap-1.5 h-10 w-full max-w-[240px] rounded-full bg-primary text-primary-foreground font-bold text-[13px] hover:bg-primary/90 transition-colors"
+              >
+                📩 분석 결과 메일로 받기
+              </button>
+              <button
+                onClick={() => setCtaStep("consult")}
+                className="inline-flex items-center justify-center text-xs text-muted-foreground hover:text-primary transition-colors py-1 underline underline-offset-2 decoration-muted-foreground/30"
+              >
+                무료 상담 신청하기
+              </button>
+            </div>
+          </>
+        )}
+
+        {ctaStep === "email" && (
+          <div className="flex flex-col items-center gap-3 animate-fade-up">
+            <p className="text-xs font-semibold text-foreground">Step 1 · 분석 결과를 이메일로 받아보세요</p>
+            <div className="flex flex-col sm:flex-row gap-2 w-full max-w-sm">
+              <input
+                type="email"
+                value={ctaEmail}
+                onChange={(e) => { setCtaEmail(e.target.value); setCtaEmailError(""); }}
+                placeholder="email@example.com"
+                className="flex-1 h-11 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all"
+              />
+              <button
+                onClick={handleCtaEmailSubmit}
+                disabled={ctaLoading}
+                className="h-11 px-5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+              >
+                {ctaLoading ? "등록 중..." : "등록하기"}
+              </button>
+            </div>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={ctaAgreed}
+                onChange={(e) => { setCtaAgreed(e.target.checked); setCtaAgreeError(""); }}
+                className="w-3.5 h-3.5 rounded border-border accent-primary"
+              />
+              <span className="text-[11px] text-muted-foreground">마케팅 정보 수신에 동의합니다</span>
+            </label>
+            {ctaEmailError && <p className="text-xs text-destructive">{ctaEmailError}</p>}
+            {ctaAgreeError && <p className="text-xs text-destructive">{ctaAgreeError}</p>}
+            {ctaEmailStatus === "duplicate" && <p className="text-xs text-score-warning">이미 등록된 이메일이에요! 곧 다음 단계로 이동합니다.</p>}
+            {ctaEmailStatus === "error" && <p className="text-xs text-destructive">오류가 발생했어요. 다시 시도해 주세요.</p>}
+          </div>
+        )}
+
+        {ctaStep === "email-done" && (
+          <div className="flex flex-col items-center gap-4 animate-fade-up">
+            <div className="text-center">
+              <CheckCircle className="w-10 h-10 text-score-excellent mx-auto mb-2" />
+              <p className="text-sm font-bold text-foreground">등록 완료!</p>
+              <p className="text-xs text-muted-foreground">정식 출시 소식을 이메일로 보내드릴게요.</p>
+            </div>
+            <div className="bg-muted/50 rounded-xl p-4 text-center max-w-sm w-full">
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Step 2</span>
+              <p className="text-sm font-bold text-foreground mt-2">전문가 무료 상담도 받아보시겠어요?</p>
+              <p className="text-xs text-muted-foreground mt-1">현재 상태를 진단하고 맞춤 솔루션을 제안해 드려요.</p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setCtaStep("idle")}
+                className="h-10 px-5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                다음에 할게요
+              </button>
+              <button
+                onClick={() => setCtaStep("consult")}
+                className="h-10 px-5 rounded-xl gradient-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
+              >
+                무료 상담 신청하기 →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {!isGoodScore && ctaStep === "idle" && (
           <p className="hidden sm:block text-[10px] text-muted-foreground/40">
             {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
           </p>
@@ -571,21 +656,6 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
 
         {/* Mobile: collapsible details */}
         <div className="sm:hidden">
-          {/* CTA buttons always visible on mobile */}
-          <div className="flex flex-col items-center gap-1.5 pt-1">
-            <button
-              onClick={() => openModal(isGoodScore ? "더 높은 점수를 위한 개선 포인트 받기" : "점수 올리는 우선순위 받기")}
-              className="inline-flex items-center justify-center gap-1.5 h-10 w-full max-w-[240px] rounded-full bg-primary text-primary-foreground font-bold text-[13px] hover:bg-primary/90 transition-colors"
-            >
-              {isGoodScore ? "개선 포인트 보기" : "우선순위 보기 →"}
-            </button>
-            <button
-              onClick={() => openModal(isGoodScore ? "내 점수 세부 분석 받기" : "내 점수 깎는 핵심 원인 받기")}
-              className="inline-flex items-center justify-center text-xs text-muted-foreground hover:text-primary transition-colors py-1 underline underline-offset-2 decoration-muted-foreground/30"
-            >
-              {isGoodScore ? "세부 분석 보기" : "핵심 원인 보기"}
-            </button>
-          </div>
           {!mobileExpanded ? (
             <button
               onClick={() => setMobileExpanded(true)}
@@ -614,22 +684,25 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 </div>
               )}
               {!isGoodScore && (
-                <p className="text-[10px] text-muted-foreground/40">
+                <p className="text-center text-[10px] text-muted-foreground/40 pt-1">
                   {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
                 </p>
               )}
-              <button
-                onClick={() => setMobileExpanded(false)}
-                className="flex items-center justify-center gap-1 w-full text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors py-0.5"
-              >
-                접기
-                <ChevronDown className="w-3.5 h-3.5 rotate-180" />
-              </button>
+              <div className="flex justify-center pt-1">
+                <button
+                  onClick={() => setMobileExpanded(false)}
+                  className="flex items-center gap-0.5 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                >
+                  접기
+                  <ChevronDown className="w-3.5 h-3.5 rotate-180" />
+                </button>
+              </div>
             </div>
           )}
         </div>
       </div>
       <LeadModal open={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle} result={result} url={url} />
+      <ConsultationModal open={ctaStep === "consult"} onClose={() => setCtaStep("idle")} />
     </>
   );
 }
