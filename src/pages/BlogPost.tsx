@@ -10,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import FunnelCTAs from "@/components/FunnelCTAs";
 
 
 const categoryColor: Record<string, string> = {
