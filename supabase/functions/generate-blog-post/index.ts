@@ -102,15 +102,12 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Pick a random category and theme
     const catGroup = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-    const theme =
-      catGroup.themes[Math.floor(Math.random() * catGroup.themes.length)];
+    const theme = catGroup.themes[Math.floor(Math.random() * catGroup.themes.length)];
     const category = catGroup.category;
 
     console.log(`Generating blog post: [${category}] ${theme}`);
 
-    // Check we haven't already created a post with a similar theme today
     const today = new Date().toISOString().slice(0, 10);
     const { data: existing } = await supabase
       .from("blog_posts")
@@ -120,13 +117,8 @@ Deno.serve(async (req) => {
 
     if (existing && existing.length > 0) {
       return new Response(
-        JSON.stringify({
-          success: false,
-          message: "Already generated a post today",
-        }),
-        {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
+        JSON.stringify({ success: false, message: "Already generated a post today" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -149,7 +141,8 @@ Deno.serve(async (req) => {
 title: 블로그 제목 (한국어, 매력적이고 SEO 친화적으로)
 excerpt: 2-3문장의 요약 (검색 결과에 표시될 설명)
 readTime: 예상 읽기 시간 (예: "8분")
-content: 본문 (마크다운)`;
+content: 본문 (마크다운)
+faqs: 주제와 관련된 자주 묻는 질문 5-7개. 각 FAQ는 실제 사용자가 궁금해할 만한 구체적인 질문과 2-3문장의 명확한 답변으로 구성.`;
 
     const response = await fetch(
       "https://ai.gateway.lovable.dev/v1/chat/completions",
@@ -170,7 +163,7 @@ content: 본문 (마크다운)`;
               type: "function",
               function: {
                 name: "create_blog_post",
-                description: "Create a blog post with structured fields",
+                description: "Create a blog post with structured fields including FAQs",
                 parameters: {
                   type: "object",
                   properties: {
@@ -178,8 +171,21 @@ content: 본문 (마크다운)`;
                     excerpt: { type: "string", description: "2-3 sentence summary in Korean" },
                     readTime: { type: "string", description: "Estimated read time like '8분'" },
                     content: { type: "string", description: "Full markdown content in Korean" },
+                    faqs: {
+                      type: "array",
+                      description: "5-7 frequently asked questions related to the topic",
+                      items: {
+                        type: "object",
+                        properties: {
+                          question: { type: "string", description: "FAQ question in Korean" },
+                          answer: { type: "string", description: "FAQ answer in Korean, 2-3 sentences" },
+                        },
+                        required: ["question", "answer"],
+                        additionalProperties: false,
+                      },
+                    },
                   },
-                  required: ["title", "excerpt", "readTime", "content"],
+                  required: ["title", "excerpt", "readTime", "content", "faqs"],
                   additionalProperties: false,
                 },
               },
@@ -222,7 +228,15 @@ content: 본문 (마크다운)`;
     const args = JSON.parse(toolCall.function.arguments);
     const slug = slugify(args.title);
 
-    // Insert into database
+    // Append FAQ section to content if FAQs were generated
+    let fullContent = args.content;
+    if (args.faqs && args.faqs.length > 0) {
+      fullContent += "\n\n## 자주 묻는 질문\n\n";
+      for (const faq of args.faqs) {
+        fullContent += `### Q. ${faq.question}\n\n${faq.answer}\n\n`;
+      }
+    }
+
     const { data: inserted, error: insertError } = await supabase
       .from("blog_posts")
       .insert({
@@ -231,7 +245,7 @@ content: 본문 (마크다운)`;
         excerpt: args.excerpt,
         category,
         read_time: args.readTime,
-        content: args.content,
+        content: fullContent,
         date: today,
       })
       .select()
@@ -247,22 +261,15 @@ content: 본문 (마크다운)`;
     return new Response(
       JSON.stringify({
         success: true,
-        post: { slug, title: args.title, category },
+        post: { slug, title: args.title, category, faqCount: args.faqs?.length || 0 },
       }),
-      {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
     console.error("Error generating blog post:", error);
     return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Unknown error",
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });

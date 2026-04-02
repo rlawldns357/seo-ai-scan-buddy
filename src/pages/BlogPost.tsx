@@ -1,9 +1,15 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import { blogPosts, type BlogPost as BlogPostType } from "@/data/blogPosts";
+import { blogPosts, type BlogPost as BlogPostType, type FAQ } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, ArrowLeft, User } from "lucide-react";
+import { Calendar, Clock, ArrowLeft, User, ChevronDown } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
@@ -18,7 +24,7 @@ function formatDate(d: string) {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
-/** Minimal markdown→HTML: headings, bold, lists, blockquotes, inline code, paragraphs */
+/** Minimal markdown→HTML */
 function renderMarkdown(md: string) {
   const lines = md.split("\n");
   const html: string[] = [];
@@ -77,19 +83,41 @@ function inline(text: string) {
     .replace(/`(.+?)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">$1</code>');
 }
 
+/** Generate FAQ JSON-LD for SEO */
+function FaqJsonLd({ faqs, title }: { faqs: FAQ[]; title: string }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    name: title,
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<BlogPostType | null | undefined>(undefined);
+  const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[] }) | null | undefined>(undefined);
 
   useEffect(() => {
-    // First check static posts
     const staticPost = blogPosts.find((p) => p.slug === slug);
     if (staticPost) {
       setPost(staticPost);
       return;
     }
 
-    // Then check DB
     async function fetchFromDb() {
       const { data } = await supabase
         .from("blog_posts")
@@ -99,6 +127,23 @@ export default function BlogPost() {
         .single();
 
       if (data) {
+        // Try to extract FAQs from content if they exist in a structured format
+        let faqs: FAQ[] | undefined;
+        const content = data.content;
+
+        // Check if content has FAQ section with Q:/A: format
+        const faqMatch = content.match(/## (?:자주 묻는 질문|FAQ)[\s\S]*$/);
+        if (faqMatch) {
+          const faqSection = faqMatch[0];
+          const qaPairs: FAQ[] = [];
+          const qaRegex = /(?:###?\s*)?(?:Q[.:]?\s*|❓\s*)(.+?)[\n\r]+(?:A[.:]?\s*|💡\s*)(.+?)(?=(?:###?\s*)?(?:Q[.:]?\s*|❓)|$)/gs;
+          let match;
+          while ((match = qaRegex.exec(faqSection)) !== null) {
+            qaPairs.push({ question: match[1].trim(), answer: match[2].trim() });
+          }
+          if (qaPairs.length > 0) faqs = qaPairs;
+        }
+
         setPost({
           slug: data.slug,
           title: data.title,
@@ -110,6 +155,7 @@ export default function BlogPost() {
           featured: data.featured,
           readTime: data.read_time,
           content: data.content,
+          faqs,
         });
       } else {
         setPost(null);
@@ -118,7 +164,6 @@ export default function BlogPost() {
     fetchFromDb();
   }, [slug]);
 
-  // Loading
   if (post === undefined) {
     return (
       <div className="min-h-screen bg-background">
@@ -144,9 +189,15 @@ export default function BlogPost() {
     );
   }
 
+  const faqs = post.faqs;
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
+
+      {/* FAQ JSON-LD for SEO */}
+      {faqs && faqs.length > 0 && <FaqJsonLd faqs={faqs} title={post.title} />}
+
       <main className="container py-8 md:py-14">
         <Link
           to="/blog"
@@ -194,6 +245,30 @@ export default function BlogPost() {
             <p className="mt-10 text-muted-foreground">{post.excerpt}</p>
           )}
 
+          {/* FAQ Section */}
+          {faqs && faqs.length > 0 && (
+            <section className="mt-14">
+              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+                💬 자주 묻는 질문
+              </h2>
+              <div className="rounded-2xl border border-border bg-card/50 overflow-hidden">
+                <Accordion type="single" collapsible className="w-full">
+                  {faqs.map((faq, i) => (
+                    <AccordionItem key={i} value={`faq-${i}`} className="border-border px-5">
+                      <AccordionTrigger className="text-left text-sm md:text-base font-medium text-foreground hover:no-underline">
+                        {faq.question}
+                      </AccordionTrigger>
+                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                        {faq.answer}
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+            </section>
+          )}
+
+          {/* CTA */}
           <div className="mt-14 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 via-accent/5 to-transparent border border-border">
             <h3 className="text-lg font-bold text-foreground">내 웹사이트도 분석해 보세요</h3>
             <p className="mt-2 text-sm text-muted-foreground">
