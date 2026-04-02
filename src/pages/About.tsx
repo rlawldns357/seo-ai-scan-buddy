@@ -115,13 +115,13 @@ export default function About() {
             <FunnelCTAs />
           </div>
 
-          <div className="mt-6 mb-8 flex items-center justify-center">
+          <div className="mt-8 mb-8 flex flex-col items-center text-center">
+            <p className="text-sm text-muted-foreground mb-3">지금 바로 내 사이트를 점검해 보세요</p>
             <a
               href="/"
-              className="inline-flex items-center justify-center gap-2 h-12 w-full sm:w-auto px-8 rounded-2xl gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+              className="inline-flex items-center justify-center gap-2.5 h-14 w-full sm:w-auto px-10 rounded-2xl gradient-primary text-primary-foreground font-bold text-base shadow-lg hover:opacity-90 hover:shadow-xl transition-all"
             >
-              <ArrowRight className="w-4 h-4" />
-              무료로 분석하기
+              🚀 SearchTune OS 무료로 분석하기
             </a>
           </div>
         </div>
