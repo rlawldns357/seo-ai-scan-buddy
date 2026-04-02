@@ -386,52 +386,6 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
-            {/* Blog Posts Management */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
-                  블로그 관리
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                    {blogPosts.length}개
-                  </span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                  {blogPosts.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">블로그 글 없음</p>
-                  ) : (
-                    blogPosts.map((post) => (
-                      <div key={post.id} className="flex items-center justify-between gap-3 border border-border rounded-lg px-3 py-2.5">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${post.published ? "bg-score-excellent/10 text-score-excellent" : "bg-muted text-muted-foreground"}`}>
-                              {post.published ? "공개" : "비공개"}
-                            </span>
-                            <span className="text-xs text-muted-foreground shrink-0">{post.category}</span>
-                          </div>
-                          <p className="text-sm font-medium text-foreground truncate mt-0.5">{post.title}</p>
-                          <p className="text-xs text-muted-foreground">{post.date}</p>
-                        </div>
-                        <button
-                          onClick={() => togglePublished(post.id, post.published)}
-                          disabled={togglingId === post.id}
-                          className={`shrink-0 p-2 rounded-lg transition-colors ${
-                            post.published
-                              ? "bg-score-excellent/10 text-score-excellent hover:bg-score-excellent/20"
-                              : "bg-muted text-muted-foreground hover:bg-muted/80"
-                          } disabled:opacity-50`}
-                          title={post.published ? "비공개로 전환" : "공개로 전환"}
-                        >
-                          {post.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </CardContent>
-            </Card>
           </>
         ) : null}
       </div>
