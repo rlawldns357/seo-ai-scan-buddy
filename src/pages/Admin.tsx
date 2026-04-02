@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe } from "lucide-react";
+import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,7 @@ interface InsightsData {
   dailyData: { date: string; sessions: number; analyses: number; leads: number }[];
   recentLeads: { email: string; source: string; created_at: string }[];
   recentUrls: { url: string; created_at: string }[];
+  recentConsultations: { name: string; email: string; site_url: string | null; budget: string | null; interests: string[] | null; concerns: string | null; status: string; created_at: string }[];
 }
 
 const chartConfig: ChartConfig = {
@@ -246,6 +247,62 @@ export default function Admin() {
                         <span className="text-muted-foreground text-xs shrink-0">
                           {new Date(item.created_at).toLocaleDateString("ko-KR")}
                         </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Consultation Requests */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  상담 신청 목록
+                  {data.recentConsultations?.length > 0 && (
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                      {data.recentConsultations.length}건
+                    </span>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                  {(!data.recentConsultations || data.recentConsultations.length === 0) ? (
+                    <p className="text-sm text-muted-foreground">상담 신청 없음</p>
+                  ) : (
+                    data.recentConsultations.map((c, i) => (
+                      <div key={i} className="border border-border rounded-lg p-3 space-y-1.5">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <span className="font-medium text-sm text-foreground">{c.name}</span>
+                            <span className="text-muted-foreground text-xs ml-2">{c.email}</span>
+                          </div>
+                          <span className="text-muted-foreground text-xs shrink-0">
+                            {new Date(c.created_at).toLocaleDateString("ko-KR")}
+                          </span>
+                        </div>
+                        {c.site_url && (
+                          <a href={c.site_url} target="_blank" rel="noopener noreferrer" className="text-primary text-xs font-mono hover:underline block truncate">
+                            {c.site_url}
+                          </a>
+                        )}
+                        <div className="flex flex-wrap gap-1">
+                          {c.interests?.map((interest, j) => (
+                            <span key={j} className="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                              {interest}
+                            </span>
+                          ))}
+                          {c.budget && (
+                            <span className="text-xs bg-accent text-accent-foreground px-1.5 py-0.5 rounded">
+                              💰 {c.budget}
+                            </span>
+                          )}
+                        </div>
+                        {c.concerns && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">{c.concerns}</p>
+                        )}
                       </div>
                     ))
                   )}
