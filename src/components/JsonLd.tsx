@@ -12,7 +12,8 @@ export default function JsonLd({ data }: JsonLdProps) {
 }
 
 const SITE_URL = "https://searchtuneos.com";
-const SITE_NAME = "SearchTune OS";
+const SITE_NAME = "서치튠OS";
+const SITE_ALTERNATE_NAMES = ["SearchTune OS", "SearchTuneOS", "서치튠"];
 
 export function WebSiteJsonLd() {
   return (
