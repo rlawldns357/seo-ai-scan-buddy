@@ -165,10 +165,6 @@ export default function About() {
             </div>
           </section>
 
-          <div className="mt-16">
-            <FunnelCTAs />
-          </div>
-
           <div className="mt-8 mb-8 flex flex-col items-center text-center">
             <p className="text-sm text-muted-foreground mb-3">지금 바로 내 사이트를 점검해 보세요</p>
             <a
@@ -177,6 +173,10 @@ export default function About() {
             >
               🚀 SearchTune OS 무료로 분석하기
             </a>
+          </div>
+
+          <div className="mt-8">
+            <FunnelCTAs />
           </div>
         </div>
       </main>
