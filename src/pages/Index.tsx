@@ -1,26 +1,28 @@
-import { useState } from "react";
-import { Loader2, Zap } from "lucide-react";
+import { useState, lazy, Suspense } from "react";
+import { Zap, Loader2 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
-import ScoreDashboard from "@/components/ScoreDashboard";
-import LoadingScreen, { type AnalysisPhase } from "@/components/LoadingScreen";
-import LighthouseScores from "@/components/LighthouseScores";
-import ResultHeader from "@/components/ResultHeader";
-import VerificationLinks from "@/components/VerificationLinks";
-import EmailForm from "@/components/EmailForm";
-import FunnelCTAs from "@/components/FunnelCTAs";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
-import PsiErrorBanner from "@/components/PsiErrorBanner";
 import SubpageWarning from "@/components/SubpageWarning";
 import RateLimitBanner from "@/components/RateLimitBanner";
 import FaqSection, { faqs } from "@/components/FaqSection";
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
-import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
-import { analyzeSite } from "@/lib/analyze";
+import { type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
-import { checkRateLimit, incrementUsage, type RateLimitStatus } from "@/lib/rateLimit";
+import { type RateLimitStatus } from "@/lib/rateLimit";
+import type { AnalysisPhase } from "@/components/LoadingScreen";
+
+// Lazy-load heavy components only needed for loading/result screens
+const ScoreDashboard = lazy(() => import("@/components/ScoreDashboard"));
+const LoadingScreen = lazy(() => import("@/components/LoadingScreen"));
+const LighthouseScores = lazy(() => import("@/components/LighthouseScores"));
+const ResultHeader = lazy(() => import("@/components/ResultHeader"));
+const VerificationLinks = lazy(() => import("@/components/VerificationLinks"));
+const EmailForm = lazy(() => import("@/components/EmailForm"));
+const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
+const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
 
 type Screen = "home" | "loading" | "result";
 
@@ -57,8 +59,14 @@ const Index = () => {
     if (isAnalyzing) return;
     setIsAnalyzing(true);
 
+    // Dynamic imports for heavy analysis modules
+    const [{ incrementUsage }, { fetchPsi }, { analyzeSite }] = await Promise.all([
+      import("@/lib/rateLimit"),
+      import("@/lib/psi"),
+      import("@/lib/analyze"),
+    ]);
+
     if (!isAdmin) {
-      // Increment usage before running (skip for admin)
       const usage = await incrementUsage();
       if (!usage.allowed) {
         setRateLimit(usage);
@@ -151,6 +159,7 @@ const Index = () => {
 
     // Check rate limit before proceeding (skip for admin)
     if (!isAdmin) {
+      const { checkRateLimit } = await import("@/lib/rateLimit");
       const usage = await checkRateLimit();
       if (!usage.allowed) {
         setRateLimit(usage);
@@ -166,8 +175,9 @@ const Index = () => {
     runAnalysis(validation.finalUrl);
   };
 
-  const handleRetryPsi = () => {
+  const handleRetryPsi = async () => {
     if (normalizedUrl) {
+      const { fetchPsi } = await import("@/lib/psi");
       setPsiError(null);
       setPsiLazyLoading(true);
       Promise.all([
@@ -260,6 +270,7 @@ const Index = () => {
                 remaining={rateLimit.remaining}
                 emailUnlocked={rateLimit.emailUnlocked}
                 onUnlocked={async () => {
+                  const { checkRateLimit } = await import("@/lib/rateLimit");
                   const updated = await checkRateLimit();
                   setRateLimit(updated);
                 }}
@@ -273,83 +284,76 @@ const Index = () => {
         </main>
       )}
 
-      {screen === "loading" && (
-        <>
-          <LoadingScreen completedPhases={completedPhases} skipLighthouse={lighthouseSkipped} />
-          <StickyBottomCTA />
-        </>
-      )}
+      <Suspense fallback={null}>
+        {screen === "loading" && (
+          <>
+            <LoadingScreen completedPhases={completedPhases} skipLighthouse={lighthouseSkipped} />
+            <StickyBottomCTA />
+          </>
+        )}
 
-      {screen === "result" && (
-        <main className="flex-1 py-8 sm:py-12 px-2 sm:px-4 pb-24">
-          <div className="max-w-4xl mx-auto space-y-5">
-            {/* Result header: URL, time, badge */}
-            <ResultHeader
-              psi={psiMobile || psiDesktop}
-              psiError={psiError}
-              url={normalizedUrl}
-            />
+        {screen === "result" && (
+          <main className="flex-1 py-8 sm:py-12 px-2 sm:px-4 pb-24">
+            <div className="max-w-4xl mx-auto space-y-5">
+              <ResultHeader
+                psi={psiMobile || psiDesktop}
+                psiError={psiError}
+                url={normalizedUrl}
+              />
 
-            {/* PSI Error */}
-            {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
+              {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
 
-            {/* Lighthouse real scores or lazy load button */}
-            {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
-            {lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && (
-              <div className="flex justify-center">
-                <button
-                  onClick={handleRetryPsi}
-                  disabled={psiLazyLoading}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-muted/50 transition-colors disabled:opacity-60"
-                >
-                  {psiLazyLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      Lighthouse 측정 중…
-                    </>
-                  ) : (
-                    <>
-                      <Zap className="w-4 h-4" />
-                      Lighthouse 성능도 측정하기
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
+              {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
+              {lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && (
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleRetryPsi}
+                    disabled={psiLazyLoading}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-foreground font-medium text-sm hover:bg-muted/50 transition-colors disabled:opacity-60"
+                  >
+                    {psiLazyLoading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Lighthouse 측정 중…
+                      </>
+                    ) : (
+                      <>
+                        <Zap className="w-4 h-4" />
+                        Lighthouse 성능도 측정하기
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
 
-            {/* Analyze Error */}
-            {analyzeError && (
-              <div className="rounded-2xl bg-score-poor/5 border border-score-poor/20 p-4 text-center">
-                <p className="text-sm text-score-poor font-medium">{analyzeError}</p>
-                <button
-                  onClick={() => normalizedUrl && runAnalysis(normalizedUrl)}
-                  className="mt-2 text-xs text-primary font-semibold hover:underline"
-                >
-                  다시 분석하기
-                </button>
-              </div>
-            )}
+              {analyzeError && (
+                <div className="rounded-2xl bg-score-poor/5 border border-score-poor/20 p-4 text-center">
+                  <p className="text-sm text-score-poor font-medium">{analyzeError}</p>
+                  <button
+                    onClick={() => normalizedUrl && runAnalysis(normalizedUrl)}
+                    className="mt-2 text-xs text-primary font-semibold hover:underline"
+                  >
+                    다시 분석하기
+                  </button>
+                </div>
+              )}
 
-            {/* Main: SEO/AEO/GEO gauge cards with inline insights */}
-            {result && <ScoreDashboard result={result} url={normalizedUrl} />}
+              {result && <ScoreDashboard result={result} url={normalizedUrl} />}
 
-            {/* Verification Links */}
-            <VerificationLinks url={normalizedUrl} />
+              <VerificationLinks url={normalizedUrl} />
 
-            {/* Funnel CTAs */}
-            <FunnelCTAs result={result} url={normalizedUrl} />
+              <FunnelCTAs result={result} url={normalizedUrl} />
 
-            {/* Email Form (legacy) */}
-            <EmailForm onSubmitted={() => {}} />
+              <EmailForm onSubmitted={() => {}} />
 
-            {/* FAQ */}
-            <FaqSection expanded />
-            <div className="h-24" />
-          </div>
+              <FaqSection expanded />
+              <div className="h-24" />
+            </div>
 
-          <StickyBottomCTA />
-        </main>
-      )}
+            <StickyBottomCTA />
+          </main>
+        )}
+      </Suspense>
     </div>
   );
 };
