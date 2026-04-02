@@ -12,7 +12,8 @@ export default function JsonLd({ data }: JsonLdProps) {
 }
 
 const SITE_URL = "https://searchtuneos.com";
-const SITE_NAME = "SearchTune OS";
+const SITE_NAME = "서치튠OS";
+const SITE_ALTERNATE_NAMES = ["SearchTune OS", "SearchTuneOS", "서치튠"];
 
 export function WebSiteJsonLd() {
   return (
@@ -21,9 +22,10 @@ export function WebSiteJsonLd() {
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: SITE_NAME,
+        alternateName: SITE_ALTERNATE_NAMES,
         url: SITE_URL,
         description:
-          "URL만 입력하면 SEO, AEO, GEO 점수와 AI 검색 준비도를 빠르게 확인할 수 있어요.",
+          "서치튠OS – URL만 입력하면 SEO, AEO, GEO 점수와 AI 검색 준비도를 빠르게 확인할 수 있어요.",
         inLanguage: "ko",
       }}
     />

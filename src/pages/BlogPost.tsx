@@ -403,7 +403,7 @@ export default function BlogPost() {
               to="/"
               className="inline-flex items-center justify-center gap-2.5 h-14 w-full sm:w-auto px-10 rounded-2xl gradient-primary text-primary-foreground font-bold text-base shadow-lg hover:opacity-90 hover:shadow-xl transition-all"
             >
-              🚀 SearchTune OS 무료로 분석하기
+              🚀 서치튠OS 무료로 분석하기
             </Link>
           </div>
 

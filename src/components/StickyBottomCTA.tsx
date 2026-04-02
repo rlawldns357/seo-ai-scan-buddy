@@ -103,7 +103,7 @@ export default function StickyBottomCTA() {
       {/* Mobile layout */}
       <div className="sm:hidden px-3 py-2.5 space-y-2">
         <p className="text-center text-[11px] font-medium text-muted-foreground">
-          🚀 <span className="font-bold text-foreground">SearchTune OS</span> 정식 출시 알림을 받아보세요
+          🚀 <span className="font-bold text-foreground">서치튠OS(SearchTune OS)</span> 정식 출시 알림을 받아보세요
         </p>
         <div className="flex gap-1.5">
           <input

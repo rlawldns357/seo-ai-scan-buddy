@@ -11,8 +11,8 @@ export const faqs = [
     a: "SEO(검색엔진 최적화)는 Google·Naver 등에서 상위 노출을 위한 기술이고, AEO(AI 답변 최적화)는 ChatGPT·Perplexity·뤼튼·클로바X·Gemini 같은 AI가 내 콘텐츠를 답변으로 인용하도록 최적화하는 것, GEO(생성형 검색 최적화)는 Google SGE·Naver Cue:·Bing Copilot 등 AI 검색 결과에 출처로 선택되도록 하는 전략입니다.",
   },
   {
-    q: "SearchTune OS는 어떤 서비스인가요?",
-    a: "SearchTune OS는 URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석하고, 항목별 개선 포인트와 우선순위를 알려주는 무료 AI 검색 진단 도구입니다.",
+    q: "서치튠OS(SearchTune OS)는 어떤 서비스인가요?",
+    a: "서치튠OS(SearchTune OS)는 URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석하고, 항목별 개선 포인트와 우선순위를 알려주는 무료 AI 검색 진단 도구입니다.",
   },
   {
     q: "분석에 비용이 드나요?",
@@ -40,7 +40,7 @@ export const faqs = [
   },
   {
     q: "Lighthouse 점수와 SEO 점수는 다른 건가요?",
-    a: "네, 다릅니다. Lighthouse 점수는 Google이 측정하는 성능·접근성·SEO 기술 점수이고, SearchTune OS의 SEO 점수는 크롤링 가능성, 인덱싱 준비도, 스니펫 품질, 구조화 데이터 등을 종합적으로 평가한 자체 점수입니다. 두 점수를 함께 보면 더 정확한 진단이 가능합니다.",
+    a: "네, 다릅니다. Lighthouse 점수는 Google이 측정하는 성능·접근성·SEO 기술 점수이고, 서치튠OS(SearchTune OS)의 SEO 점수는 크롤링 가능성, 인덱싱 준비도, 스니펫 품질, 구조화 데이터 등을 종합적으로 평가한 자체 점수입니다. 두 점수를 함께 보면 더 정확한 진단이 가능합니다.",
   },
   {
     q: "분석 결과를 받아볼 수 있나요?",
