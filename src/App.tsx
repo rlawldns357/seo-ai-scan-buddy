@@ -1,14 +1,16 @@
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
-import DesignTest from "./pages/DesignTest.tsx";
-import Unsubscribe from "./pages/Unsubscribe.tsx";
-import About from "./pages/About.tsx";
-import Admin from "./pages/Admin.tsx";
+
+const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const DesignTest = lazy(() => import("./pages/DesignTest.tsx"));
+const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
+const About = lazy(() => import("./pages/About.tsx"));
+const Admin = lazy(() => import("./pages/Admin.tsx"));
 
 const queryClient = new QueryClient();
 
