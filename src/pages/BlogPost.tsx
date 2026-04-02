@@ -1,6 +1,8 @@
 import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import { blogPosts } from "@/data/blogPosts";
+import { blogPosts, type BlogPost as BlogPostType } from "@/data/blogPosts";
+import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowLeft, User } from "lucide-react";
 
 const categoryColor: Record<string, string> = {
@@ -25,13 +27,11 @@ function renderMarkdown(md: string) {
   for (const raw of lines) {
     const line = raw.trimEnd();
 
-    // blank line
     if (line.trim() === "") {
       if (inList) { html.push("</ul>"); inList = false; }
       continue;
     }
 
-    // headings
     if (line.startsWith("### ")) {
       if (inList) { html.push("</ul>"); inList = false; }
       html.push(`<h3 class="text-lg font-bold text-foreground mt-8 mb-3">${inline(line.slice(4))}</h3>`);
@@ -43,31 +43,26 @@ function renderMarkdown(md: string) {
       continue;
     }
 
-    // blockquote
     if (line.startsWith("> ")) {
       if (inList) { html.push("</ul>"); inList = false; }
       html.push(`<blockquote class="border-l-4 border-primary/30 pl-4 my-6 text-muted-foreground italic">${inline(line.slice(2))}</blockquote>`);
       continue;
     }
 
-    // unordered list
     if (line.startsWith("- ")) {
       if (!inList) { html.push('<ul class="list-disc pl-6 space-y-1.5 my-4 text-muted-foreground">'); inList = true; }
       html.push(`<li>${inline(line.slice(2))}</li>`);
       continue;
     }
 
-    // table row (simple skip for now — render as text)
     if (line.startsWith("|")) {
       if (inList) { html.push("</ul>"); inList = false; }
-      // skip table separators
       if (/^\|[\s-|]+\|$/.test(line)) continue;
       const cells = line.split("|").filter(Boolean).map(c => c.trim());
       html.push(`<div class="flex gap-6 text-sm text-muted-foreground my-1">${cells.map(c => `<span class="flex-1">${inline(c)}</span>`).join("")}</div>`);
       continue;
     }
 
-    // paragraph
     if (inList) { html.push("</ul>"); inList = false; }
     html.push(`<p class="text-muted-foreground leading-relaxed my-4">${inline(line)}</p>`);
   }
@@ -84,7 +79,56 @@ function inline(text: string) {
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const post = blogPosts.find((p) => p.slug === slug);
+  const [post, setPost] = useState<BlogPostType | null | undefined>(undefined);
+
+  useEffect(() => {
+    // First check static posts
+    const staticPost = blogPosts.find((p) => p.slug === slug);
+    if (staticPost) {
+      setPost(staticPost);
+      return;
+    }
+
+    // Then check DB
+    async function fetchFromDb() {
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content")
+        .eq("slug", slug!)
+        .eq("published", true)
+        .single();
+
+      if (data) {
+        setPost({
+          slug: data.slug,
+          title: data.title,
+          excerpt: data.excerpt,
+          category: data.category as BlogPostType["category"],
+          author: data.author,
+          date: data.date,
+          thumbnail: data.thumbnail,
+          featured: data.featured,
+          readTime: data.read_time,
+          content: data.content,
+        });
+      } else {
+        setPost(null);
+      }
+    }
+    fetchFromDb();
+  }, [slug]);
+
+  // Loading
+  if (post === undefined) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <main className="container py-16 text-center">
+          <div className="animate-pulse text-muted-foreground">불러오는 중...</div>
+        </main>
+      </div>
+    );
+  }
 
   if (!post) {
     return (
@@ -104,7 +148,6 @@ export default function BlogPost() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container py-8 md:py-14">
-        {/* Back link */}
         <Link
           to="/blog"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
@@ -112,7 +155,6 @@ export default function BlogPost() {
           <ArrowLeft className="w-4 h-4" /> 블로그
         </Link>
 
-        {/* Header */}
         <article className="max-w-3xl mx-auto">
           <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
             {post.category}
@@ -137,14 +179,12 @@ export default function BlogPost() {
             </span>
           </div>
 
-          {/* Hero gradient */}
           <div className="mt-8 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center aspect-[2/1] md:aspect-[3/1]">
             <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
               {post.category}
             </span>
           </div>
 
-          {/* Content */}
           {post.content ? (
             <div
               className="mt-10 text-base leading-relaxed"
@@ -154,7 +194,6 @@ export default function BlogPost() {
             <p className="mt-10 text-muted-foreground">{post.excerpt}</p>
           )}
 
-          {/* Bottom CTA */}
           <div className="mt-14 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 via-accent/5 to-transparent border border-border">
             <h3 className="text-lg font-bold text-foreground">내 웹사이트도 분석해 보세요</h3>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -170,7 +209,6 @@ export default function BlogPost() {
         </article>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border py-10 mt-16">
         <div className="container text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} SearchTune OS. All rights reserved.

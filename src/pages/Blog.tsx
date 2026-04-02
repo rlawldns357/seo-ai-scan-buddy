@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
+import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 
 const categoryColor: Record<string, string> = {
@@ -80,8 +82,49 @@ function PostCard({ post }: { post: BlogPost }) {
 }
 
 export default function Blog() {
-  const featured = blogPosts.find((p) => p.featured);
-  const rest = blogPosts.filter((p) => !p.featured);
+  const [allPosts, setAllPosts] = useState<BlogPost[]>(blogPosts);
+
+  useEffect(() => {
+    async function fetchDbPosts() {
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content")
+        .eq("published", true)
+        .order("date", { ascending: false });
+
+      if (data && data.length > 0) {
+        const dbPosts: BlogPost[] = data.map((p) => ({
+          slug: p.slug,
+          title: p.title,
+          excerpt: p.excerpt,
+          category: p.category as BlogPost["category"],
+          author: p.author,
+          date: p.date,
+          thumbnail: p.thumbnail,
+          featured: p.featured,
+          readTime: p.read_time,
+          content: p.content,
+        }));
+
+        // Merge: DB posts first (newest), then static posts, deduplicate by slug
+        const slugSet = new Set<string>();
+        const merged: BlogPost[] = [];
+        for (const post of [...dbPosts, ...blogPosts]) {
+          if (!slugSet.has(post.slug)) {
+            slugSet.add(post.slug);
+            merged.push(post);
+          }
+        }
+        // Sort by date descending
+        merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setAllPosts(merged);
+      }
+    }
+    fetchDbPosts();
+  }, []);
+
+  const featured = allPosts.find((p) => p.featured);
+  const rest = allPosts.filter((p) => !p.featured);
 
   return (
     <div className="min-h-screen bg-background">
