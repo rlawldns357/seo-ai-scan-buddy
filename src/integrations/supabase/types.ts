@@ -122,6 +122,45 @@ export type Database = {
         }
         Relationships: []
       }
+      consultation_requests: {
+        Row: {
+          budget: string | null
+          concerns: string | null
+          created_at: string
+          email: string
+          id: string
+          interests: string[] | null
+          name: string
+          site_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          budget?: string | null
+          concerns?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          interests?: string[] | null
+          name: string
+          site_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          budget?: string | null
+          concerns?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          interests?: string[] | null
+          name?: string
+          site_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       email_leads: {
         Row: {
           created_at: string
