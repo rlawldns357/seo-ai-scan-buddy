@@ -1,4 +1,4 @@
-import jsPDF from "jspdf";
+import type jsPDF from "jspdf";
 import { type DemoResult, type AxisAnalysis } from "@/data/demoResults";
 
 function getGrade(score: number): string {
