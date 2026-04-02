@@ -26,6 +26,50 @@ function isNaverPost(slug: string) {
   return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
 }
 
+function isCafe24Post(slug: string) {
+  return slug.toLowerCase().includes("cafe24");
+}
+
+function isImwebPost(slug: string) {
+  return slug.toLowerCase().includes("imweb");
+}
+
+function getBrandThumbnail(slug: string, category: string, large = false) {
+  const size = large ? "text-4xl md:text-5xl" : "text-3xl";
+  if (isNaverPost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span className={`${size} font-black`} style={{ color: "#03C75A" }}>NAVER</span>
+        <span className="text-sm font-semibold text-muted-foreground">Naver SEO</span>
+      </div>
+    );
+  }
+  if (isCafe24Post(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span className={`${size} font-black tracking-tight`}>
+          <span style={{ color: "#1A1A1A" }}>cafe</span>
+          <span style={{ color: "#1A6DCC" }}>24</span>
+        </span>
+        <span className="text-sm font-semibold text-muted-foreground">Cafe24 SEO</span>
+      </div>
+    );
+  }
+  if (isImwebPost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span className={`${size} font-black tracking-tight`} style={{ color: "#1A1A1A" }}>imweb</span>
+        <span className="text-sm font-semibold text-muted-foreground">아임웹 SEO</span>
+      </div>
+    );
+  }
+  return (
+    <span className={`${size} font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent`}>
+      {category}
+    </span>
+  );
+}
+
 function formatDate(d: string) {
   const date = new Date(d);
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
