@@ -10,7 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import naverLogo from "@/assets/naver-logo.png";
+
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
