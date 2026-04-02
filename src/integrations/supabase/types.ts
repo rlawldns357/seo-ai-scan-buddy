@@ -125,36 +125,45 @@ export type Database = {
       consultation_requests: {
         Row: {
           budget: string | null
+          company: string | null
           concerns: string | null
           created_at: string
           email: string
           id: string
           interests: string[] | null
+          job_title: string | null
           name: string
+          phone: string | null
           site_url: string | null
           status: string
           updated_at: string
         }
         Insert: {
           budget?: string | null
+          company?: string | null
           concerns?: string | null
           created_at?: string
           email: string
           id?: string
           interests?: string[] | null
+          job_title?: string | null
           name: string
+          phone?: string | null
           site_url?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
           budget?: string | null
+          company?: string | null
           concerns?: string | null
           created_at?: string
           email?: string
           id?: string
           interests?: string[] | null
+          job_title?: string | null
           name?: string
+          phone?: string | null
           site_url?: string | null
           status?: string
           updated_at?: string
