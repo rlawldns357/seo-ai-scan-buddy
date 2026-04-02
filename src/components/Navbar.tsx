@@ -33,6 +33,12 @@ export default function Navbar() {
         </div>
         <div className="flex items-center gap-4">
           <Link
+            to="/blog"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+          >
+            Blog
+          </Link>
+          <Link
             to="/about"
             className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
           >
