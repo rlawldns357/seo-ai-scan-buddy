@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import naverLogo from "@/assets/naver-logo.png";
+
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
