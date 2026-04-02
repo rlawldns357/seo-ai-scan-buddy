@@ -17,6 +17,14 @@ export interface BlogPost {
   faqs?: FAQ[];
 }
 
+/** 한글 기준 분당 ~500자, 최소 3분 최대 5분 */
+function calcReadTime(content?: string): string {
+  if (!content) return "3분";
+  const charCount = content.replace(/[#\-|>*`\n\s]/g, "").length;
+  const minutes = Math.ceil(charCount / 500);
+  return `${Math.max(3, Math.min(5, minutes))}분`;
+}
+
 export const blogPosts: BlogPost[] = [
   {
     slug: "what-is-aeo",
