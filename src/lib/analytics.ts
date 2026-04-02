@@ -8,7 +8,9 @@ type EventName =
   | "email_submit_fail"
   | "sticky_email_submit"
   | "cta_click"
-  | "report_pdf_download";
+  | "report_pdf_download"
+  | "consultation_submit_success"
+  | "consultation_submit_fail";
 
 let sessionId: string | null = null;
 
