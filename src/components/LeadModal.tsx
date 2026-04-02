@@ -87,7 +87,8 @@ export default function LeadModal({ open, onClose, title = "맞춤 개선 리포
             <p className="text-sm text-muted-foreground mt-1">맞춤 개선 리포트가 준비되면 이메일로 알려드릴게요.</p>
             {result && url && (
               <button
-                onClick={() => {
+                onClick={async () => {
+                  const { downloadReportPdf } = await import("@/lib/generateReportPdf");
                   downloadReportPdf(result, url);
                   trackEvent("report_pdf_download", { url });
                 }}
