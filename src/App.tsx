@@ -22,8 +22,8 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <ScrollToTop />
         <Suspense fallback={null}>
-          <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/design-test" element={<DesignTest />} />
             <Route path="/about" element={<About />} />
