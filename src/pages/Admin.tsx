@@ -98,7 +98,10 @@ export default function Admin() {
 
   const togglePublished = async (id: string, current: boolean) => {
     setTogglingId(id);
-    await supabase.from("blog_posts").update({ published: !current }).eq("id", id);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "togglePublished", postId: id, published: !current },
+    });
     setBlogPosts((prev) => prev.map((p) => (p.id === id ? { ...p, published: !current } : p)));
     setTogglingId(null);
   };
