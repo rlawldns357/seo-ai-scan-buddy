@@ -181,6 +181,7 @@ Deno.serve(async (req) => {
         dailyData,
         recentLeads: leads?.slice(0, 20) || [],
         recentUrls: recentUrls.slice(0, 30),
+        recentConsultations: consultations?.slice(0, 20) || [],
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
