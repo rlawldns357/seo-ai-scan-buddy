@@ -33,13 +33,18 @@
     <meta name="naver-site-verification" content="d6a9e174a1839bf56c1ab85d7ba0c3241c0eda31" />
     <!-- Bing Webmaster: <meta name="msvalidate.01" content="YOUR_BING_CODE" /> -->
 
-    <!-- GA4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-PNBFTT5SW2"></script>
+    <!-- GA4: deferred to after page load for faster FCP -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
       gtag('config', 'G-PNBFTT5SW2');
+      window.addEventListener('load', function(){
+        var s = document.createElement('script');
+        s.src = 'https://www.googletagmanager.com/gtag/js?id=G-PNBFTT5SW2';
+        s.async = true;
+        document.head.appendChild(s);
+      });
     </script>
     
   
