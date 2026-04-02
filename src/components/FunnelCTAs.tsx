@@ -30,11 +30,11 @@ export default function FunnelCTAs({ result, url }: FunnelCTAsProps) {
           <div>
             <h3 className="text-sm font-bold text-foreground">무료 상담 신청</h3>
             <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              전문가가 사이트를 직접 분석하고<br />맞춤 전략을 제안해 드려요
+              현재 상태를 진단하고<br />맞춤 솔루션을 제안받으세요
             </p>
           </div>
           <span className="text-xs font-semibold text-primary group-hover:underline">
-            상담 신청하기 →
+            전문가 상담 신청 →
           </span>
         </button>
 
