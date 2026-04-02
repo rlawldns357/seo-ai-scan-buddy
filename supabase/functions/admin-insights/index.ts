@@ -53,6 +53,7 @@ Deno.serve(async (req) => {
 
     const events = await fetchAll("analytics_events", sinceStr);
     const leads = await fetchAll("email_leads", sinceStr);
+    const consultations = await fetchAll("consultation_requests", sinceStr);
 
     // Process data
     const sessions = new Set(events?.map((e: any) => e.session_id).filter(Boolean));
