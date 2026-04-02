@@ -27,6 +27,18 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Handle blog toggle action
+    if (action === "togglePublished" && postId) {
+      const { error } = await supabase
+        .from("blog_posts")
+        .update({ published: !!published })
+        .eq("id", postId);
+      return new Response(
+        JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const since = new Date();
     since.setDate(since.getDate() - days);
     const sinceStr = since.toISOString();
