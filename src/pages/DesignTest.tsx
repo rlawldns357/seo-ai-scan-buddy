@@ -31,6 +31,7 @@ const DesignTest = () => (
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
         <ScoreDashboard result={demoResult} url={DEMO_URL} />
         <VerificationLinks url={DEMO_URL} />
+        <FunnelCTAs result={demoResult} url={DEMO_URL} />
         <EmailForm onSubmitted={() => {}} />
         <FaqSection expanded />
         <div className="h-24" />
