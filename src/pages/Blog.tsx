@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
@@ -97,14 +98,18 @@ export default function Blog() {
         {/* Featured */}
         {featured && (
           <div className="mb-12">
-            <FeaturedPost post={featured} />
+            <Link to={`/blog/${featured.slug}`}>
+              <FeaturedPost post={featured} />
+            </Link>
           </div>
         )}
 
         {/* Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {rest.map((post) => (
-            <PostCard key={post.slug} post={post} />
+            <Link key={post.slug} to={`/blog/${post.slug}`}>
+              <PostCard post={post} />
+            </Link>
           ))}
         </div>
       </main>

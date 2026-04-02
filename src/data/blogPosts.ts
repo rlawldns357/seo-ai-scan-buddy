@@ -8,6 +8,7 @@ export interface BlogPost {
   thumbnail: string;
   featured?: boolean;
   readTime: string;
+  content?: string;
 }
 
 export const blogPosts: BlogPost[] = [
@@ -22,6 +23,51 @@ export const blogPosts: BlogPost[] = [
     thumbnail: "/placeholder.svg",
     featured: true,
     readTime: "8분",
+    content: `## AEO(Answer Engine Optimization)란?
+
+AEO는 **Answer Engine Optimization**의 약자로, AI 기반 답변 엔진(ChatGPT, Perplexity, 뤼튼 등)이 사용자 질문에 답변할 때 **내 콘텐츠를 출처로 인용**하도록 최적화하는 전략입니다.
+
+기존 SEO가 검색 결과 페이지(SERP)에서 상위 노출을 목표로 했다면, AEO는 AI가 생성하는 답변 안에 내 콘텐츠가 직접 포함되는 것을 목표로 합니다.
+
+## 왜 AEO가 중요한가?
+
+AI 검색의 급성장으로 사용자 행동이 변화하고 있습니다:
+
+- **ChatGPT**: 월간 활성 사용자 2억 명 돌파
+- **Perplexity**: 월간 검색 쿼리 5억 건 이상
+- **Google SGE**: 검색 결과의 40%에 AI 답변 포함
+
+이러한 변화는 전통적인 SEO만으로는 충분한 트래픽을 확보하기 어려워지고 있음을 의미합니다.
+
+## AEO 점수를 높이는 핵심 전략
+
+### 1. 구조화된 콘텐츠 작성
+
+AI는 잘 구조화된 콘텐츠를 선호합니다. 다음 형식을 활용하세요:
+
+- **Q&A 형식**: 질문-답변 쌍으로 콘텐츠 구성
+- **리스트 형식**: 번호 매기기 또는 불릿 포인트 활용
+- **테이블 형식**: 비교 데이터를 표로 정리
+
+### 2. FAQ 스키마 마크업
+
+FAQPage 구조화 데이터를 추가하면 AI가 콘텐츠를 더 쉽게 파싱할 수 있습니다.
+
+### 3. 명확한 답변 제공
+
+AI는 **직접적이고 간결한 답변**을 선호합니다. 핵심 답변을 문단 초반에 배치하고, 이후 상세 설명을 추가하는 "역피라미드" 구조를 사용하세요.
+
+### 4. 신뢰성 확보
+
+- 출처와 데이터를 명시
+- 저자 정보와 전문성 표시
+- 최신 정보로 정기적 업데이트
+
+## SearchTune OS로 AEO 점수 확인하기
+
+SearchTune OS의 분석 도구를 사용하면 웹사이트의 AEO 준비도를 즉시 확인할 수 있습니다. FAQ 스키마 존재 여부, 콘텐츠 구조화 수준, AI 크롤러 접근성 등을 종합적으로 평가합니다.
+
+> AEO는 선택이 아닌 필수입니다. AI 검색 시대에 대비하여 지금부터 콘텐츠를 최적화하세요.`,
   },
   {
     slug: "geo-generative-engine-optimization",
@@ -33,6 +79,43 @@ export const blogPosts: BlogPost[] = [
     date: "2026-03-28",
     thumbnail: "/placeholder.svg",
     readTime: "10분",
+    content: `## GEO(Generative Engine Optimization)란?
+
+GEO는 **Generative Engine Optimization**의 약자로, Google SGE, Naver Cue:, Bing Copilot 등 **생성형 AI 검색 엔진**에서 내 브랜드와 콘텐츠가 출처로 인용되도록 최적화하는 전략입니다.
+
+## GEO vs SEO: 무엇이 다른가?
+
+| 구분 | SEO | GEO |
+|------|-----|-----|
+| 목표 | 검색 순위 상위 노출 | AI 답변 출처 인용 |
+| 대상 | 구글, 네이버 검색 | SGE, Cue:, Copilot |
+| 핵심 | 키워드, 백링크 | 콘텐츠 품질, 구조화 |
+
+## GEO 핵심 전략
+
+### 1. AI 크롤러 접근 허용
+
+\`robots.txt\`에서 GPTBot, Google-Extended 등 AI 크롤러의 접근을 허용하는 것이 첫 번째 단계입니다.
+
+### 2. 풍부한 컨텍스트 제공
+
+생성형 AI는 단순 키워드가 아닌 **맥락(context)**을 이해합니다. 주제에 대한 깊이 있는 설명, 예시, 데이터를 포함하세요.
+
+### 3. 브랜드 언급 & 인용 확보
+
+다른 웹사이트에서 브랜드가 언급되고 인용될수록 AI가 신뢰할 수 있는 출처로 인식합니다.
+
+### 4. 구조화 데이터 강화
+
+Schema.org 마크업을 통해 콘텐츠의 의미를 명확히 전달하세요.
+
+## GEO 점수 측정
+
+SearchTune OS에서는 GEO 준비도를 다음 기준으로 평가합니다:
+- AI 크롤러 접근성
+- 구조화 데이터 완성도
+- 콘텐츠 깊이와 품질
+- 브랜드 신뢰도 신호`,
   },
   {
     slug: "structured-data-guide",
@@ -44,6 +127,37 @@ export const blogPosts: BlogPost[] = [
     date: "2026-03-25",
     thumbnail: "/placeholder.svg",
     readTime: "12분",
+    content: `## 구조화 데이터란?
+
+구조화 데이터(Structured Data)는 웹페이지의 콘텐츠를 검색엔진과 AI가 **기계적으로 이해**할 수 있는 형식으로 마크업하는 것입니다. Schema.org 표준을 따르며, JSON-LD 형식이 가장 권장됩니다.
+
+## 왜 구조화 데이터가 중요한가?
+
+- **리치 스니펫**: 검색 결과에 별점, 가격, FAQ 등 추가 정보 표시
+- **AI 답변 인용**: 구조화된 콘텐츠는 AI가 파싱하기 쉬움
+- **CTR 향상**: 리치 스니펫이 있는 결과는 클릭률이 20-30% 높음
+
+## 주요 스키마 타입
+
+### 1. Organization
+비즈니스 정보를 검색엔진에 전달합니다.
+
+### 2. FAQPage
+자주 묻는 질문 목록을 마크업합니다. AEO에 특히 효과적입니다.
+
+### 3. Article / BlogPosting
+블로그 글이나 뉴스 기사의 메타데이터를 전달합니다.
+
+### 4. WebSite + SearchAction
+사이트 내 검색 기능을 구글 검색에서 직접 사용할 수 있게 합니다.
+
+## JSON-LD 작성 예시
+
+JSON-LD는 \`<script type="application/ld+json">\` 태그 안에 작성합니다. 페이지의 \`<head>\` 또는 \`<body>\` 어디에나 배치할 수 있습니다.
+
+## SearchTune OS에서 구조화 데이터 점검하기
+
+SearchTune OS의 SEO 분석에서는 구조화 데이터의 존재 여부, 유효성, 그리고 개선 기회를 자동으로 진단합니다.`,
   },
   {
     slug: "seo-vs-aeo-vs-geo",
@@ -55,6 +169,42 @@ export const blogPosts: BlogPost[] = [
     date: "2026-03-20",
     thumbnail: "/placeholder.svg",
     readTime: "7분",
+    content: `## 검색 최적화의 3가지 축
+
+디지털 마케팅에서 검색 노출은 가장 중요한 채널 중 하나입니다. 하지만 AI의 등장으로 검색 최적화도 진화하고 있습니다.
+
+## SEO (Search Engine Optimization)
+
+**전통적 검색 엔진 최적화**입니다. Google, Naver 등의 검색 결과에서 상위에 노출되는 것을 목표로 합니다.
+
+핵심 요소:
+- 키워드 리서치 & 최적화
+- 기술적 SEO (속도, 모바일 최적화, 크롤링)
+- 백링크 확보
+- 콘텐츠 품질
+
+## AEO (Answer Engine Optimization)
+
+**AI 답변 엔진 최적화**입니다. ChatGPT, Perplexity 등이 답변할 때 내 콘텐츠를 인용하도록 합니다.
+
+핵심 요소:
+- Q&A 형식의 콘텐츠 구조
+- FAQ 스키마 마크업
+- 직접적이고 명확한 답변 제공
+- 신뢰성 있는 데이터와 출처
+
+## GEO (Generative Engine Optimization)
+
+**생성형 AI 검색 최적화**입니다. Google SGE, Bing Copilot 등에서 출처로 인용되도록 합니다.
+
+핵심 요소:
+- AI 크롤러 접근 허용
+- 깊이 있는 맥락 제공
+- 브랜드 권위 구축
+
+## 통합 전략
+
+세 가지를 별도로 접근하기보다는 **통합적으로 관리**하는 것이 효율적입니다. SearchTune OS는 SEO, AEO, GEO 점수를 한 번에 분석하여 통합적인 개선 방향을 제시합니다.`,
   },
   {
     slug: "faq-schema-aeo-boost",
@@ -66,6 +216,35 @@ export const blogPosts: BlogPost[] = [
     date: "2026-03-15",
     thumbnail: "/placeholder.svg",
     readTime: "6분",
+    content: `## FAQ 스키마가 AEO에 중요한 이유
+
+AI 답변 엔진은 질문-답변 형식의 콘텐츠를 특히 잘 활용합니다. FAQPage 스키마 마크업이 있으면 AI가 콘텐츠를 더 쉽게 파싱하고 인용할 수 있습니다.
+
+## 5가지 실전 팁
+
+### 1. 실제 사용자 질문 기반으로 작성
+
+검색 콘솔, 고객 문의, 커뮤니티에서 실제 질문을 수집하세요. 자연어 질문 형식이 AI 인용 확률을 높입니다.
+
+### 2. 답변은 간결하게, 2-3문장으로
+
+AI는 긴 답변보다 **핵심을 담은 간결한 답변**을 선호합니다. 첫 2-3문장에 핵심을 담고, 상세 내용은 본문에서 다루세요.
+
+### 3. 관련 키워드를 자연스럽게 포함
+
+답변에 타겟 키워드를 자연스럽게 녹여넣되, 키워드 스터핑은 피하세요.
+
+### 4. 최신 정보 유지
+
+AI는 최신 정보를 우선시합니다. FAQ를 정기적으로 업데이트하고 날짜를 명시하세요.
+
+### 5. 여러 페이지에 분산 배치
+
+하나의 페이지에 모든 FAQ를 몰아넣기보다, 관련 주제별로 분산 배치하는 것이 효과적입니다.
+
+## 마크업 검증
+
+SearchTune OS에서 FAQ 스키마의 유효성과 AEO 기여도를 즉시 확인할 수 있습니다.`,
   },
   {
     slug: "ai-crawler-access",
@@ -77,6 +256,29 @@ export const blogPosts: BlogPost[] = [
     date: "2026-03-10",
     thumbnail: "/placeholder.svg",
     readTime: "5분",
+    content: `## AI 크롤러란?
+
+AI 크롤러는 ChatGPT, Google SGE 등 AI 서비스가 웹 콘텐츠를 수집하기 위해 사용하는 봇입니다. 주요 AI 크롤러에는 GPTBot(OpenAI), Google-Extended, ClaudeBot(Anthropic), PerplexityBot 등이 있습니다.
+
+## robots.txt 설정 방법
+
+AI 크롤러의 접근을 허용하려면 robots.txt에서 해당 봇을 차단하지 않아야 합니다.
+
+### 허용 설정
+모든 AI 크롤러를 허용하려면 별도의 차단 규칙을 추가하지 않으면 됩니다.
+
+### 선택적 허용
+특정 AI 크롤러만 허용하고 나머지는 차단할 수도 있습니다.
+
+## GEO 점수에 미치는 영향
+
+AI 크롤러 접근을 차단하면 GEO 점수가 크게 하락합니다. SearchTune OS에서는 AI 크롤러 접근성을 GEO 평가의 핵심 항목으로 포함하고 있습니다.
+
+## 주의사항
+
+- 민감한 콘텐츠(개인정보, 유료 콘텐츠)에 대해서는 신중하게 접근 제어
+- AI 크롤러 허용이 곧 콘텐츠 무단 사용을 의미하지는 않음
+- 정기적으로 크롤링 로그를 확인하여 비정상적 접근 모니터링`,
   },
   {
     slug: "lighthouse-score-improve",
@@ -88,6 +290,35 @@ export const blogPosts: BlogPost[] = [
     date: "2026-03-05",
     thumbnail: "/placeholder.svg",
     readTime: "9분",
+    content: `## Lighthouse란?
+
+Google Lighthouse는 웹페이지의 품질을 측정하는 오픈소스 도구입니다. Performance, Accessibility, Best Practices, SEO 4가지 카테고리로 평가합니다.
+
+## Performance 점수 올리기
+
+### Core Web Vitals 개선
+- **LCP (Largest Contentful Paint)**: 2.5초 이내 목표
+- **FID (First Input Delay)**: 100ms 이내 목표
+- **CLS (Cumulative Layout Shift)**: 0.1 이내 목표
+
+### 실전 체크리스트
+- 이미지 최적화 (WebP/AVIF, lazy loading)
+- JavaScript 번들 최소화 (코드 스플리팅, 트리 쉐이킹)
+- CSS 최적화 (unused CSS 제거, critical CSS 인라인)
+- 폰트 최적화 (font-display: swap, preload)
+- 서버 응답 시간 단축
+
+## SEO 점수 올리기
+
+- 메타 태그 최적화 (title, description)
+- 시맨틱 HTML 사용
+- 모바일 반응형 디자인
+- HTTPS 적용
+- 구조화 데이터 추가
+
+## SearchTune OS 활용
+
+SearchTune OS는 Lighthouse 점수를 기반으로 SEO 현황을 진단하고, AEO·GEO까지 확장된 분석을 제공합니다.`,
   },
   {
     slug: "meta-tags-best-practices",
@@ -99,6 +330,35 @@ export const blogPosts: BlogPost[] = [
     date: "2026-02-28",
     thumbnail: "/placeholder.svg",
     readTime: "6분",
+    content: `## 메타 태그가 중요한 이유
+
+메타 태그(title, description)는 검색 결과에서 사용자가 가장 먼저 보는 요소입니다. 잘 작성된 메타 태그는 **CTR(클릭률)을 20-30%** 높일 수 있습니다.
+
+## Title 태그 작성법
+
+### 공식
+\`[핵심 키워드] — [가치 제안] | [브랜드명]\`
+
+### 규칙
+- 60자 이내로 작성
+- 핵심 키워드를 앞쪽에 배치
+- 클릭을 유도하는 수치나 혜택 포함
+- 각 페이지마다 고유한 title 사용
+
+## Description 태그 작성법
+
+### 공식
+\`[문제/니즈] + [해결책] + [CTA/가치]\`
+
+### 규칙
+- 155자 이내로 작성
+- 액션 동사로 시작 ("알아보세요", "확인하세요")
+- 타겟 키워드를 자연스럽게 포함
+- 구체적인 수치나 데이터 활용
+
+## 검증과 개선
+
+SearchTune OS의 SEO 분석에서 메타 태그의 길이, 키워드 포함 여부, 고유성 등을 자동으로 점검합니다.`,
   },
   {
     slug: "why-seo-alone-not-enough",
@@ -110,5 +370,25 @@ export const blogPosts: BlogPost[] = [
     date: "2026-02-20",
     thumbnail: "/placeholder.svg",
     readTime: "7분",
+    content: `## AI 검색 시대의 도래
+
+2025년을 기점으로 검색 환경이 근본적으로 변화하고 있습니다. Google은 SGE(Search Generative Experience)를 통해 검색 결과 상단에 AI 생성 답변을 표시하고, ChatGPT와 Perplexity 같은 대화형 AI가 검색 도구로 자리잡았습니다.
+
+## SEO만으로 부족한 이유
+
+### 1. 제로클릭 검색 증가
+AI가 직접 답변을 제공하면서 사용자가 웹사이트를 방문하지 않는 "제로클릭 검색"이 급증하고 있습니다.
+
+### 2. AI 답변의 출처 편향
+AI는 신뢰도 높은 소수의 출처를 반복적으로 인용하는 경향이 있어, SEO 순위가 높아도 AI 인용에서 제외될 수 있습니다.
+
+### 3. 새로운 경쟁 구도
+AI 검색에서의 노출은 기존 SEO와 다른 기준으로 결정됩니다. 콘텐츠의 구조화, 직접적 답변 제공, 신뢰도 신호 등이 새로운 경쟁 요소입니다.
+
+## 대응 방안: SEO + AEO + GEO
+
+전통적 SEO를 기반으로 AEO(Answer Engine Optimization)와 GEO(Generative Engine Optimization)를 통합적으로 접근해야 합니다.
+
+SearchTune OS는 이 세 가지 축을 한 번에 분석하여 종합적인 검색 최적화 전략을 수립할 수 있도록 돕습니다.`,
   },
 ];
