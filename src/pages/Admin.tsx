@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare } from "lucide-react";
+import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,6 +51,8 @@ export default function Admin() {
   const [error, setError] = useState("");
   const [data, setData] = useState<InsightsData | null>(null);
   const [days, setDays] = useState(30);
+  const [blogPosts, setBlogPosts] = useState<{ id: string; title: string; slug: string; published: boolean; date: string; category: string }[]>([]);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -85,8 +87,29 @@ export default function Admin() {
     setLoading(false);
   };
 
+  const fetchBlogPosts = async () => {
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "listBlogPosts" },
+    });
+    if (res?.posts) setBlogPosts(res.posts);
+  };
+
+  const togglePublished = async (id: string, current: boolean) => {
+    setTogglingId(id);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "togglePublished", postId: id, published: !current },
+    });
+    setBlogPosts((prev) => prev.map((p) => (p.id === id ? { ...p, published: !current } : p)));
+    setTogglingId(null);
+  };
+
   useEffect(() => {
-    if (authed) fetchInsights(days);
+    if (authed) {
+      fetchInsights(days);
+      fetchBlogPosts();
+    }
   }, [authed, days]);
 
   if (!authed) {
@@ -310,6 +333,52 @@ export default function Admin() {
                         {c.concerns && (
                           <p className="text-xs text-muted-foreground line-clamp-2">{c.concerns}</p>
                         )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            {/* Blog Posts Management */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="w-4 h-4" />
+                  블로그 관리
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                    {blogPosts.length}개
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {blogPosts.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">블로그 글 없음</p>
+                  ) : (
+                    blogPosts.map((post) => (
+                      <div key={post.id} className="flex items-center justify-between gap-3 border border-border rounded-lg px-3 py-2.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${post.published ? "bg-score-excellent/10 text-score-excellent" : "bg-muted text-muted-foreground"}`}>
+                              {post.published ? "공개" : "비공개"}
+                            </span>
+                            <span className="text-xs text-muted-foreground shrink-0">{post.category}</span>
+                          </div>
+                          <p className="text-sm font-medium text-foreground truncate mt-0.5">{post.title}</p>
+                          <p className="text-xs text-muted-foreground">{post.date}</p>
+                        </div>
+                        <button
+                          onClick={() => togglePublished(post.id, post.published)}
+                          disabled={togglingId === post.id}
+                          className={`shrink-0 p-2 rounded-lg transition-colors ${
+                            post.published
+                              ? "bg-score-excellent/10 text-score-excellent hover:bg-score-excellent/20"
+                              : "bg-muted text-muted-foreground hover:bg-muted/80"
+                          } disabled:opacity-50`}
+                          title={post.published ? "비공개로 전환" : "공개로 전환"}
+                        >
+                          {post.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                        </button>
                       </div>
                     ))
                   )}

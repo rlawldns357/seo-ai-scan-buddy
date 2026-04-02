@@ -11,7 +11,8 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { password, days = 30 } = await req.json();
+    const body = await req.json();
+    const { password, days = 30, action, postId, published } = body;
     const adminPassword = Deno.env.get("ADMIN_PASSWORD");
 
     if (!adminPassword || password !== adminPassword) {
@@ -25,6 +26,31 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
+
+    // Handle blog toggle action
+    if (action === "togglePublished" && postId) {
+      const { error } = await supabase
+        .from("blog_posts")
+        .update({ published: !!published })
+        .eq("id", postId);
+      return new Response(
+        JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Handle blog list action
+    if (action === "listBlogPosts") {
+      const { data: posts } = await supabase
+        .from("blog_posts")
+        .select("id, title, slug, published, date, category")
+        .order("date", { ascending: false })
+        .limit(50);
+      return new Response(
+        JSON.stringify({ posts: posts || [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const since = new Date();
     since.setDate(since.getDate() - days);
