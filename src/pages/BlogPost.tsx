@@ -369,8 +369,19 @@ export default function BlogPost() {
             </nav>
           )}
 
+          {/* AI Disclaimer */}
+          <div className="mt-10 flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
+            <span>🤖 AI가 작성한 콘텐츠로 부정확할 수 있습니다.</span>
+            <a
+              href={`mailto:contact@searchtune.co?subject=블로그 수정 요청: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A수정 내용:%0A`}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors text-[11px] font-medium"
+            >
+              수정 요청하기
+            </a>
+          </div>
+
           {/* CTA */}
-          <div className="mt-14 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 via-accent/5 to-transparent border border-border">
+          <div className="mt-8 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 via-accent/5 to-transparent border border-border">
             <h3 className="text-lg font-bold text-foreground">내 웹사이트도 분석해 보세요</h3>
             <p className="mt-2 text-sm text-muted-foreground">
               SearchTune OS에서 SEO · AEO · GEO 점수를 무료로 확인할 수 있습니다.
