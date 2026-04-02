@@ -11,22 +11,31 @@ interface ConsultationModalProps {
 const BUDGET_OPTIONS = [
   "아직 미정",
   "월 50만원 이하",
-  "월 50~100만원",
-  "월 100~300만원",
-  "월 300만원 이상",
+  "월 50~200만원",
+  "월 200~500만원",
+  "월 500만원 이상",
 ];
 
 const INTEREST_OPTIONS = [
+  { id: "naver_search_ads", label: "네이버 검색광고" },
+  { id: "google_ads", label: "Google Ads" },
+  { id: "meta_ads", label: "Meta 광고" },
   { id: "seo", label: "SEO 검색 최적화" },
   { id: "aeo", label: "AEO AI 답변 최적화" },
   { id: "geo", label: "GEO 생성형 AI 노출" },
-  { id: "technical", label: "기술적 성능 개선" },
-  { id: "content", label: "콘텐츠 전략" },
+  { id: "content", label: "콘텐츠 마케팅" },
+  { id: "analytics", label: "데이터 분석/GA" },
 ];
+
+const inputClass =
+  "w-full h-11 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all";
 
 export default function ConsultationModal({ open, onClose }: ConsultationModalProps) {
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [company, setCompany] = useState("");
+  const [jobTitle, setJobTitle] = useState("");
   const [siteUrl, setSiteUrl] = useState("");
   const [budget, setBudget] = useState("");
   const [interests, setInterests] = useState<string[]>([]);
@@ -42,9 +51,12 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
     );
   };
 
+  const clearError = (key: string) => setErrors((p) => ({ ...p, [key]: "" }));
+
   const validate = () => {
     const e: Record<string, string> = {};
     if (!name.trim()) e.name = "이름을 입력해 주세요.";
+    if (!phone.trim()) e.phone = "연락처를 입력해 주세요.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()))
       e.email = "이메일 형식을 확인해 주세요.";
     if (interests.length === 0) e.interests = "관심 분야를 1개 이상 선택해 주세요.";
@@ -59,7 +71,10 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
     try {
       const { error } = await supabase.from("consultation_requests").insert({
         name: name.trim(),
+        phone: phone.trim(),
         email: email.trim().toLowerCase(),
+        company: company.trim() || null,
+        job_title: jobTitle.trim() || null,
         site_url: siteUrl.trim() || null,
         budget: budget || null,
         interests,
@@ -75,7 +90,6 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
           email: email.trim().toLowerCase(),
           interests,
         });
-        // Send notification email (fire-and-forget)
         supabase.functions.invoke("send-transactional-email", {
           body: {
             templateName: "lead-confirmation",
@@ -106,7 +120,7 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
             <CheckCircle className="w-12 h-12 text-score-excellent mx-auto mb-3" />
             <p className="text-foreground font-bold text-lg">상담 신청 완료!</p>
             <p className="text-sm text-muted-foreground mt-1">
-              빠른 시일 내에 연락드리겠습니다.
+              담당 광고 전문가가 빠르게 연락드리겠습니다.
             </p>
             <button
               onClick={onClose}
@@ -118,26 +132,41 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
         ) : (
           <>
             <h2 className="text-lg font-bold text-foreground mb-1">
-              🎯 무료 상담 신청
+              🎯 무료 퍼포먼스 마케팅 상담
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              전문가가 사이트를 직접 분석하고 맞춤 전략을 제안해 드려요.
+              전문 마케터가 광고 성과를 분석하고 맞춤 전략을 제안해 드려요.
             </p>
 
             <div className="space-y-4">
-              {/* Name */}
-              <div>
-                <label className="text-xs font-semibold text-foreground mb-1.5 block">
-                  이름 <span className="text-destructive">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: "" })); }}
-                  placeholder="홍길동"
-                  className="w-full h-11 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all"
-                />
-                {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
+              {/* Name & Phone */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
+                    이름 <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => { setName(e.target.value); clearError("name"); }}
+                    placeholder="홍길동"
+                    className={inputClass}
+                  />
+                  {errors.name && <p className="mt-1 text-xs text-destructive">{errors.name}</p>}
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
+                    연락처 <span className="text-destructive">*</span>
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => { setPhone(e.target.value); clearError("phone"); }}
+                    placeholder="010-1234-5678"
+                    className={inputClass}
+                  />
+                  {errors.phone && <p className="mt-1 text-xs text-destructive">{errors.phone}</p>}
+                </div>
               </div>
 
               {/* Email */}
@@ -148,11 +177,39 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => { setEmail(e.target.value); setErrors((p) => ({ ...p, email: "" })); }}
+                  onChange={(e) => { setEmail(e.target.value); clearError("email"); }}
                   placeholder="you@company.com"
-                  className="w-full h-11 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all"
+                  className={inputClass}
                 />
                 {errors.email && <p className="mt-1 text-xs text-destructive">{errors.email}</p>}
+              </div>
+
+              {/* Company & Job Title */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
+                    회사명
+                  </label>
+                  <input
+                    type="text"
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    placeholder="(주)마케팅컴퍼니"
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-semibold text-foreground mb-1.5 block">
+                    직함
+                  </label>
+                  <input
+                    type="text"
+                    value={jobTitle}
+                    onChange={(e) => setJobTitle(e.target.value)}
+                    placeholder="마케팅 팀장"
+                    className={inputClass}
+                  />
+                </div>
               </div>
 
               {/* Site URL */}
@@ -165,14 +222,41 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
                   value={siteUrl}
                   onChange={(e) => setSiteUrl(e.target.value)}
                   placeholder="https://example.com"
-                  className="w-full h-11 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all"
+                  className={inputClass}
                 />
+              </div>
+
+              {/* Interests */}
+              <div>
+                <label className="text-xs font-semibold text-foreground mb-1.5 block">
+                  관심 분야 <span className="text-destructive">*</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {INTEREST_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => {
+                        toggleInterest(opt.id);
+                        clearError("interests");
+                      }}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                        interests.includes(opt.id)
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/30"
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+                {errors.interests && <p className="mt-1 text-xs text-destructive">{errors.interests}</p>}
               </div>
 
               {/* Budget */}
               <div>
                 <label className="text-xs font-semibold text-foreground mb-1.5 block">
-                  월 예산
+                  월 광고 예산
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {BUDGET_OPTIONS.map((opt) => (
@@ -192,33 +276,6 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
                 </div>
               </div>
 
-              {/* Interests */}
-              <div>
-                <label className="text-xs font-semibold text-foreground mb-1.5 block">
-                  관심 분야 <span className="text-destructive">*</span>
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {INTEREST_OPTIONS.map((opt) => (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => {
-                        toggleInterest(opt.id);
-                        setErrors((p) => ({ ...p, interests: "" }));
-                      }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                        interests.includes(opt.id)
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border text-muted-foreground hover:border-primary/30"
-                      }`}
-                    >
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-                {errors.interests && <p className="mt-1 text-xs text-destructive">{errors.interests}</p>}
-              </div>
-
               {/* Concerns */}
               <div>
                 <label className="text-xs font-semibold text-foreground mb-1.5 block">
@@ -227,7 +284,7 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
                 <textarea
                   value={concerns}
                   onChange={(e) => setConcerns(e.target.value)}
-                  placeholder="현재 검색 노출이 잘 안 되고 있어서..."
+                  placeholder="현재 광고 ROAS가 낮아서 개선이 필요합니다..."
                   rows={3}
                   maxLength={1000}
                   className="w-full px-4 py-3 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all resize-none"
