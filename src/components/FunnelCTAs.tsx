@@ -236,7 +236,7 @@ export default function FunnelCTAs({ result, url }: FunnelCTAsProps) {
                 onClick={() => setStep("consult")}
                 className="flex-1 h-11 rounded-xl gradient-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
               >
-                상담 신청하기 →
+                무료 상담 신청하기 →
               </button>
             </div>
           </div>
