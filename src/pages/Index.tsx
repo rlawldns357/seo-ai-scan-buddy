@@ -336,7 +336,10 @@ const Index = () => {
             {/* Verification Links */}
             <VerificationLinks url={normalizedUrl} />
 
-            {/* Email Form */}
+            {/* Funnel CTAs */}
+            <FunnelCTAs result={result} url={normalizedUrl} />
+
+            {/* Email Form (legacy) */}
             <EmailForm onSubmitted={() => {}} />
 
             {/* FAQ */}
