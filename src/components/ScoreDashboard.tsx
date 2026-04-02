@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import LeadModal from "@/components/LeadModal";
+import ConsultationModal from "@/components/ConsultationModal";
+import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/lib/analytics";
 import { type DemoResult, type AxisAnalysis, type Improvement } from "@/data/demoResults";
 import SemiCircleGauge, { getGradeLabel, getGradeColorClass } from "@/components/SemiCircleGauge";
 import { useIsMobile } from "@/hooks/use-mobile";
