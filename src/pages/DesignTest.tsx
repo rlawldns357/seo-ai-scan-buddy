@@ -4,6 +4,7 @@ import LighthouseScores from "@/components/LighthouseScores";
 import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
+import FunnelCTAs from "@/components/FunnelCTAs";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import FaqSection from "@/components/FaqSection";
 import { getDemoResult } from "@/data/demoResults";
@@ -30,6 +31,7 @@ const DesignTest = () => (
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
         <ScoreDashboard result={demoResult} url={DEMO_URL} />
         <VerificationLinks url={DEMO_URL} />
+        <FunnelCTAs result={demoResult} url={DEMO_URL} />
         <EmailForm onSubmitted={() => {}} />
         <FaqSection expanded />
         <div className="h-24" />
