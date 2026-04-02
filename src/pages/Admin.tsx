@@ -28,7 +28,7 @@ interface InsightsData {
   dailyData: { date: string; sessions: number; analyses: number; leads: number }[];
   recentLeads: { email: string; source: string; created_at: string }[];
   recentUrls: { url: string; created_at: string }[];
-  recentConsultations: { name: string; email: string; site_url: string | null; budget: string | null; interests: string[] | null; concerns: string | null; status: string; created_at: string }[];
+  recentConsultations: { name: string; email: string; phone: string | null; company: string | null; job_title: string | null; site_url: string | null; budget: string | null; interests: string[] | null; concerns: string | null; status: string; created_at: string }[];
 }
 
 const chartConfig: ChartConfig = {
@@ -275,9 +275,16 @@ export default function Admin() {
                     data.recentConsultations.map((c, i) => (
                       <div key={i} className="border border-border rounded-lg p-3 space-y-1.5">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <span className="font-medium text-sm text-foreground">{c.name}</span>
-                            <span className="text-muted-foreground text-xs ml-2">{c.email}</span>
+                          <div className="space-y-0.5">
+                            <div>
+                              <span className="font-medium text-sm text-foreground">{c.name}</span>
+                              {c.job_title && <span className="text-muted-foreground text-xs ml-1">· {c.job_title}</span>}
+                              {c.company && <span className="text-muted-foreground text-xs ml-1">@ {c.company}</span>}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>{c.email}</span>
+                              {c.phone && <span>📞 {c.phone}</span>}
+                            </div>
                           </div>
                           <span className="text-muted-foreground text-xs shrink-0">
                             {new Date(c.created_at).toLocaleDateString("ko-KR")}
