@@ -1,26 +1,28 @@
-import { useState } from "react";
-import { Loader2, Zap } from "lucide-react";
+import { useState, lazy, Suspense } from "react";
+import { Zap } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
-import ScoreDashboard from "@/components/ScoreDashboard";
-import LoadingScreen, { type AnalysisPhase } from "@/components/LoadingScreen";
-import LighthouseScores from "@/components/LighthouseScores";
-import ResultHeader from "@/components/ResultHeader";
-import VerificationLinks from "@/components/VerificationLinks";
-import EmailForm from "@/components/EmailForm";
-import FunnelCTAs from "@/components/FunnelCTAs";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
-import PsiErrorBanner from "@/components/PsiErrorBanner";
 import SubpageWarning from "@/components/SubpageWarning";
 import RateLimitBanner from "@/components/RateLimitBanner";
 import FaqSection, { faqs } from "@/components/FaqSection";
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
-import { fetchPsi, type PsiResult, type PsiError } from "@/lib/psi";
-import { analyzeSite } from "@/lib/analyze";
+import { type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
-import { checkRateLimit, incrementUsage, type RateLimitStatus } from "@/lib/rateLimit";
+import { type RateLimitStatus } from "@/lib/rateLimit";
+import type { AnalysisPhase } from "@/components/LoadingScreen";
+
+// Lazy-load heavy components only needed for loading/result screens
+const ScoreDashboard = lazy(() => import("@/components/ScoreDashboard"));
+const LoadingScreen = lazy(() => import("@/components/LoadingScreen"));
+const LighthouseScores = lazy(() => import("@/components/LighthouseScores"));
+const ResultHeader = lazy(() => import("@/components/ResultHeader"));
+const VerificationLinks = lazy(() => import("@/components/VerificationLinks"));
+const EmailForm = lazy(() => import("@/components/EmailForm"));
+const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
+const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
 
 type Screen = "home" | "loading" | "result";
 
