@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import { SoftwareApplicationJsonLd } from "@/components/JsonLd";
+import FunnelCTAs from "@/components/FunnelCTAs";
 import { Search, BarChart3, Shield, Zap, ArrowRight, Mail } from "lucide-react";
 
 const features = [
