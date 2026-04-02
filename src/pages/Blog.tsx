@@ -17,30 +17,30 @@ function formatDate(d: string) {
 
 function FeaturedPost({ post }: { post: BlogPost }) {
   return (
-    <article className="group relative grid md:grid-cols-2 gap-6 rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-[16/9] md:aspect-auto bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center min-h-[220px]">
-        <div className="text-center p-8">
-          <span className="text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+    <article className="group relative grid md:grid-cols-2 gap-4 md:gap-6 rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
+      <div className="aspect-[2/1] md:aspect-auto bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center md:min-h-[220px]">
+        <div className="text-center p-6 md:p-8">
+          <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
             AEO
           </span>
           <p className="text-sm text-muted-foreground mt-2">Answer Engine Optimization</p>
         </div>
       </div>
-      <div className="flex flex-col justify-center p-6 md:p-8">
+      <div className="flex flex-col justify-center px-4 pb-5 md:p-8">
         <span className={`self-start px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
           {post.category}
         </span>
-        <h2 className="mt-3 text-xl md:text-2xl font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+        <h2 className="mt-3 text-lg md:text-2xl font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
           {post.title}
         </h2>
-        <p className="mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+        <p className="mt-2 md:mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
           {post.excerpt}
         </p>
-        <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="mt-3 md:mt-4 flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDate(post.date)}</span>
           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{post.readTime} 읽기</span>
         </div>
-        <div className="mt-5">
+        <div className="mt-4 md:mt-5">
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all">
             자세히 보기 <ArrowRight className="w-4 h-4" />
           </span>
