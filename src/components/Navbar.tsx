@@ -42,7 +42,7 @@ export default function Navbar() {
                 <span className="text-lg font-bold text-foreground tracking-tight">
                   SearchTune <span className="font-extrabold">OS</span>
                 </span>
-                <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide">v0.10.0-beta</span>
+                <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide">v0.10.1-beta</span>
               </div>
             </Link>
             <span className="hidden sm:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent">Beta</span>
