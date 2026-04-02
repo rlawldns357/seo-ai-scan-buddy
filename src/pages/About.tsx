@@ -111,13 +111,17 @@ export default function About() {
             </div>
           </section>
 
-          <div className="mt-16 mb-8 flex items-center justify-center">
+          <div className="mt-16">
+            <FunnelCTAs />
+          </div>
+
+          <div className="mt-6 mb-8 flex items-center justify-center">
             <a
               href="/"
               className="inline-flex items-center justify-center gap-2 h-12 w-full sm:w-auto px-8 rounded-2xl gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
             >
               <ArrowRight className="w-4 h-4" />
-              바로 분석하기
+              무료로 분석하기
             </a>
           </div>
         </div>
