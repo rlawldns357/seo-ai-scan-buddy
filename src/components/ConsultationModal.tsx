@@ -132,10 +132,10 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
         ) : (
           <>
             <h2 className="text-lg font-bold text-foreground mb-1">
-              🎯 무료 퍼포먼스 마케팅 상담
+              🎯 무료 상담 신청
             </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              전문 마케터가 광고 성과를 분석하고 맞춤 전략을 제안해 드려요.
+              현재 상태를 진단하고 맞춤 솔루션을 제안받으세요.
             </p>
 
             <div className="space-y-4">
