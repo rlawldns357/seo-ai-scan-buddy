@@ -423,11 +423,6 @@ export default function BlogPost() {
             </a>
           </div>
 
-          {/* Funnel CTAs */}
-          <div className="mt-8">
-            <FunnelCTAs />
-          </div>
-
           {/* Primary CTA */}
           <div className="mt-8 flex flex-col items-center text-center">
             <p className="text-sm text-muted-foreground mb-3">지금 바로 내 사이트를 점검해 보세요</p>
@@ -437,6 +432,11 @@ export default function BlogPost() {
             >
               🚀 SearchTune OS 무료로 분석하기
             </Link>
+          </div>
+
+          {/* Funnel CTAs */}
+          <div className="mt-8">
+            <FunnelCTAs />
           </div>
         </article>
       </main>
