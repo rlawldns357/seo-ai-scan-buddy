@@ -10,7 +10,8 @@ type EventName =
   | "cta_click"
   | "report_pdf_download"
   | "consultation_submit_success"
-  | "consultation_submit_fail";
+  | "consultation_submit_fail"
+  | "result_email_submit";
 
 let sessionId: string | null = null;
 
