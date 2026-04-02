@@ -88,12 +88,11 @@ export default function Admin() {
   };
 
   const fetchBlogPosts = async () => {
-    const { data: posts } = await supabase
-      .from("blog_posts")
-      .select("id, title, slug, published, date, category")
-      .order("date", { ascending: false })
-      .limit(50);
-    if (posts) setBlogPosts(posts);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "listBlogPosts" },
+    });
+    if (res?.posts) setBlogPosts(res.posts);
   };
 
   const togglePublished = async (id: string, current: boolean) => {
