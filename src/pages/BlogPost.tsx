@@ -429,12 +429,13 @@ export default function BlogPost() {
           </div>
 
           {/* Primary CTA */}
-          <div className="mt-6 text-center">
+          <div className="mt-8 flex flex-col items-center text-center">
+            <p className="text-sm text-muted-foreground mb-3">지금 바로 내 사이트를 점검해 보세요</p>
             <Link
               to="/"
-              className="inline-flex items-center justify-center gap-2 h-12 w-full sm:w-auto px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
+              className="inline-flex items-center justify-center gap-2.5 h-14 w-full sm:w-auto px-10 rounded-2xl gradient-primary text-primary-foreground font-bold text-base shadow-lg hover:opacity-90 hover:shadow-xl transition-all"
             >
-              🚀 무료로 분석하기
+              🚀 SearchTune OS 무료로 분석하기
             </Link>
           </div>
         </article>
