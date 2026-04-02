@@ -1,11 +1,33 @@
-import { useState } from "react";
-import { Search, ShieldCheck } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Search, ShieldCheck, Bell, MessageSquare, Briefcase } from "lucide-react";
 import { Link } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
+import ConsultationModal from "@/components/ConsultationModal";
+import LeadModal from "@/components/LeadModal";
 
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
   const [consultOpen, setConsultOpen] = useState(false);
+  const [leadOpen, setLeadOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const menuItems = [
+    { icon: Bell, label: "출시 알림 신청", desc: "정식 출시 소식을 먼저 받아보세요", action: () => { setDropdownOpen(false); setLeadOpen(true); } },
+    { icon: MessageSquare, label: "무료 상담 신청", desc: "전문가가 맞춤 솔루션을 제안해요", action: () => { setDropdownOpen(false); setConsultOpen(true); } },
+    { icon: Briefcase, label: "비즈니스 문의", desc: "제휴, 협업, 서비스 관련 문의", action: () => { setDropdownOpen(false); setContactOpen(true); } },
+  ];
 
   return (
     <>
@@ -48,16 +70,39 @@ export default function Navbar() {
             >
               About
             </Link>
-            <button
-              onClick={() => setConsultOpen(true)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
-            >
-              Contact
-            </button>
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+              >
+                Contact
+              </button>
+              {dropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-xl shadow-xl overflow-hidden animate-fade-up z-50">
+                  {menuItems.map((item, i) => (
+                    <button
+                      key={i}
+                      onClick={item.action}
+                      className="w-full flex items-start gap-3 px-4 py-3 hover:bg-muted/50 transition-colors text-left"
+                    >
+                      <div className="p-1.5 rounded-lg bg-primary/10 shrink-0 mt-0.5">
+                        <item.icon className="w-3.5 h-3.5 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{item.label}</p>
+                        <p className="text-[11px] text-muted-foreground leading-snug">{item.desc}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </nav>
-      <ContactModal open={consultOpen} onClose={() => setConsultOpen(false)} />
+      <LeadModal open={leadOpen} onClose={() => setLeadOpen(false)} title="출시 알림 신청" />
+      <ConsultationModal open={consultOpen} onClose={() => setConsultOpen(false)} />
+      <ContactModal open={contactOpen} onClose={() => setContactOpen(false)} />
     </>
   );
 }
