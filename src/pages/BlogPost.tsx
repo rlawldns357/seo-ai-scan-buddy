@@ -361,16 +361,7 @@ export default function BlogPost() {
 
           {/* Thumbnail */}
           <div className="mt-8 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center aspect-[2/1] md:aspect-[3/1]">
-            {naver ? (
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-4xl md:text-5xl font-black" style={{ color: "#03C75A" }}>NAVER</span>
-                <span className="text-sm font-semibold text-muted-foreground">Naver SEO</span>
-              </div>
-            ) : (
-              <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                {post.category}
-              </span>
-            )}
+            {getBrandThumbnail(post.slug, post.category, true)}
           </div>
 
           {post.content ? (
