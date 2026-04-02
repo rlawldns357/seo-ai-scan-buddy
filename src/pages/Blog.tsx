@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import naverLogo from "@/assets/naver-logo.png";
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
@@ -12,6 +13,12 @@ const categoryColor: Record<string, string> = {
   가이드: "bg-score-warning/10 text-score-warning",
   뉴스: "bg-muted text-muted-foreground",
 };
+
+const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
+
+function isNaverPost(slug: string) {
+  return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
+}
 
 function formatDate(d: string) {
   const date = new Date(d);
@@ -54,17 +61,32 @@ function FeaturedPost({ post }: { post: BlogPost }) {
 }
 
 function PostCard({ post }: { post: BlogPost }) {
+  const naver = isNaverPost(post.slug);
+
   return (
     <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-[16/9] bg-gradient-to-br from-muted to-secondary flex items-center justify-center">
-        <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent opacity-60">
-          {post.category}
-        </span>
+      <div className="aspect-[16/9] bg-gradient-to-br from-muted to-secondary flex items-center justify-center relative">
+        {naver ? (
+          <div className="flex flex-col items-center gap-2">
+            <img src={naverLogo} alt="Naver" loading="lazy" width={56} height={56} className="w-14 h-14" />
+            <span className="text-xs font-semibold text-muted-foreground">Naver SEO</span>
+          </div>
+        ) : (
+          <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent opacity-60">
+            {post.category}
+          </span>
+        )}
       </div>
       <div className="flex flex-col flex-1 p-5">
-        <span className={`self-start px-2 py-0.5 rounded text-[11px] font-bold ${categoryColor[post.category]}`}>
-          {post.category}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${categoryColor[post.category]}`}>
+            {post.category}
+          </span>
+          <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+            <Clock className="w-3 h-3" />
+            {post.readTime}
+          </span>
+        </div>
         <h3 className="mt-2 text-base font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {post.title}
         </h3>
@@ -106,7 +128,6 @@ export default function Blog() {
           content: p.content,
         }));
 
-        // Merge: DB posts first (newest), then static posts, deduplicate by slug
         const slugSet = new Set<string>();
         const merged: BlogPost[] = [];
         for (const post of [...dbPosts, ...blogPosts]) {
@@ -115,7 +136,6 @@ export default function Blog() {
             merged.push(post);
           }
         }
-        // Sort by date descending
         merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
         setAllPosts(merged);
       }
@@ -130,7 +150,6 @@ export default function Blog() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <main className="container py-10 md:py-16">
-        {/* Header */}
         <div className="mb-10">
           <h1 className="text-3xl md:text-4xl font-extrabold text-foreground">블로그</h1>
           <p className="mt-2 text-muted-foreground">
@@ -138,7 +157,6 @@ export default function Blog() {
           </p>
         </div>
 
-        {/* Featured */}
         {featured && (
           <div className="mb-12">
             <Link to={`/blog/${featured.slug}`}>
@@ -147,7 +165,6 @@ export default function Blog() {
           </div>
         )}
 
-        {/* Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {rest.map((post) => (
             <Link key={post.slug} to={`/blog/${post.slug}`} className="flex">
@@ -157,7 +174,6 @@ export default function Blog() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border py-10 mt-16">
         <div className="container text-center text-sm text-muted-foreground">
           © {new Date().getFullYear()} SearchTune OS. All rights reserved.

@@ -1,15 +1,16 @@
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost as BlogPostType, type FAQ } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, ArrowLeft, User, ChevronDown } from "lucide-react";
+import { Calendar, Clock, ArrowLeft, ArrowRight, User } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import naverLogo from "@/assets/naver-logo.png";
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
@@ -18,6 +19,12 @@ const categoryColor: Record<string, string> = {
   가이드: "bg-score-warning/10 text-score-warning",
   뉴스: "bg-muted text-muted-foreground",
 };
+
+const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
+
+function isNaverPost(slug: string) {
+  return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
+}
 
 function formatDate(d: string) {
   const date = new Date(d);
@@ -107,9 +114,81 @@ function FaqJsonLd({ faqs, title }: { faqs: FAQ[]; title: string }) {
   );
 }
 
+/** Prev / Next post navigation card */
+function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev" | "next" }) {
+  const naver = isNaverPost(post.slug);
+  return (
+    <Link
+      to={`/blog/${post.slug}`}
+      className="group flex-1 flex flex-col gap-2 p-4 md:p-5 rounded-2xl border border-border bg-card hover:shadow-md transition-shadow"
+    >
+      <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
+        {direction === "prev" ? (
+          <><ArrowLeft className="w-3 h-3" /> 이전 글</>
+        ) : (
+          <>다음 글 <ArrowRight className="w-3 h-3" /></>
+        )}
+      </span>
+      <div className="flex items-center gap-3">
+        {naver ? (
+          <img src={naverLogo} alt="Naver" loading="lazy" width={28} height={28} className="w-7 h-7 shrink-0" />
+        ) : (
+          <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${categoryColor[post.category]}`}>
+            {post.category}
+          </span>
+        )}
+        <h4 className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+          {post.title}
+        </h4>
+      </div>
+      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
+        <Clock className="w-3 h-3" /> {post.readTime} 읽기
+      </span>
+    </Link>
+  );
+}
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[] }) | null | undefined>(undefined);
+  const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
+
+  // Fetch DB posts for nav
+  useEffect(() => {
+    async function fetchDbPosts() {
+      const { data } = await supabase
+        .from("blog_posts")
+        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content")
+        .eq("published", true);
+
+      if (data && data.length > 0) {
+        const dbPosts: BlogPostType[] = data.map((p) => ({
+          slug: p.slug,
+          title: p.title,
+          excerpt: p.excerpt,
+          category: p.category as BlogPostType["category"],
+          author: p.author,
+          date: p.date,
+          thumbnail: p.thumbnail,
+          featured: p.featured,
+          readTime: p.read_time,
+          content: p.content,
+        }));
+
+        const slugSet = new Set<string>();
+        const merged: BlogPostType[] = [];
+        for (const p of [...dbPosts, ...blogPosts]) {
+          if (!slugSet.has(p.slug)) {
+            slugSet.add(p.slug);
+            merged.push(p);
+          }
+        }
+        merged.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setAllPosts(merged);
+      }
+    }
+    fetchDbPosts();
+  }, []);
 
   useEffect(() => {
     const staticPost = blogPosts.find((p) => p.slug === slug);
@@ -127,11 +206,8 @@ export default function BlogPost() {
         .single();
 
       if (data) {
-        // Try to extract FAQs from content if they exist in a structured format
         let faqs: FAQ[] | undefined;
         const content = data.content;
-
-        // Check if content has FAQ section with Q:/A: format
         const faqMatch = content.match(/## (?:자주 묻는 질문|FAQ)[\s\S]*$/);
         if (faqMatch) {
           const faqSection = faqMatch[0];
@@ -164,6 +240,15 @@ export default function BlogPost() {
     fetchFromDb();
   }, [slug]);
 
+  // Compute prev/next
+  const { prevPost, nextPost } = useMemo(() => {
+    const idx = allPosts.findIndex((p) => p.slug === slug);
+    return {
+      prevPost: idx > 0 ? allPosts[idx - 1] : null,
+      nextPost: idx >= 0 && idx < allPosts.length - 1 ? allPosts[idx + 1] : null,
+    };
+  }, [allPosts, slug]);
+
   if (post === undefined) {
     return (
       <div className="min-h-screen bg-background">
@@ -190,12 +275,12 @@ export default function BlogPost() {
   }
 
   const faqs = post.faqs;
+  const naver = isNaverPost(post.slug);
 
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      {/* FAQ JSON-LD for SEO */}
       {faqs && faqs.length > 0 && <FaqJsonLd faqs={faqs} title={post.title} />}
 
       <main className="container py-8 md:py-14">
@@ -230,10 +315,18 @@ export default function BlogPost() {
             </span>
           </div>
 
+          {/* Thumbnail */}
           <div className="mt-8 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center aspect-[2/1] md:aspect-[3/1]">
-            <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-              {post.category}
-            </span>
+            {naver ? (
+              <div className="flex flex-col items-center gap-3">
+                <img src={naverLogo} alt="Naver" loading="lazy" width={80} height={80} className="w-16 md:w-20 h-16 md:h-20" />
+                <span className="text-sm font-semibold text-muted-foreground">Naver SEO</span>
+              </div>
+            ) : (
+              <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                {post.category}
+              </span>
+            )}
           </div>
 
           {post.content ? (
@@ -266,6 +359,14 @@ export default function BlogPost() {
                 </Accordion>
               </div>
             </section>
+          )}
+
+          {/* Prev / Next Navigation */}
+          {(prevPost || nextPost) && (
+            <nav className="mt-14 flex flex-col sm:flex-row gap-4" aria-label="블로그 글 이동">
+              {prevPost ? <PostNavCard post={prevPost} direction="prev" /> : <div className="flex-1" />}
+              {nextPost ? <PostNavCard post={nextPost} direction="next" /> : <div className="flex-1" />}
+            </nav>
           )}
 
           {/* CTA */}
