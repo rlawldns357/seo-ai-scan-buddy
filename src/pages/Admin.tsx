@@ -28,7 +28,7 @@ interface InsightsData {
   dailyData: { date: string; sessions: number; analyses: number; leads: number }[];
   recentLeads: { email: string; source: string; created_at: string }[];
   recentUrls: { url: string; created_at: string }[];
-  recentConsultations: { name: string; email: string; site_url: string | null; budget: string | null; interests: string[] | null; concerns: string | null; status: string; created_at: string }[];
+  recentConsultations: { name: string; email: string; phone: string | null; company: string | null; job_title: string | null; site_url: string | null; budget: string | null; interests: string[] | null; concerns: string | null; status: string; created_at: string }[];
 }
 
 const chartConfig: ChartConfig = {
