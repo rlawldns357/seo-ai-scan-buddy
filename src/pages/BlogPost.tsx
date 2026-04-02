@@ -47,9 +47,9 @@ function getBrandThumbnail(slug: string, category: string, large = false) {
   if (isCafe24Post(slug)) {
     return (
       <div className="flex flex-col items-center gap-2">
-        <span className={`${size} font-black tracking-tight`}>
-          <span style={{ color: "#1A1A1A" }}>cafe</span>
-          <span style={{ color: "#1A6DCC" }}>24</span>
+        <span className={`${size} font-black tracking-tight`} style={{ letterSpacing: "-0.02em" }}>
+          <span style={{ color: "#1B1B1B" }}>CAFE</span>
+          <span style={{ color: "#0066BE" }}>24</span>
         </span>
         <span className="text-sm font-semibold text-muted-foreground">Cafe24 SEO</span>
       </div>
