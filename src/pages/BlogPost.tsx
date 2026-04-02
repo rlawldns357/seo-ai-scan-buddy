@@ -10,6 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import FunnelCTAs from "@/components/FunnelCTAs";
 
 
 const categoryColor: Record<string, string> = {
@@ -422,18 +423,9 @@ export default function BlogPost() {
             </a>
           </div>
 
-          {/* CTA */}
-          <div className="mt-8 p-6 md:p-8 rounded-2xl bg-gradient-to-br from-primary/5 via-accent/5 to-transparent border border-border">
-            <h3 className="text-lg font-bold text-foreground">내 웹사이트도 분석해 보세요</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              SearchTune OS에서 SEO · AEO · GEO 점수를 무료로 확인할 수 있습니다.
-            </p>
-            <Link
-              to="/"
-              className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-lg gradient-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
-            >
-              무료 분석 시작하기
-            </Link>
+          {/* Funnel CTAs */}
+          <div className="mt-8">
+            <FunnelCTAs />
           </div>
         </article>
       </main>
