@@ -73,7 +73,7 @@ export default function FunnelCTAs({ result, url }: FunnelCTAsProps) {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* 1. 무료 상담 신청 - 2-Step Funnel */}
         <button
-          onClick={() => setStep("email")}
+          onClick={() => setStep("consult")}
           className="group relative flex flex-col items-start gap-3 p-5 rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent hover:border-primary/40 hover:shadow-lg transition-all text-left"
         >
           <div className="flex items-center gap-2">
