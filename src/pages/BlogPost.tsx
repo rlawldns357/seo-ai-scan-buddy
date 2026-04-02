@@ -405,13 +405,20 @@ export default function BlogPost() {
             </nav>
           )}
 
-          {/* Disclaimer */}
-          <div className="mt-10 flex items-center justify-center">
+          {/* Feedback links */}
+          <div className="mt-10 flex items-center justify-center gap-3 text-[11px] text-muted-foreground/50">
             <a
-              href={`mailto:contact@searchtune.co?subject=블로그 수정 요청: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A수정 내용:%0A`}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-muted-foreground/60 hover:text-primary hover:border-primary/30 transition-colors text-[11px] font-medium"
+              href={`mailto:contact@searchtune.co?subject=수정 요청: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A수정 내용:%0A`}
+              className="underline underline-offset-2 hover:text-muted-foreground transition-colors"
             >
-              ✏️ 수정 요청하기
+              수정 요청
+            </a>
+            <span>·</span>
+            <a
+              href={`mailto:contact@searchtune.co?subject=버그 신고: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A버그 내용:%0A`}
+              className="underline underline-offset-2 hover:text-muted-foreground transition-colors"
+            >
+              버그 신고
             </a>
           </div>
 
