@@ -2,7 +2,7 @@ import { useState } from "react";
 import { CheckCircle, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
-import { downloadReportPdf } from "@/lib/generateReportPdf";
+
 import { type DemoResult } from "@/data/demoResults";
 
 interface LeadModalProps {
