@@ -427,6 +427,16 @@ export default function BlogPost() {
           <div className="mt-8">
             <FunnelCTAs />
           </div>
+
+          {/* Primary CTA */}
+          <div className="mt-6 text-center">
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center gap-2 h-12 w-full sm:w-auto px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
+            >
+              🚀 무료로 분석하기
+            </Link>
+          </div>
         </article>
       </main>
 
