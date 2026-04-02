@@ -163,7 +163,7 @@ function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev
   const brandLabel = isNaverPost(post.slug)
     ? <span className="shrink-0 text-xs font-black" style={{ color: "#03C75A" }}>NAVER</span>
     : isCafe24Post(post.slug)
-    ? <span className="shrink-0 text-xs font-black tracking-tight"><span style={{ color: "#1A1A1A" }}>cafe</span><span style={{ color: "#1A6DCC" }}>24</span></span>
+    ? <span className="shrink-0 text-xs font-black tracking-tight"><span style={{ color: "#1B1B1B" }}>CAFE</span><span style={{ color: "#0066BE" }}>24</span></span>
     : isImwebPost(post.slug)
     ? <span className="shrink-0 text-xs font-black tracking-tight" style={{ color: "#1A1A1A" }}>imweb</span>
     : <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${categoryColor[post.category]}`}>{post.category}</span>;
