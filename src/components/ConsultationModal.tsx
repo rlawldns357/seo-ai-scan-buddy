@@ -194,7 +194,7 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
                     type="text"
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
-                    placeholder="(주)마케팅컴퍼니"
+                    placeholder="(주)서치튠"
                     className={inputClass}
                   />
                 </div>
