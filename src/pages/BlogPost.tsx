@@ -172,24 +172,11 @@ function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev
   return (
     <Link
       to={`/blog/${post.slug}`}
-      className="group flex-1 flex flex-col gap-2 p-4 md:p-5 rounded-2xl border border-border bg-card hover:shadow-md transition-shadow"
+      className={`group flex-1 flex items-center gap-2 py-2.5 text-sm text-muted-foreground hover:text-foreground transition-colors ${direction === "next" ? "justify-end text-right" : ""}`}
     >
-      <span className="text-[11px] text-muted-foreground font-medium flex items-center gap-1">
-        {direction === "prev" ? (
-          <><ArrowLeft className="w-3 h-3" /> 이전 글</>
-        ) : (
-          <>다음 글 <ArrowRight className="w-3 h-3" /></>
-        )}
-      </span>
-      <div className="flex items-center gap-3">
-        {brandLabel}
-        <h4 className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
-          {post.title}
-        </h4>
-      </div>
-      <span className="text-[11px] text-muted-foreground flex items-center gap-1">
-        <Clock className="w-3 h-3" /> {post.readTime} 읽기
-      </span>
+      {direction === "prev" && <ArrowLeft className="w-3.5 h-3.5 shrink-0" />}
+      <span className="line-clamp-1">{post.title}</span>
+      {direction === "next" && <ArrowRight className="w-3.5 h-3.5 shrink-0" />}
     </Link>
   );
 }
