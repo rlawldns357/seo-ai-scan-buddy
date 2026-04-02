@@ -393,6 +393,22 @@ export default function BlogPost() {
             </nav>
           )}
 
+          {/* Primary CTA */}
+          <div className="mt-10 flex flex-col items-center text-center">
+            <p className="text-sm text-muted-foreground mb-3">지금 바로 내 사이트를 점검해 보세요</p>
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center gap-2.5 h-14 w-full sm:w-auto px-10 rounded-2xl gradient-primary text-primary-foreground font-bold text-base shadow-lg hover:opacity-90 hover:shadow-xl transition-all"
+            >
+              🚀 SearchTune OS 무료로 분석하기
+            </Link>
+          </div>
+
+          {/* Funnel CTAs */}
+          <div className="mt-8">
+            <FunnelCTAs />
+          </div>
+
           {/* Feedback links */}
           <div className="mt-10 flex items-center justify-center gap-3 text-[11px] text-muted-foreground/50">
             <a
@@ -408,22 +424,6 @@ export default function BlogPost() {
             >
               버그 신고
             </a>
-          </div>
-
-          {/* Primary CTA */}
-          <div className="mt-8 flex flex-col items-center text-center">
-            <p className="text-sm text-muted-foreground mb-3">지금 바로 내 사이트를 점검해 보세요</p>
-            <Link
-              to="/"
-              className="inline-flex items-center justify-center gap-2.5 h-14 w-full sm:w-auto px-10 rounded-2xl gradient-primary text-primary-foreground font-bold text-base shadow-lg hover:opacity-90 hover:shadow-xl transition-all"
-            >
-              🚀 SearchTune OS 무료로 분석하기
-            </Link>
-          </div>
-
-          {/* Funnel CTAs */}
-          <div className="mt-8">
-            <FunnelCTAs />
           </div>
         </article>
       </main>
