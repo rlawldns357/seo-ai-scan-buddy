@@ -26,7 +26,7 @@ function getSessionId(): string {
 
 export async function trackEvent(
   eventName: EventName,
-  eventData: Record<string, string | number | boolean> = {},
+  eventData: Record<string, string | number | boolean | string[]> = {},
   url?: string
 ) {
   try {
