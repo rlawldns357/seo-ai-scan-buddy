@@ -275,9 +275,16 @@ export default function Admin() {
                     data.recentConsultations.map((c, i) => (
                       <div key={i} className="border border-border rounded-lg p-3 space-y-1.5">
                         <div className="flex justify-between items-start">
-                          <div>
-                            <span className="font-medium text-sm text-foreground">{c.name}</span>
-                            <span className="text-muted-foreground text-xs ml-2">{c.email}</span>
+                          <div className="space-y-0.5">
+                            <div>
+                              <span className="font-medium text-sm text-foreground">{c.name}</span>
+                              {c.job_title && <span className="text-muted-foreground text-xs ml-1">· {c.job_title}</span>}
+                              {c.company && <span className="text-muted-foreground text-xs ml-1">@ {c.company}</span>}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span>{c.email}</span>
+                              {c.phone && <span>📞 {c.phone}</span>}
+                            </div>
                           </div>
                           <span className="text-muted-foreground text-xs shrink-0">
                             {new Date(c.created_at).toLocaleDateString("ko-KR")}
