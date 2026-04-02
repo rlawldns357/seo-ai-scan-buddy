@@ -87,8 +87,27 @@ export default function Admin() {
     setLoading(false);
   };
 
+  const fetchBlogPosts = async () => {
+    const { data: posts } = await supabase
+      .from("blog_posts")
+      .select("id, title, slug, published, date, category")
+      .order("date", { ascending: false })
+      .limit(50);
+    if (posts) setBlogPosts(posts);
+  };
+
+  const togglePublished = async (id: string, current: boolean) => {
+    setTogglingId(id);
+    await supabase.from("blog_posts").update({ published: !current }).eq("id", id);
+    setBlogPosts((prev) => prev.map((p) => (p.id === id ? { ...p, published: !current } : p)));
+    setTogglingId(null);
+  };
+
   useEffect(() => {
-    if (authed) fetchInsights(days);
+    if (authed) {
+      fetchInsights(days);
+      fetchBlogPosts();
+    }
   }, [authed, days]);
 
   if (!authed) {
