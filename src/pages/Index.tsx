@@ -8,6 +8,7 @@ import LighthouseScores from "@/components/LighthouseScores";
 import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
+import FunnelCTAs from "@/components/FunnelCTAs";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import PsiErrorBanner from "@/components/PsiErrorBanner";
 import SubpageWarning from "@/components/SubpageWarning";
@@ -335,7 +336,10 @@ const Index = () => {
             {/* Verification Links */}
             <VerificationLinks url={normalizedUrl} />
 
-            {/* Email Form */}
+            {/* Funnel CTAs */}
+            <FunnelCTAs result={result} url={normalizedUrl} />
+
+            {/* Email Form (legacy) */}
             <EmailForm onSubmitted={() => {}} />
 
             {/* FAQ */}
