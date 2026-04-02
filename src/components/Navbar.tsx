@@ -57,7 +57,7 @@ export default function Navbar() {
           </div>
         </div>
       </nav>
-      <ConsultationModal open={consultOpen} onClose={() => setConsultOpen(false)} />
+      <ContactModal open={consultOpen} onClose={() => setConsultOpen(false)} />
     </>
   );
 }
