@@ -51,6 +51,8 @@ export default function Admin() {
   const [error, setError] = useState("");
   const [data, setData] = useState<InsightsData | null>(null);
   const [days, setDays] = useState(30);
+  const [blogPosts, setBlogPosts] = useState<{ id: string; title: string; slug: string; published: boolean; date: string; category: string }[]>([]);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
 
   const handleLogin = async () => {
     setLoading(true);
