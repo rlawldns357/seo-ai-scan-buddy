@@ -107,7 +107,9 @@ export default function Blog() {
         {/* Grid */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {rest.map((post) => (
-            <PostCard key={post.slug} post={post} />
+            <Link key={post.slug} to={`/blog/${post.slug}`}>
+              <PostCard post={post} />
+            </Link>
           ))}
         </div>
       </main>
