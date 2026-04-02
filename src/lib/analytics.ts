@@ -1,5 +1,3 @@
-import { supabase } from "@/integrations/supabase/client";
-
 type EventName =
   | "analysis_start"
   | "analysis_complete"
@@ -30,6 +28,7 @@ export async function trackEvent(
   url?: string
 ) {
   try {
+    const { supabase } = await import("@/integrations/supabase/client");
     await supabase.from("analytics_events").insert([{
       event_name: eventName,
       event_data: eventData,
