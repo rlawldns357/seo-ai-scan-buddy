@@ -26,6 +26,50 @@ function isNaverPost(slug: string) {
   return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
 }
 
+function isCafe24Post(slug: string) {
+  return slug.toLowerCase().includes("cafe24");
+}
+
+function isImwebPost(slug: string) {
+  return slug.toLowerCase().includes("imweb");
+}
+
+function getBrandThumbnail(slug: string, category: string, large = false) {
+  const size = large ? "text-4xl md:text-5xl" : "text-3xl";
+  if (isNaverPost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span className={`${size} font-black`} style={{ color: "#03C75A" }}>NAVER</span>
+        <span className="text-sm font-semibold text-muted-foreground">Naver SEO</span>
+      </div>
+    );
+  }
+  if (isCafe24Post(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span className={`${size} font-black tracking-tight`}>
+          <span style={{ color: "#1A1A1A" }}>cafe</span>
+          <span style={{ color: "#1A6DCC" }}>24</span>
+        </span>
+        <span className="text-sm font-semibold text-muted-foreground">Cafe24 SEO</span>
+      </div>
+    );
+  }
+  if (isImwebPost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span className={`${size} font-black tracking-tight`} style={{ color: "#1A1A1A" }}>imweb</span>
+        <span className="text-sm font-semibold text-muted-foreground">아임웹 SEO</span>
+      </div>
+    );
+  }
+  return (
+    <span className={`${size} font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent`}>
+      {category}
+    </span>
+  );
+}
+
 function formatDate(d: string) {
   const date = new Date(d);
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
@@ -116,7 +160,14 @@ function FaqJsonLd({ faqs, title }: { faqs: FAQ[]; title: string }) {
 
 /** Prev / Next post navigation card */
 function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev" | "next" }) {
-  const naver = isNaverPost(post.slug);
+  const brandLabel = isNaverPost(post.slug)
+    ? <span className="shrink-0 text-xs font-black" style={{ color: "#03C75A" }}>NAVER</span>
+    : isCafe24Post(post.slug)
+    ? <span className="shrink-0 text-xs font-black tracking-tight"><span style={{ color: "#1A1A1A" }}>cafe</span><span style={{ color: "#1A6DCC" }}>24</span></span>
+    : isImwebPost(post.slug)
+    ? <span className="shrink-0 text-xs font-black tracking-tight" style={{ color: "#1A1A1A" }}>imweb</span>
+    : <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${categoryColor[post.category]}`}>{post.category}</span>;
+
   return (
     <Link
       to={`/blog/${post.slug}`}
@@ -130,13 +181,7 @@ function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev
         )}
       </span>
       <div className="flex items-center gap-3">
-        {naver ? (
-          <span className="shrink-0 text-xs font-black" style={{ color: "#03C75A" }}>NAVER</span>
-        ) : (
-          <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${categoryColor[post.category]}`}>
-            {post.category}
-          </span>
-        )}
+        {brandLabel}
         <h4 className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
           {post.title}
         </h4>
@@ -317,16 +362,7 @@ export default function BlogPost() {
 
           {/* Thumbnail */}
           <div className="mt-8 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center aspect-[2/1] md:aspect-[3/1]">
-            {naver ? (
-              <div className="flex flex-col items-center gap-2">
-                <span className="text-4xl md:text-5xl font-black" style={{ color: "#03C75A" }}>NAVER</span>
-                <span className="text-sm font-semibold text-muted-foreground">Naver SEO</span>
-              </div>
-            ) : (
-              <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-                {post.category}
-              </span>
-            )}
+            {getBrandThumbnail(post.slug, post.category, true)}
           </div>
 
           {post.content ? (
@@ -369,14 +405,13 @@ export default function BlogPost() {
             </nav>
           )}
 
-          {/* AI Disclaimer */}
-          <div className="mt-10 flex items-center justify-center gap-2 text-xs text-muted-foreground/60">
-            <span>🤖 AI가 작성한 콘텐츠로 부정확할 수 있습니다.</span>
+          {/* Disclaimer */}
+          <div className="mt-10 flex items-center justify-center">
             <a
               href={`mailto:contact@searchtune.co?subject=블로그 수정 요청: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A수정 내용:%0A`}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-card text-muted-foreground hover:text-primary hover:border-primary/30 transition-colors text-[11px] font-medium"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-border bg-card text-muted-foreground/60 hover:text-primary hover:border-primary/30 transition-colors text-[11px] font-medium"
             >
-              수정 요청하기
+              ✏️ 수정 요청하기
             </a>
           </div>
 
