@@ -42,6 +42,7 @@ export default function ContactModal({ open, onClose }: ContactModalProps) {
       const { error } = await supabase.from("consultation_requests").insert({
         name: name.trim(),
         email: email.trim().toLowerCase(),
+        phone: phone.trim() || null,
         company: company.trim() || null,
         concerns: message.trim(),
         interests: ["business_inquiry"],
