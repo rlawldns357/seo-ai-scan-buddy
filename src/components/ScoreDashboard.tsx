@@ -413,12 +413,55 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [dailyVisitors, setDailyVisitors] = useState(3000);
+  const [ctaStep, setCtaStep] = useState<"idle" | "email" | "email-done" | "consult">("idle");
+  const [ctaEmail, setCtaEmail] = useState("");
+  const [ctaEmailError, setCtaEmailError] = useState("");
+  const [ctaAgreed, setCtaAgreed] = useState(false);
+  const [ctaAgreeError, setCtaAgreeError] = useState("");
+  const [ctaLoading, setCtaLoading] = useState(false);
+  const [ctaEmailStatus, setCtaEmailStatus] = useState<"" | "duplicate" | "error">("");
 
   const openModal = (title: string) => {
     setModalTitle(title);
     setModalOpen(true);
   };
 
+  const handleCtaEmailSubmit = async () => {
+    setCtaEmailError("");
+    setCtaAgreeError("");
+    setCtaEmailStatus("");
+    const trimmed = ctaEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setCtaEmailError("이메일 형식을 확인해 주세요.");
+      return;
+    }
+    if (!ctaAgreed) {
+      setCtaAgreeError("동의가 필요해요.");
+      return;
+    }
+    setCtaLoading(true);
+    try {
+      const { error } = await supabase.from("email_leads").insert({
+        email: trimmed,
+        source: "result_report",
+      });
+      if (error) {
+        if (error.code === "23505") {
+          setCtaEmailStatus("duplicate");
+          setTimeout(() => setCtaStep("email-done"), 1500);
+        } else {
+          setCtaEmailStatus("error");
+        }
+      } else {
+        trackEvent("result_email_submit", { email: trimmed });
+        setCtaStep("email-done");
+      }
+    } catch {
+      setCtaEmailStatus("error");
+    } finally {
+      setCtaLoading(false);
+    }
+  };
   const gapPercent = Math.max(5, 100 - avgScore);
   const tier = avgScore >= 75 ? "good" : avgScore >= 60 ? "decent" : avgScore >= 40 ? "warning" : "critical";
 
