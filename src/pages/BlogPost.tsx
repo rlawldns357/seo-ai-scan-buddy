@@ -10,7 +10,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import naverLogo from "@/assets/naver-logo.png";
+
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
@@ -131,7 +131,7 @@ function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev
       </span>
       <div className="flex items-center gap-3">
         {naver ? (
-          <img src={naverLogo} alt="Naver" loading="lazy" width={28} height={28} className="w-7 h-7 shrink-0" />
+          <span className="shrink-0 text-xs font-black" style={{ color: "#03C75A" }}>NAVER</span>
         ) : (
           <span className={`shrink-0 px-2 py-0.5 rounded text-[10px] font-bold ${categoryColor[post.category]}`}>
             {post.category}
@@ -318,8 +318,8 @@ export default function BlogPost() {
           {/* Thumbnail */}
           <div className="mt-8 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center aspect-[2/1] md:aspect-[3/1]">
             {naver ? (
-              <div className="flex flex-col items-center gap-3">
-                <img src={naverLogo} alt="Naver" loading="lazy" width={80} height={80} className="w-16 md:w-20 h-16 md:h-20" />
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-4xl md:text-5xl font-black" style={{ color: "#03C75A" }}>NAVER</span>
                 <span className="text-sm font-semibold text-muted-foreground">Naver SEO</span>
               </div>
             ) : (

@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import naverLogo from "@/assets/naver-logo.png";
+
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
@@ -67,8 +67,8 @@ function PostCard({ post }: { post: BlogPost }) {
     <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
       <div className="aspect-[16/9] bg-gradient-to-br from-muted to-secondary flex items-center justify-center relative">
         {naver ? (
-          <div className="flex flex-col items-center gap-2">
-            <img src={naverLogo} alt="Naver" loading="lazy" width={56} height={56} className="w-14 h-14" />
+          <div className="flex flex-col items-center gap-1">
+            <span className="text-3xl font-black" style={{ color: "#03C75A" }}>NAVER</span>
             <span className="text-xs font-semibold text-muted-foreground">Naver SEO</span>
           </div>
         ) : (
