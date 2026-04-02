@@ -39,6 +39,19 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Handle blog list action
+    if (action === "listBlogPosts") {
+      const { data: posts } = await supabase
+        .from("blog_posts")
+        .select("id, title, slug, published, date, category")
+        .order("date", { ascending: false })
+        .limit(50);
+      return new Response(
+        JSON.stringify({ posts: posts || [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     const since = new Date();
     since.setDate(since.getDate() - days);
     const sinceStr = since.toISOString();
