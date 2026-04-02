@@ -98,7 +98,9 @@ export default function Blog() {
         {/* Featured */}
         {featured && (
           <div className="mb-12">
-            <FeaturedPost post={featured} />
+            <Link to={`/blog/${featured.slug}`}>
+              <FeaturedPost post={featured} />
+            </Link>
           </div>
         )}
 
