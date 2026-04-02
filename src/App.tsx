@@ -11,6 +11,7 @@ const DesignTest = lazy(() => import("./pages/DesignTest.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
+const Blog = lazy(() => import("./pages/Blog.tsx"));
 
 const queryClient = new QueryClient();
 
