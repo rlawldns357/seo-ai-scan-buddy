@@ -23,6 +23,7 @@ const VerificationLinks = lazy(() => import("@/components/VerificationLinks"));
 const EmailForm = lazy(() => import("@/components/EmailForm"));
 const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
 const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
+const ShareButtons = lazy(() => import("@/components/ShareButtons"));
 
 type Screen = "home" | "loading" | "result";
 
