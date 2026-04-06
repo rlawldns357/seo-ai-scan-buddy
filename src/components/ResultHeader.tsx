@@ -206,6 +206,20 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleNativeShare = async () => {
+    if (!result) return;
+    trackEvent("share_click", { platform: "native" });
+    const text = buildShareText(result, url);
+    try {
+      await navigator.share({ title: `${domain} SEO·AEO·GEO 분석 결과`, text, url: "https://searchtuneos.com" });
+    } catch {
+      // user cancelled or not supported — fallback to copy
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const handleDownloadCard = useCallback(async () => {
     if (!result || generating) return;
     setGenerating(true);
