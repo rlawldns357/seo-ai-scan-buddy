@@ -70,12 +70,24 @@ Deno.serve(async (req) => {
     console.log(`IndexNow response: ${status}`, responseText);
 
     // 200 or 202 = success
-    const success = status === 200 || status === 202;
+    const indexNowSuccess = status === 200 || status === 202;
+
+    // Ping Google sitemap to notify of updates
+    let googlePingStatus = 0;
+    try {
+      const sitemapUrl = encodeURIComponent(`${SITE_URL}/sitemap.xml`);
+      const googlePingRes = await fetch(`https://www.google.com/ping?sitemap=${sitemapUrl}`);
+      googlePingStatus = googlePingRes.status;
+      console.log(`Google sitemap ping: ${googlePingStatus}`);
+    } catch (e) {
+      console.warn("Google sitemap ping failed (non-blocking):", e);
+    }
 
     return new Response(
       JSON.stringify({
-        success,
+        success: indexNowSuccess,
         indexnow_status: status,
+        google_ping_status: googlePingStatus,
         submitted_urls: urls,
         response: responseText || null,
       }),
