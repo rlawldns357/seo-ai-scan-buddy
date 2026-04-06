@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Share2, Twitter, Linkedin, MessageCircle, Download, Check, Copy } from "lucide-react";
+import { Share2, Download, Check, Copy } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { type DemoResult } from "@/data/demoResults";
 
@@ -33,116 +33,146 @@ function buildShareText(result: DemoResult, url: string) {
 
 function generateScoreCardCanvas(result: DemoResult, url: string): Promise<string> {
   return new Promise((resolve) => {
+    const W = 1080;
+    const H = 1920;
     const canvas = document.createElement("canvas");
-    canvas.width = 1200;
-    canvas.height = 630;
+    canvas.width = W;
+    canvas.height = H;
     const ctx = canvas.getContext("2d")!;
 
     // Background gradient
-    const grad = ctx.createLinearGradient(0, 0, 1200, 630);
+    const grad = ctx.createLinearGradient(0, 0, W, H);
     grad.addColorStop(0, "#0f172a");
     grad.addColorStop(0.5, "#1e293b");
     grad.addColorStop(1, "#0f172a");
     ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 1200, 630);
+    ctx.fillRect(0, 0, W, H);
 
-    // Subtle grid pattern
+    // Subtle grid
     ctx.strokeStyle = "rgba(255,255,255,0.03)";
     ctx.lineWidth = 1;
-    for (let x = 0; x < 1200; x += 40) {
-      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 630); ctx.stroke();
+    for (let x = 0; x < W; x += 40) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
     }
-    for (let y = 0; y < 630; y += 40) {
-      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1200, y); ctx.stroke();
+    for (let y = 0; y < H; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
     }
 
-    // Title
     const domain = (() => {
       try { return new URL(url).hostname; } catch { return url; }
     })();
 
-    ctx.fillStyle = "rgba(255,255,255,0.5)";
-    ctx.font = "500 20px -apple-system, BlinkMacSystemFont, sans-serif";
+    // Top branding
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    ctx.font = "500 28px -apple-system, BlinkMacSystemFont, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("SEO · AEO · GEO 분석 리포트", 600, 80);
+    ctx.fillText("SearchTune OS", W / 2, 100);
+
+    // Title
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.font = "500 26px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.fillText("SEO · AEO · GEO 분석 리포트", W / 2, 180);
 
     ctx.fillStyle = "#ffffff";
-    ctx.font = "bold 32px -apple-system, BlinkMacSystemFont, sans-serif";
-    ctx.fillText(domain, 600, 125);
+    ctx.font = "bold 40px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.fillText(domain, W / 2, 240);
 
-    // Score cards
+    // Score cards - vertical layout
     const scores = [
-      { label: "SEO", score: result.seoScore, color: "#6366f1", desc: "검색 노출" },
-      { label: "AEO", score: result.aeoScore, color: "#f59e0b", desc: "답변 채택" },
-      { label: "GEO", score: result.geoScore, color: "#10b981", desc: "AI 인용" },
+      { label: "SEO", score: result.seoScore, color: "#6366f1", desc: "검색 노출 최적화" },
+      { label: "AEO", score: result.aeoScore, color: "#f59e0b", desc: "AI 답변 채택률" },
+      { label: "GEO", score: result.geoScore, color: "#10b981", desc: "생성형 AI 인용률" },
     ];
 
-    const cardWidth = 300;
-    const cardHeight = 320;
-    const gap = 50;
-    const startX = (1200 - (cardWidth * 3 + gap * 2)) / 2;
-    const startY = 170;
+    const cardW = 800;
+    const cardH = 340;
+    const gap = 40;
+    const startX = (W - cardW) / 2;
+    const startY = 320;
 
     scores.forEach(({ label, score, color, desc }, i) => {
-      const x = startX + i * (cardWidth + gap);
-      const y = startY;
+      const x = startX;
+      const y = startY + i * (cardH + gap);
 
-      // Card background
+      // Card bg
       ctx.fillStyle = "rgba(255,255,255,0.06)";
-      roundRect(ctx, x, y, cardWidth, cardHeight, 20);
+      roundRect(ctx, x, y, cardW, cardH, 24);
       ctx.fill();
-
-      // Card border
       ctx.strokeStyle = "rgba(255,255,255,0.1)";
       ctx.lineWidth = 1;
-      roundRect(ctx, x, y, cardWidth, cardHeight, 20);
+      roundRect(ctx, x, y, cardW, cardH, 24);
       ctx.stroke();
 
-      // Score circle
-      const cx = x + cardWidth / 2;
-      const cy = y + 130;
-      const radius = 70;
+      // Circle
+      const cx = x + 170;
+      const cy = y + cardH / 2;
+      const radius = 100;
 
-      // Background circle
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.strokeStyle = "rgba(255,255,255,0.1)";
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 12;
       ctx.stroke();
 
-      // Score arc
       const startAngle = -Math.PI / 2;
       const endAngle = startAngle + (Math.PI * 2 * score) / 100;
       ctx.beginPath();
       ctx.arc(cx, cy, radius, startAngle, endAngle);
       ctx.strokeStyle = color;
-      ctx.lineWidth = 8;
+      ctx.lineWidth = 12;
       ctx.lineCap = "round";
       ctx.stroke();
       ctx.lineCap = "butt";
 
       // Score number
       ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 48px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.font = "bold 64px -apple-system, BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "center";
-      ctx.fillText(`${score}`, cx, cy + 16);
+      ctx.fillText(`${score}`, cx, cy + 22);
 
-      // Label
+      // Label + desc on the right
+      const textX = x + 360;
+      ctx.textAlign = "left";
       ctx.fillStyle = color;
-      ctx.font = "bold 28px -apple-system, BlinkMacSystemFont, sans-serif";
-      ctx.fillText(label, cx, y + 240);
+      ctx.font = "bold 42px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(label, textX, cy - 10);
 
-      // Description
       ctx.fillStyle = "rgba(255,255,255,0.5)";
-      ctx.font = "400 16px -apple-system, BlinkMacSystemFont, sans-serif";
-      ctx.fillText(desc, cx, y + 270);
+      ctx.font = "400 24px -apple-system, BlinkMacSystemFont, sans-serif";
+      ctx.fillText(desc, textX, cy + 30);
     });
 
-    // Footer branding
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
-    ctx.font = "500 18px -apple-system, BlinkMacSystemFont, sans-serif";
+    // Heavy watermarks
+    ctx.save();
+    ctx.globalAlpha = 0.04;
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 48px -apple-system, BlinkMacSystemFont, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText("SearchTune OS | searchtuneos.com", 600, 570);
+    for (let row = 0; row < 8; row++) {
+      for (let col = 0; col < 4; col++) {
+        const wx = col * 320 + 100;
+        const wy = row * 260 + 130;
+        ctx.save();
+        ctx.translate(wx, wy);
+        ctx.rotate(-0.3);
+        ctx.fillText("SearchTune OS", 0, 0);
+        ctx.restore();
+      }
+    }
+    ctx.restore();
+
+    // Bottom branding bar
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
+    ctx.fillRect(0, H - 160, W, 160);
+
+    ctx.fillStyle = "rgba(255,255,255,0.6)";
+    ctx.font = "600 30px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("searchtuneos.com", W / 2, H - 95);
+
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.font = "400 22px -apple-system, BlinkMacSystemFont, sans-serif";
+    ctx.fillText("무료 AI 검색 최적화 분석 도구", W / 2, H - 55);
 
     resolve(canvas.toDataURL("image/png"));
   });
@@ -164,54 +194,9 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
 
 export default function ShareButtons({ result, url }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
-  const [cardImage, setCardImage] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
 
   const shareText = buildShareText(result, url);
-  const siteUrl = "https://searchtuneos.com";
-
-  const handleTwitter = () => {
-    trackEvent("share_click", { platform: "twitter" });
-    const text = encodeURIComponent(shareText);
-    window.open(`https://x.com/intent/tweet?text=${text}`, "_blank", "width=600,height=400");
-  };
-
-  const handleLinkedIn = () => {
-    trackEvent("share_click", { platform: "linkedin" });
-    const text = encodeURIComponent(shareText);
-    window.open(
-      `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(siteUrl)}&summary=${text}`,
-      "_blank",
-      "width=600,height=400"
-    );
-  };
-
-  const handleKakao = () => {
-    trackEvent("share_click", { platform: "kakao" });
-    const domain = (() => {
-      try { return new URL(url).hostname; } catch { return url; }
-    })();
-
-    if (typeof window !== "undefined" && (window as any).Kakao?.Share) {
-      (window as any).Kakao.Share.sendDefault({
-        objectType: "feed",
-        content: {
-          title: `${domain} SEO·AEO·GEO 분석 결과`,
-          description: `SEO ${result.seoScore}점 | AEO ${result.aeoScore}점 | GEO ${result.geoScore}점`,
-          imageUrl: "https://searchtuneos.com/og-image.png",
-          link: { mobileWebUrl: siteUrl, webUrl: siteUrl },
-        },
-        buttons: [
-          { title: "무료로 분석하기", link: { mobileWebUrl: siteUrl, webUrl: siteUrl } },
-        ],
-      });
-    } else {
-      // Fallback: copy text
-      navigator.clipboard.writeText(shareText);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
-  };
 
   const handleCopyText = async () => {
     trackEvent("share_click", { platform: "copy" });
@@ -227,8 +212,6 @@ export default function ShareButtons({ result, url }: ShareButtonsProps) {
 
     try {
       const dataUrl = await generateScoreCardCanvas(result, url);
-      setCardImage(dataUrl);
-
       const link = document.createElement("a");
       link.download = "searchtune-score.png";
       link.href = dataUrl;
@@ -247,30 +230,6 @@ export default function ShareButtons({ result, url }: ShareButtonsProps) {
 
       <div className="flex flex-wrap gap-2">
         <button
-          onClick={handleTwitter}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#0f1419] text-white hover:bg-[#1d2731] transition-colors"
-        >
-          <Twitter className="w-3.5 h-3.5" />
-          X (Twitter)
-        </button>
-
-        <button
-          onClick={handleLinkedIn}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#0077b5] text-white hover:bg-[#006097] transition-colors"
-        >
-          <Linkedin className="w-3.5 h-3.5" />
-          LinkedIn
-        </button>
-
-        <button
-          onClick={handleKakao}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#FEE500] text-[#3C1E1E] hover:bg-[#F5DC00] transition-colors"
-        >
-          <MessageCircle className="w-3.5 h-3.5" />
-          카카오톡
-        </button>
-
-        <button
           onClick={handleCopyText}
           className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
         >
@@ -287,13 +246,6 @@ export default function ShareButtons({ result, url }: ShareButtonsProps) {
           {generating ? "생성 중..." : "점수 카드 저장"}
         </button>
       </div>
-
-      {/* Preview of generated card */}
-      {cardImage && (
-        <div className="mt-4 rounded-lg overflow-hidden border border-border">
-          <img src={cardImage} alt="점수 카드" className="w-full" />
-        </div>
-      )}
     </div>
   );
 }
