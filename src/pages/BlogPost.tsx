@@ -1,5 +1,6 @@
 import { useParams, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost as BlogPostType, type FAQ } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
@@ -351,8 +352,39 @@ export default function BlogPost() {
   const faqs = post.faqs;
   const naver = isNaverPost(post.slug);
 
+  const postUrl = `https://searchtuneos.com/blog/${post.slug}`;
+  const postTitle = `${post.title} – 서치튠OS 블로그`;
+  const ogImage = post.thumbnail !== "/placeholder.svg"
+    ? post.thumbnail
+    : "https://searchtuneos.com/og-image.png";
+
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{postTitle}</title>
+        <meta name="description" content={post.excerpt} />
+        <link rel="canonical" href={postUrl} />
+        <meta property="og:title" content={postTitle} />
+        <meta property="og:description" content={post.excerpt} />
+        <meta property="og:url" content={postUrl} />
+        <meta property="og:type" content="article" />
+        <meta property="og:image" content={ogImage} />
+        <meta property="article:published_time" content={post.date} />
+        <meta property="article:author" content={post.author} />
+        <meta property="article:section" content={post.category} />
+        <meta name="twitter:title" content={postTitle} />
+        <meta name="twitter:description" content={post.excerpt} />
+        <meta name="twitter:image" content={ogImage} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "홈", item: "https://searchtuneos.com/" },
+            { "@type": "ListItem", position: 2, name: "블로그", item: "https://searchtuneos.com/blog" },
+            { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
+          ],
+        })}</script>
+      </Helmet>
       <Navbar />
 
       {faqs && faqs.length > 0 && <FaqJsonLd faqs={faqs} title={post.title} />}

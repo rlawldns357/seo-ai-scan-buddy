@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
@@ -180,8 +181,40 @@ export default function Blog() {
   const featured = allPosts.find((p) => p.featured);
   const rest = allPosts.filter((p) => !p.featured);
 
+  const blogTitle = "블로그 – 서치튠OS | SEO·AEO·GEO 실전 가이드";
+  const blogDesc = "SEO·AEO·GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
+  const blogUrl = "https://searchtuneos.com/blog";
+
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>{blogTitle}</title>
+        <meta name="description" content={blogDesc} />
+        <link rel="canonical" href={blogUrl} />
+        <meta property="og:title" content={blogTitle} />
+        <meta property="og:description" content={blogDesc} />
+        <meta property="og:url" content={blogUrl} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:title" content={blogTitle} />
+        <meta name="twitter:description" content={blogDesc} />
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          name: "서치튠OS 블로그",
+          description: blogDesc,
+          url: blogUrl,
+          inLanguage: "ko",
+          isPartOf: { "@type": "WebSite", name: "서치튠OS", url: "https://searchtuneos.com" },
+        })}</script>
+        <script type="application/ld+json">{JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            { "@type": "ListItem", position: 1, name: "홈", item: "https://searchtuneos.com/" },
+            { "@type": "ListItem", position: 2, name: "블로그", item: blogUrl },
+          ],
+        })}</script>
+      </Helmet>
       <Navbar />
       <main className="container py-10 md:py-16">
         <div className="mb-10">
