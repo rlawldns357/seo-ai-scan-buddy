@@ -342,7 +342,7 @@ const Index = () => {
 
               {result && <ScoreDashboard result={result} url={normalizedUrl} />}
 
-              {result && <ShareButtons result={result} url={normalizedUrl} />}
+              
 
               <VerificationLinks url={normalizedUrl} />
 
