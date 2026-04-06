@@ -159,6 +159,44 @@ function FaqJsonLd({ faqs, title }: { faqs: FAQ[]; title: string }) {
   );
 }
 
+/** Generate Article JSON-LD for SEO */
+function ArticleJsonLd({ post }: { post: BlogPostType }) {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    description: post.excerpt,
+    author: {
+      "@type": "Person",
+      name: post.author,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "SearchTune OS",
+      url: "https://searchtuneos.com",
+    },
+    datePublished: post.date,
+    dateModified: post.date,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://searchtuneos.com/blog/${post.slug}`,
+    },
+    image: post.thumbnail !== "/placeholder.svg"
+      ? post.thumbnail
+      : "https://searchtuneos.com/og-image.png",
+    articleSection: post.category,
+    inLanguage: "ko",
+    wordCount: post.content?.length ? Math.round(post.content.length / 3.5) : undefined,
+  };
+
+  return (
+    <script
+      type="application/ld+json"
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+    />
+  );
+}
+
 /** Prev / Next post navigation card */
 function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev" | "next" }) {
   const brandLabel = isNaverPost(post.slug)
@@ -318,6 +356,7 @@ export default function BlogPost() {
       <Navbar />
 
       {faqs && faqs.length > 0 && <FaqJsonLd faqs={faqs} title={post.title} />}
+      <ArticleJsonLd post={post} />
 
       <main className="container py-8 md:py-14">
         <Link
