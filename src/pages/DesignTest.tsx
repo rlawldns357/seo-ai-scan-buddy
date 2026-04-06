@@ -7,6 +7,7 @@ import EmailForm from "@/components/EmailForm";
 import FunnelCTAs from "@/components/FunnelCTAs";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import FaqSection from "@/components/FaqSection";
+import ShareButtons from "@/components/ShareButtons";
 import { getDemoResult } from "@/data/demoResults";
 
 const DEMO_URL = "https://example.com";
