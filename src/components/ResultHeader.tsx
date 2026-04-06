@@ -1,5 +1,5 @@
 import { type PsiResult, type PsiError } from "@/lib/psi";
-import { Globe, ImageOff, Clock, ShieldCheck, Download, Check, Copy } from "lucide-react";
+import { Globe, ImageOff, Clock, ShieldCheck, Download, Check, Copy, Share2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { type DemoResult } from "@/data/demoResults";
@@ -206,6 +206,20 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleNativeShare = async () => {
+    if (!result) return;
+    trackEvent("share_click", { platform: "native" });
+    const text = buildShareText(result, url);
+    try {
+      await navigator.share({ title: `${domain} SEO·AEO·GEO 분석 결과`, text, url: "https://searchtuneos.com" });
+    } catch {
+      // user cancelled or not supported — fallback to copy
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   const handleDownloadCard = useCallback(async () => {
     if (!result || generating) return;
     setGenerating(true);
@@ -274,6 +288,14 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
         {result && (
           <div className="shrink-0 flex items-center gap-1.5">
             <button
+              onClick={handleNativeShare}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              title="공유하기"
+            >
+              <Share2 className="w-3 h-3" />
+              공유
+            </button>
+            <button
               onClick={handleCopyText}
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
               title="텍스트 복사"
@@ -284,7 +306,7 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
             <button
               onClick={handleDownloadCard}
               disabled={generating}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors disabled:opacity-50"
               title="점수 카드 저장"
             >
               <Download className="w-3 h-3" />
