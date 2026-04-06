@@ -356,6 +356,7 @@ export default function BlogPost() {
       <Navbar />
 
       {faqs && faqs.length > 0 && <FaqJsonLd faqs={faqs} title={post.title} />}
+      <ArticleJsonLd post={post} />
 
       <main className="container py-8 md:py-14">
         <Link
