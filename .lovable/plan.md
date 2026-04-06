@@ -17,6 +17,14 @@
 - **동적 사이트맵** → `/sitemap.xml` Edge Function으로 실시간 블로그 URL 포함
 - 제출 실패 시 non-blocking (에러 로그만 남기고 진행)
 
+### SEO 메타태그 규칙 (react-helmet-async)
+- **모든 페이지**에 동적 `<title>`, `<meta description>`, `<link canonical>`, OG 태그 필수
+- **Blog 목록** (`/blog`): CollectionPage JSON-LD + BreadcrumbList
+- **Blog 개별 글** (`/blog/:slug`): Article JSON-LD + FAQ JSON-LD(있는 경우) + BreadcrumbList(홈→블로그→글제목)
+- OG image는 썸네일이 있으면 사용, 없으면 기본 og-image.png 폴백
+- `<title>` 형식: `{글제목} – 서치튠OS 블로그` (60자 이내 권장)
+- 블로그 자동 생성 시 excerpt가 meta description으로 사용되므로 160자 이내로 작성
+
 ### 관련 파일
 - `supabase/functions/generate-blog-post/index.ts` — 블로그 생성 + IndexNow 호출
 - `supabase/functions/submit-indexnow/index.ts` — IndexNow + Google ping 제출
