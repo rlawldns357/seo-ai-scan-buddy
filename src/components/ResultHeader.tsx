@@ -277,16 +277,16 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
               <Clock className="w-3 h-3" />
               {fetchTime}
             </div>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-score-excellent/8 text-score-excellent border border-score-excellent/15">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-score-excellent/8 text-score-excellent border border-score-excellent/15 whitespace-nowrap">
               <ShieldCheck className="w-3 h-3" />
               분석 완료
             </span>
           </div>
         </div>
 
-        {/* Share buttons - top right */}
+        {/* Share buttons - desktop: inline, mobile: hidden */}
         {result && (
-          <div className="shrink-0 flex items-center gap-1.5">
+          <div className="shrink-0 hidden sm:flex items-center gap-1.5">
             <button
               onClick={handleNativeShare}
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
@@ -315,6 +315,34 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
           </div>
         )}
       </div>
+
+      {/* Share buttons - mobile: below */}
+      {result && (
+        <div className="flex sm:hidden items-center gap-1.5 mt-3 pt-3 border-t border-border">
+          <button
+            onClick={handleNativeShare}
+            className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-2 rounded-lg text-[11px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+            공유
+          </button>
+          <button
+            onClick={handleCopyText}
+            className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-2 rounded-lg text-[11px] font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
+          >
+            {copied ? <Check className="w-3.5 h-3.5 text-score-excellent" /> : <Copy className="w-3.5 h-3.5" />}
+            {copied ? "복사됨" : "복사"}
+          </button>
+          <button
+            onClick={handleDownloadCard}
+            disabled={generating}
+            className="flex-1 inline-flex items-center justify-center gap-1 px-2.5 py-2 rounded-lg text-[11px] font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors disabled:opacity-50"
+          >
+            <Download className="w-3.5 h-3.5" />
+            {generating ? "생성중" : "카드저장"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
