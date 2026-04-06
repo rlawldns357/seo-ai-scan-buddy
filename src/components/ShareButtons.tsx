@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { Share2, Twitter, Linkedin, MessageCircle, Download, Check, Copy } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { type DemoResult } from "@/data/demoResults";

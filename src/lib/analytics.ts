@@ -11,7 +11,8 @@ type EventName =
   | "report_pdf_download"
   | "consultation_submit_success"
   | "consultation_submit_fail"
-  | "result_email_submit";
+  | "result_email_submit"
+  | "share_click";
 
 let sessionId: string | null = null;
 
