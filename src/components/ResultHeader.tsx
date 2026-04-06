@@ -1,5 +1,5 @@
 import { type PsiResult, type PsiError } from "@/lib/psi";
-import { Globe, ImageOff, Clock, ShieldCheck, Download, Check, Copy } from "lucide-react";
+import { Globe, ImageOff, Clock, ShieldCheck, Download, Check, Copy, Share2 } from "lucide-react";
 import { useState, useCallback } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { type DemoResult } from "@/data/demoResults";
