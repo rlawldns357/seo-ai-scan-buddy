@@ -288,6 +288,14 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
         {result && (
           <div className="shrink-0 flex items-center gap-1.5">
             <button
+              onClick={handleNativeShare}
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              title="공유하기"
+            >
+              <Share2 className="w-3 h-3" />
+              공유
+            </button>
+            <button
               onClick={handleCopyText}
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
               title="텍스트 복사"
@@ -298,7 +306,7 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
             <button
               onClick={handleDownloadCard}
               disabled={generating}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors disabled:opacity-50"
               title="점수 카드 저장"
             >
               <Download className="w-3 h-3" />
