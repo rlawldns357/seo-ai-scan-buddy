@@ -31,7 +31,34 @@
 - `supabase/functions/submit-indexnow/index.ts` — IndexNow + Google ping 제출
 - `supabase/functions/sitemap/index.ts` — 동적 사이트맵 생성
 
+## 분석 엔진 자동 업데이트 시스템
+
+### 아키텍처
+- **engine_config 테이블**: 분석 프롬프트와 스코어링 기준을 DB에 저장 (동적 로딩)
+- **engine_update_log 테이블**: 모든 업데이트 이력 기록 (버전, 변경 요약, 발견된 트렌드)
+- **analyze-site**: DB에서 최신 프롬프트를 읽어 분석 실행 (DB 실패 시 하드코딩 폴백)
+- **update-analysis-engine**: 트렌드 서치 → AI 분석 → 프롬프트 자동 업데이트
+
+### 자동 업데이트 규칙
+- **실행 주기**: 매월 1일, 15일 UTC 18:00 (KST 03:00) — 2주 간격
+- **트렌드 소스**: Firecrawl 웹 검색 (SEO/AEO/GEO 관련 10개 쿼리 중 3개 랜덤 선택)
+- **업데이트 판단**: AI가 현재 프롬프트와 트렌드를 비교 → 유의미한 변경 시에만 업데이트
+- **변경 불가 항목**: JSON 출력 포맷 구조, GEO 보수적 점수 전략
+- **이력 관리**: 모든 실행(변경/미변경)이 engine_update_log에 기록
+
+### 관련 파일
+- `supabase/functions/update-analysis-engine/index.ts` — 트렌드 서치 + 엔진 업데이트
+- `supabase/functions/analyze-site/index.ts` — DB 기반 동적 프롬프트 로딩
+
 ## 버전 이력
+
+### v0.11.0-beta (2026-04-07)
+- 분석 엔진 자동 업데이트 시스템 구축 (2주 주기 트렌드 서치 → 프롬프트 자동 업데이트)
+- 분석 프롬프트 DB화 (engine_config 테이블, 동적 로딩 + 폴백)
+- 엔진 업데이트 이력 관리 (engine_update_log 테이블)
+- 블로그 필진 3명 로테이션 (검색최적화 연구소, 콘텐츠 전략가, 크롤링 마스터)
+- FAQ 중복 방지 + 마크다운 아티팩트 자동 정리
+- 콘텐츠 중복 방지 강화 (50개 제목 + 카테고리 비교)
 
 ### v0.10.1-beta (2026-04-06)
 - Google sitemap ping 자동 제출 추가
