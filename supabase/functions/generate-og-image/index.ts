@@ -113,7 +113,10 @@ Deno.serve(async (req) => {
     const base64Data = base64Match[2];
     const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
-    const fileName = `${slug}.${imageFormat === "jpeg" ? "jpg" : imageFormat}`;
+    // Use crypto UUID for safe storage key (avoids non-ASCII issues)
+    const fileId = crypto.randomUUID();
+    const ext = imageFormat === "jpeg" ? "jpg" : imageFormat;
+    const fileName = `${fileId}.${ext}`;
     const contentType = `image/${imageFormat}`;
 
     const { error: uploadError } = await supabase.storage
