@@ -9,6 +9,7 @@ import LeadModal from "@/components/LeadModal";
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [engineVersion, setEngineVersion] = useState<number | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [consultOpen, setConsultOpen] = useState(false);
   const [leadOpen, setLeadOpen] = useState(false);
