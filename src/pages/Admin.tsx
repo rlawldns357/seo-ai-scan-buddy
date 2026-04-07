@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff } from "lucide-react";
+import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,9 @@ export default function Admin() {
   const [days, setDays] = useState(30);
   const [blogPosts, setBlogPosts] = useState<{ id: string; title: string; slug: string; published: boolean; date: string; category: string }[]>([]);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [engineConfig, setEngineConfig] = useState<{ version: number; updated_at: string } | null>(null);
+  const [engineLogs, setEngineLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
+  const [engineUpdating, setEngineUpdating] = useState(false);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -105,10 +108,31 @@ export default function Admin() {
     setTogglingId(null);
   };
 
+  const fetchEngineStatus = async () => {
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "engineStatus" },
+    });
+    if (res?.engineConfig) setEngineConfig(res.engineConfig);
+    if (res?.engineLogs) setEngineLogs(res.engineLogs);
+  };
+
+  const triggerEngineUpdate = async () => {
+    setEngineUpdating(true);
+    try {
+      const { data: res } = await supabase.functions.invoke("update-analysis-engine", {});
+      if (res?.success) {
+        await fetchEngineStatus();
+      }
+    } catch {}
+    setEngineUpdating(false);
+  };
+
   useEffect(() => {
     if (authed) {
       fetchInsights(days);
       fetchBlogPosts();
+      fetchEngineStatus();
     }
   }, [authed, days]);
 
@@ -241,6 +265,75 @@ export default function Admin() {
                         >
                           {post.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                         </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Engine Status */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Cpu className="w-4 h-4" />
+                    분석 엔진 상태
+                    {engineConfig && (
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
+                        v{engineConfig.version}
+                      </span>
+                    )}
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={triggerEngineUpdate}
+                    disabled={engineUpdating}
+                    className="gap-1.5"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${engineUpdating ? "animate-spin" : ""}`} />
+                    {engineUpdating ? "업데이트 중..." : "수동 업데이트"}
+                  </Button>
+                </div>
+                {engineConfig && (
+                  <p className="text-xs text-muted-foreground">
+                    마지막 업데이트: {new Date(engineConfig.updated_at).toLocaleString("ko-KR")}
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {engineLogs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">업데이트 이력 없음</p>
+                  ) : (
+                    engineLogs.map((log, i) => (
+                      <div key={i} className="border border-border rounded-lg p-3 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-foreground">v{log.version}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                              log.status === "success"
+                                ? "bg-score-excellent/10 text-score-excellent"
+                                : "bg-muted text-muted-foreground"
+                            }`}>
+                              {log.status === "success" ? "업데이트됨" : "변경 없음"}
+                            </span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(log.created_at).toLocaleString("ko-KR")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground">{log.changes_summary}</p>
+                        {Array.isArray(log.trends_found) && log.trends_found.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {(log.trends_found as string[]).map((trend, j) => (
+                              <span key={j} className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded">
+                                {trend}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))
                   )}
