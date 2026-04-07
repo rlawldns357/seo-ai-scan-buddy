@@ -119,6 +119,25 @@ serve(async (req) => {
       );
     }
 
+    // Load analysis prompt from DB (with fallback to hardcoded)
+    let ANALYSIS_PROMPT = FALLBACK_ANALYSIS_PROMPT;
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      const { data: configRow } = await supabase
+        .from("engine_config")
+        .select("config_value")
+        .eq("config_key", "analysis_prompt")
+        .single();
+      if (configRow?.config_value) {
+        ANALYSIS_PROMPT = configRow.config_value;
+        console.log("Using dynamic analysis prompt from DB");
+      }
+    } catch (e) {
+      console.warn("Failed to load prompt from DB, using fallback:", e);
+    }
+
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
     if (!firecrawlKey) {
       return new Response(
