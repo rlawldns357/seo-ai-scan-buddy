@@ -278,6 +278,66 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_config: {
+        Row: {
+          config_key: string
+          config_value: string
+          created_at: string
+          id: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          config_key: string
+          config_value: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          config_key?: string
+          config_value?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      engine_update_log: {
+        Row: {
+          changes_summary: string
+          created_at: string
+          id: string
+          new_prompt: string | null
+          previous_prompt: string | null
+          status: string
+          trends_found: Json | null
+          version: number
+        }
+        Insert: {
+          changes_summary: string
+          created_at?: string
+          id?: string
+          new_prompt?: string | null
+          previous_prompt?: string | null
+          status?: string
+          trends_found?: Json | null
+          version: number
+        }
+        Update: {
+          changes_summary?: string
+          created_at?: string
+          id?: string
+          new_prompt?: string | null
+          previous_prompt?: string | null
+          status?: string
+          trends_found?: Json | null
+          version?: number
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
