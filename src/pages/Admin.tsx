@@ -53,6 +53,9 @@ export default function Admin() {
   const [days, setDays] = useState(30);
   const [blogPosts, setBlogPosts] = useState<{ id: string; title: string; slug: string; published: boolean; date: string; category: string }[]>([]);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+  const [engineConfig, setEngineConfig] = useState<{ version: number; updated_at: string } | null>(null);
+  const [engineLogs, setEngineLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
+  const [engineUpdating, setEngineUpdating] = useState(false);
 
   const handleLogin = async () => {
     setLoading(true);
