@@ -324,6 +324,28 @@ export default function BlogPost() {
     };
   }, [allPosts, slug]);
 
+  // Compute related posts (same category + keyword overlap)
+  const relatedPosts = useMemo(() => {
+    if (!post || !allPosts.length) return [];
+    const titleWords = new Set(
+      post.title.split(/[\s,·\-—:!?()[\]{}]+/).filter((w) => w.length >= 2)
+    );
+    return allPosts
+      .filter((p) => p.slug !== post.slug)
+      .map((p) => {
+        let score = 0;
+        if (p.category === post.category) score += 3;
+        const pWords = p.title.split(/[\s,·\-—:!?()[\]{}]+/).filter((w) => w.length >= 2);
+        for (const w of pWords) {
+          if (titleWords.has(w)) score += 2;
+        }
+        return { ...p, score };
+      })
+      .filter((p) => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+  }, [allPosts, post, slug]);
+
   if (post === undefined) {
     return (
       <div className="min-h-screen bg-background">
