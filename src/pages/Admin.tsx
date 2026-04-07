@@ -132,6 +132,7 @@ export default function Admin() {
     if (authed) {
       fetchInsights(days);
       fetchBlogPosts();
+      fetchEngineStatus();
     }
   }, [authed, days]);
 
