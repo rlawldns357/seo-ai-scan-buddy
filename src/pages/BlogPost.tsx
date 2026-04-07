@@ -324,6 +324,28 @@ export default function BlogPost() {
     };
   }, [allPosts, slug]);
 
+  // Compute related posts (same category + keyword overlap)
+  const relatedPosts = useMemo(() => {
+    if (!post || !allPosts.length) return [];
+    const titleWords = new Set(
+      post.title.split(/[\s,·\-—:!?()[\]{}]+/).filter((w) => w.length >= 2)
+    );
+    return allPosts
+      .filter((p) => p.slug !== post.slug)
+      .map((p) => {
+        let score = 0;
+        if (p.category === post.category) score += 3;
+        const pWords = p.title.split(/[\s,·\-—:!?()[\]{}]+/).filter((w) => w.length >= 2);
+        for (const w of pWords) {
+          if (titleWords.has(w)) score += 2;
+        }
+        return { ...p, score };
+      })
+      .filter((p) => p.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+  }, [allPosts, post, slug]);
+
   if (post === undefined) {
     return (
       <div className="min-h-screen bg-background">
@@ -455,6 +477,37 @@ export default function BlogPost() {
                     </AccordionItem>
                   ))}
                 </Accordion>
+              </div>
+            </section>
+          )}
+
+          {/* Related Posts */}
+          {relatedPosts.length > 0 && (
+            <section className="mt-14">
+              <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                📌 관련 글 추천
+              </h2>
+              <div className="grid gap-3">
+                {relatedPosts.map((rp) => (
+                  <Link
+                    key={rp.slug}
+                    to={`/blog/${rp.slug}`}
+                    className="group flex items-start gap-3 p-3 rounded-xl border border-border/50 hover:border-border hover:bg-muted/30 transition-all"
+                  >
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center">
+                      <span className="text-xs font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                        {rp.category}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                        {rp.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{rp.excerpt}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0 mt-0.5">{rp.readTime}</span>
+                  </Link>
+                ))}
               </div>
             </section>
           )}
