@@ -377,9 +377,9 @@ export default function BlogPost() {
 
   const postUrl = `https://searchtuneos.com/blog/${post.slug}`;
   const postTitle = `${post.title} – 서치튠OS 블로그`;
-  const ogImage = post.thumbnail !== "/placeholder.svg"
-    ? post.thumbnail
-    : "https://searchtuneos.com/og-image.png";
+  const ogImage = post.ogImage
+    || (post.thumbnail !== "/placeholder.svg" ? post.thumbnail : undefined)
+    || "https://searchtuneos.com/og-image.png";
 
   return (
     <div className="min-h-screen bg-background">
