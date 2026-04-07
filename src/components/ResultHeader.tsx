@@ -1,8 +1,9 @@
 import { type PsiResult, type PsiError } from "@/lib/psi";
-import { Globe, ImageOff, Clock, ShieldCheck, Download, Check, Copy, Share2 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { Globe, ImageOff, Clock, ShieldCheck, Download, Check, Copy, Share2, Cpu } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { type DemoResult } from "@/data/demoResults";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ResultHeaderProps {
   psi: PsiResult | null;
@@ -181,6 +182,20 @@ function generateScoreCardCanvas(result: DemoResult, url: string): Promise<strin
 export default function ResultHeader({ psi, psiError, url, result }: ResultHeaderProps) {
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [engineVersion, setEngineVersion] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("engine_config")
+      .select("version")
+      .eq("config_key", "analysis_prompt")
+      .order("version", { ascending: false })
+      .limit(1)
+      .single()
+      .then(({ data }) => {
+        if (data) setEngineVersion(data.version);
+      });
+  }, []);
 
   const domain = (() => {
     try { return new URL(url).hostname; } catch { return url; }
@@ -281,6 +296,12 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
               <ShieldCheck className="w-3 h-3" />
               분석 완료
             </span>
+            {engineVersion !== null && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/8 text-primary border border-primary/15 whitespace-nowrap">
+                <Cpu className="w-3 h-3" />
+                엔진 v{engineVersion}
+              </span>
+            )}
           </div>
         </div>
 
