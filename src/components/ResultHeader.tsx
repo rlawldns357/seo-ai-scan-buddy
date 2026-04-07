@@ -296,6 +296,12 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
               <ShieldCheck className="w-3 h-3" />
               분석 완료
             </span>
+            {engineVersion !== null && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/8 text-primary border border-primary/15 whitespace-nowrap">
+                <Cpu className="w-3 h-3" />
+                엔진 v{engineVersion}
+              </span>
+            )}
           </div>
         </div>
 
