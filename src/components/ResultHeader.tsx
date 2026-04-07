@@ -182,6 +182,20 @@ function generateScoreCardCanvas(result: DemoResult, url: string): Promise<strin
 export default function ResultHeader({ psi, psiError, url, result }: ResultHeaderProps) {
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [engineVersion, setEngineVersion] = useState<number | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("engine_config")
+      .select("version")
+      .eq("config_key", "analysis_prompt")
+      .order("version", { ascending: false })
+      .limit(1)
+      .single()
+      .then(({ data }) => {
+        if (data) setEngineVersion(data.version);
+      });
+  }, []);
 
   const domain = (() => {
     try { return new URL(url).hostname; } catch { return url; }
