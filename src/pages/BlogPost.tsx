@@ -481,6 +481,37 @@ export default function BlogPost() {
             </section>
           )}
 
+          {/* Related Posts */}
+          {relatedPosts.length > 0 && (
+            <section className="mt-14">
+              <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+                📌 관련 글 추천
+              </h2>
+              <div className="grid gap-3">
+                {relatedPosts.map((rp) => (
+                  <Link
+                    key={rp.slug}
+                    to={`/blog/${rp.slug}`}
+                    className="group flex items-start gap-3 p-3 rounded-xl border border-border/50 hover:border-border hover:bg-muted/30 transition-all"
+                  >
+                    <div className="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center">
+                      <span className="text-xs font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+                        {rp.category}
+                      </span>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                        {rp.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{rp.excerpt}</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground shrink-0 mt-0.5">{rp.readTime}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
           {/* Prev / Next Navigation */}
           {(prevPost || nextPost) && (
             <nav className="mt-14 flex flex-col sm:flex-row gap-4" aria-label="블로그 글 이동">
