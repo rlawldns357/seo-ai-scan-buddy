@@ -15,6 +15,7 @@ export interface BlogPost {
   readTime: string;
   content?: string;
   faqs?: FAQ[];
+  ogImage?: string;
 }
 
 /** 한글 기준 분당 ~500자, 최소 3분 최대 5분 */

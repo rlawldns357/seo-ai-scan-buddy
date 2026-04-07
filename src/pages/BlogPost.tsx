@@ -307,6 +307,7 @@ export default function BlogPost() {
           readTime: data.read_time,
           content: data.content,
           faqs,
+          ogImage: (data as any).og_image || undefined,
         });
       } else {
         setPost(null);
