@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const ANALYSIS_PROMPT = `You are an expert SEO/AEO/GEO analyst. Analyze the following website content and produce a JSON analysis.
+const FALLBACK_ANALYSIS_PROMPT = `You are an expert SEO/AEO/GEO analyst. Analyze the following website content and produce a JSON analysis.
 
 **Scoring Criteria:**
 
@@ -116,6 +117,25 @@ serve(async (req) => {
         JSON.stringify({ success: false, error: "URL is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+    }
+
+    // Load analysis prompt from DB (with fallback to hardcoded)
+    let ANALYSIS_PROMPT = FALLBACK_ANALYSIS_PROMPT;
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      const { data: configRow } = await supabase
+        .from("engine_config")
+        .select("config_value")
+        .eq("config_key", "analysis_prompt")
+        .single();
+      if (configRow?.config_value) {
+        ANALYSIS_PROMPT = configRow.config_value;
+        console.log("Using dynamic analysis prompt from DB");
+      }
+    } catch (e) {
+      console.warn("Failed to load prompt from DB, using fallback:", e);
     }
 
     const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
