@@ -26,16 +26,28 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    supabase
-      .from("engine_config")
-      .select("version")
-      .eq("config_key", "analysis_prompt")
-      .order("version", { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setEngineVersion(data.version);
-      });
+    const fetchVersion = () => {
+      supabase
+        .from("engine_config")
+        .select("version")
+        .eq("config_key", "analysis_prompt")
+        .order("version", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then(({ data }) => {
+          if (data) setEngineVersion(data.version);
+        });
+    };
+    fetchVersion();
+
+    const channel = supabase
+      .channel("engine_config_changes")
+      .on("postgres_changes", { event: "*", schema: "public", table: "engine_config" }, () => {
+        fetchVersion();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
   }, []);
 
   const menuItems = [
