@@ -113,7 +113,13 @@ Deno.serve(async (req) => {
     const base64Data = base64Match[2];
     const imageBytes = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
-    const fileName = `${slug}.${imageFormat === "jpeg" ? "jpg" : imageFormat}`;
+    // Sanitize slug for storage key: replace non-ASCII with encoded hex
+    const safeSlug = slug.replace(/[^a-zA-Z0-9_-]/g, (ch: string) => {
+      const code = ch.charCodeAt(0).toString(16);
+      return code;
+    }).slice(0, 100);
+    const ext = imageFormat === "jpeg" ? "jpg" : imageFormat;
+    const fileName = `${safeSlug}.${ext}`;
     const contentType = `image/${imageFormat}`;
 
     const { error: uploadError } = await supabase.storage
