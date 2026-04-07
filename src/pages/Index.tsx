@@ -126,6 +126,10 @@ const Index = () => {
 
     if (analyzeRes.data) {
       setResult(analyzeRes.data);
+      // Save to history (fire-and-forget)
+      import("@/components/ScoreComparison").then(({ saveAnalysisHistory }) => {
+        saveAnalysisHistory(finalUrl, analyzeRes.data!);
+      });
     } else {
       setAnalyzeError(analyzeRes.error?.message || "분석에 실패했어요.");
       trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
@@ -342,6 +346,8 @@ const Index = () => {
               )}
 
               {result && <ScoreDashboard result={result} url={normalizedUrl} />}
+
+              {result && <ScoreComparison url={normalizedUrl} currentResult={result} />}
 
               
 
