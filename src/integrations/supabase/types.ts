@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      analysis_history: {
+        Row: {
+          aeo_score: number
+          created_at: string
+          geo_score: number
+          id: string
+          result_data: Json
+          seo_score: number
+          url: string
+        }
+        Insert: {
+          aeo_score: number
+          created_at?: string
+          geo_score: number
+          id?: string
+          result_data: Json
+          seo_score: number
+          url: string
+        }
+        Update: {
+          aeo_score?: number
+          created_at?: string
+          geo_score?: number
+          id?: string
+          result_data?: Json
+          seo_score?: number
+          url?: string
+        }
+        Relationships: []
+      }
       analysis_usage: {
         Row: {
           created_at: string
