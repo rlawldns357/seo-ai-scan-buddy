@@ -124,9 +124,7 @@ export default function About() {
                 왜 SEO만으로는 부족한가요?
               </h2>
               <p>
-                검색 환경이 빠르게 변하고 있습니다. 이제 웹사이트는 전통 검색엔진
-                가시성뿐 아니라, AI 답변 추출 적합성과 생성형 검색 엔진에서의
-                발견·인용·참조 준비도까지 함께 점검해야 합니다.
+                AI 검색엔진이 기존 검색 결과를 대체하고 있기 때문입니다. 이제 웹사이트는 전통 검색엔진 가시성뿐 아니라, AI 답변 추출 적합성(AEO)과 생성형 검색에서의 인용 준비도(GEO)까지 함께 점검해야 합니다.
               </p>
             </div>
             <div>
@@ -134,9 +132,7 @@ export default function About() {
                 AEO(AI 답변 최적화)란 무엇인가요?
               </h2>
               <p>
-                AEO는 Answer Engine Optimization의 약자로, ChatGPT·Perplexity·뤼튼·클로바X 같은 AI 답변 엔진이
-                내 콘텐츠를 직접 답변으로 인용하도록 최적화하는 전략입니다.
-                Q&A 구조, 명확한 직접 답변, FAQPage 스키마 적용 등이 핵심입니다.
+                ChatGPT·Perplexity 같은 AI가 내 콘텐츠를 직접 답변으로 인용하도록 최적화하는 전략입니다. Q&A 구조, 명확한 직접 답변, FAQPage 스키마 적용이 핵심이며, AEO는 Answer Engine Optimization의 약자입니다.
               </p>
             </div>
             <div>
@@ -144,9 +140,7 @@ export default function About() {
                 GEO(생성형 검색 최적화)란 무엇인가요?
               </h2>
               <p>
-                GEO는 Generative Engine Optimization의 약자로, Google SGE·Naver Cue:·Bing Copilot 등
-                생성형 AI 검색에서 브랜드와 콘텐츠가 출처로 인용·참조되도록 준비하는 전략입니다.
-                AI 크롤러 접근 허용, 명확한 출처·엔티티 정보, 데이터 기반 콘텐츠가 중요합니다.
+                Google SGE·Naver Cue: 등 AI 검색에서 내 콘텐츠가 출처로 인용되도록 준비하는 전략입니다. AI 크롤러(GPTBot, ClaudeBot 등) 접근 허용, 명확한 엔티티 정보, 데이터 기반 콘텐츠가 GEO 점수를 높이는 핵심 요소입니다.
               </p>
             </div>
             <div>
@@ -154,9 +148,7 @@ export default function About() {
                 어떻게 점수를 계산하나요?
               </h2>
               <p>
-                Google Lighthouse 실측 데이터, 규칙 기반 평가, LLM 평가를 혼합한
-                하이브리드 방식으로 SEO·AEO·GEO 각 축의 점수를 독립적으로
-                산출합니다. 공식 데이터와 자체 추정의 차이를 투명하게 구분합니다.
+                Google Lighthouse v12 실측 데이터와 AI 콘텐츠 분석을 결합한 하이브리드 방식입니다. SEO·AEO·GEO 각 축은 5~6개 하위 신호별 가중치를 적용해 0~100점으로 독립 산출하며, 분석 엔진은 2주마다 최신 트렌드를 반영하여 자동 업데이트됩니다.
               </p>
             </div>
             <div>
@@ -164,8 +156,7 @@ export default function About() {
                 비용이 드나요?
               </h2>
               <p>
-                현재 베타 서비스로 무료 이용할 수 있습니다.
-                별도 회원가입 없이 URL만 입력하면 바로 분석 결과를 확인할 수 있습니다.
+                무료입니다. 현재 베타 서비스로 회원가입 없이 URL만 입력하면 바로 분석 결과를 확인할 수 있습니다.
               </p>
             </div>
           </section>
