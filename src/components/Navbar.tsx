@@ -25,6 +25,19 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  useEffect(() => {
+    supabase
+      .from("engine_config")
+      .select("version")
+      .eq("config_key", "analysis_prompt")
+      .order("version", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setEngineVersion(data.version);
+      });
+  }, []);
+
   const menuItems = [
     { icon: Bell, label: "출시 알림 신청", desc: "정식 출시 소식을 먼저 받아보세요", action: () => { setDropdownOpen(false); setLeadOpen(true); } },
     { icon: MessageSquare, label: "무료 상담 신청", desc: "전문가가 맞춤 솔루션을 제안해요", action: () => { setDropdownOpen(false); setConsultOpen(true); } },
