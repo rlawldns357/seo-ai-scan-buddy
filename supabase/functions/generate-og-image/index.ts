@@ -56,26 +56,47 @@ Deno.serve(async (req) => {
 
     console.log(`Generating OG image for: ${slug}`);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-3.1-flash-image-preview",
-        messages: [{ role: "user", content: prompt }],
-        modalities: ["image", "text"],
-      }),
-    });
+    // Try multiple models in order of preference
+    const models = [
+      "google/gemini-3.1-flash-image-preview",
+      "google/gemini-3-pro-image-preview",
+      "google/gemini-2.5-flash-image",
+    ];
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("AI image generation error:", response.status, errText);
-      throw new Error(`AI image generation failed: ${response.status}`);
+    let aiData: any = null;
+    let lastError = "";
+
+    for (const model of models) {
+      try {
+        console.log(`Trying model: ${model}`);
+        const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [{ role: "user", content: prompt }],
+            modalities: ["image", "text"],
+          }),
+        });
+
+        if (response.ok) {
+          aiData = await response.json();
+          break;
+        }
+        lastError = `${model}: ${response.status}`;
+        console.warn(`Model ${model} failed: ${response.status}`);
+      } catch (e) {
+        lastError = `${model}: ${e}`;
+        console.warn(`Model ${model} error:`, e);
+      }
     }
 
-    const aiData = await response.json();
+    if (!aiData) {
+      throw new Error(`All image models failed. Last error: ${lastError}`);
+    }
     const imageUrl = aiData.choices?.[0]?.message?.images?.[0]?.image_url?.url;
 
     if (!imageUrl) {
