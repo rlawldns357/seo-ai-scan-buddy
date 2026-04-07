@@ -54,13 +54,74 @@ export default function LeadModal({ open, onClose, title = "맞춤 개선 리포
       } else {
         setStatus("success");
         trackEvent("email_submit_success", { email: trimmed, source: "cta_modal" });
-        supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "lead-confirmation",
-            recipientEmail: trimmed,
-            idempotencyKey: `lead-confirm-${trimmed}`,
-          },
-        });
+
+        // Generate PDF, upload, and send email with download link
+        if (result && url) {
+          try {
+            const { generateReportPdf } = await import("@/lib/generateReportPdf");
+            const doc = generateReportPdf(result, url);
+            const pdfBlob = doc.output("blob");
+
+            const domain = url.replace(/https?:\/\//, "").replace(/\//g, "");
+            const fileName = `${domain}_${Date.now()}.pdf`;
+
+            const { error: uploadError } = await supabase.storage
+              .from("report-pdfs")
+              .upload(fileName, pdfBlob, {
+                contentType: "application/pdf",
+                upsert: false,
+              });
+
+            if (!uploadError) {
+              const { data: publicUrlData } = supabase.storage
+                .from("report-pdfs")
+                .getPublicUrl(fileName);
+
+              supabase.functions.invoke("send-transactional-email", {
+                body: {
+                  templateName: "report-delivery",
+                  recipientEmail: trimmed,
+                  idempotencyKey: `report-${trimmed}-${Date.now()}`,
+                  templateData: {
+                    domain,
+                    seoScore: result.seoScore,
+                    aeoScore: result.aeoScore,
+                    geoScore: result.geoScore,
+                    downloadUrl: publicUrlData.publicUrl,
+                  },
+                },
+              });
+              trackEvent("report_email_sent", { email: trimmed, url });
+            } else {
+              console.warn("PDF upload failed:", uploadError);
+              // Fallback: send confirmation without PDF
+              supabase.functions.invoke("send-transactional-email", {
+                body: {
+                  templateName: "lead-confirmation",
+                  recipientEmail: trimmed,
+                  idempotencyKey: `lead-confirm-${trimmed}`,
+                },
+              });
+            }
+          } catch (pdfErr) {
+            console.warn("PDF generation failed:", pdfErr);
+            supabase.functions.invoke("send-transactional-email", {
+              body: {
+                templateName: "lead-confirmation",
+                recipientEmail: trimmed,
+                idempotencyKey: `lead-confirm-${trimmed}`,
+              },
+            });
+          }
+        } else {
+          supabase.functions.invoke("send-transactional-email", {
+            body: {
+              templateName: "lead-confirmation",
+              recipientEmail: trimmed,
+              idempotencyKey: `lead-confirm-${trimmed}`,
+            },
+          });
+        }
       }
     } catch {
       setStatus("error");
