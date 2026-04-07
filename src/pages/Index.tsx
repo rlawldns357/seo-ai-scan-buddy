@@ -23,6 +23,7 @@ const VerificationLinks = lazy(() => import("@/components/VerificationLinks"));
 const EmailForm = lazy(() => import("@/components/EmailForm"));
 const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
 const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
+const ScoreComparison = lazy(() => import("@/components/ScoreComparison"));
 
 
 type Screen = "home" | "loading" | "result";
@@ -125,6 +126,10 @@ const Index = () => {
 
     if (analyzeRes.data) {
       setResult(analyzeRes.data);
+      // Save to history (fire-and-forget)
+      import("@/components/ScoreComparison").then(({ saveAnalysisHistory }) => {
+        saveAnalysisHistory(finalUrl, analyzeRes.data!);
+      });
     } else {
       setAnalyzeError(analyzeRes.error?.message || "분석에 실패했어요.");
       trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
@@ -341,6 +346,8 @@ const Index = () => {
               )}
 
               {result && <ScoreDashboard result={result} url={normalizedUrl} />}
+
+              {result && <ScoreComparison url={normalizedUrl} currentResult={result} />}
 
               
 
