@@ -39,6 +39,26 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Handle engine status action
+    if (action === "engineStatus") {
+      const { data: config } = await supabase
+        .from("engine_config")
+        .select("config_key, version, updated_at")
+        .eq("config_key", "analysis_prompt")
+        .single();
+
+      const { data: logs } = await supabase
+        .from("engine_update_log")
+        .select("version, changes_summary, trends_found, status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      return new Response(
+        JSON.stringify({ engineConfig: config, engineLogs: logs || [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Handle blog list action
     if (action === "listBlogPosts") {
       const { data: posts } = await supabase
