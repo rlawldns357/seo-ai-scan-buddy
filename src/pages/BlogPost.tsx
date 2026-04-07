@@ -275,7 +275,7 @@ export default function BlogPost() {
     async function fetchFromDb() {
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content")
+        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content, og_image")
         .eq("slug", slug!)
         .eq("published", true)
         .single();
@@ -307,6 +307,7 @@ export default function BlogPost() {
           readTime: data.read_time,
           content: data.content,
           faqs,
+          ogImage: (data as any).og_image || undefined,
         });
       } else {
         setPost(null);
@@ -376,9 +377,9 @@ export default function BlogPost() {
 
   const postUrl = `https://searchtuneos.com/blog/${post.slug}`;
   const postTitle = `${post.title} – 서치튠OS 블로그`;
-  const ogImage = post.thumbnail !== "/placeholder.svg"
-    ? post.thumbnail
-    : "https://searchtuneos.com/og-image.png";
+  const ogImage = post.ogImage
+    || (post.thumbnail !== "/placeholder.svg" ? post.thumbnail : undefined)
+    || "https://searchtuneos.com/og-image.png";
 
   return (
     <div className="min-h-screen bg-background">
