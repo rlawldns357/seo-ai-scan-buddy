@@ -12,6 +12,7 @@ type EventName =
   | "consultation_submit_success"
   | "consultation_submit_fail"
   | "result_email_submit"
+  | "report_email_sent"
   | "share_click";
 
 let sessionId: string | null = null;
