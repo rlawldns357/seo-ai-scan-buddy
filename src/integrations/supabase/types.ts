@@ -81,6 +81,7 @@ export type Database = {
           excerpt: string
           featured: boolean
           id: string
+          og_image: string | null
           published: boolean
           read_time: string
           slug: string
@@ -97,6 +98,7 @@ export type Database = {
           excerpt: string
           featured?: boolean
           id?: string
+          og_image?: string | null
           published?: boolean
           read_time?: string
           slug: string
@@ -113,6 +115,7 @@ export type Database = {
           excerpt?: string
           featured?: boolean
           id?: string
+          og_image?: string | null
           published?: boolean
           read_time?: string
           slug?: string
