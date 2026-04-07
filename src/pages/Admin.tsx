@@ -108,6 +108,26 @@ export default function Admin() {
     setTogglingId(null);
   };
 
+  const fetchEngineStatus = async () => {
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "engineStatus" },
+    });
+    if (res?.engineConfig) setEngineConfig(res.engineConfig);
+    if (res?.engineLogs) setEngineLogs(res.engineLogs);
+  };
+
+  const triggerEngineUpdate = async () => {
+    setEngineUpdating(true);
+    try {
+      const { data: res } = await supabase.functions.invoke("update-analysis-engine", {});
+      if (res?.success) {
+        await fetchEngineStatus();
+      }
+    } catch {}
+    setEngineUpdating(false);
+  };
+
   useEffect(() => {
     if (authed) {
       fetchInsights(days);
