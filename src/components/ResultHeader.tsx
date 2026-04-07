@@ -1,8 +1,9 @@
 import { type PsiResult, type PsiError } from "@/lib/psi";
-import { Globe, ImageOff, Clock, ShieldCheck, Download, Check, Copy, Share2 } from "lucide-react";
-import { useState, useCallback } from "react";
+import { Globe, ImageOff, Clock, ShieldCheck, Download, Check, Copy, Share2, Cpu } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
 import { trackEvent } from "@/lib/analytics";
 import { type DemoResult } from "@/data/demoResults";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ResultHeaderProps {
   psi: PsiResult | null;
