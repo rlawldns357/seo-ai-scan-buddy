@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, ShieldCheck, Bell, MessageSquare, Briefcase } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
 import ConsultationModal from "@/components/ConsultationModal";
@@ -8,6 +9,7 @@ import LeadModal from "@/components/LeadModal";
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [engineVersion, setEngineVersion] = useState<number | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
   const [consultOpen, setConsultOpen] = useState(false);
   const [leadOpen, setLeadOpen] = useState(false);
@@ -21,6 +23,19 @@ export default function Navbar() {
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  useEffect(() => {
+    supabase
+      .from("engine_config")
+      .select("version")
+      .eq("config_key", "analysis_prompt")
+      .order("version", { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setEngineVersion(data.version);
+      });
   }, []);
 
   const menuItems = [
@@ -42,7 +57,9 @@ export default function Navbar() {
                 <span className="text-lg font-bold text-foreground tracking-tight">
                   SearchTune <span className="font-extrabold">OS</span>
                 </span>
-                <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide">v0.10.1-beta</span>
+                <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide">
+                  v0.11.0-beta{engineVersion !== null && ` · Engine v${engineVersion}`}
+                </span>
               </div>
             </Link>
             <span className="hidden sm:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent">Beta</span>
