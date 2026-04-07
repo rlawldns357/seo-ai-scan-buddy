@@ -145,6 +145,8 @@ Deno.serve(async (req) => {
     const systemPrompt = `당신은 SEO, AEO(Answer Engine Optimization), GEO(Generative Engine Optimization) 전문가이자 기술 블로그 작가입니다. 
 한국어로 블로그 글을 작성합니다. SearchTune OS라는 SEO/AEO/GEO 분석 도구의 블로그에 게시될 전문적인 콘텐츠를 생성하세요.
 
+중요: 오늘 날짜는 ${today}입니다. 현재 연도는 ${new Date().getFullYear()}년입니다. 모든 콘텐츠는 반드시 ${new Date().getFullYear()}년 기준으로 작성하세요. 2024년, 2025년 등 과거 연도를 사용하지 마세요.
+
 규칙:
 1. 반드시 한국어로 작성
 2. 마크다운 형식 사용 (## 제목, ### 소제목, - 리스트, > 인용, **굵게**)
@@ -153,7 +155,8 @@ Deno.serve(async (req) => {
 5. 읽기 시간은 반드시 "2분", "3분", "4분" 중 하나로 설정 (절대 5분 이상 X)
 6. 마지막에 SearchTune OS 사용을 자연스럽게 권유하는 문구 포함
 7. 독창적인 인사이트와 구체적인 예시 포함
-8. 네이버와 구글 양쪽 검색엔진 모두 고려`;
+8. 네이버와 구글 양쪽 검색엔진 모두 고려
+9. 연도를 언급할 때는 반드시 ${new Date().getFullYear()}년을 사용`;
 
     const userPrompt = `주제: "${theme}" (카테고리: ${category})
 
