@@ -275,7 +275,7 @@ export default function BlogPost() {
     async function fetchFromDb() {
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content")
+        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content, og_image")
         .eq("slug", slug!)
         .eq("published", true)
         .single();
