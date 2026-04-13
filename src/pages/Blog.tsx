@@ -33,7 +33,82 @@ function isGooglePost(slug: string) {
   return slug.toLowerCase().includes("google") || slug.toLowerCase().includes("core-web-vitals") || slug.toLowerCase().includes("search-console");
 }
 
+function isChatGPTPost(slug: string) {
+  return slug.toLowerCase().includes("chatgpt") || slug.toLowerCase().includes("searchgpt") || slug.toLowerCase().includes("openai");
+}
+
+function isPerplexityPost(slug: string) {
+  return slug.toLowerCase().includes("perplexity");
+}
+
+function isClaudePost(slug: string) {
+  return slug.toLowerCase().includes("claude");
+}
+
+function isWrtnPost(slug: string) {
+  return slug.toLowerCase().includes("wrtn") || slug.toLowerCase().includes("뤼튼");
+}
+
 function getBrandThumbnail(slug: string, category: string) {
+  // ChatGPT vs Gemini → show both logos
+  if (slug.includes("chatgpt") && slug.includes("gemini")) {
+    return (
+      <div className="flex flex-col items-center gap-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xl font-bold" style={{ fontFamily: "'Poppins', sans-serif", color: "#10A37F" }}>ChatGPT</span>
+          <span className="text-sm font-bold text-muted-foreground">vs</span>
+          <span className="text-xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
+            <span style={{ color: "#4285F4" }}>G</span><span style={{ color: "#EA4335" }}>e</span><span style={{ color: "#FBBC05" }}>m</span><span style={{ color: "#4285F4" }}>i</span><span style={{ color: "#34A853" }}>n</span><span style={{ color: "#EA4335" }}>i</span>
+          </span>
+        </div>
+        <span className="text-[10px] font-semibold text-muted-foreground">AI Platform AEO</span>
+      </div>
+    );
+  }
+  if (isChatGPTPost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-3xl font-bold" style={{ fontFamily: "'Poppins', sans-serif", color: "#10A37F" }}>ChatGPT</span>
+        <span className="text-xs font-semibold text-muted-foreground">OpenAI SEO</span>
+      </div>
+    );
+  }
+  if (isPerplexityPost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", color: "#20808D" }}>Perplexity</span>
+        <span className="text-xs font-semibold text-muted-foreground">AI Search</span>
+      </div>
+    );
+  }
+  if (isClaudePost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", color: "#D4A574" }}>Claude</span>
+        <span className="text-xs font-semibold text-muted-foreground">Anthropic AI</span>
+      </div>
+    );
+  }
+  if (isWrtnPost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-3xl font-black tracking-tight" style={{ color: "#5B4FFF" }}>뤼튼</span>
+        <span className="text-xs font-semibold text-muted-foreground">Wrtn AEO</span>
+      </div>
+    );
+  }
+  if (slug.includes("ai-overview")) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center gap-1">
+          <span className="text-2xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
+            <span style={{ color: "#4285F4" }}>G</span><span style={{ color: "#EA4335" }}>o</span><span style={{ color: "#FBBC05" }}>o</span><span style={{ color: "#4285F4" }}>g</span><span style={{ color: "#34A853" }}>l</span><span style={{ color: "#EA4335" }}>e</span>
+          </span>
+        </div>
+        <span className="text-xs font-semibold text-muted-foreground">AI Overview</span>
+      </div>
+    );
+  }
   if (isGooglePost(slug)) {
     return (
       <div className="flex flex-col items-center gap-1">
@@ -129,8 +204,6 @@ function FeaturedPost({ post }: { post: BlogPost }) {
 }
 
 function PostCard({ post }: { post: BlogPost }) {
-  const naver = isNaverPost(post.slug);
-
   return (
     <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
       <div className="aspect-[16/9] bg-gradient-to-br from-muted to-secondary flex items-center justify-center relative">
