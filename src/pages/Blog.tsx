@@ -81,7 +81,7 @@ function getBrandThumbnail(slug: string, category: string) {
   // 뤼튼 / Wrtn
   if (isWrtnPost(slug)) {
     return (
-      <span className="text-3xl font-black tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: "#FF6B00", letterSpacing: "-0.02em" }}>뤼튼</span>
+      <span className="text-3xl font-black tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: "#FF6B00", letterSpacing: "-0.02em" }}>wrtn</span>
     );
   }
   // Google AI Overview
