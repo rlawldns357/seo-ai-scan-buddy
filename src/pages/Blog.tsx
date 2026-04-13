@@ -58,9 +58,14 @@ function getBrandThumbnail(slug: string, category: string) {
     );
   }
   return (
-    <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent opacity-60">
-      {category}
-    </span>
+    <div className="flex flex-col items-center gap-1">
+      <span className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent tracking-tight leading-none">
+        SearchTune
+      </span>
+      <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/70">
+        OS · {category}
+      </span>
+    </div>
   );
 }
 
