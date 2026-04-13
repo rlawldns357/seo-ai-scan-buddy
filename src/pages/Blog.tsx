@@ -37,7 +37,7 @@ function getBrandThumbnail(slug: string, category: string) {
   if (isGooglePost(slug)) {
     return (
       <div className="flex flex-col items-center gap-1">
-        <span className="text-3xl font-black tracking-tight">
+        <span className="text-3xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
           <span style={{ color: "#4285F4" }}>G</span>
           <span style={{ color: "#EA4335" }}>o</span>
           <span style={{ color: "#FBBC05" }}>o</span>
