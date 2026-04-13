@@ -266,8 +266,15 @@ export default function Blog() {
       </main>
 
       <footer className="border-t border-border py-10 mt-16">
-        <div className="container text-center text-sm text-muted-foreground">
-          © {new Date().getFullYear()} SearchTune OS. All rights reserved.
+        <div className="container text-center text-sm text-muted-foreground space-y-2">
+          <div className="flex items-center justify-center gap-4">
+            <Link to="/privacy" className="hover:text-foreground transition-colors">개인정보처리방침</Link>
+            <span>·</span>
+            <Link to="/terms" className="hover:text-foreground transition-colors">이용약관</Link>
+            <span>·</span>
+            <Link to="/about" className="hover:text-foreground transition-colors">소개</Link>
+          </div>
+          <p>© {new Date().getFullYear()} SearchTune OS. All rights reserved.</p>
         </div>
       </footer>
     </div>
