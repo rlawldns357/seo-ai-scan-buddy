@@ -50,107 +50,112 @@ function isWrtnPost(slug: string) {
 }
 
 function getBrandThumbnail(slug: string, category: string) {
-  // ChatGPT vs Gemini → show both logos
+  // ChatGPT vs Gemini → dual logo
   if (slug.includes("chatgpt") && slug.includes("gemini")) {
     return (
-      <div className="flex flex-col items-center gap-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-xl font-bold" style={{ fontFamily: "'Poppins', sans-serif", color: "#10A37F" }}>ChatGPT</span>
-          <span className="text-sm font-bold text-muted-foreground">vs</span>
+      <div className="flex flex-col items-center gap-2">
+        <div className="flex items-center gap-3">
+          <span className="text-xl font-semibold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: "#1A1A1A" }}>ChatGPT</span>
+          <span className="text-xs font-medium text-muted-foreground/60">vs</span>
           <span className="text-xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
             <span style={{ color: "#4285F4" }}>G</span><span style={{ color: "#EA4335" }}>e</span><span style={{ color: "#FBBC05" }}>m</span><span style={{ color: "#4285F4" }}>i</span><span style={{ color: "#34A853" }}>n</span><span style={{ color: "#EA4335" }}>i</span>
           </span>
         </div>
-        <span className="text-[10px] font-semibold text-muted-foreground">AI Platform AEO</span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">AI Platform Comparison</span>
       </div>
     );
   }
+  // OpenAI / ChatGPT – 2025 rebrand: clean dark wordmark, Inter-like sans
   if (isChatGPTPost(slug)) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-3xl font-bold" style={{ fontFamily: "'Poppins', sans-serif", color: "#10A37F" }}>ChatGPT</span>
-        <span className="text-xs font-semibold text-muted-foreground">OpenAI SEO</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: "#1A1A1A" }}>ChatGPT</span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">OpenAI</span>
       </div>
     );
   }
+  // Perplexity – FK Grotesk Neue → closest: Space Grotesk, teal brand
   if (isPerplexityPost(slug)) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", color: "#20808D" }}>Perplexity</span>
-        <span className="text-xs font-semibold text-muted-foreground">AI Search</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-3xl tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 500, color: "#1B1B1B", letterSpacing: "-0.03em" }}>Perplexity</span>
+        <span className="text-[10px] font-medium tracking-wider uppercase" style={{ color: "#20808D" }}>AI Search</span>
       </div>
     );
   }
+  // Claude / Anthropic – warm, understated, serif-like feel via DM Sans
   if (isClaudePost(slug)) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-3xl font-bold tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", color: "#D4A574" }}>Claude</span>
-        <span className="text-xs font-semibold text-muted-foreground">Anthropic AI</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-3xl tracking-tight" style={{ fontFamily: "'DM Sans', sans-serif", fontWeight: 500, color: "#CC785C", letterSpacing: "-0.02em" }}>claude</span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">Anthropic</span>
       </div>
     );
   }
+  // 뤼튼 / Wrtn – purple brand
   if (isWrtnPost(slug)) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-3xl font-black tracking-tight" style={{ color: "#5B4FFF" }}>뤼튼</span>
-        <span className="text-xs font-semibold text-muted-foreground">Wrtn AEO</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <div className="flex items-baseline gap-1">
+          <span className="text-3xl font-bold tracking-tight" style={{ color: "#6C5CE7" }}>뤼튼</span>
+          <span className="text-lg font-medium tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif", color: "#6C5CE7", opacity: 0.7 }}>wrtn</span>
+        </div>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">Korean AI</span>
       </div>
     );
   }
+  // Google AI Overview
   if (slug.includes("ai-overview")) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <div className="flex items-center gap-1">
-          <span className="text-2xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
-            <span style={{ color: "#4285F4" }}>G</span><span style={{ color: "#EA4335" }}>o</span><span style={{ color: "#FBBC05" }}>o</span><span style={{ color: "#4285F4" }}>g</span><span style={{ color: "#34A853" }}>l</span><span style={{ color: "#EA4335" }}>e</span>
-          </span>
-        </div>
-        <span className="text-xs font-semibold text-muted-foreground">AI Overview</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-2xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
+          <span style={{ color: "#4285F4" }}>G</span><span style={{ color: "#EA4335" }}>o</span><span style={{ color: "#FBBC05" }}>o</span><span style={{ color: "#4285F4" }}>g</span><span style={{ color: "#34A853" }}>l</span><span style={{ color: "#EA4335" }}>e</span>
+        </span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">AI Overview</span>
       </div>
     );
   }
+  // Google
   if (isGooglePost(slug)) {
     return (
-      <div className="flex flex-col items-center gap-1">
+      <div className="flex flex-col items-center gap-1.5">
         <span className="text-3xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
-          <span style={{ color: "#4285F4" }}>G</span>
-          <span style={{ color: "#EA4335" }}>o</span>
-          <span style={{ color: "#FBBC05" }}>o</span>
-          <span style={{ color: "#4285F4" }}>g</span>
-          <span style={{ color: "#34A853" }}>l</span>
-          <span style={{ color: "#EA4335" }}>e</span>
+          <span style={{ color: "#4285F4" }}>G</span><span style={{ color: "#EA4335" }}>o</span><span style={{ color: "#FBBC05" }}>o</span><span style={{ color: "#4285F4" }}>g</span><span style={{ color: "#34A853" }}>l</span><span style={{ color: "#EA4335" }}>e</span>
         </span>
-        <span className="text-xs font-semibold text-muted-foreground">Google SEO</span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">Google SEO</span>
       </div>
     );
   }
+  // Naver
   if (isNaverPost(slug)) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-3xl font-black" style={{ color: "#03C75A" }}>NAVER</span>
-        <span className="text-xs font-semibold text-muted-foreground">Naver SEO</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-3xl font-extrabold tracking-tight" style={{ color: "#03C75A" }}>NAVER</span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">Naver SEO</span>
       </div>
     );
   }
+  // Cafe24
   if (isCafe24Post(slug)) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-3xl font-black tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-          <span style={{ color: "#1B1B1B" }}>CAFE</span>
-          <span style={{ color: "#0066BE" }}>24</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-3xl font-bold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
+          <span style={{ color: "#1B1B1B" }}>cafe</span><span style={{ color: "#0066BE" }}>24</span>
         </span>
-        <span className="text-xs font-semibold text-muted-foreground">Cafe24 SEO</span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">Cafe24 SEO</span>
       </div>
     );
   }
+  // imweb
   if (isImwebPost(slug)) {
     return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-3xl font-black tracking-tight" style={{ color: "#1A1A1A" }}>imweb</span>
-        <span className="text-xs font-semibold text-muted-foreground">아임웹 SEO</span>
+      <div className="flex flex-col items-center gap-1.5">
+        <span className="text-3xl font-bold tracking-tight" style={{ color: "#1A1A1A" }}>imweb</span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">아임웹 SEO</span>
       </div>
     );
   }
+  // Default: SearchTune OS
   return (
     <div className="flex flex-col items-center gap-1">
       <span className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent tracking-tight leading-none">
