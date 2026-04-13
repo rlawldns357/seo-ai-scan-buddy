@@ -49,7 +49,7 @@ function isWrtnPost(slug: string) {
   return slug.toLowerCase().includes("wrtn") || slug.toLowerCase().includes("뤼튼");
 }
 
-function getBrandThumbnail(slug: string, category: string, title: string) {
+function getBrandThumbnail(slug: string, category: string) {
   // ChatGPT vs Gemini → show both logos
   if (slug.includes("chatgpt") && slug.includes("gemini")) {
     return (
@@ -204,8 +204,6 @@ function FeaturedPost({ post }: { post: BlogPost }) {
 }
 
 function PostCard({ post }: { post: BlogPost }) {
-  const naver = isNaverPost(post.slug);
-
   return (
     <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
       <div className="aspect-[16/9] bg-gradient-to-br from-muted to-secondary flex items-center justify-center relative">
