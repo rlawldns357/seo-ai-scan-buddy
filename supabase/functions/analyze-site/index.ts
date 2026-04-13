@@ -277,6 +277,7 @@ ${links.slice(0, 20).join("\n")}
       },
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
+        temperature: 0,
         messages: [
           { role: "system", content: ANALYSIS_PROMPT },
           { role: "user", content: analysisInput },
