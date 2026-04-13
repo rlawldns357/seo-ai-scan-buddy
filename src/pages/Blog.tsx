@@ -29,7 +29,26 @@ function isImwebPost(slug: string) {
   return slug.toLowerCase().includes("imweb");
 }
 
+function isGooglePost(slug: string) {
+  return slug.toLowerCase().includes("google") || slug.toLowerCase().includes("core-web-vitals") || slug.toLowerCase().includes("search-console");
+}
+
 function getBrandThumbnail(slug: string, category: string) {
+  if (isGooglePost(slug)) {
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <span className="text-3xl font-black tracking-tight">
+          <span style={{ color: "#4285F4" }}>G</span>
+          <span style={{ color: "#EA4335" }}>o</span>
+          <span style={{ color: "#FBBC05" }}>o</span>
+          <span style={{ color: "#4285F4" }}>g</span>
+          <span style={{ color: "#34A853" }}>l</span>
+          <span style={{ color: "#EA4335" }}>e</span>
+        </span>
+        <span className="text-xs font-semibold text-muted-foreground">Google SEO</span>
+      </div>
+    );
+  }
   if (isNaverPost(slug)) {
     return (
       <div className="flex flex-col items-center gap-1">
