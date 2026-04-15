@@ -256,6 +256,11 @@ async function main() {
     fs.writeFileSync(path.join(blogListDir, "index.html"), listHtml, "utf-8");
   }
 
+  // Generate /rss.xml
+  const rssXml = generateRssXml(allPosts);
+  fs.writeFileSync(path.join(DIST, "rss.xml"), rssXml, "utf-8");
+  console.log("[prerender] rss.xml generated");
+
   console.log(`[prerender] Done! ${allPosts.length} pages generated.`);
 }
 
