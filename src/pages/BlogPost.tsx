@@ -387,17 +387,29 @@ export default function BlogPost() {
         <title>{postTitle}</title>
         <meta name="description" content={post.excerpt} />
         <link rel="canonical" href={postUrl} />
+        {/* Naver-specific meta */}
+        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+        <meta name="date" content={post.date} />
+        <meta name="author" content={post.author} />
         <meta property="og:title" content={postTitle} />
         <meta property="og:description" content={post.excerpt} />
         <meta property="og:url" content={postUrl} />
         <meta property="og:type" content="article" />
         <meta property="og:image" content={ogImage} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:site_name" content="서치튠OS" />
+        <meta property="og:locale" content="ko_KR" />
         <meta property="article:published_time" content={post.date} />
+        <meta property="article:modified_time" content={post.date} />
         <meta property="article:author" content={post.author} />
         <meta property="article:section" content={post.category} />
+        <meta property="article:tag" content={`${post.category},SEO,AEO,GEO,검색최적화,서치튠OS`} />
+        <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={postTitle} />
         <meta name="twitter:description" content={post.excerpt} />
         <meta name="twitter:image" content={ogImage} />
+        <link rel="alternate" type="application/rss+xml" title="서치튠OS 블로그 RSS" href="https://searchtuneos.com/rss.xml" />
         <script type="application/ld+json">{JSON.stringify({
           "@context": "https://schema.org",
           "@type": "BreadcrumbList",
