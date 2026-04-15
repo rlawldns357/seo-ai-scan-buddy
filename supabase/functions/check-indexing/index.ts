@@ -74,13 +74,15 @@ Deno.serve(async (req) => {
     const domainData = await domainRes.json();
     const exactData = await exactRes.json();
 
-    // Count results
-    const domainResults = domainData?.data?.length || 0;
-    const exactResults = exactData?.data?.length || 0;
+    // Firecrawl search returns { success, data: [...] } or may vary
+    const domainList: any[] = Array.isArray(domainData?.data) ? domainData.data : [];
+    const exactList: any[] = Array.isArray(exactData?.data) ? exactData.data : [];
+    const domainResults = domainList.length;
+    const exactResults = exactList.length;
 
     // Check if exact URL appears in domain results
     const normalizedUrl = url.replace(/\/$/, "").toLowerCase();
-    const exactMatch = (domainData?.data || []).some(
+    const exactMatch = domainList.some(
       (r: any) => r.url?.replace(/\/$/, "").toLowerCase() === normalizedUrl,
     ) || exactResults > 0;
 
@@ -91,7 +93,7 @@ Deno.serve(async (req) => {
           domainIndexed: domainResults > 0,
           domainPages: domainResults,
           urlIndexed: exactMatch,
-          topResults: (domainData?.data || []).slice(0, 3).map((r: any) => ({
+          topResults: domainList.slice(0, 3).map((r: any) => ({
             title: r.title,
             url: r.url,
           })),
