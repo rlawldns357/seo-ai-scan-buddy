@@ -256,6 +256,11 @@ async function main() {
     fs.writeFileSync(path.join(blogListDir, "index.html"), listHtml, "utf-8");
   }
 
+  // Generate /rss.xml
+  const rssXml = generateRssXml(allPosts);
+  fs.writeFileSync(path.join(DIST, "rss.xml"), rssXml, "utf-8");
+  console.log("[prerender] rss.xml generated");
+
   console.log(`[prerender] Done! ${allPosts.length} pages generated.`);
 }
 
@@ -301,3 +306,33 @@ function generateBlogListHtml(posts, assets) {
 }
 
 main().catch(console.error);
+
+// ── 8. RSS XML generator ───────────────────────────────────────────
+function generateRssXml(posts) {
+  const items = posts.map(p => {
+    const url = `${SITE}/blog/${p.slug}`;
+    const pubDate = new Date(p.date).toUTCString();
+    return `    <item>
+      <title><![CDATA[${p.title}]]></title>
+      <link>${url}</link>
+      <guid>${url}</guid>
+      <pubDate>${pubDate}</pubDate>
+      <description><![CDATA[${p.excerpt}]]></description>
+      <category>${p.category || "SEO"}</category>
+      <author>${p.author || "서치튠 블로거"}</author>
+    </item>`;
+  }).join("\n");
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>서치튠OS 블로그 – SEO·AEO·GEO 실전 가이드</title>
+    <link>${SITE}/blog</link>
+    <description>SEO, AEO, GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트.</description>
+    <language>ko</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${SITE}/rss.xml" rel="self" type="application/rss+xml" />
+${items}
+  </channel>
+</rss>`;
+}
