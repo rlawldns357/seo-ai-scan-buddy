@@ -7,6 +7,9 @@ export interface IndexingResult {
   };
   naver: {
     checkUrl: string;
+    domainFound: boolean;
+    resultCount: number;
+    topResults: { title: string; url: string }[];
   };
 }
 
