@@ -319,7 +319,7 @@ function generateRssXml(posts) {
       <pubDate>${pubDate}</pubDate>
       <description><![CDATA[${p.excerpt}]]></description>
       <category>${p.category || "SEO"}</category>
-      <author>${p.author || "서치튠 블로거"}</author>
+      <author>hello@searchtuneos.com (${p.author || "서치튠 블로거"})</author>
     </item>`;
   }).join("\n");
 
