@@ -1,5 +1,3 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -7,6 +5,7 @@ const corsHeaders = {
 };
 
 const FIRECRAWL_V2 = "https://api.firecrawl.dev/v2";
+const NAVER_SEARCH_API = "https://openapi.naver.com/v1/search/webkr.json";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -41,8 +40,14 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Run Google search for site:domain and site:exact-url in parallel
-    const [domainRes, exactRes] = await Promise.all([
+    // Naver API credentials (optional — graceful fallback if not set)
+    const naverClientId = Deno.env.get("NAVER_CLIENT_ID");
+    const naverClientSecret = Deno.env.get("NAVER_CLIENT_SECRET");
+    const hasNaverApi = !!(naverClientId && naverClientSecret);
+
+    // Build parallel requests
+    const promises: Promise<Response>[] = [
+      // Google: site:domain
       fetch(`${FIRECRAWL_V2}/search`, {
         method: "POST",
         headers: {
@@ -56,6 +61,7 @@ Deno.serve(async (req) => {
           country: "KR",
         }),
       }),
+      // Google: site:exact-url
       fetch(`${FIRECRAWL_V2}/search`, {
         method: "POST",
         headers: {
@@ -69,22 +75,93 @@ Deno.serve(async (req) => {
           country: "KR",
         }),
       }),
-    ]);
+    ];
 
-    const domainData = await domainRes.json();
-    const exactData = await exactRes.json();
+    // Naver search (if credentials available)
+    if (hasNaverApi) {
+      const naverQuery = encodeURIComponent(domain);
+      promises.push(
+        fetch(`${NAVER_SEARCH_API}?query=${naverQuery}&display=10&start=1`, {
+          method: "GET",
+          headers: {
+            "X-Naver-Client-Id": naverClientId!,
+            "X-Naver-Client-Secret": naverClientSecret!,
+          },
+        }),
+      );
+    }
 
-    // Firecrawl search returns { success, data: [...] } or may vary
+    const responses = await Promise.all(promises);
+    const domainData = await responses[0].json();
+    const exactData = await responses[1].json();
+
+    // Google results
     const domainList: any[] = Array.isArray(domainData?.data) ? domainData.data : [];
     const exactList: any[] = Array.isArray(exactData?.data) ? exactData.data : [];
     const domainResults = domainList.length;
     const exactResults = exactList.length;
 
-    // Check if exact URL appears in domain results
     const normalizedUrl = url.replace(/\/$/, "").toLowerCase();
     const exactMatch = domainList.some(
       (r: any) => r.url?.replace(/\/$/, "").toLowerCase() === normalizedUrl,
     ) || exactResults > 0;
+
+    // Naver results
+    let naverResult: {
+      checkUrl: string;
+      domainFound: boolean;
+      resultCount: number;
+      topResults: { title: string; url: string }[];
+    };
+
+    const naverCheckUrl = `https://search.naver.com/search.naver?query=site%3A${encodeURIComponent(domain)}`;
+
+    if (hasNaverApi && responses[2]) {
+      try {
+        const naverData = await responses[2].json();
+        const items: any[] = Array.isArray(naverData?.items) ? naverData.items : [];
+
+        // Filter results that contain the domain in the link
+        const domainMatches = items.filter(
+          (item: any) => {
+            try {
+              const itemHost = new URL(item.link).hostname;
+              return itemHost === domain || itemHost.endsWith(`.${domain}`);
+            } catch {
+              return false;
+            }
+          }
+        );
+
+        // Strip HTML tags from title
+        const stripHtml = (str: string) => str?.replace(/<[^>]*>/g, "") || "";
+
+        naverResult = {
+          checkUrl: naverCheckUrl,
+          domainFound: domainMatches.length > 0,
+          resultCount: domainMatches.length,
+          topResults: domainMatches.slice(0, 3).map((item: any) => ({
+            title: stripHtml(item.title),
+            url: item.link,
+          })),
+        };
+      } catch (e) {
+        console.error("Naver API parse error:", e);
+        naverResult = {
+          checkUrl: naverCheckUrl,
+          domainFound: false,
+          resultCount: 0,
+          topResults: [],
+        };
+      }
+    } else {
+      naverResult = {
+        checkUrl: naverCheckUrl,
+        domainFound: false,
+        resultCount: 0,
+        topResults: [],
+      };
+    }
 
     return new Response(
       JSON.stringify({
@@ -98,9 +175,7 @@ Deno.serve(async (req) => {
             url: r.url,
           })),
         },
-        naver: {
-          checkUrl: `https://search.naver.com/search.naver?query=site%3A${encodeURIComponent(domain)}`,
-        },
+        naver: naverResult,
       }),
       {
         status: 200,

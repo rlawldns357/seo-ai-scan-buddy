@@ -62,6 +62,17 @@ const IndexingStatus = ({ result, loading, url }: IndexingStatusProps) => {
               ? `도메인에서 약 ${result.google.domainPages}개 이상의 페이지가 발견됨`
               : "구글에서 이 도메인의 페이지가 발견되지 않았습니다"}
           </p>
+          {result.google.topResults.length > 0 && (
+            <ul className="space-y-0.5">
+              {result.google.topResults.map((r, i) => (
+                <li key={i} className="text-xs text-muted-foreground truncate">
+                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                    {r.title || r.url}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
           <a
             href={`https://www.google.com/search?q=site:${encodeURIComponent(domain)}`}
             target="_blank"
@@ -79,13 +90,41 @@ const IndexingStatus = ({ result, loading, url }: IndexingStatusProps) => {
               <Search className="w-3.5 h-3.5" />
               네이버
             </span>
-            <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
-              수동 확인
-            </span>
+            {result.naver.domainFound ? (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-score-excellent">
+                <CheckCircle className="w-3.5 h-3.5" />
+                노출 확인
+              </span>
+            ) : result.naver.resultCount === 0 && result.naver.topResults.length === 0 ? (
+              <span className="inline-flex items-center gap-1 text-xs font-semibold text-score-poor">
+                <XCircle className="w-3.5 h-3.5" />
+                미노출
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                수동 확인
+              </span>
+            )}
           </div>
           <p className="text-xs text-muted-foreground">
-            네이버는 API 제한으로 자동 확인이 어렵습니다. 아래 링크에서 직접 확인해 주세요.
+            {result.naver.domainFound
+              ? `네이버에서 ${result.naver.resultCount}건의 관련 결과가 발견됨`
+              : "네이버 검색에서 이 도메인의 페이지가 발견되지 않았습니다"}
           </p>
+          <p className="text-[10px] text-muted-foreground/60">
+            * 도메인명 키워드 검색 기반의 간접 확인 결과입니다
+          </p>
+          {result.naver.topResults.length > 0 && (
+            <ul className="space-y-0.5">
+              {result.naver.topResults.map((r, i) => (
+                <li key={i} className="text-xs text-muted-foreground truncate">
+                  <a href={r.url} target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">
+                    {r.title || r.url}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
           <a
             href={result.naver.checkUrl}
             target="_blank"
@@ -96,27 +135,6 @@ const IndexingStatus = ({ result, loading, url }: IndexingStatusProps) => {
           </a>
         </div>
       </div>
-
-      {/* Top indexed pages */}
-      {result.google.topResults.length > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-xs font-semibold text-muted-foreground">구글에 노출된 페이지</p>
-          <ul className="space-y-1">
-            {result.google.topResults.map((r, i) => (
-              <li key={i} className="text-xs text-muted-foreground truncate">
-                <a
-                  href={r.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors"
-                >
-                  {r.title || r.url}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 };
