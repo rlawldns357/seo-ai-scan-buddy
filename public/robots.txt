@@ -35,4 +35,3 @@ User-agent: *
 Allow: /
 
 Sitemap: https://searchtuneos.com/sitemap.xml
-Sitemap: https://dmnrbmarbvirtymhszww.supabase.co/functions/v1/sitemap
