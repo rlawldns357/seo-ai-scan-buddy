@@ -1,56 +1,63 @@
 
 
-## 서치튠OS 자체 진단 피드백 반영 계획
+# 네이버 OpenAPI 검색 연동 계획
 
-서치튠OS가 스스로를 분석한 4가지 피드백을 반영합니다.
+## 개요
+`check-indexing` Edge Function에 네이버 검색 API(웹문서 검색)를 추가하여, 도메인명으로 검색했을 때 결과가 나오는지 자동으로 확인합니다. `site:` 연산자는 지원되지 않으므로 도메인명 자체를 키워드로 검색하고, 결과 중 해당 도메인의 URL이 포함되어 있는지를 간접적으로 판단합니다.
 
----
+## 사전 준비 (사용자 액션 필요)
 
-### 1. 간결한 서술 방식 (About 페이지 + FaqSection)
+네이버 OpenAPI 사용을 위해 **NAVER_CLIENT_ID**와 **NAVER_CLIENT_SECRET** 2개의 시크릿이 필요합니다.
 
-**현재**: About 페이지의 설명 문단이 길고 산만하여 AI가 요약하기 어려움
+발급 방법:
+1. [네이버 개발자센터](https://developers.naver.com/apps/) 접속
+2. 애플리케이션 등록 → **검색 API** 선택
+3. 발급된 Client ID와 Client Secret을 Lovable에 등록
 
-**변경**:
-- About.tsx의 각 설명 문단 첫 문장을 **한 줄 직접 답변** 형태로 재작성
-- 예: "왜 SEO만으로는 부족한가요?" → 첫 문장을 "AI 검색엔진이 기존 검색 결과를 대체하고 있기 때문입니다." 같은 명확한 답변으로 시작
-- FAQ 답변도 핵심 한 문장을 앞에 배치하는 구조로 정리
+## 변경 사항
 
-### 2. 엔티티 정의 강화 (About 페이지 + JSON-LD)
+### 1. Edge Function 수정 (`supabase/functions/check-indexing/index.ts`)
+- 네이버 검색 API 호출 추가 (Google 검색과 병렬 실행)
+- 엔드포인트: `https://openapi.naver.com/v1/search/webkr.json?query={domain}&display=5`
+- 헤더: `X-Naver-Client-Id`, `X-Naver-Client-Secret`
+- 결과에서 해당 도메인 URL 포함 여부를 판단하여 `domainFound`, `resultCount`, `topResults` 반환
+- 네이버 API 키가 없는 경우에도 기존 수동 확인 링크를 fallback으로 유지
 
-**현재**: "서치튠OS"가 무엇인지에 대한 명확한 정의 문장이 About 상단에 없음
+### 2. 타입 업데이트 (`src/lib/checkIndexing.ts`)
+```text
+naver: {
+  checkUrl: string;
+  domainFound: boolean;     // 추가
+  resultCount: number;      // 추가
+  topResults: { title: string; url: string }[];  // 추가
+}
+```
 
-**변경**:
-- About.tsx 상단에 **엔티티 정의 문단** 추가: "서치튠OS(SearchTune OS)는 2025년 출시된 한국어 기반 AI 검색 진단 도구로, URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다."
-- JSON-LD의 SoftwareApplication에 `datePublished`, `author`, `featureList` 등 누락된 속성 보강
-- index.html의 Organization JSON-LD에 `foundingDate`, `description` 추가
+### 3. UI 업데이트 (`src/components/IndexingStatus.tsx`)
+- 네이버 섹션을 Google과 동일한 패턴으로 변경:
+  - 자동 결과가 있으면: "노출 중" / "미노출" 배지 표시
+  - `topResults` 목록 표시
+  - 여전히 "직접 확인" 링크도 유지
+- 네이버 API 미설정 시 기존 "수동 확인" UI 유지 (graceful fallback)
 
-### 3. robots.txt AI 크롤러 정책 (이미 완료 확인)
+## 응답 구조 변경
 
-**현재**: robots.txt에 GPTBot, OAI-SearchBot 등 AI 크롤러가 **이미 명시적으로 Allow** 처리되어 있음
+```text
+{
+  success: true,
+  google: { ... },           // 기존과 동일
+  naver: {
+    checkUrl: "...",          // 기존 유지
+    domainFound: true,        // 신규: 도메인이 결과에 포함됨
+    resultCount: 3,           // 신규: 매칭된 결과 수
+    topResults: [             // 신규: 상위 결과
+      { title: "...", url: "..." }
+    ]
+  }
+}
+```
 
-**변경**: 추가 AI 크롤러 3종 보강
-- `Google-Extended` (Google AI 학습용)
-- `PerplexityBot`
-- `ClaudeBot`
-
-### 4. 출처·데이터·업데이트 날짜 추가
-
-**현재**: About 페이지와 메인 페이지에 통계나 업데이트 날짜가 없음
-
-**변경**:
-- About.tsx에 "마지막 엔진 업데이트: 2026년 4월" 같은 날짜 표기 추가
-- "Google Lighthouse v12 기준", "Schema.org 2024 표준 기반" 등 구체적 출처/버전 명시
-- index.html의 SoftwareApplication JSON-LD에 `softwareVersion`, `dateModified` 추가
-
----
-
-### 수정 대상 파일
-
-| 파일 | 변경 내용 |
-|------|----------|
-| `src/pages/About.tsx` | 엔티티 정의 문단 추가, 설명 문단 간결화, 업데이트 날짜·출처 명시 |
-| `src/components/FaqSection.tsx` | FAQ 답변 첫 문장을 직접 답변 구조로 개선 |
-| `src/components/JsonLd.tsx` | SoftwareApplication에 datePublished, featureList, softwareVersion 추가 |
-| `index.html` | Organization에 foundingDate/description, SoftwareApplication에 dateModified 추가 |
-| `public/robots.txt` | Google-Extended, PerplexityBot, ClaudeBot Allow 추가 |
+## 기술 참고
+- 네이버 검색 API는 `site:` 연산자를 지원하지 않으므로, 도메인명(예: `searchtuneos.com`)을 키워드로 검색 후 결과 URL에 해당 도메인이 포함되는지 필터링하는 간접 방식
+- 정확한 인덱싱 확인이 아닌 "노출 힌트" 수준임을 UI에 표기
 
