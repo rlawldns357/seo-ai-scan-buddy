@@ -13,6 +13,7 @@ import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
 import { type RateLimitStatus } from "@/lib/rateLimit";
 import type { AnalysisPhase } from "@/components/LoadingScreen";
+import type { IndexingResult } from "@/lib/checkIndexing";
 
 // Lazy-load heavy components only needed for loading/result screens
 const ScoreDashboard = lazy(() => import("@/components/ScoreDashboard"));
@@ -24,6 +25,7 @@ const EmailForm = lazy(() => import("@/components/EmailForm"));
 const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
 const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
 const ScoreComparison = lazy(() => import("@/components/ScoreComparison"));
+const IndexingStatus = lazy(() => import("@/components/IndexingStatus"));
 
 
 type Screen = "home" | "loading" | "result";
@@ -55,6 +57,8 @@ const Index = () => {
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [indexingResult, setIndexingResult] = useState<IndexingResult | null>(null);
+  const [indexingLoading, setIndexingLoading] = useState(false);
   const isAdmin = sessionStorage.getItem("admin_pw") !== null;
 
   const runAnalysis = async (finalUrl: string) => {
@@ -86,6 +90,8 @@ const Index = () => {
     setAnalyzeError(null);
     setCompletedPhases(new Set());
     setLighthouseSkipped(skipLighthouse);
+    setIndexingResult(null);
+    setIndexingLoading(true);
     trackEvent("analysis_start", { skipLighthouse }, finalUrl);
 
     const addPhase = (phase: AnalysisPhase) =>
@@ -107,6 +113,14 @@ const Index = () => {
       addPhase("ai-analyzing");
       return res;
     });
+
+    // Check indexing status in parallel (fire-and-forget style)
+    import("@/lib/checkIndexing").then(({ checkIndexing }) =>
+      checkIndexing(finalUrl).then((r) => {
+        setIndexingResult(r);
+        setIndexingLoading(false);
+      }).catch(() => setIndexingLoading(false))
+    );
 
     const [psiResults, analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
     const [mobileRes, desktopRes] = psiResults;
@@ -350,6 +364,8 @@ const Index = () => {
               {result && <ScoreComparison url={normalizedUrl} currentResult={result} />}
 
               
+
+              <IndexingStatus result={indexingResult} loading={indexingLoading} url={normalizedUrl} />
 
               <VerificationLinks url={normalizedUrl} />
 
