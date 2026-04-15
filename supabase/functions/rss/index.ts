@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <description>${escXml(p.excerpt)}</description>
-      <author>${escXml(p.author)}</author>
+      <author>hello@searchtuneos.com (${escXml(p.author)})</author>
       <category>${escXml(p.category)}</category>
       <pubDate>${new Date(p.date).toUTCString()}</pubDate>
     </item>`;
