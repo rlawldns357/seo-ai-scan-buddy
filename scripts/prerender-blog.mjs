@@ -166,15 +166,25 @@ function generateHtml(post, assets) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(post.excerpt)}" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <meta name="date" content="${post.date}" />
+  <meta name="author" content="${esc(post.author)}" />
   <link rel="canonical" href="${postUrl}" />
+  <link rel="alternate" type="application/rss+xml" title="서치튠OS 블로그 RSS" href="${SITE}/rss.xml" />
   <meta property="og:title" content="${esc(title)}" />
   <meta property="og:description" content="${esc(post.excerpt)}" />
   <meta property="og:url" content="${postUrl}" />
   <meta property="og:type" content="article" />
   <meta property="og:image" content="${ogImage}" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:site_name" content="서치튠OS" />
   <meta property="og:locale" content="ko_KR" />
   <meta property="article:published_time" content="${post.date}" />
+  <meta property="article:modified_time" content="${post.date}" />
   <meta property="article:author" content="${esc(post.author)}" />
+  <meta property="article:section" content="${esc(post.category)}" />
+  <meta property="article:tag" content="${esc(post.category)},SEO,AEO,GEO,검색최적화,서치튠OS" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="${esc(title)}" />
   <meta name="twitter:description" content="${esc(post.excerpt)}" />
