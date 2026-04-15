@@ -35,3 +35,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://searchtuneos.com/sitemap.xml
+Sitemap: https://searchtuneos.com/rss.xml
