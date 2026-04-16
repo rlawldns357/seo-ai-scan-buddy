@@ -1,14 +1,13 @@
 
 
-# 플랜 파일 백업
-
-현재 `.lovable/plan.md`의 네이버 OpenAPI 연동 계획 내용을 `/mnt/documents/`에 백업 파일로 저장합니다.
+# Manyfast PRD 읽기
 
 ## 작업
-1. `.lovable/plan.md` 내용을 `/mnt/documents/plan-backup-naver-api.md`로 복사
+1. Manyfast MCP의 `read_project_list`로 프로젝트 목록 조회
+2. SearchTune OS 프로젝트를 찾아 `read_project`로 PRD 및 요구사항 상세 데이터 읽기
+3. 결과를 정리해서 보여주기
 
 ## 기술 상세
-- 원본: `.lovable/plan.md` (네이버 OpenAPI 검색 연동 계획)
-- 백업 위치: `/mnt/documents/plan-backup-naver-api.md`
-- 원본 파일은 그대로 유지
+- 사용 도구: `mcp_custom_hNJMS--read_project_list`, `mcp_custom_hNJMS--read_project`
+- 읽기 전용 작업이므로 코드 변경 없음
 
