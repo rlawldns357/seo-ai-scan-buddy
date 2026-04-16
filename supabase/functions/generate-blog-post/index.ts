@@ -135,7 +135,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const today = new Date().toISOString().slice(0, 10);
+    const today = getKSTDateString();
     const currentYear = new Date().getFullYear();
     const MAX_POSTS_PER_DAY = 2;
 
