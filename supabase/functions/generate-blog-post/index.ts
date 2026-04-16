@@ -83,8 +83,14 @@ const AUTHORS = [
   { name: "크롤링 마스터", title: "테크니컬 SEO 엔지니어", style: "기술적 깊이가 있는 글을 작성합니다. 코드 예시와 설정 가이드를 포함하며, 개발자와 SEO 담당자 모두를 위한 콘텐츠를 만듭니다." },
 ];
 
+function getKSTDateString(): string {
+  const now = new Date();
+  const kst = new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  return kst.toISOString().slice(0, 10);
+}
+
 function slugify(text: string): string {
-  const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const date = getKSTDateString().replace(/-/g, "");
   const base = text
     .toLowerCase()
     .replace(/[^a-z0-9가-힣\s-]/g, "")
