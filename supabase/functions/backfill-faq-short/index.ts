@@ -78,6 +78,7 @@ ${truncated}`;
     throw new Error(`Internal link count out of range (1-3): found ${internalLinks.length}`);
   }
   return result;
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
