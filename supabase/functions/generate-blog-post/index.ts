@@ -250,108 +250,149 @@ ${recentTitleList}
 - content: 본문 마크다운 (FAQ 제외, 표·숫자리스트·코드블록·내부링크 모두 포함)
 - faqs: 5-7개. 사용자가 실제 검색할 법한 구체적 질문 + 2-4문장의 명확한 답변(근거/예시 포함)`;
 
-    const response = await fetch(
-      "https://ai.gateway.lovable.dev/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          tools: [
-            {
-              type: "function",
-              function: {
-                name: "create_blog_post",
-                description: "Create a blog post with structured fields including FAQs",
-                parameters: {
-                  type: "object",
-                  properties: {
-                    title: { type: "string", description: "Blog post title in Korean" },
-                    excerpt: { type: "string", description: "2-3 sentence summary in Korean, max 160 chars" },
-                    readTime: { type: "string", enum: ["3분", "4분", "5분"], description: "Read time" },
-                    content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section" },
-                    faqs: {
-                      type: "array",
-                      description: "5-7 frequently asked questions related to the topic",
-                      items: {
-                        type: "object",
-                        properties: {
-                          question: { type: "string", description: "FAQ question in Korean" },
-                          answer: { type: "string", description: "FAQ answer in Korean, 2-3 sentences" },
+    // === Quality validators (네이버 C-Rank/D.I.A. 대응) ===
+    function validateQuality(content: string, faqs: any[]): string[] {
+      const issues: string[] = [];
+      const len = content.length;
+      if (len < 1500) issues.push(`본문이 너무 짧습니다(${len}자). 최소 1,500자 필요.`);
+      const h2Count = (content.match(/^##\s+/gm) || []).length;
+      if (h2Count < 4) issues.push(`H2(##) 개수가 부족합니다(${h2Count}개). 최소 4개 필요.`);
+      // 표 검증: |---| 구분선 또는 최소 2행 이상의 | 셀
+      const hasTable = /\n\s*\|[^\n]+\|\s*\n\s*\|[\s:|-]+\|/.test(content);
+      if (!hasTable) issues.push("마크다운 표(| ... |\\n|---|---|)가 없습니다. 비교/정리용 표 1개 이상 필요.");
+      // 숫자 리스트 검증 (연속 2개 이상)
+      const olMatches = content.match(/^\s*\d+\.\s+.+$/gm) || [];
+      if (olMatches.length < 2) issues.push(`숫자 리스트(1. 2. ...) 항목이 부족합니다(${olMatches.length}개). 2개 이상 필요.`);
+      // 코드블록 또는 인용 — 둘 중 하나라도 있어야 함
+      const hasCode = /```[\s\S]+?```/.test(content);
+      const hasQuote = /^>\s+/m.test(content);
+      if (!hasCode && !hasQuote) issues.push("코드블록(```) 또는 인용(>) 중 최소 1개가 필요합니다.");
+      // 내부 링크 (/, /blog, /about 등)
+      const hasInternalLink = /\]\(\/(blog|about)?[)#?]/.test(content) || /\]\(\/[^)]*\)/.test(content);
+      if (!hasInternalLink) issues.push("내부 링크([텍스트](/...)) 1개 이상 필요.");
+      // FAQ 개수
+      if (!faqs || faqs.length < 5) issues.push(`FAQ가 부족합니다(${faqs?.length || 0}개). 최소 5개 필요.`);
+      return issues;
+    }
+
+    async function callAI(extraInstruction = ""): Promise<any> {
+      const finalSystem = extraInstruction
+        ? `${systemPrompt}\n\n[이전 시도 피드백 — 반드시 보완]\n${extraInstruction}`
+        : systemPrompt;
+      const r = await fetch(
+        "https://ai.gateway.lovable.dev/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${LOVABLE_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            messages: [
+              { role: "system", content: finalSystem },
+              { role: "user", content: userPrompt },
+            ],
+            tools: [
+              {
+                type: "function",
+                function: {
+                  name: "create_blog_post",
+                  description: "Create a blog post with structured fields including FAQs",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      title: { type: "string", description: "Blog post title in Korean" },
+                      excerpt: { type: "string", description: "2-3 sentence summary in Korean, max 160 chars" },
+                      readTime: { type: "string", enum: ["3분", "4분", "5분"], description: "Read time" },
+                      content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section. MUST include table, numbered list, code/quote, internal link." },
+                      faqs: {
+                        type: "array",
+                        description: "5-7 frequently asked questions related to the topic",
+                        items: {
+                          type: "object",
+                          properties: {
+                            question: { type: "string", description: "FAQ question in Korean" },
+                            answer: { type: "string", description: "FAQ answer in Korean, 2-4 sentences with evidence/examples" },
+                          },
+                          required: ["question", "answer"],
+                          additionalProperties: false,
                         },
-                        required: ["question", "answer"],
-                        additionalProperties: false,
                       },
                     },
+                    required: ["title", "excerpt", "readTime", "content", "faqs"],
+                    additionalProperties: false,
                   },
-                  required: ["title", "excerpt", "readTime", "content", "faqs"],
-                  additionalProperties: false,
                 },
               },
-            },
-          ],
-          tool_choice: {
-            type: "function",
-            function: { name: "create_blog_post" },
-          },
-        }),
+            ],
+            tool_choice: { type: "function", function: { name: "create_blog_post" } },
+          }),
+        }
+      );
+
+      if (!r.ok) {
+        const errText = await r.text();
+        console.error("AI gateway error:", r.status, errText);
+        if (r.status === 429) throw new Error("RATE_LIMITED");
+        if (r.status === 402) throw new Error("CREDITS_EXHAUSTED");
+        throw new Error(`AI gateway returned ${r.status}`);
       }
-    );
+      const data = await r.json();
+      const tc = data.choices?.[0]?.message?.tool_calls?.[0];
+      if (!tc) throw new Error("No tool call in AI response");
+      return JSON.parse(tc.function.arguments);
+    }
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("AI gateway error:", response.status, errText);
-
-      if (response.status === 429) {
-        return new Response(
-          JSON.stringify({ error: "Rate limited, please try again later" }),
-          { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+    // === Generate with quality retry (max 2 retries = 3 attempts) ===
+    let args: any;
+    let issues: string[] = [];
+    let attempt = 0;
+    const MAX_ATTEMPTS = 3;
+    let lastFeedback = "";
+    while (attempt < MAX_ATTEMPTS) {
+      attempt++;
+      try {
+        args = await callAI(lastFeedback);
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        if (msg === "RATE_LIMITED") {
+          return new Response(JSON.stringify({ error: "Rate limited, please try again later" }),
+            { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        if (msg === "CREDITS_EXHAUSTED") {
+          return new Response(JSON.stringify({ error: "Credits exhausted" }),
+            { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        }
+        throw e;
       }
-      if (response.status === 402) {
-        return new Response(
-          JSON.stringify({ error: "Credits exhausted" }),
-          { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
+
+      // YEAR fix
+      const wrongYearPattern = /\b(2024|2025)\b년?/g;
+      if (wrongYearPattern.test(args.title)) {
+        args.title = args.title.replace(/\b(2024|2025)\b(년?)/g, `${currentYear}$2`);
       }
-      throw new Error(`AI gateway returned ${response.status}`);
+      if (wrongYearPattern.test(args.content)) {
+        args.content = args.content.replace(/\b(2024|2025)\b(년?)/g, `${currentYear}$2`);
+      }
+
+      // Validate
+      issues = validateQuality(args.content, args.faqs || []);
+      console.log(`[Attempt ${attempt}] quality issues:`, issues);
+      if (issues.length === 0) break;
+      if (attempt >= MAX_ATTEMPTS) {
+        console.warn(`Max attempts reached. Publishing with remaining issues: ${issues.join(" | ")}`);
+        break;
+      }
+      lastFeedback = "다음 항목들이 누락되어 재작성합니다. 반드시 모두 충족하세요:\n- " + issues.join("\n- ");
     }
 
-    const aiData = await response.json();
-    const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall) {
-      throw new Error("No tool call in AI response");
-    }
-
-    const args = JSON.parse(toolCall.function.arguments);
-
-    // === YEAR VALIDATION: replace wrong years in title/content ===
-    const wrongYearPattern = /\b(2024|2025)\b년?/g;
-    if (wrongYearPattern.test(args.title)) {
-      args.title = args.title.replace(/\b(2024|2025)\b(년?)/g, `${currentYear}$2`);
-      console.warn(`Fixed wrong year in title → ${args.title}`);
-    }
-    if (wrongYearPattern.test(args.content)) {
-      args.content = args.content.replace(/\b(2024|2025)\b(년?)/g, `${currentYear}$2`);
-      console.warn("Fixed wrong year references in content");
-    }
-
-    // Clean content: strip any FAQ the AI included + fix markdown artifacts
+    // Clean content
     let cleanedContent = stripFaqFromContent(args.content);
     cleanedContent = cleanMarkdownArtifacts(cleanedContent);
 
-    // === CONTENT LENGTH VALIDATION ===
     if (cleanedContent.length < 500) {
-      console.error(`Content too short (${cleanedContent.length} chars), likely truncated`);
-      throw new Error(`Generated content too short (${cleanedContent.length} chars). AI response may have been truncated.`);
+      throw new Error(`Generated content too short (${cleanedContent.length} chars).`);
     }
 
     // Append structured FAQ section
