@@ -324,9 +324,11 @@ function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev
   );
 }
 
+type FaqShort = { q: string; a: string };
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[] }) | null | undefined>(undefined);
+  const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
   // Fetch DB posts for nav
@@ -376,7 +378,7 @@ export default function BlogPost() {
     async function fetchFromDb() {
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content, og_image")
+        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content, og_image, faq_short")
         .eq("slug", slug!)
         .eq("published", true)
         .single();
@@ -388,7 +390,6 @@ export default function BlogPost() {
         if (faqMatch) {
           const faqSection = faqMatch[0];
           const qaPairs: FAQ[] = [];
-          // Split by Q markers (### Q., Q., ❓) — lookahead so we keep the marker
           const blocks = faqSection
             .replace(/^##\s+(?:자주 묻는 질문|FAQ)\s*/m, "")
             .split(/(?=(?:^|\n)\s*(?:###?\s*)?(?:Q[.:]\s*|❓\s*))/g)
@@ -396,7 +397,6 @@ export default function BlogPost() {
             .filter(Boolean);
 
           for (const block of blocks) {
-            // Match: optional ###, Q. <question>\n A. <answer> (rest)
             const m = block.match(/^(?:###?\s*)?(?:Q[.:]?\s*|❓\s*)([\s\S]+?)[\n\r]+(?:A[.:]?\s*|💡\s*)([\s\S]+)$/);
             if (m) {
               qaPairs.push({ question: m[1].trim(), answer: m[2].trim() });
@@ -404,9 +404,19 @@ export default function BlogPost() {
           }
           if (qaPairs.length > 0) {
             faqs = qaPairs;
-            // Strip FAQ section from content so it doesn't render as raw markdown blob
-            content = content.replace(/\n*##\s+(?:자주 묻는 질문|FAQ)[\s\S]*$/, "").trimEnd();
+            // Keep FAQ inside content for SEO body matching (Naver D.I.A.)
+            // — body markdown FAQ stays visible AS-IS
           }
+        }
+
+        // Parse faq_short (JSONB) — friendly-tone accordion below body
+        const rawFaqShort = (data as any).faq_short;
+        let faqShort: FaqShort[] | undefined;
+        if (Array.isArray(rawFaqShort)) {
+          faqShort = rawFaqShort
+            .filter((x: any) => x && typeof x.q === "string" && typeof x.a === "string")
+            .map((x: any) => ({ q: x.q, a: x.a }));
+          if (faqShort.length === 0) faqShort = undefined;
         }
 
         setPost({
@@ -421,6 +431,7 @@ export default function BlogPost() {
           readTime: data.read_time,
           content: content,
           faqs,
+          faqShort,
           ogImage: (data as any).og_image || undefined,
         });
       } else {
@@ -487,6 +498,7 @@ export default function BlogPost() {
   }
 
   const faqs = post.faqs;
+  const faqShort = post.faqShort;
   const naver = isNaverPost(post.slug);
 
   const postUrl = `https://searchtuneos.com/blog/${post.slug}`;
@@ -585,22 +597,26 @@ export default function BlogPost() {
             <p className="mt-10 text-muted-foreground">{post.excerpt}</p>
           )}
 
-          {/* FAQ Section */}
-          {faqs && faqs.length > 0 && (
+          {/* Friendly-tone FAQ Accordion (faq_short) — separate from body FAQ */}
+          {faqShort && faqShort.length > 0 && (
             <section className="mt-14">
-              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-                💬 자주 묻는 질문
+              <h2 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+                💬 빠른 답변
               </h2>
+              <p className="text-xs text-muted-foreground mb-5">
+                바쁘신 분들을 위한 핵심만 쏙쏙
+              </p>
               <div className="rounded-2xl border border-border bg-card/50 overflow-hidden">
                 <Accordion type="single" collapsible className="w-full">
-                  {faqs.map((faq, i) => (
-                    <AccordionItem key={i} value={`faq-${i}`} className="border-border px-5">
+                  {faqShort.map((faq, i) => (
+                    <AccordionItem key={i} value={`faqshort-${i}`} className="border-border px-5">
                       <AccordionTrigger className="text-left text-sm md:text-base font-medium text-foreground hover:no-underline">
-                        {faq.question}
+                        {faq.q}
                       </AccordionTrigger>
-                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                        {faq.answer}
-                      </AccordionContent>
+                      <AccordionContent
+                        className="text-sm text-muted-foreground leading-relaxed pb-4"
+                        dangerouslySetInnerHTML={{ __html: inline(faq.a) }}
+                      />
                     </AccordionItem>
                   ))}
                 </Accordion>
