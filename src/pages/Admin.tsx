@@ -132,11 +132,53 @@ export default function Admin() {
     setEngineUpdating(false);
   };
 
+  const fetchFailedPosts = async () => {
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "listFailedBlogPosts" },
+    });
+    if (res?.posts) setFailedPosts(res.posts);
+  };
+
+  const forcePublish = async (id: string) => {
+    setFailedActionId(id);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "forcePublishBlogPost", postId: id },
+    });
+    setFailedPosts((prev) => prev.filter((p) => p.id !== id));
+    fetchBlogPosts();
+    setFailedActionId(null);
+  };
+
+  const deleteFailed = async (id: string) => {
+    if (!confirm("이 실패 글을 영구 삭제하시겠습니까?")) return;
+    setFailedActionId(id);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "deleteBlogPost", postId: id },
+    });
+    setFailedPosts((prev) => prev.filter((p) => p.id !== id));
+    setFailedActionId(null);
+  };
+
+  const triggerRetryGeneration = async () => {
+    setRetrying(true);
+    setRetryMsg("");
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "retryBlogGeneration" },
+    });
+    setRetryMsg(res?.message || "재생성 트리거 완료. 1~2분 후 새로고침하세요.");
+    setRetrying(false);
+  };
+
   useEffect(() => {
     if (authed) {
       fetchInsights(days);
       fetchBlogPosts();
       fetchEngineStatus();
+      fetchFailedPosts();
     }
   }, [authed, days]);
 
