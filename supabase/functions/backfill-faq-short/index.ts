@@ -15,7 +15,10 @@ async function generateFaqShort(title: string, content: string): Promise<any[]> 
 규칙:
 - 답변은 1~2문장, 친근한 구어체 (~예요, ~해요)
 - 이모지 1개 자연스럽게 포함
-- 마지막에 CTA 링크 자연스럽게 삽입: 👉 [무료 진단](/) 또는 👉 [블로그 더 보기](/blog)
+- **내부 링크 규칙(필수)**: FAQ 전체에서 마크다운 내부 링크를 **1~2개** 자연스럽게 삽입할 것.
+  - 허용 경로만 사용: \`/\` (무료 진단), \`/blog\` (블로그 더 보기), \`/about\` (서비스 소개)
+  - 외부 링크(http/https) 절대 금지
+  - 예시: 👉 [무료 진단](/), [블로그 더 보기](/blog), [서비스 소개](/about)
 - 본문 핵심 메시지 기반, 새 정보 만들지 말 것
 - JSON 배열만 출력 (마크다운 코드펜스 금지)
 
@@ -60,9 +63,21 @@ ${truncated}`;
       const a = typeof x?.a === "string" ? x.a : (typeof x?.answer === "string" ? x.answer : null);
       return q && a ? { q, a } : null;
     })
-    .filter(Boolean);
+    .filter(Boolean) as { q: string; a: string }[];
   if (filtered.length < 2) throw new Error("Too few valid FAQ items");
-  return filtered.slice(0, 4);
+  const result = filtered.slice(0, 4);
+
+  // Internal link validation: 1~3 internal links across all FAQs, no external links
+  const allText = result.map((f) => f.a).join("\n");
+  const externalLinks = allText.match(/\]\((https?:\/\/[^)]+)\)/g) || [];
+  if (externalLinks.length > 0) {
+    throw new Error(`External links not allowed in faq_short: ${externalLinks.join(", ")}`);
+  }
+  const internalLinks = allText.match(/\]\((\/(?:blog|about)?)\)/g) || [];
+  if (internalLinks.length < 1 || internalLinks.length > 3) {
+    throw new Error(`Internal link count out of range (1-3): found ${internalLinks.length}`);
+  }
+  return result;
 }
 
 Deno.serve(async (req) => {
