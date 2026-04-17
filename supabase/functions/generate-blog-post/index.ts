@@ -248,7 +248,8 @@ ${recentTitleList}
 
 [FAQ 톤 분리 — 매우 중요]
 - **faqs (본문용, 전문가 톤)**: 5-6개. 깊이 있는 분석가 어조. 각 답변 3-5문장. 반드시 데이터·통계·실제 사례·공식 문서 근거 중 1개 이상 포함. 격식 있는 문체("~합니다", "~입니다"). CTA 문구 절대 금지.
-- **faqs_short (아코디언용, 친근 톤)**: 3-4개. 카페/SNS 어조처럼 친근하고 캐주얼. 각 답변 1-2문장. 끝에 자연스럽게 CTA 유도 문구 포함(예: "👉 [무료 진단해 보세요](/)", "지금 바로 점검해 보세요 ✨"). 친근한 문체("~예요", "~거든요", 이모지 1-2개 활용). faqs와 질문이 겹쳐도 OK — 답변 톤만 확실히 다르게.`;
+- **faqs_short (아코디언용, 친근 톤)**: 3-4개. 카페/SNS 어조처럼 친근하고 캐주얼. 각 답변 1-2문장. 끝에 자연스럽게 CTA 유도 문구 포함(예: "👉 [무료 진단해 보세요](/)", "지금 바로 점검해 보세요 ✨"). 친근한 문체("~예요", "~거든요", 이모지 1-2개 활용). faqs와 질문이 겹쳐도 OK — 답변 톤만 확실히 다르게.
+- **faqs_short 내부 링크 규칙 (필수)**: 전체 faqs_short 답변을 합쳐서 마크다운 내부 링크 1~2개를 자연스럽게 삽입할 것. 사용 가능한 경로: \`/\` (무료 진단), \`/blog\` (관련 글 더보기), \`/about\` (서비스 소개). 형식 예: "👉 [무료 진단 받기](/)", "[다른 글도 읽어보기](/blog)". 외부 링크(http/https)나 존재하지 않는 경로는 절대 사용 금지. CTA 문구를 링크화하면 자연스러움.`;
 
     const userPrompt = `주제: "${theme}" (카테고리: ${category})
 
@@ -260,7 +261,7 @@ ${recentTitleList}
 - readTime: "3분" / "4분" / "5분" 중 하나
 - content: 본문 마크다운 (FAQ 제외, 표·숫자리스트·코드블록·내부링크 모두 포함)
 - faqs: 5-6개 (본문 노출용, 전문가 톤, 3-5문장 답변, 데이터/근거 포함, CTA 금지)
-- faqs_short: 3-4개 (하단 아코디언용, 친근 톤, 1-2문장, 이모지+CTA 유도 문구 포함)`;
+- faqs_short: 3-4개 (하단 아코디언용, 친근 톤, 1-2문장, 이모지+CTA 유도 문구 포함, 전체적으로 내부 링크 1~2개 자연 삽입: /, /blog, /about 만 허용)`;
 
     // === Quality validators (네이버 C-Rank/D.I.A. 대응) ===
     function validateQuality(content: string, faqs: any[], faqsShort: any[]): string[] {
@@ -286,6 +287,21 @@ ${recentTitleList}
         const avgShortLen = faqsShort.reduce((s, f) => s + (f.answer?.length || 0), 0) / faqsShort.length;
         if (avgShortLen >= avgFaqLen) {
           issues.push(`faqs_short가 본문 faqs보다 길거나 같습니다(short 평균 ${Math.round(avgShortLen)}자 / faqs 평균 ${Math.round(avgFaqLen)}자). 짧고 친근하게 다시 작성하세요.`);
+        }
+      }
+      // faqs_short 내부 링크 검증: 전체 답변에서 1~2개 내부 링크 필요, 외부 링크 금지
+      if (faqsShort?.length) {
+        const allShortAnswers = faqsShort.map((f: any) => f.answer || "").join("\n");
+        const internalLinks = allShortAnswers.match(/\]\(\/(?:blog|about)?(?:[/?#)][^)]*)?\)/g) || [];
+        const externalLinks = allShortAnswers.match(/\]\(https?:\/\/[^)]+\)/g) || [];
+        if (internalLinks.length < 1) {
+          issues.push(`faqs_short 전체에 내부 링크([텍스트](/), (/blog), (/about))가 1개 이상 필요합니다(현재 ${internalLinks.length}개).`);
+        }
+        if (internalLinks.length > 3) {
+          issues.push(`faqs_short 내부 링크가 너무 많습니다(${internalLinks.length}개). 1~2개 권장, 최대 3개.`);
+        }
+        if (externalLinks.length > 0) {
+          issues.push(`faqs_short에 외부 링크가 포함되어 있습니다(${externalLinks.length}개). 내부 링크(/, /blog, /about)만 허용됩니다.`);
         }
       }
       return issues;
@@ -337,12 +353,12 @@ ${recentTitleList}
                       },
                       faqs_short: {
                         type: "array",
-                        description: "3-4 friendly-tone FAQs for accordion below post. Casual voice with emojis, 1-2 sentences each, end with CTA hint like '👉 [무료 진단](/)' or '지금 점검해 보세요 ✨'.",
+                        description: "3-4 friendly-tone FAQs for accordion. Casual voice with emojis, 1-2 sentences each, end with CTA. Across all answers combined, MUST include 1-2 internal markdown links to allowed paths only: /, /blog, /about. NO external (http/https) links.",
                         items: {
                           type: "object",
                           properties: {
                             question: { type: "string", description: "FAQ question in Korean, casual voice" },
-                            answer: { type: "string", description: "Short friendly answer in Korean, 1-2 sentences with emoji and CTA. Casual tone (~예요, ~거든요)." },
+                            answer: { type: "string", description: "Short friendly answer in Korean, 1-2 sentences with emoji. Casual tone (~예요, ~거든요). Embed internal markdown links like '👉 [무료 진단 받기](/)' or '[다른 글 더 보기](/blog)' where natural — only /, /blog, /about allowed. Across all faqs_short combined: 1-2 internal links total." },
                           },
                           required: ["question", "answer"],
                           additionalProperties: false,
