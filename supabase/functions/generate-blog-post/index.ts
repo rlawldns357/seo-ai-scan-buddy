@@ -406,23 +406,20 @@ ${recentTitleList}
         "[누락/위반 항목]\n- " + issues.join("\n- ");
     }
 
-    // Final hard guard: if best attempt still way too short, fail loudly instead of publishing junk
-    if (!bestArgs || (bestArgs.content?.length || 0) < 800) {
-      throw new Error(`All attempts produced insufficient content (best: ${bestArgs?.content?.length || 0} chars). Aborting publish.`);
-    }
-    args = bestArgs;
+    // Determine if this should be quarantined as failed (validation issues remained OR content too short)
+    const tooShort = !bestArgs || (bestArgs.content?.length || 0) < 800;
+    const hasIssues = (bestIssues?.length || 0) > 0;
+    const isFailed = tooShort || hasIssues;
 
-    // Clean content
-    let cleanedContent = stripFaqFromContent(args.content);
+    args = bestArgs || args;
+
+    // Clean content (use whatever we have)
+    let cleanedContent = stripFaqFromContent(args?.content || "");
     cleanedContent = cleanMarkdownArtifacts(cleanedContent);
-
-    if (cleanedContent.length < 500) {
-      throw new Error(`Generated content too short (${cleanedContent.length} chars).`);
-    }
 
     // Append structured FAQ section
     let fullContent = cleanedContent;
-    if (args.faqs && args.faqs.length > 0) {
+    if (args?.faqs && args.faqs.length > 0) {
       fullContent += "\n\n## 자주 묻는 질문\n\n";
       for (const faq of args.faqs) {
         const cleanAnswer = cleanMarkdownArtifacts(faq.answer);
@@ -430,21 +427,29 @@ ${recentTitleList}
       }
     }
 
-    const slug = slugify(args.title);
+    const titleForSlug = args?.title || `failed-${theme}`;
+    const slug = slugify(titleForSlug) + (isFailed ? `-failed-${Date.now().toString(36)}` : "");
 
-    // Explicitly set published: true to prevent default issues
+    const failureReason = isFailed
+      ? (tooShort
+          ? `생성된 본문이 너무 짧습니다(${args?.content?.length || 0}자). ${bestIssues.join(" / ")}`
+          : bestIssues.join(" / "))
+      : null;
+
     const { data: inserted, error: insertError } = await supabase
       .from("blog_posts")
       .insert({
         slug,
-        title: args.title,
-        excerpt: args.excerpt.slice(0, 160),
+        title: args?.title || `[FAILED] ${theme}`,
+        excerpt: (args?.excerpt || "자동 생성 검증 실패").slice(0, 160),
         category,
         author: author.name,
-        read_time: args.readTime,
-        content: fullContent,
+        read_time: args?.readTime || "5분",
+        content: fullContent || "(본문 생성 실패)",
         date: today,
-        published: true,
+        published: !isFailed,
+        failure_reason: failureReason,
+        failure_attempts: attempt,
       })
       .select()
       .single();
