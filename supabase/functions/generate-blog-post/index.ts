@@ -358,7 +358,7 @@ ${recentTitleList}
                           type: "object",
                           properties: {
                             question: { type: "string", description: "FAQ question in Korean, casual voice" },
-                            answer: { type: "string", description: "Short friendly answer in Korean, 1-2 sentences with emoji and CTA. Casual tone (~예요, ~거든요)." },
+                            answer: { type: "string", description: "Short friendly answer in Korean, 1-2 sentences with emoji. Casual tone (~예요, ~거든요). Embed internal markdown links like '👉 [무료 진단 받기](/)' or '[다른 글 더 보기](/blog)' where natural — only /, /blog, /about allowed. Across all faqs_short combined: 1-2 internal links total." },
                           },
                           required: ["question", "answer"],
                           additionalProperties: false,
