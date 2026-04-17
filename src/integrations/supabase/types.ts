@@ -111,6 +111,7 @@ export type Database = {
           excerpt: string
           failure_attempts: number | null
           failure_reason: string | null
+          faq_short: Json | null
           featured: boolean
           id: string
           og_image: string | null
@@ -130,6 +131,7 @@ export type Database = {
           excerpt: string
           failure_attempts?: number | null
           failure_reason?: string | null
+          faq_short?: Json | null
           featured?: boolean
           id?: string
           og_image?: string | null
@@ -149,6 +151,7 @@ export type Database = {
           excerpt?: string
           failure_attempts?: number | null
           failure_reason?: string | null
+          faq_short?: Json | null
           featured?: boolean
           id?: string
           og_image?: string | null
