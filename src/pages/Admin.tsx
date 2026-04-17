@@ -576,6 +576,10 @@ export default function Admin() {
 
 
             <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Cpu className="w-4 h-4" />
                     분석 엔진 상태
                     {engineConfig && (
                       <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
