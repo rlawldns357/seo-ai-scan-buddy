@@ -288,6 +288,7 @@ ${recentTitleList}
         if (avgShortLen >= avgFaqLen) {
           issues.push(`faqs_short가 본문 faqs보다 길거나 같습니다(short 평균 ${Math.round(avgShortLen)}자 / faqs 평균 ${Math.round(avgFaqLen)}자). 짧고 친근하게 다시 작성하세요.`);
         }
+      }
       // faqs_short 내부 링크 검증: 전체 답변에서 1~2개 내부 링크 필요, 외부 링크 금지
       if (faqsShort?.length) {
         const allShortAnswers = faqsShort.map((f: any) => f.answer || "").join("\n");
@@ -303,6 +304,7 @@ ${recentTitleList}
           issues.push(`faqs_short에 외부 링크가 포함되어 있습니다(${externalLinks.length}개). 내부 링크(/, /blog, /about)만 허용됩니다.`);
         }
       }
+      return issues;
     }
 
     async function callAI(extraInstruction = ""): Promise<any> {
