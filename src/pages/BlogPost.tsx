@@ -613,10 +613,9 @@ export default function BlogPost() {
                       <AccordionTrigger className="text-left text-sm md:text-base font-medium text-foreground hover:no-underline">
                         {faq.q}
                       </AccordionTrigger>
-                      <AccordionContent
-                        className="text-sm text-muted-foreground leading-relaxed pb-4"
-                        dangerouslySetInnerHTML={{ __html: inline(faq.a) }}
-                      />
+                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
+                        <span dangerouslySetInnerHTML={{ __html: inline(faq.a) }} />
+                      </AccordionContent>
                     </AccordionItem>
                   ))}
                 </Accordion>
