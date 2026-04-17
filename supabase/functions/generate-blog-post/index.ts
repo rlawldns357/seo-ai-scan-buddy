@@ -275,7 +275,7 @@ ${recentTitleList}
                   properties: {
                     title: { type: "string", description: "Blog post title in Korean" },
                     excerpt: { type: "string", description: "2-3 sentence summary in Korean, max 160 chars" },
-                    readTime: { type: "string", enum: ["2분", "3분", "4분"], description: "Read time" },
+                    readTime: { type: "string", enum: ["3분", "4분", "5분"], description: "Read time" },
                     content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section" },
                     faqs: {
                       type: "array",
