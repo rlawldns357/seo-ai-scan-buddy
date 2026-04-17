@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send } from "lucide-react";
+import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +60,53 @@ export default function Admin() {
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string>("");
+  // faq_short backfill state
+  const [backfillSlug, setBackfillSlug] = useState("");
+  const [backfillLimit, setBackfillLimit] = useState(5);
+  const [backfillOverwrite, setBackfillOverwrite] = useState(false);
+  const [backfillRunning, setBackfillRunning] = useState(false);
+  const [backfillResult, setBackfillResult] = useState<{
+    processed: number;
+    success: number;
+    results: { slug: string; status: string; reason?: string; error?: string; count?: number }[];
+  } | null>(null);
+  const [backfillError, setBackfillError] = useState("");
+
+  const runBackfill = async (mode: "single" | "batch") => {
+    setBackfillRunning(true);
+    setBackfillError("");
+    setBackfillResult(null);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const body: Record<string, unknown> = { password: pw, overwrite: backfillOverwrite };
+    if (mode === "single") {
+      const s = backfillSlug.trim();
+      if (!s) {
+        setBackfillError("slug를 입력하세요");
+        setBackfillRunning(false);
+        return;
+      }
+      body.slug = s;
+    } else {
+      body.all = true;
+      body.limit = Math.max(1, Math.min(50, backfillLimit));
+    }
+    try {
+      const { data: res, error: err } = await supabase.functions.invoke("backfill-faq-short", { body });
+      if (err) throw err;
+      if (res?.error) {
+        setBackfillError(typeof res.error === "string" ? res.error : JSON.stringify(res.error));
+      } else {
+        setBackfillResult({
+          processed: res?.processed ?? 0,
+          success: res?.success ?? 0,
+          results: res?.results ?? [],
+        });
+      }
+    } catch (e: any) {
+      setBackfillError(e?.message || "호출 실패");
+    }
+    setBackfillRunning(false);
+  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -407,6 +454,123 @@ export default function Admin() {
                     ))
                   )}
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* faq_short Backfill */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-primary" />
+                  faq_short 백필
+                </CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  기존 발행 글 본문 기반으로 친근 톤 아코디언 FAQ를 생성/업데이트합니다.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-5">
+                {/* Single slug mode */}
+                <div className="space-y-2">
+                  <p className="text-xs font-semibold text-foreground">단일 글 (slug)</p>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      placeholder="블로그 slug 입력 (예: 2026-aeo-...)"
+                      value={backfillSlug}
+                      onChange={(e) => setBackfillSlug(e.target.value)}
+                      className="flex-1"
+                      disabled={backfillRunning}
+                    />
+                    <Button
+                      onClick={() => runBackfill("single")}
+                      disabled={backfillRunning || !backfillSlug.trim()}
+                      size="sm"
+                      className="gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      단일 백필
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Batch mode */}
+                <div className="space-y-2 pt-3 border-t border-border">
+                  <p className="text-xs font-semibold text-foreground">일괄 (faq_short=null인 글)</p>
+                  <div className="flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground shrink-0">최대</span>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={50}
+                        value={backfillLimit}
+                        onChange={(e) => setBackfillLimit(parseInt(e.target.value) || 1)}
+                        className="w-20"
+                        disabled={backfillRunning}
+                      />
+                      <span className="text-xs text-muted-foreground">개</span>
+                    </div>
+                    <Button
+                      onClick={() => runBackfill("batch")}
+                      disabled={backfillRunning}
+                      size="sm"
+                      variant="outline"
+                      className="gap-1.5"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${backfillRunning ? "animate-spin" : ""}`} />
+                      {backfillRunning ? "처리 중..." : "일괄 백필"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Overwrite toggle */}
+                <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={backfillOverwrite}
+                    onChange={(e) => setBackfillOverwrite(e.target.checked)}
+                    disabled={backfillRunning}
+                    className="rounded border-border"
+                  />
+                  기존 faq_short 덮어쓰기 (체크 해제 시 비어있는 글만 처리)
+                </label>
+
+                {/* Result */}
+                {backfillError && (
+                  <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg p-3">
+                    ❌ {backfillError}
+                  </div>
+                )}
+                {backfillResult && (
+                  <div className="space-y-2 border border-border rounded-lg p-3 bg-muted/30">
+                    <p className="text-sm font-semibold text-foreground">
+                      처리 {backfillResult.processed}건 · 성공{" "}
+                      <span className="text-score-excellent">{backfillResult.success}</span>건
+                    </p>
+                    <div className="space-y-1 max-h-[240px] overflow-y-auto">
+                      {backfillResult.results.map((r, i) => (
+                        <div key={i} className="flex items-start gap-2 text-xs">
+                          <span
+                            className={`shrink-0 px-1.5 py-0.5 rounded font-bold ${
+                              r.status === "success"
+                                ? "bg-score-excellent/10 text-score-excellent"
+                                : r.status === "skipped"
+                                ? "bg-muted text-muted-foreground"
+                                : "bg-destructive/10 text-destructive"
+                            }`}
+                          >
+                            {r.status}
+                          </span>
+                          <span className="font-mono text-muted-foreground truncate flex-1">{r.slug}</span>
+                          {r.count !== undefined && (
+                            <span className="text-muted-foreground shrink-0">{r.count}개</span>
+                          )}
+                          {r.error && <span className="text-destructive shrink-0">{r.error}</span>}
+                          {r.reason && <span className="text-muted-foreground shrink-0">{r.reason}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
