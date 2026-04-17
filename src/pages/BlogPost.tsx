@@ -419,7 +419,7 @@ export default function BlogPost() {
           thumbnail: data.thumbnail,
           featured: data.featured,
           readTime: data.read_time,
-          content: data.content,
+          content: content,
           faqs,
           ogImage: (data as any).og_image || undefined,
         });
