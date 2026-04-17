@@ -19,9 +19,9 @@ async function generateFaqShort(title: string, content: string): Promise<any[]> 
 - 본문 핵심 메시지 기반, 새 정보 만들지 말 것
 - JSON 배열만 출력 (마크다운 코드펜스 금지)
 
-출력 형식 예시:
+출력 형식 예시 (반드시 키 이름은 "q"와 "a"로):
 [
-  {"question": "...", "answer": "..."},
+  {"q": "...", "a": "..."},
   ...
 ]
 
@@ -53,9 +53,14 @@ ${truncated}`;
 
   const parsed = JSON.parse(text);
   if (!Array.isArray(parsed)) throw new Error("AI did not return an array");
-  const filtered = parsed.filter(
-    (x) => x && typeof x.question === "string" && typeof x.answer === "string"
-  );
+  // Normalize: accept either {q,a} or {question,answer}; output {q,a}
+  const filtered = parsed
+    .map((x: any) => {
+      const q = typeof x?.q === "string" ? x.q : (typeof x?.question === "string" ? x.question : null);
+      const a = typeof x?.a === "string" ? x.a : (typeof x?.answer === "string" ? x.answer : null);
+      return q && a ? { q, a } : null;
+    })
+    .filter(Boolean);
   if (filtered.length < 2) throw new Error("Too few valid FAQ items");
   return filtered.slice(0, 4);
 }
