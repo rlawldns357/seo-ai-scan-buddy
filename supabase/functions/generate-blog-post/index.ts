@@ -261,7 +261,7 @@ ${recentTitleList}
 - readTime: "3분" / "4분" / "5분" 중 하나
 - content: 본문 마크다운 (FAQ 제외, 표·숫자리스트·코드블록·내부링크 모두 포함)
 - faqs: 5-6개 (본문 노출용, 전문가 톤, 3-5문장 답변, 데이터/근거 포함, CTA 금지)
-- faqs_short: 3-4개 (하단 아코디언용, 친근 톤, 1-2문장, 이모지+CTA 유도 문구 포함)`;
+- faqs_short: 3-4개 (하단 아코디언용, 친근 톤, 1-2문장, 이모지+CTA 유도 문구 포함, 전체적으로 내부 링크 1~2개 자연 삽입: /, /blog, /about 만 허용)`;
 
     // === Quality validators (네이버 C-Rank/D.I.A. 대응) ===
     function validateQuality(content: string, faqs: any[], faqsShort: any[]): string[] {
