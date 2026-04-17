@@ -318,7 +318,99 @@ export default function Admin() {
               </CardContent>
             </Card>
 
-            {/* Engine Status */}
+            {/* Failed Blog Queue */}
+            <Card className={failedPosts.length > 0 ? "border-destructive/40" : ""}>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <AlertTriangle className={`w-4 h-4 ${failedPosts.length > 0 ? "text-destructive" : "text-muted-foreground"}`} />
+                    검증 실패 큐
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                      failedPosts.length > 0 ? "bg-destructive/10 text-destructive" : "bg-muted text-muted-foreground"
+                    }`}>
+                      {failedPosts.length}건
+                    </span>
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={triggerRetryGeneration}
+                    disabled={retrying}
+                    className="gap-1.5"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${retrying ? "animate-spin" : ""}`} />
+                    {retrying ? "트리거 중..." : "새 글 재생성"}
+                  </Button>
+                </div>
+                {retryMsg && <p className="text-xs text-muted-foreground mt-1">{retryMsg}</p>}
+                <p className="text-xs text-muted-foreground">
+                  품질 검증을 통과하지 못한 자동 생성 글입니다. 검토 후 강제 게시하거나 삭제하세요.
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                  {failedPosts.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">실패 큐 없음 — 모든 자동 생성 글이 검증 통과했습니다 ✨</p>
+                  ) : (
+                    failedPosts.map((post) => (
+                      <div key={post.id} className="border border-destructive/20 bg-destructive/5 rounded-lg p-3 space-y-2">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] bg-destructive/10 text-destructive px-1.5 py-0.5 rounded font-bold">
+                                {post.failure_attempts}회 시도
+                              </span>
+                              <span className="text-[10px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
+                                {post.category}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground">{post.author}</span>
+                              <span className="text-[10px] text-muted-foreground">· {post.contentLength}자</span>
+                            </div>
+                            <p className="text-sm font-medium text-foreground mt-1 break-words">{post.title}</p>
+                            <p className="text-xs text-destructive mt-1 break-words">{post.failure_reason}</p>
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              {new Date(post.created_at).toLocaleString("ko-KR")}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => forcePublish(post.id)}
+                            disabled={failedActionId === post.id}
+                            className="gap-1.5 h-8"
+                          >
+                            <Send className="w-3 h-3" />
+                            강제 게시
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => deleteFailed(post.id)}
+                            disabled={failedActionId === post.id}
+                            className="gap-1.5 h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            삭제
+                          </Button>
+                          <a
+                            href={`/blog/${post.slug}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-primary hover:underline self-center ml-auto"
+                          >
+                            미리보기 →
+                          </a>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
