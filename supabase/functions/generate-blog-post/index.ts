@@ -377,7 +377,6 @@ ${recentTitleList}
         args.title = args.title.replace(/\b(2024|2025)\b(년?)/g, `${currentYear}$2`);
       }
       if (wrongYearPattern.test(args.content)) {
-        args.content = args.content.replace(/\b(2024|2025)\b(год?)/g, `${currentYear}$2`);
         args.content = args.content.replace(/\b(2024|2025)\b(년?)/g, `${currentYear}$2`);
       }
 
