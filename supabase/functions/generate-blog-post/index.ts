@@ -459,44 +459,41 @@ ${recentTitleList}
       throw new Error(`Failed to insert post: ${insertError.message}`);
     }
 
-    console.log(`Blog post created: ${slug} by ${author.name}`);
+    console.log(`Blog post created: ${slug} by ${author.name} ${isFailed ? "[FAILED-QUEUE]" : "[PUBLISHED]"}`);
 
-    // Generate OG image (fire-and-forget)
-    try {
-      const ogRes = await fetch(`${supabaseUrl}/functions/v1/generate-og-image`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseServiceKey}`,
-        },
-        body: JSON.stringify({ slug, title: args.title, category }),
-      });
-      const ogData = await ogRes.json();
-      console.log("OG image generation:", ogData);
-    } catch (e) {
-      console.warn("OG image generation failed (non-blocking):", e);
-    }
+    // Only generate OG / IndexNow when successfully published
+    if (!isFailed) {
+      try {
+        const ogRes = await fetch(`${supabaseUrl}/functions/v1/generate-og-image`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
+          body: JSON.stringify({ slug, title: args.title, category }),
+        });
+        const ogData = await ogRes.json();
+        console.log("OG image generation:", ogData);
+      } catch (e) {
+        console.warn("OG image generation failed (non-blocking):", e);
+      }
 
-    // Submit to IndexNow for faster indexing (fire-and-forget)
-    try {
-      const indexNowRes = await fetch(`${supabaseUrl}/functions/v1/submit-indexnow`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${supabaseServiceKey}`,
-        },
-        body: JSON.stringify({ slug }),
-      });
-      const indexNowData = await indexNowRes.json();
-      console.log("IndexNow submission:", indexNowData);
-    } catch (e) {
-      console.warn("IndexNow submission failed (non-blocking):", e);
+      try {
+        const indexNowRes = await fetch(`${supabaseUrl}/functions/v1/submit-indexnow`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
+          body: JSON.stringify({ slug }),
+        });
+        const indexNowData = await indexNowRes.json();
+        console.log("IndexNow submission:", indexNowData);
+      } catch (e) {
+        console.warn("IndexNow submission failed (non-blocking):", e);
+      }
     }
 
     return new Response(
       JSON.stringify({
-        success: true,
-        post: { slug, title: args.title, category, author: author.name, faqCount: args.faqs?.length || 0 },
+        success: !isFailed,
+        failed: isFailed,
+        failureReason,
+        post: { id: inserted?.id, slug, title: args?.title, category, author: author.name, faqCount: args?.faqs?.length || 0 },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
