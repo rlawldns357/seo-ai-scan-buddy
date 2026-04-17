@@ -353,7 +353,7 @@ ${recentTitleList}
                       },
                       faqs_short: {
                         type: "array",
-                        description: "3-4 friendly-tone FAQs for accordion below post. Casual voice with emojis, 1-2 sentences each, end with CTA hint like '👉 [무료 진단](/)' or '지금 점검해 보세요 ✨'.",
+                        description: "3-4 friendly-tone FAQs for accordion. Casual voice with emojis, 1-2 sentences each, end with CTA. Across all answers combined, MUST include 1-2 internal markdown links to allowed paths only: /, /blog, /about. NO external (http/https) links.",
                         items: {
                           type: "object",
                           properties: {
