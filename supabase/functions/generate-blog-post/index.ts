@@ -145,13 +145,20 @@ Deno.serve(async (req) => {
     const currentYear = new Date().getFullYear();
     const MAX_POSTS_PER_DAY = 2;
 
+    // Optional bypass for admin/manual triggers
+    let forceBypass = false;
+    try {
+      const body = await req.clone().json();
+      forceBypass = body?.force === true;
+    } catch (_) { /* no body */ }
+
     // Check daily limit
     const { data: todayPosts } = await supabase
       .from("blog_posts")
       .select("id, title, author")
       .eq("date", today);
 
-    if (todayPosts && todayPosts.length >= MAX_POSTS_PER_DAY) {
+    if (!forceBypass && todayPosts && todayPosts.length >= MAX_POSTS_PER_DAY) {
       return new Response(
         JSON.stringify({ success: false, message: `Already generated ${MAX_POSTS_PER_DAY} posts today` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
