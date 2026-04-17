@@ -237,41 +237,50 @@ ${recentTitleList}
 - 본문에 FAQ 섹션 포함 금지 (FAQ는 별도 필드로 생성)
 - 마지막 문단: SearchTune OS 무료 분석을 자연스럽게 권유 (강매 톤 금지)
 - 네이버 + 구글 + AI 검색엔진(ChatGPT/Perplexity/Cue:) 모두 고려
-- ${currentYear}년 시점으로 모든 연도 표기`;
+- ${currentYear}년 시점으로 모든 연도 표기
+
+[FAQ 톤 분리 — 매우 중요]
+- **faqs (본문용, 전문가 톤)**: 5-6개. 깊이 있는 분석가 어조. 각 답변 3-5문장. 반드시 데이터·통계·실제 사례·공식 문서 근거 중 1개 이상 포함. 격식 있는 문체("~합니다", "~입니다"). CTA 문구 절대 금지.
+- **faqs_short (아코디언용, 친근 톤)**: 3-4개. 카페/SNS 어조처럼 친근하고 캐주얼. 각 답변 1-2문장. 끝에 자연스럽게 CTA 유도 문구 포함(예: "👉 [무료 진단해 보세요](/)", "지금 바로 점검해 보세요 ✨"). 친근한 문체("~예요", "~거든요", 이모지 1-2개 활용). faqs와 질문이 겹쳐도 OK — 답변 톤만 확실히 다르게.`;
 
     const userPrompt = `주제: "${theme}" (카테고리: ${category})
 
-위 주제로 전문적인 블로그 글을 작성해주세요. 위 시스템 규칙(특히 표·숫자리스트·코드블록·내부링크·D.I.A. 깊이·출처 신빙성)을 모두 충족해야 합니다.
+위 주제로 전문적인 블로그 글을 작성해주세요. 위 시스템 규칙(특히 표·숫자리스트·코드블록·내부링크·D.I.A. 깊이·출처 신빙성, 그리고 FAQ 톤 분리)을 모두 충족해야 합니다.
 
 요청 필드:
 - title: 한국어, SEO 친화적, 매력적 (핵심 키워드 포함)
 - excerpt: 2-3문장 요약 (160자 이내, 검색결과 노출용 — 클릭 유도 메시지 포함)
 - readTime: "3분" / "4분" / "5분" 중 하나
 - content: 본문 마크다운 (FAQ 제외, 표·숫자리스트·코드블록·내부링크 모두 포함)
-- faqs: 5-7개. 사용자가 실제 검색할 법한 구체적 질문 + 2-4문장의 명확한 답변(근거/예시 포함)`;
+- faqs: 5-6개 (본문 노출용, 전문가 톤, 3-5문장 답변, 데이터/근거 포함, CTA 금지)
+- faqs_short: 3-4개 (하단 아코디언용, 친근 톤, 1-2문장, 이모지+CTA 유도 문구 포함)`;
 
     // === Quality validators (네이버 C-Rank/D.I.A. 대응) ===
-    function validateQuality(content: string, faqs: any[]): string[] {
+    function validateQuality(content: string, faqs: any[], faqsShort: any[]): string[] {
       const issues: string[] = [];
       const len = content.length;
       if (len < 1500) issues.push(`본문이 너무 짧습니다(${len}자). 최소 1,500자 필요.`);
       const h2Count = (content.match(/^##\s+/gm) || []).length;
       if (h2Count < 4) issues.push(`H2(##) 개수가 부족합니다(${h2Count}개). 최소 4개 필요.`);
-      // 표 검증: |---| 구분선 또는 최소 2행 이상의 | 셀
       const hasTable = /\n\s*\|[^\n]+\|\s*\n\s*\|[\s:|-]+\|/.test(content);
       if (!hasTable) issues.push("마크다운 표(| ... |\\n|---|---|)가 없습니다. 비교/정리용 표 1개 이상 필요.");
-      // 숫자 리스트 검증 (연속 2개 이상)
       const olMatches = content.match(/^\s*\d+\.\s+.+$/gm) || [];
       if (olMatches.length < 2) issues.push(`숫자 리스트(1. 2. ...) 항목이 부족합니다(${olMatches.length}개). 2개 이상 필요.`);
-      // 코드블록 또는 인용 — 둘 중 하나라도 있어야 함
       const hasCode = /```[\s\S]+?```/.test(content);
       const hasQuote = /^>\s+/m.test(content);
       if (!hasCode && !hasQuote) issues.push("코드블록(```) 또는 인용(>) 중 최소 1개가 필요합니다.");
-      // 내부 링크 (/, /blog, /about 등)
       const hasInternalLink = /\]\(\/(blog|about)?[)#?]/.test(content) || /\]\(\/[^)]*\)/.test(content);
       if (!hasInternalLink) issues.push("내부 링크([텍스트](/...)) 1개 이상 필요.");
-      // FAQ 개수
-      if (!faqs || faqs.length < 5) issues.push(`FAQ가 부족합니다(${faqs?.length || 0}개). 최소 5개 필요.`);
+      if (!faqs || faqs.length < 5) issues.push(`본문 FAQ가 부족합니다(${faqs?.length || 0}개). 최소 5개 필요.`);
+      if (!faqsShort || faqsShort.length < 3) issues.push(`아코디언용 faqs_short가 부족합니다(${faqsShort?.length || 0}개). 최소 3개 필요.`);
+      // 톤 분리 검증: faqs_short 답변 평균 길이가 본문 faqs보다 짧아야 함
+      if (faqs?.length && faqsShort?.length) {
+        const avgFaqLen = faqs.reduce((s, f) => s + (f.answer?.length || 0), 0) / faqs.length;
+        const avgShortLen = faqsShort.reduce((s, f) => s + (f.answer?.length || 0), 0) / faqsShort.length;
+        if (avgShortLen >= avgFaqLen) {
+          issues.push(`faqs_short가 본문 faqs보다 길거나 같습니다(short 평균 ${Math.round(avgShortLen)}자 / faqs 평균 ${Math.round(avgFaqLen)}자). 짧고 친근하게 다시 작성하세요.`);
+        }
+      }
       return issues;
     }
 
@@ -308,19 +317,32 @@ ${recentTitleList}
                       content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section. MUST include table, numbered list, code/quote, internal link." },
                       faqs: {
                         type: "array",
-                        description: "5-7 frequently asked questions related to the topic",
+                        description: "5-6 expert-tone FAQs for body content. Formal voice, 3-5 sentences each, MUST cite data/stats/sources. NO CTA phrases.",
                         items: {
                           type: "object",
                           properties: {
                             question: { type: "string", description: "FAQ question in Korean" },
-                            answer: { type: "string", description: "FAQ answer in Korean, 2-4 sentences with evidence/examples" },
+                            answer: { type: "string", description: "Expert FAQ answer in Korean, 3-5 sentences with data/sources/examples. Formal tone (~합니다)." },
+                          },
+                          required: ["question", "answer"],
+                          additionalProperties: false,
+                        },
+                      },
+                      faqs_short: {
+                        type: "array",
+                        description: "3-4 friendly-tone FAQs for accordion below post. Casual voice with emojis, 1-2 sentences each, end with CTA hint like '👉 [무료 진단](/)' or '지금 점검해 보세요 ✨'.",
+                        items: {
+                          type: "object",
+                          properties: {
+                            question: { type: "string", description: "FAQ question in Korean, casual voice" },
+                            answer: { type: "string", description: "Short friendly answer in Korean, 1-2 sentences with emoji and CTA. Casual tone (~예요, ~거든요)." },
                           },
                           required: ["question", "answer"],
                           additionalProperties: false,
                         },
                       },
                     },
-                    required: ["title", "excerpt", "readTime", "content", "faqs"],
+                    required: ["title", "excerpt", "readTime", "content", "faqs", "faqs_short"],
                     additionalProperties: false,
                   },
                 },
@@ -381,7 +403,7 @@ ${recentTitleList}
       }
 
       // Validate
-      issues = validateQuality(args.content, args.faqs || []);
+      issues = validateQuality(args.content, args.faqs || [], args.faqs_short || []);
       console.log(`[Attempt ${attempt}] quality issues:`, issues);
 
       // Score current attempt and keep best so far
@@ -436,6 +458,13 @@ ${recentTitleList}
           : bestIssues.join(" / "))
       : null;
 
+    // Normalize faq_short → [{q, a}] for storage
+    const faqShortNormalized = Array.isArray(args?.faqs_short)
+      ? args.faqs_short
+          .filter((f: any) => f?.question && f?.answer)
+          .map((f: any) => ({ q: String(f.question).trim(), a: String(f.answer).trim() }))
+      : null;
+
     const { data: inserted, error: insertError } = await supabase
       .from("blog_posts")
       .insert({
@@ -450,6 +479,7 @@ ${recentTitleList}
         published: !isFailed,
         failure_reason: failureReason,
         failure_attempts: attempt,
+        faq_short: faqShortNormalized && faqShortNormalized.length > 0 ? faqShortNormalized : null,
       })
       .select()
       .single();
@@ -493,7 +523,7 @@ ${recentTitleList}
         success: !isFailed,
         failed: isFailed,
         failureReason,
-        post: { id: inserted?.id, slug, title: args?.title, category, author: author.name, faqCount: args?.faqs?.length || 0 },
+        post: { id: inserted?.id, slug, title: args?.title, category, author: author.name, faqCount: args?.faqs?.length || 0, faqShortCount: faqShortNormalized?.length || 0 },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
