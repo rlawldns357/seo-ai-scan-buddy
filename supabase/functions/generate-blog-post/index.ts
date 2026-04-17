@@ -345,8 +345,12 @@ ${recentTitleList}
     }
 
     // === Generate with quality retry (max 2 retries = 3 attempts) ===
+    // Best-result tracking: 재시도가 더 나쁜 결과를 낼 수 있으므로 가장 좋은 시도를 보존
     let args: any;
     let issues: string[] = [];
+    let bestArgs: any = null;
+    let bestIssues: string[] = [];
+    let bestScore = -1; // (content length) - (issues.length * 1000)
     let attempt = 0;
     const MAX_ATTEMPTS = 3;
     let lastFeedback = "";
@@ -379,13 +383,34 @@ ${recentTitleList}
       // Validate
       issues = validateQuality(args.content, args.faqs || []);
       console.log(`[Attempt ${attempt}] quality issues:`, issues);
+
+      // Score current attempt and keep best so far
+      const score = (args.content?.length || 0) - issues.length * 1000;
+      if (score > bestScore) {
+        bestScore = score;
+        bestArgs = args;
+        bestIssues = issues;
+      }
+
       if (issues.length === 0) break;
       if (attempt >= MAX_ATTEMPTS) {
-        console.warn(`Max attempts reached. Publishing with remaining issues: ${issues.join(" | ")}`);
+        console.warn(`Max attempts reached. Using best attempt (issues: ${bestIssues.length}, len: ${bestArgs?.content?.length || 0})`);
+        args = bestArgs;
+        issues = bestIssues;
         break;
       }
-      lastFeedback = "다음 항목들이 누락되어 재작성합니다. 반드시 모두 충족하세요:\n- " + issues.join("\n- ");
+      // Provide previous draft as context so AI improves it instead of regenerating shorter
+      lastFeedback =
+        "이전 작성한 본문을 폐기하지 말고, 아래 누락 항목만 보강하여 더 길고 풍부하게 다시 작성하세요. 본문은 반드시 1,800자 이상이어야 합니다.\n\n" +
+        "[이전 본문 일부]\n" + (args.content || "").slice(0, 2000) + "\n\n" +
+        "[누락/위반 항목]\n- " + issues.join("\n- ");
     }
+
+    // Final hard guard: if best attempt still way too short, fail loudly instead of publishing junk
+    if (!bestArgs || (bestArgs.content?.length || 0) < 800) {
+      throw new Error(`All attempts produced insufficient content (best: ${bestArgs?.content?.length || 0} chars). Aborting publish.`);
+    }
+    args = bestArgs;
 
     // Clean content
     let cleanedContent = stripFaqFromContent(args.content);
