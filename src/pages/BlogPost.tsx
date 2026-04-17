@@ -498,6 +498,7 @@ export default function BlogPost() {
   }
 
   const faqs = post.faqs;
+  const faqShort = post.faqShort;
   const naver = isNaverPost(post.slug);
 
   const postUrl = `https://searchtuneos.com/blog/${post.slug}`;
@@ -596,22 +597,26 @@ export default function BlogPost() {
             <p className="mt-10 text-muted-foreground">{post.excerpt}</p>
           )}
 
-          {/* FAQ Section */}
-          {faqs && faqs.length > 0 && (
+          {/* Friendly-tone FAQ Accordion (faq_short) — separate from body FAQ */}
+          {faqShort && faqShort.length > 0 && (
             <section className="mt-14">
-              <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-                💬 자주 묻는 질문
+              <h2 className="text-xl font-bold text-foreground mb-2 flex items-center gap-2">
+                💬 빠른 답변
               </h2>
+              <p className="text-xs text-muted-foreground mb-5">
+                바쁘신 분들을 위한 핵심만 쏙쏙
+              </p>
               <div className="rounded-2xl border border-border bg-card/50 overflow-hidden">
                 <Accordion type="single" collapsible className="w-full">
-                  {faqs.map((faq, i) => (
-                    <AccordionItem key={i} value={`faq-${i}`} className="border-border px-5">
+                  {faqShort.map((faq, i) => (
+                    <AccordionItem key={i} value={`faqshort-${i}`} className="border-border px-5">
                       <AccordionTrigger className="text-left text-sm md:text-base font-medium text-foreground hover:no-underline">
-                        {faq.question}
+                        {faq.q}
                       </AccordionTrigger>
-                      <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4">
-                        {faq.answer}
-                      </AccordionContent>
+                      <AccordionContent
+                        className="text-sm text-muted-foreground leading-relaxed pb-4"
+                        dangerouslySetInnerHTML={{ __html: inline(faq.a) }}
+                      />
                     </AccordionItem>
                   ))}
                 </Accordion>
