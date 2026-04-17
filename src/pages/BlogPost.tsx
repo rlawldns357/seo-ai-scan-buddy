@@ -282,17 +282,30 @@ export default function BlogPost() {
 
       if (data) {
         let faqs: FAQ[] | undefined;
-        const content = data.content;
-        const faqMatch = content.match(/## (?:자주 묻는 질문|FAQ)[\s\S]*$/);
+        let content = data.content;
+        const faqMatch = content.match(/##\s+(?:자주 묻는 질문|FAQ)[\s\S]*$/);
         if (faqMatch) {
           const faqSection = faqMatch[0];
           const qaPairs: FAQ[] = [];
-          const qaRegex = /(?:###?\s*)?(?:Q[.:]?\s*|❓\s*)(.+?)[\n\r]+(?:A[.:]?\s*|💡\s*)(.+?)(?=(?:###?\s*)?(?:Q[.:]?\s*|❓)|$)/gs;
-          let match;
-          while ((match = qaRegex.exec(faqSection)) !== null) {
-            qaPairs.push({ question: match[1].trim(), answer: match[2].trim() });
+          // Split by Q markers (### Q., Q., ❓) — lookahead so we keep the marker
+          const blocks = faqSection
+            .replace(/^##\s+(?:자주 묻는 질문|FAQ)\s*/m, "")
+            .split(/(?=(?:^|\n)\s*(?:###?\s*)?(?:Q[.:]\s*|❓\s*))/g)
+            .map((b) => b.trim())
+            .filter(Boolean);
+
+          for (const block of blocks) {
+            // Match: optional ###, Q. <question>\n A. <answer> (rest)
+            const m = block.match(/^(?:###?\s*)?(?:Q[.:]?\s*|❓\s*)([\s\S]+?)[\n\r]+(?:A[.:]?\s*|💡\s*)([\s\S]+)$/);
+            if (m) {
+              qaPairs.push({ question: m[1].trim(), answer: m[2].trim() });
+            }
           }
-          if (qaPairs.length > 0) faqs = qaPairs;
+          if (qaPairs.length > 0) {
+            faqs = qaPairs;
+            // Strip FAQ section from content so it doesn't render as raw markdown blob
+            content = content.replace(/\n*##\s+(?:자주 묻는 질문|FAQ)[\s\S]*$/, "").trimEnd();
+          }
         }
 
         setPost({
