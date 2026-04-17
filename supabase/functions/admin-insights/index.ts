@@ -59,15 +59,78 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Handle blog list action
+    // Handle blog list action (excludes failed-queue posts)
     if (action === "listBlogPosts") {
       const { data: posts } = await supabase
         .from("blog_posts")
-        .select("id, title, slug, published, date, category")
+        .select("id, title, slug, published, date, category, failure_reason")
+        .is("failure_reason", null)
         .order("date", { ascending: false })
         .limit(50);
       return new Response(
         JSON.stringify({ posts: posts || [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Failed-queue list (validation-blocked posts)
+    if (action === "listFailedBlogPosts") {
+      const { data: posts } = await supabase
+        .from("blog_posts")
+        .select("id, title, slug, category, author, failure_reason, failure_attempts, created_at, content")
+        .eq("published", false)
+        .not("failure_reason", "is", null)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return new Response(
+        JSON.stringify({
+          posts: (posts || []).map((p: any) => ({
+            ...p,
+            contentLength: (p.content || "").length,
+            content: undefined,
+          })),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Force-publish a failed post (clears failure_reason)
+    if (action === "forcePublishBlogPost" && postId) {
+      const { error } = await supabase
+        .from("blog_posts")
+        .update({ published: true, failure_reason: null })
+        .eq("id", postId);
+      return new Response(
+        JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Delete a failed post (cleanup)
+    if (action === "deleteBlogPost" && postId) {
+      const { error } = await supabase
+        .from("blog_posts")
+        .delete()
+        .eq("id", postId);
+      return new Response(
+        JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Trigger a regeneration (calls generate-blog-post; topic is auto-picked)
+    if (action === "retryBlogGeneration") {
+      const url = `${Deno.env.get("SUPABASE_URL")}/functions/v1/generate-blog-post`;
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: JSON.stringify({ retry: true }),
+      }).catch((e) => console.warn("retry trigger failed:", e));
+      return new Response(
+        JSON.stringify({ success: true, message: "재생성을 백그라운드에서 시작했습니다" }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
