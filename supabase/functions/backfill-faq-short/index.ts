@@ -19,9 +19,9 @@ async function generateFaqShort(title: string, content: string): Promise<any[]> 
 - 본문 핵심 메시지 기반, 새 정보 만들지 말 것
 - JSON 배열만 출력 (마크다운 코드펜스 금지)
 
-출력 형식 예시:
+출력 형식 예시 (반드시 키 이름은 "q"와 "a"로):
 [
-  {"question": "...", "answer": "..."},
+  {"q": "...", "a": "..."},
   ...
 ]
 
