@@ -109,6 +109,8 @@ export type Database = {
           created_at: string
           date: string
           excerpt: string
+          failure_attempts: number | null
+          failure_reason: string | null
           featured: boolean
           id: string
           og_image: string | null
@@ -126,6 +128,8 @@ export type Database = {
           created_at?: string
           date?: string
           excerpt: string
+          failure_attempts?: number | null
+          failure_reason?: string | null
           featured?: boolean
           id?: string
           og_image?: string | null
@@ -143,6 +147,8 @@ export type Database = {
           created_at?: string
           date?: string
           excerpt?: string
+          failure_attempts?: number | null
+          failure_reason?: string | null
           featured?: boolean
           id?: string
           og_image?: string | null
