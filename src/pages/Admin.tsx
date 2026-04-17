@@ -56,6 +56,10 @@ export default function Admin() {
   const [engineConfig, setEngineConfig] = useState<{ version: number; updated_at: string } | null>(null);
   const [engineLogs, setEngineLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
   const [engineUpdating, setEngineUpdating] = useState(false);
+  const [failedPosts, setFailedPosts] = useState<{ id: string; title: string; slug: string; category: string; author: string; failure_reason: string; failure_attempts: number; created_at: string; contentLength: number }[]>([]);
+  const [failedActionId, setFailedActionId] = useState<string | null>(null);
+  const [retrying, setRetrying] = useState(false);
+  const [retryMsg, setRetryMsg] = useState<string>("");
 
   const handleLogin = async () => {
     setLoading(true);
