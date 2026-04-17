@@ -324,9 +324,11 @@ function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev
   );
 }
 
+type FaqShort = { q: string; a: string };
+
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[] }) | null | undefined>(undefined);
+  const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
   // Fetch DB posts for nav
@@ -376,7 +378,7 @@ export default function BlogPost() {
     async function fetchFromDb() {
       const { data } = await supabase
         .from("blog_posts")
-        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content, og_image")
+        .select("slug, title, excerpt, category, author, date, thumbnail, featured, read_time, content, og_image, faq_short")
         .eq("slug", slug!)
         .eq("published", true)
         .single();
@@ -388,7 +390,6 @@ export default function BlogPost() {
         if (faqMatch) {
           const faqSection = faqMatch[0];
           const qaPairs: FAQ[] = [];
-          // Split by Q markers (### Q., Q., ❓) — lookahead so we keep the marker
           const blocks = faqSection
             .replace(/^##\s+(?:자주 묻는 질문|FAQ)\s*/m, "")
             .split(/(?=(?:^|\n)\s*(?:###?\s*)?(?:Q[.:]\s*|❓\s*))/g)
@@ -396,7 +397,6 @@ export default function BlogPost() {
             .filter(Boolean);
 
           for (const block of blocks) {
-            // Match: optional ###, Q. <question>\n A. <answer> (rest)
             const m = block.match(/^(?:###?\s*)?(?:Q[.:]?\s*|❓\s*)([\s\S]+?)[\n\r]+(?:A[.:]?\s*|💡\s*)([\s\S]+)$/);
             if (m) {
               qaPairs.push({ question: m[1].trim(), answer: m[2].trim() });
@@ -404,9 +404,19 @@ export default function BlogPost() {
           }
           if (qaPairs.length > 0) {
             faqs = qaPairs;
-            // Strip FAQ section from content so it doesn't render as raw markdown blob
-            content = content.replace(/\n*##\s+(?:자주 묻는 질문|FAQ)[\s\S]*$/, "").trimEnd();
+            // Keep FAQ inside content for SEO body matching (Naver D.I.A.)
+            // — body markdown FAQ stays visible AS-IS
           }
+        }
+
+        // Parse faq_short (JSONB) — friendly-tone accordion below body
+        const rawFaqShort = (data as any).faq_short;
+        let faqShort: FaqShort[] | undefined;
+        if (Array.isArray(rawFaqShort)) {
+          faqShort = rawFaqShort
+            .filter((x: any) => x && typeof x.q === "string" && typeof x.a === "string")
+            .map((x: any) => ({ q: x.q, a: x.a }));
+          if (faqShort.length === 0) faqShort = undefined;
         }
 
         setPost({
@@ -421,6 +431,7 @@ export default function BlogPost() {
           readTime: data.read_time,
           content: content,
           faqs,
+          faqShort,
           ogImage: (data as any).og_image || undefined,
         });
       } else {
