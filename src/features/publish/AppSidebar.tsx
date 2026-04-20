@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useUserSite } from "./useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
+import SiteSwitcher from "./SiteSwitcher";
 
 type NavItem = { title: string; url: string; icon: typeof Home; end?: boolean };
 
@@ -53,6 +54,8 @@ export default function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
+        <SiteSwitcher />
+
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>{overviewItems.map(renderItem)}</SidebarMenu>
