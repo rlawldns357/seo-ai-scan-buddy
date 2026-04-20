@@ -41,7 +41,7 @@ export default function DashboardLayout() {
               <header className="h-12 flex items-center justify-between border-b px-2 sticky top-16 bg-background/95 backdrop-blur z-40 gap-3">
                 <div className="flex items-center min-w-0">
                   <SidebarTrigger />
-                  <span className="ml-3 text-sm font-medium text-muted-foreground">오토블로그</span>
+                  <span className="ml-3 text-sm font-semibold tracking-tight">AutoBlog</span>
                   <span className="ml-2 px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">PRO</span>
                 </div>
                 {user && (

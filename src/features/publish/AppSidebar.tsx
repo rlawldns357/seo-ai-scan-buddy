@@ -16,7 +16,7 @@ const overviewItems: NavItem[] = [
 const workflowItems: NavItem[] = [
   { title: "콘텐츠 추천", url: "/dashboard/recommendations", icon: Lightbulb },
   { title: "글 작성", url: "/dashboard/content", icon: FileText },
-  { title: "발행 큐", url: "/dashboard/auto-publish", icon: Send },
+  { title: "자동 발행 큐", url: "/dashboard/auto-publish", icon: Send },
 ];
 
 const analyticsItems: NavItem[] = [
@@ -61,14 +61,14 @@ export default function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>콘텐츠 운영</SidebarGroupLabel>
+          <SidebarGroupLabel>자동 발행 운영</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{workflowItems.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>분석</SidebarGroupLabel>
+          <SidebarGroupLabel>자동 발행 분석</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{analyticsItems.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
