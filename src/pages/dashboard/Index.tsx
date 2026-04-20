@@ -307,7 +307,10 @@ export default function DashboardIndex() {
           <section className="flex items-start justify-between gap-4 flex-wrap rounded-3xl border border-border/50 bg-card p-6 shadow-card">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">오토블로그 PRO</h1>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground inline-flex items-center gap-2">
+                  오토블로그
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
+                </h1>
                 <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-foreground">
                   <span className="h-2 w-2 rounded-full bg-primary" /> 로그인됨
                 </span>
