@@ -1,4 +1,4 @@
-import { Wand2, Send, Lightbulb, FileText, BarChart3, ExternalLink, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, Lightbulb, FileText, Send, BarChart3, ExternalLink, LogOut, Home } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -7,13 +7,20 @@ import {
 import { useUserSite } from "./useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
 
-const items = [
-  { title: "자동 발행 메인", url: "/dashboard", icon: Wand2, end: true },
-  { title: "자동 발행 큐", url: "/dashboard/auto-publish", icon: Send },
+type NavItem = { title: string; url: string; icon: typeof Home; end?: boolean };
+
+const overviewItems: NavItem[] = [
+  { title: "대시보드", url: "/dashboard", icon: LayoutDashboard, end: true },
+];
+
+const workflowItems: NavItem[] = [
   { title: "콘텐츠 추천", url: "/dashboard/recommendations", icon: Lightbulb },
   { title: "글 작성", url: "/dashboard/content", icon: FileText },
+  { title: "발행 큐", url: "/dashboard/auto-publish", icon: Send },
+];
+
+const analyticsItems: NavItem[] = [
   { title: "리포트", url: "/dashboard/reports", icon: BarChart3 },
-  { title: "랜딩 보기", url: "/", icon: Home },
 ];
 
 export default function AppSidebar() {
@@ -29,27 +36,41 @@ export default function AppSidebar() {
     navigate("/", { replace: true });
   };
 
+  const renderItem = (item: NavItem) => {
+    const active = item.end ? location.pathname === item.url : location.pathname.startsWith(item.url);
+    return (
+      <SidebarMenuItem key={item.url}>
+        <SidebarMenuButton asChild isActive={active}>
+          <NavLink to={item.url} end={item.end}>
+            <item.icon className="h-4 w-4" />
+            {!collapsed && <span>{item.title}</span>}
+          </NavLink>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  };
+
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>AutoBlog</SidebarGroupLabel>
+          <SidebarGroupLabel>오토블로그</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => {
-                const active = item.end ? location.pathname === item.url : location.pathname.startsWith(item.url);
-                return (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild isActive={active}>
-                      <NavLink to={item.url} end={item.end}>
-                        <item.icon className="h-4 w-4" />
-                        {!collapsed && <span>{item.title}</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
+            <SidebarMenu>{overviewItems.map(renderItem)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>콘텐츠 운영</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{workflowItems.map(renderItem)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>분석</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{analyticsItems.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -80,6 +101,14 @@ export default function AppSidebar() {
           </div>
         )}
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <NavLink to="/">
+                <Home className="h-4 w-4" />
+                {!collapsed && <span>랜딩 보기</span>}
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleSignOut}>
               <LogOut className="h-4 w-4" />
