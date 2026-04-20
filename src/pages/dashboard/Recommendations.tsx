@@ -37,8 +37,9 @@ export default function Recommendations() {
       // generate naive ideas from scores (no extra AI call yet)
       const seeds: Idea[] = [];
       if (history) {
-        const axes: ("SEO" | "AEO" | "GEO")[] = (["SEO", "AEO", "GEO"] as const).sort((a, b) => {
-          const map: any = { SEO: history.seo_score, AEO: history.aeo_score, GEO: history.geo_score };
+        const axes: ("SEO" | "AEO" | "GEO")[] = ["SEO", "AEO", "GEO"];
+        axes.sort((a, b) => {
+          const map: Record<string, number> = { SEO: history.seo_score, AEO: history.aeo_score, GEO: history.geo_score };
           return map[a] - map[b];
         });
         const tpl: Record<string, string[]> = {
