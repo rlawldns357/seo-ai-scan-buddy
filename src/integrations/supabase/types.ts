@@ -380,48 +380,92 @@ export type Database = {
         }
         Relationships: []
       }
+      site_post_views: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          referrer: string | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          referrer?: string | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          referrer?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_post_views_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "site_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_posts: {
         Row: {
           content: string
           created_at: string
           excerpt: string | null
           id: string
+          is_auto_generated: boolean
+          last_viewed_at: string | null
           og_image: string | null
           published_at: string | null
+          queue_position: number | null
           site_id: string
           slug: string
           source_axis: string | null
           status: string
           title: string
           updated_at: string
+          view_count: number
         }
         Insert: {
           content: string
           created_at?: string
           excerpt?: string | null
           id?: string
+          is_auto_generated?: boolean
+          last_viewed_at?: string | null
           og_image?: string | null
           published_at?: string | null
+          queue_position?: number | null
           site_id: string
           slug: string
           source_axis?: string | null
           status?: string
           title: string
           updated_at?: string
+          view_count?: number
         }
         Update: {
           content?: string
           created_at?: string
           excerpt?: string | null
           id?: string
+          is_auto_generated?: boolean
+          last_viewed_at?: string | null
           og_image?: string | null
           published_at?: string | null
+          queue_position?: number | null
           site_id?: string
           slug?: string
           source_axis?: string | null
           status?: string
           title?: string
           updated_at?: string
+          view_count?: number
         }
         Relationships: [
           {
@@ -502,6 +546,10 @@ export type Database = {
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
+      }
+      log_site_post_view: {
+        Args: { _post_id: string; _referrer?: string; _session_id: string }
+        Returns: undefined
       }
       move_to_dlq: {
         Args: {
