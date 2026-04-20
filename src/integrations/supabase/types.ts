@@ -380,6 +380,59 @@ export type Database = {
         }
         Relationships: []
       }
+      site_posts: {
+        Row: {
+          content: string
+          created_at: string
+          excerpt: string | null
+          id: string
+          og_image: string | null
+          published_at: string | null
+          site_id: string
+          slug: string
+          source_axis: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          og_image?: string | null
+          published_at?: string | null
+          site_id: string
+          slug: string
+          source_axis?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          og_image?: string | null
+          published_at?: string | null
+          site_id?: string
+          slug?: string
+          source_axis?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_posts_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "user_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -401,6 +454,36 @@ export type Database = {
           id?: string
           metadata?: Json | null
           reason?: string
+        }
+        Relationships: []
+      }
+      user_sites: {
+        Row: {
+          created_at: string
+          id: string
+          owner_email: string
+          site_slug: string
+          site_url: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_email: string
+          site_slug: string
+          site_url: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_email?: string
+          site_slug?: string
+          site_url?: string
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }

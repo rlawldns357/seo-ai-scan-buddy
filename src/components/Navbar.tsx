@@ -88,6 +88,13 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+            >
+              Product
+              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
+            </Link>
+            <Link
               to="/blog"
               className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
