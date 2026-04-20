@@ -94,7 +94,7 @@ export default function Navbar() {
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
               {!user && <LogIn className="w-3.5 h-3.5" />}
-              <span>오토블로그</span>
+              <span>AutoBlog</span>
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
             </Link>
             <Link
