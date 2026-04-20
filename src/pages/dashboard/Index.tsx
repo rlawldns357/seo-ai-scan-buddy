@@ -312,7 +312,11 @@ export default function DashboardIndex() {
                   <span className="h-2 w-2 rounded-full bg-primary" /> 로그인됨
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground mt-2 max-w-2xl">AI가 미리 준비한 콘텐츠 큐를 검토하고, 선택해서 발행하세요. 발행 이후에는 조회와 유입 흐름도 함께 확인할 수 있습니다.</p>
+              <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
+                AI가 미리 준비한 최적화 콘텐츠 큐를 검토하고, 선택해서 발행하세요.
+                <br />
+                발행 이후에는 조회와 유입 흐름도 함께 확인할 수 있습니다.
+              </p>
               <div className="mt-4">
                 <p className="text-xs text-muted-foreground">내 콘텐츠 허브</p>
                 <h2 className="text-lg font-semibold text-foreground mt-1">{site.title}</h2>
