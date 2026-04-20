@@ -1,105 +1,59 @@
 
 
-옵션 C 채택. 같은 프로젝트 내 모듈 폴더 분리로 빌드.
+User wants individual login + personal workspace. Currently `useUserSite.ts` uses localStorage (anyone on that browser sees that site). Need real auth.
 
-## 1단계 빌드 범위 (이번 작업)
+## 계획: 로그인 + 개인 워크스페이스
 
-### 라우팅
-```text
-/dashboard                  → 진입 (URL 입력 + 내 사이트 카드)
-/dashboard/recommendations  → 분석 기반 콘텐츠 아이디어
-/dashboard/content          → AI 글 생성/편집
-/dashboard/auto-publish     → 발행 큐 + 발행 실행
-/dashboard/reports          → 성과 리포트
-/sites/:siteSlug            → 공개 콘텐츠 허브
-/sites/:siteSlug/:postSlug  → 개별 글
-```
+### 1. 인증 시스템 (Lovable Cloud Auth)
+- **이메일/비밀번호** 기본 (자동 확인 ON — 베타 마찰 줄이기)
+- **Google 로그인** 추가 (`lovable.auth.signInWithOAuth("google")`)
+- **유저 프로필 불필요**: `auth.users`만 사용 (이름/아바타는 v2)
 
-### DB (마이그레이션)
-- **user_sites**: id, owner_email, site_url, site_slug(unique), title, created_at
-- **site_posts**: id, site_id(FK), slug, title, excerpt, content(md), status(draft/queued/published), source_axis, og_image, published_at, created_at
-- RLS:
-  - `user_sites`: anon SELECT(true), anon INSERT(이메일 검증 + 슬러그 길이)
-  - `site_posts`: anon SELECT(status='published'만), anon INSERT(site 존재 확인)
-  - service_role ALL
+### 2. DB 변경 (마이그레이션)
+- `user_sites`에 `user_id uuid` 컬럼 추가 (nullable, 기존 데이터 호환)
+- RLS 재정비:
+  - SELECT: 본인 것만 (`auth.uid() = user_id`) + 공개 허브용 익명 SELECT는 site_slug 단일 조회 한정
+  - INSERT: `auth.uid() = user_id` 강제
+  - UPDATE/DELETE: 본인만
+- `site_posts` RLS 재정비:
+  - 작성/수정/삭제: site 소유자만 (`EXISTS user_sites WHERE user_id = auth.uid()`)
+  - 공개 SELECT: status='published'만 유지
 
-### Edge Functions (신규 2개)
-- `generate-content-draft`: Lovable AI(`google/gemini-3-flash-preview`, temp=0)로 제목/메타/본문(md) 생성. 분석 결과 + 타겟 축 입력
-- `publish-site-post`: site_posts.status='published', published_at=now() 업데이트 (게시 한도 체크 포함)
+### 3. 신규 페이지
+- `/auth` — 로그인/회원가입 (이메일+구글, 탭 형태)
+- 기존 `/dashboard/*` 전체를 **인증 게이트**로 보호 (미로그인 → `/auth` 리다이렉트)
 
-### 폴더 구조
-```text
-src/
-  pages/
-    dashboard/
-      Layout.tsx
-      Index.tsx
-      Recommendations.tsx
-      Content.tsx
-      AutoPublish.tsx
-      Reports.tsx
-    sites/
-      SiteHub.tsx
-      SitePost.tsx
-  features/
-    publish/
-      AppSidebar.tsx
-      HeroSection.tsx
-      LockedFeature.tsx
-      useUserSite.ts
-      api.ts
-```
+### 4. 수정 파일
+- `src/features/publish/useUserSite.ts` — localStorage 제거, `auth.uid()`로 본인 사이트 조회
+- `src/pages/dashboard/Layout.tsx` — 세션 체크 + 사이드바에 사용자 이메일/로그아웃 버튼
+- `src/pages/dashboard/Index.tsx` — 사이트 생성 시 `user_id` 포함, 한 유저당 사이트 1개 정책 (베타)
+- `src/components/Navbar.tsx` — 로그인 상태에 따라 "로그인" / "대시보드" 버튼 토글
+- `src/App.tsx` — `/auth` 라우트 추가
 
-### 핵심 동작
-1. `/dashboard` 진입 → 사이트 URL 입력 → 이메일 게이트 → user_sites 생성 → site_slug 발급
-2. Recommendations: `analysis_history` 최신 row 조회 → AI로 콘텐츠 아이디어 5개 카드 → "글로 만들기" 클릭 시 Content로 이동(쿼리 파라미터)
-3. Content: `generate-content-draft` 호출 → 마크다운 에디터 → "발행 큐" 버튼 → site_posts(status=queued)
-4. Auto Publish: 큐 리스트 + "지금 발행" → `publish-site-post` 호출 → status=published
-5. Reports: 발행 글 수 / 분석 점수 추이 (`chart.tsx`) / PDF 내보내기 (`generateReportPdf` 재활용)
-6. `/sites/:siteSlug`: 공개 페이지, JSON-LD 포함, prerender 대상에 추가
+### 5. 신규 파일
+- `src/pages/Auth.tsx` — 로그인/회원가입 UI
+- `src/features/auth/useAuth.ts` — 세션 훅 (onAuthStateChange + getSession 순서 준수)
+- `src/features/auth/RequireAuth.tsx` — 보호 라우트 래퍼
 
-### 게이팅 (베타)
-- Recommendations 미리보기: 누구나
-- Content 생성: 1건 무료, 그 이상은 이메일 등록 (기존 lead 흐름)
-- Auto Publish: 이메일 등록 + 사이트당 월 5건 한도
+### 6. 핵심 인증 룰 (중요)
+- `onAuthStateChange` 리스너를 `getSession()`보다 **먼저** 등록
+- 세션은 localStorage에 자동 저장 (이미 설정됨)
+- Google OAuth `redirect_uri: window.location.origin`
+- 회원가입 시 `emailRedirectTo: window.location.origin/dashboard`
 
-### 네비게이션
-- Navbar에 "Product" 링크 + 작은 PRO 배지 → `/dashboard`
-- 기존 분석 결과 화면은 그대로 유지 (변경 없음)
+### 7. 공개 허브는 그대로
+`/sites/:siteSlug`는 인증 불필요 — 누구나 published 글 열람
 
-### 재활용 자산
-- `generateReportPdf.ts` (Reports 내보내기)
-- `analysis_history` 테이블 (Recommendations 데이터 소스)
-- `JsonLd.tsx`, `prerender-blog.mjs` (공개 허브 SEO)
-- 기존 admin/lead 모달 패턴 (이메일 게이트)
+### 빌드 순서
+1. 마이그레이션 (user_id 추가, RLS 갱신)
+2. Auth 페이지 + 훅 + 보호 래퍼
+3. Navbar/Dashboard 통합
+4. useUserSite 리팩터
+5. Google OAuth 설정 (`configure_social_login` 도구)
 
-### 이번에 만들 파일
-신규 11개:
-- `src/pages/dashboard/Layout.tsx`
-- `src/pages/dashboard/Index.tsx`
-- `src/pages/dashboard/Recommendations.tsx`
-- `src/pages/dashboard/Content.tsx`
-- `src/pages/dashboard/AutoPublish.tsx`
-- `src/pages/dashboard/Reports.tsx`
-- `src/pages/sites/SiteHub.tsx`
-- `src/pages/sites/SitePost.tsx`
-- `src/features/publish/AppSidebar.tsx`
-- `src/features/publish/LockedFeature.tsx`
-- `src/features/publish/useUserSite.ts`
-- `supabase/functions/generate-content-draft/index.ts`
-- `supabase/functions/publish-site-post/index.ts`
-- 마이그레이션: user_sites + site_posts + RLS
+### 베타 정책
+- 한 유저 = 한 사이트 (변경은 v2)
+- 기존 localStorage 사이트는 마이그레이션 안 함 (베타라 데이터 적음, 새로 생성 유도)
 
-수정 2개:
-- `src/App.tsx` — 라우트 추가
-- `src/components/Navbar.tsx` — Product 링크 + PRO 배지
-
-### 2단계 (다음 차례, 이번 범위 아님)
-- 스케줄 발행 (pg_cron)
-- 자동 OG 이미지 생성
-- 색인 자동 핑(submit-indexnow 재활용)
-- `/sites/*` prerender 통합
-- 사이트 단위 sitemap
-
-승인하면 바로 1단계 전부 구현합니다.
+승인하면 바로 구현합니다.
 
