@@ -1,8 +1,10 @@
 export interface IndexingResult {
   google: {
+    status: "confirmed" | "unknown";
     domainIndexed: boolean;
     domainPages: number;
     urlIndexed: boolean;
+    checkUrl: string;
     topResults: { title: string; url: string }[];
   };
   naver: {
