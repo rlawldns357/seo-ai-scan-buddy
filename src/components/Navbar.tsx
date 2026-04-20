@@ -93,7 +93,7 @@ export default function Navbar() {
               to={user ? "/dashboard" : "/auth"}
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
-              {user ? "Product" : (<><LogIn className="w-3.5 h-3.5" />로그인</>)}
+              {user ? "AutoBlog" : (<><LogIn className="w-3.5 h-3.5" />로그인</>)}
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
             </Link>
             <Link
