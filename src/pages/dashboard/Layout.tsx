@@ -1,10 +1,11 @@
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
 import Navbar from "@/components/Navbar";
 import RequireAuth from "@/features/auth/RequireAuth";
 import { useAuth } from "@/features/auth/useAuth";
 import { useUserSite } from "@/features/publish/useUserSite";
+import { LogOut } from "lucide-react";
 
 export default function DashboardLayout() {
   const { user, loading } = useAuth();
