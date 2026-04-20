@@ -54,7 +54,6 @@ export default function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>오토블로그</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{overviewItems.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
