@@ -1,0 +1,148 @@
+import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
+import { useUserSite, slugify } from "@/features/publish/useUserSite";
+import LockedFeature from "@/features/publish/LockedFeature";
+import { toast } from "@/hooks/use-toast";
+import { Sparkles, Send } from "lucide-react";
+
+export default function Content() {
+  const { site } = useUserSite();
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+
+  const [topic, setTopic] = useState(params.get("topic") || "");
+  const [axis, setAxis] = useState(params.get("axis") || "SEO");
+  const [draft, setDraft] = useState<{ title: string; slug: string; excerpt: string; content: string } | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [queueing, setQueueing] = useState(false);
+
+  useEffect(() => {
+    setTopic(params.get("topic") || "");
+    setAxis(params.get("axis") || "SEO");
+  }, [params]);
+
+  const generate = async () => {
+    if (!topic.trim() || !site) return;
+    setGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-content-draft", {
+        body: { topic, targetAxis: axis, siteUrl: site.site_url },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      setDraft(data);
+    } catch (e: any) {
+      toast({ title: "생성 실패", description: e?.message || "오류", variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  const queueForPublish = async () => {
+    if (!draft || !site) return;
+    setQueueing(true);
+    try {
+      const slug = draft.slug || slugify(draft.title);
+      const { error } = await supabase.from("site_posts").insert({
+        site_id: site.id,
+        slug,
+        title: draft.title,
+        excerpt: draft.excerpt,
+        content: draft.content,
+        status: "queued",
+        source_axis: axis,
+      });
+      if (error) throw error;
+      toast({ title: "발행 큐에 추가되었습니다" });
+      navigate("/dashboard/auto-publish");
+    } catch (e: any) {
+      toast({ title: "추가 실패", description: e?.message || "오류", variant: "destructive" });
+    } finally {
+      setQueueing(false);
+    }
+  };
+
+  if (!site) {
+    return (
+      <>
+        <Helmet><title>글 작성 | Auto Publish</title></Helmet>
+        <LockedFeature
+          title="먼저 사이트를 연결하세요"
+          description="허브가 있어야 생성된 글을 발행 큐에 담을 수 있어요."
+          onCta={() => navigate("/dashboard")}
+        />
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Helmet><title>글 작성 | Auto Publish</title></Helmet>
+      <h1 className="text-2xl font-bold text-foreground mb-1">글 작성</h1>
+      <p className="text-sm text-muted-foreground mb-6">주제를 입력하면 AI가 SEO·AEO·GEO 친화적인 글을 작성합니다.</p>
+
+      <Card className="p-5 mb-4">
+        <div className="grid md:grid-cols-[1fr_auto_auto] gap-3 items-end">
+          <div>
+            <Label htmlFor="topic">주제</Label>
+            <Input id="topic" value={topic} onChange={(e) => setTopic(e.target.value)} placeholder="예: AEO를 위한 FAQ 작성법" />
+          </div>
+          <div>
+            <Label htmlFor="axis">타겟 축</Label>
+            <select
+              id="axis"
+              value={axis}
+              onChange={(e) => setAxis(e.target.value)}
+              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="SEO">SEO</option>
+              <option value="AEO">AEO</option>
+              <option value="GEO">GEO</option>
+            </select>
+          </div>
+          <Button onClick={generate} disabled={generating || !topic.trim()} className="rounded-full">
+            <Sparkles className="w-4 h-4" /> {generating ? "생성 중..." : "AI로 작성"}
+          </Button>
+        </div>
+      </Card>
+
+      {draft && (
+        <Card className="p-5 space-y-4">
+          <div>
+            <Label>제목</Label>
+            <Input value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            <div>
+              <Label>슬러그</Label>
+              <Input value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} />
+            </div>
+            <div>
+              <Label>요약</Label>
+              <Input value={draft.excerpt} onChange={(e) => setDraft({ ...draft, excerpt: e.target.value })} />
+            </div>
+          </div>
+          <div>
+            <Label>본문 (마크다운)</Label>
+            <textarea
+              value={draft.content}
+              onChange={(e) => setDraft({ ...draft, content: e.target.value })}
+              className="w-full min-h-[400px] rounded-md border border-input bg-background p-3 text-sm font-mono"
+            />
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={queueForPublish} disabled={queueing} className="rounded-full">
+              <Send className="w-4 h-4" /> {queueing ? "추가 중..." : "발행 큐에 추가"}
+            </Button>
+          </div>
+        </Card>
+      )}
+    </>
+  );
+}

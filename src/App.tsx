@@ -17,6 +17,14 @@ const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
+const DashboardLayout = lazy(() => import("./pages/dashboard/Layout.tsx"));
+const DashboardIndex = lazy(() => import("./pages/dashboard/Index.tsx"));
+const DashboardRecommendations = lazy(() => import("./pages/dashboard/Recommendations.tsx"));
+const DashboardContent = lazy(() => import("./pages/dashboard/Content.tsx"));
+const DashboardAutoPublish = lazy(() => import("./pages/dashboard/AutoPublish.tsx"));
+const DashboardReports = lazy(() => import("./pages/dashboard/Reports.tsx"));
+const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
+const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -39,6 +47,15 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              <Route index element={<DashboardIndex />} />
+              <Route path="recommendations" element={<DashboardRecommendations />} />
+              <Route path="content" element={<DashboardContent />} />
+              <Route path="auto-publish" element={<DashboardAutoPublish />} />
+              <Route path="reports" element={<DashboardReports />} />
+            </Route>
+            <Route path="/sites/:siteSlug" element={<SiteHub />} />
+            <Route path="/sites/:siteSlug/:postSlug" element={<SitePost />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
