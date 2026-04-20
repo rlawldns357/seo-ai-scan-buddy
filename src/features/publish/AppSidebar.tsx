@@ -33,7 +33,7 @@ export default function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Auto Publish</SidebarGroupLabel>
+          <SidebarGroupLabel>AutoBlog</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
