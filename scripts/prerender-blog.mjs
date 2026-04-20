@@ -359,3 +359,89 @@ ${items}
   </channel>
 </rss>`;
 }
+
+// ── 9. About page generator ───────────────────────────────────────
+function generateAboutHtml(latestPosts, assets) {
+  const title = "서치튠OS 소개 – SEO·AEO·GEO AI 검색 진단 도구";
+  const desc = "서치튠OS(SearchTune OS)는 2025년 출시된 한국어 기반 AI 검색 진단 도구입니다. URL만 입력하면 SEO·AEO·GEO 점수를 즉시 확인할 수 있습니다.";
+  const orgJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "AboutPage",
+    name: title,
+    description: desc,
+    url: `${SITE}/about`,
+    inLanguage: "ko",
+    isPartOf: { "@type": "WebSite", name: "서치튠OS", url: SITE },
+  });
+  const blogLinks = latestPosts
+    .map(p => `<li><a href="/blog/${p.slug}" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
+    .join("\n        ");
+
+  return `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${esc(title)}</title>
+  <meta name="description" content="${esc(desc)}" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="${SITE}/about" />
+  <meta property="og:title" content="${esc(title)}" />
+  <meta property="og:description" content="${esc(desc)}" />
+  <meta property="og:url" content="${SITE}/about" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="서치튠OS" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="google-site-verification" content="MEMyH-PWuk7VIwn_C-PigFKHJRuwjuq65k6HYnDOehs" />
+  <meta name="naver-site-verification" content="d6a9e174a1839bf56c1ab85d7ba0c3241c0eda31" />
+  <script type="application/ld+json">${orgJsonLd}</script>
+  ${assets.cssLinks.join("\n  ")}
+  ${assets.preloads.join("\n  ")}
+</head>
+<body>
+  <div id="root">
+    <div style="max-width:720px;margin:2rem auto;padding:1rem;font-family:sans-serif;color:#222">
+      <nav style="margin-bottom:1.5rem"><a href="/" style="color:#666;text-decoration:none">← 홈</a></nav>
+      <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:0.5rem">서치튠OS 소개</h1>
+      <p style="color:#444;line-height:1.7">서치튠OS(SearchTune OS)는 2025년 출시된 한국어 기반 AI 검색 진단 도구로, URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다.</p>
+      <h2 style="font-size:1.2rem;margin-top:2rem">3가지 진단 축</h2>
+      <ul style="line-height:1.8">
+        <li><strong>SEO</strong> – 메타 태그, 구조화 데이터, Canonical, Sitemap 등 기술 SEO</li>
+        <li><strong>AEO</strong> – ChatGPT·Perplexity·뤼튼 등 AI 답변 엔진 인용 가능성</li>
+        <li><strong>GEO</strong> – Google AI Overviews·Naver Cue: 등 생성형 검색 출처 인용 준비도</li>
+      </ul>
+      <h2 style="font-size:1.2rem;margin-top:2rem">최신 블로그</h2>
+      <ul style="line-height:1.8">
+        ${blogLinks}
+      </ul>
+      <footer style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.85rem;color:#888">
+        <a href="/" style="color:#666;margin-right:1rem">홈</a>
+        <a href="/blog" style="color:#666">블로그 전체</a>
+      </footer>
+    </div>
+  </div>
+  ${assets.moduleScripts.join("\n  ")}
+</body>
+</html>`;
+}
+
+// ── 10. Inject latest blog links into root index.html for crawler discovery
+function injectHomeLinks(latestPosts) {
+  const indexPath = path.join(DIST, "index.html");
+  if (!fs.existsSync(indexPath)) return;
+  let html = fs.readFileSync(indexPath, "utf-8");
+  if (html.includes("data-prerender-home-links")) return; // idempotent
+
+  const linksHtml = `<section data-prerender-home-links style="display:none">
+    <h2>최신 블로그</h2>
+    <ul>
+      ${latestPosts.map(p => `<li><a href="/blog/${p.slug}">${esc(p.title)}</a></li>`).join("\n      ")}
+    </ul>
+    <p><a href="/blog">블로그 전체 보기</a> · <a href="/about">서치튠OS 소개</a></p>
+  </section>`;
+
+  // Inject right before </noscript> closing tag (visible to crawlers without JS)
+  html = html.replace(/<\/noscript>/, `${linksHtml}\n    </noscript>`);
+  fs.writeFileSync(indexPath, html, "utf-8");
+  console.log("[prerender] Injected home internal links for crawlers");
+}
