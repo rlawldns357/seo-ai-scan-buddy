@@ -15,8 +15,6 @@ const overviewItems: NavItem[] = [
 
 const workflowItems: NavItem[] = [
   { title: "콘텐츠 추천", url: "/dashboard/recommendations", icon: Lightbulb },
-const workflowItems: NavItem[] = [
-  { title: "콘텐츠 추천", url: "/dashboard/recommendations", icon: Lightbulb },
   { title: "글 작성", url: "/dashboard/content", icon: FileText },
   { title: "자동 발행 큐", url: "/dashboard/auto-publish", icon: Send },
 ];
