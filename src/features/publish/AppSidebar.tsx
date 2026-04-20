@@ -1,10 +1,11 @@
-import { Lightbulb, FileText, Send, BarChart3, Home, ExternalLink } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Lightbulb, FileText, Send, BarChart3, Home, ExternalLink, LogOut } from "lucide-react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar,
 } from "@/components/ui/sidebar";
 import { useUserSite } from "./useUserSite";
+import { useAuth } from "@/features/auth/useAuth";
 
 const items = [
   { title: "홈", url: "/dashboard", icon: Home, end: true },
@@ -18,7 +19,14 @@ export default function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const location = useLocation();
+  const navigate = useNavigate();
   const { site } = useUserSite();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/", { replace: true });
+  };
 
   return (
     <Sidebar collapsible="icon">
@@ -64,6 +72,22 @@ export default function AppSidebar() {
           </SidebarGroup>
         )}
       </SidebarContent>
+
+      <SidebarFooter>
+        {user && !collapsed && (
+          <div className="px-2 pb-1 text-[11px] text-muted-foreground truncate" title={user.email ?? ""}>
+            {user.email}
+          </div>
+        )}
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton onClick={handleSignOut}>
+              <LogOut className="h-4 w-4" />
+              {!collapsed && <span>로그아웃</span>}
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }

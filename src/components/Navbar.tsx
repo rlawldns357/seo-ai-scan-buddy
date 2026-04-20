@@ -1,13 +1,15 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, ShieldCheck, Bell, MessageSquare, Briefcase } from "lucide-react";
+import { Search, ShieldCheck, Bell, MessageSquare, Briefcase, LogIn } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
 import ConsultationModal from "@/components/ConsultationModal";
 import LeadModal from "@/components/LeadModal";
+import { useAuth } from "@/features/auth/useAuth";
 
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
+  const { user } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [engineVersion, setEngineVersion] = useState<number | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
@@ -88,10 +90,10 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              to="/dashboard"
+              to={user ? "/dashboard" : "/auth"}
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
-              Product
+              {user ? "Product" : (<><LogIn className="w-3.5 h-3.5" />로그인</>)}
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
             </Link>
             <Link
