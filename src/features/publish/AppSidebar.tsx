@@ -78,7 +78,7 @@ export default function AppSidebar() {
 
         {site && !collapsed && (
           <SidebarGroup>
-            <SidebarGroupLabel>내 사이트</SidebarGroupLabel>
+            <SidebarGroupLabel>라이브 보기</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
