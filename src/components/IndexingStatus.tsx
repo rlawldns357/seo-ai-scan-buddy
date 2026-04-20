@@ -51,16 +51,15 @@ const IndexingStatus = ({ result, loading, url }: IndexingStatusProps) => {
                 도메인만
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 text-xs font-semibold text-score-poor">
-                <XCircle className="w-3.5 h-3.5" />
-                미노출
+              <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+                자동 확인 실패
               </span>
             )}
           </div>
           <p className="text-xs text-muted-foreground">
             {result.google.domainIndexed
               ? `도메인에서 약 ${result.google.domainPages}개 이상의 페이지가 발견됨`
-              : "구글에서 이 도메인의 페이지가 발견되지 않았습니다"}
+              : "자동 확인이 어려워요. 아래 링크로 직접 확인해 주세요."}
           </p>
           {result.google.topResults.length > 0 && (
             <ul className="space-y-0.5">
@@ -74,12 +73,16 @@ const IndexingStatus = ({ result, loading, url }: IndexingStatusProps) => {
             </ul>
           )}
           <a
-            href={`https://www.google.com/search?q=site:${encodeURIComponent(domain)}`}
+            href={result.google.checkUrl ?? `https://www.google.com/search?q=site:${encodeURIComponent(domain)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+            className={
+              result.google.domainIndexed
+                ? "inline-flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+                : "inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 px-2 py-1 rounded-md hover:bg-primary/20 transition-colors"
+            }
           >
-            직접 확인 <ExternalLink className="w-3 h-3" />
+            Google에서 직접 확인 <ExternalLink className="w-3 h-3" />
           </a>
         </div>
 

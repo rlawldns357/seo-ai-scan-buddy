@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
     const hasNaverApi = !!(naverClientId && naverClientSecret);
 
     // Build parallel requests
+    // Google: only one query (site:domain), no lang/country to avoid false negatives
     const promises: Promise<Response>[] = [
-      // Google: site:domain
       fetch(`${FIRECRAWL_V2}/search`, {
         method: "POST",
         headers: {
@@ -56,23 +56,7 @@ Deno.serve(async (req) => {
         },
         body: JSON.stringify({
           query: `site:${domain}`,
-          limit: 5,
-          lang: "ko",
-          country: "KR",
-        }),
-      }),
-      // Google: site:exact-url
-      fetch(`${FIRECRAWL_V2}/search`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${firecrawlKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: `site:${url}`,
-          limit: 3,
-          lang: "ko",
-          country: "KR",
+          limit: 10,
         }),
       }),
     ];
@@ -93,18 +77,19 @@ Deno.serve(async (req) => {
 
     const responses = await Promise.all(promises);
     const domainData = await responses[0].json();
-    const exactData = await responses[1].json();
 
     // Google results
     const domainList: any[] = Array.isArray(domainData?.data) ? domainData.data : [];
-    const exactList: any[] = Array.isArray(exactData?.data) ? exactData.data : [];
     const domainResults = domainList.length;
-    const exactResults = exactList.length;
 
     const normalizedUrl = url.replace(/\/$/, "").toLowerCase();
     const exactMatch = domainList.some(
       (r: any) => r.url?.replace(/\/$/, "").toLowerCase() === normalizedUrl,
-    ) || exactResults > 0;
+    );
+
+    // Status: confirmed (>=1 result) | unknown (0 results, can't auto-verify)
+    const googleStatus: "confirmed" | "unknown" =
+      domainResults > 0 ? "confirmed" : "unknown";
 
     // Naver results
     let naverResult: {
@@ -116,9 +101,9 @@ Deno.serve(async (req) => {
 
     const naverCheckUrl = `https://search.naver.com/search.naver?query=site%3A${encodeURIComponent(domain)}`;
 
-    if (hasNaverApi && responses[2]) {
+    if (hasNaverApi && responses[1]) {
       try {
-        const naverData = await responses[2].json();
+        const naverData = await responses[1].json();
         const items: any[] = Array.isArray(naverData?.items) ? naverData.items : [];
 
         // Filter results that contain the domain in the link
@@ -167,9 +152,11 @@ Deno.serve(async (req) => {
       JSON.stringify({
         success: true,
         google: {
+          status: googleStatus,
           domainIndexed: domainResults > 0,
           domainPages: domainResults,
           urlIndexed: exactMatch,
+          checkUrl: `https://www.google.com/search?q=site:${encodeURIComponent(domain)}`,
           topResults: domainList.slice(0, 3).map((r: any) => ({
             title: r.title,
             url: r.url,
