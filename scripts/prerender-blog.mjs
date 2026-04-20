@@ -242,19 +242,31 @@ async function main() {
 
   console.log(`[prerender] Generating ${allPosts.length} blog HTML files...`);
 
+  // Build a "related posts" pool (latest 5 excluding current)
+  const relatedPool = allPosts.slice(0, 20);
+
   for (const post of allPosts) {
     const dir = path.join(DIST, "blog", post.slug);
     fs.mkdirSync(dir, { recursive: true });
-    const html = generateHtml(post, assets);
+    const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
+    const html = generateHtml(post, assets, related);
     fs.writeFileSync(path.join(dir, "index.html"), html, "utf-8");
   }
 
-  // Also generate /blog/index.html (listing page)
+  // Always regenerate /blog/index.html (listing page) so it stays fresh
   const blogListDir = path.join(DIST, "blog");
-  if (!fs.existsSync(path.join(blogListDir, "index.html"))) {
-    const listHtml = generateBlogListHtml(allPosts, assets);
-    fs.writeFileSync(path.join(blogListDir, "index.html"), listHtml, "utf-8");
-  }
+  const listHtml = generateBlogListHtml(allPosts, assets);
+  fs.writeFileSync(path.join(blogListDir, "index.html"), listHtml, "utf-8");
+
+  // Generate static /about/index.html with key copy + sitemap-style internal links
+  const aboutHtml = generateAboutHtml(allPosts.slice(0, 6), assets);
+  const aboutDir = path.join(DIST, "about");
+  fs.mkdirSync(aboutDir, { recursive: true });
+  fs.writeFileSync(path.join(aboutDir, "index.html"), aboutHtml, "utf-8");
+  console.log("[prerender] /about/index.html generated");
+
+  // Inject internal "최신 블로그" links into root index.html noscript area for crawlers
+  injectHomeLinks(allPosts.slice(0, 8));
 
   // Generate /rss.xml
   const rssXml = generateRssXml(allPosts);
