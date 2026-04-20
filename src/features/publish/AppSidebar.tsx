@@ -1,4 +1,4 @@
-import { Lightbulb, FileText, Send, BarChart3, Home, ExternalLink, LogOut } from "lucide-react";
+import { Wand2, Send, Lightbulb, FileText, BarChart3, ExternalLink, LogOut, Home } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -8,11 +8,12 @@ import { useUserSite } from "./useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
 
 const items = [
-  { title: "홈", url: "/dashboard", icon: Home, end: true },
+  { title: "자동 발행 메인", url: "/dashboard", icon: Wand2, end: true },
+  { title: "자동 발행 큐", url: "/dashboard/auto-publish", icon: Send },
   { title: "콘텐츠 추천", url: "/dashboard/recommendations", icon: Lightbulb },
   { title: "글 작성", url: "/dashboard/content", icon: FileText },
-  { title: "자동 발행", url: "/dashboard/auto-publish", icon: Send },
   { title: "리포트", url: "/dashboard/reports", icon: BarChart3 },
+  { title: "랜딩 보기", url: "/", icon: Home },
 ];
 
 export default function AppSidebar() {
@@ -36,9 +37,7 @@ export default function AppSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => {
-                const active = item.end
-                  ? location.pathname === item.url
-                  : location.pathname.startsWith(item.url);
+                const active = item.end ? location.pathname === item.url : location.pathname.startsWith(item.url);
                 return (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={active}>
@@ -75,8 +74,9 @@ export default function AppSidebar() {
 
       <SidebarFooter>
         {user && !collapsed && (
-          <div className="px-2 pb-1 text-[11px] text-muted-foreground truncate" title={user.email ?? ""}>
-            {user.email}
+          <div className="px-2 pb-1 space-y-0.5">
+            <div className="text-[11px] text-foreground truncate" title={user.email ?? ""}>{user.email}</div>
+            {site && <div className="text-[10px] text-muted-foreground truncate">로그인됨 · {site.title}</div>}
           </div>
         )}
         <SidebarMenu>
