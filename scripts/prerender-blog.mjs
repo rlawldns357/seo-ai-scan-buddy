@@ -128,7 +128,7 @@ function getAssetTags() {
 }
 
 // ── 6. Generate HTML for a post ─────────────────────────────────────
-function generateHtml(post, assets) {
+function generateHtml(post, assets, related = []) {
   const postUrl = `${SITE}/blog/${post.slug}`;
   const title = `${post.title} – 서치튠OS 블로그`;
   const ogImage = post.og_image || `${SITE}/og-image.png`;
@@ -206,6 +206,17 @@ function generateHtml(post, assets) {
       <h1 style="font-size:1.8rem;font-weight:800;line-height:1.3;margin-bottom:0.5rem">${esc(post.title)}</h1>
       <p style="color:#666;font-size:0.9rem;margin-bottom:1.5rem">${esc(post.author)} · ${post.date}${post.read_time ? ` · ${post.read_time} 읽기` : ""}</p>
       <article>${contentHtml || `<p>${esc(post.excerpt)}</p>`}</article>
+      ${related.length ? `<aside style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee">
+        <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:0.75rem">관련 글</h2>
+        <ul style="list-style:none;padding:0;margin:0">
+          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="/blog/${r.slug}" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
+        </ul>
+      </aside>` : ""}
+      <footer style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.85rem;color:#888">
+        <a href="/" style="color:#666;margin-right:1rem">홈</a>
+        <a href="/blog" style="color:#666;margin-right:1rem">블로그 전체</a>
+        <a href="/about" style="color:#666">서치튠OS 소개</a>
+      </footer>
     </div>
   </div>
   ${assets.moduleScripts.join("\n  ")}
