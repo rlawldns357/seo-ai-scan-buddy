@@ -82,6 +82,10 @@ export default function Auth() {
           </span>
         </Link>
 
+        <p className="text-center text-sm text-muted-foreground mb-5 max-w-sm leading-relaxed">
+          진단에서 끝나지 말고, <span className="text-foreground font-semibold">콘텐츠 운영까지 자동화</span>하세요
+        </p>
+
         <Card className="w-full max-w-sm p-6 space-y-5">
           <div className="flex gap-1 p-1 bg-muted rounded-lg">
             <button
