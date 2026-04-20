@@ -10,14 +10,20 @@ import { useAuth } from "@/features/auth/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, ExternalLink } from "lucide-react";
+import MarketingLanding from "@/features/publish/landing/MarketingLanding";
 
 export default function DashboardIndex() {
   const { site, refresh, loading } = useUserSite();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [siteUrl, setSiteUrl] = useState("");
   const [title, setTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Guests see the marketing landing.
+  if (!authLoading && !user) {
+    return <MarketingLanding />;
+  }
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
