@@ -2,9 +2,11 @@ import { Outlet } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
 import Navbar from "@/components/Navbar";
+import RequireAuth from "@/features/auth/RequireAuth";
 
 export default function DashboardLayout() {
   return (
+    <RequireAuth>
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-background">
         <Navbar />
@@ -23,5 +25,6 @@ export default function DashboardLayout() {
         </div>
       </div>
     </SidebarProvider>
+    </RequireAuth>
   );
 }

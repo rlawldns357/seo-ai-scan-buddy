@@ -6,49 +6,60 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
+import { useAuth } from "@/features/auth/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, ExternalLink, Trash2 } from "lucide-react";
+import { Sparkles, ExternalLink } from "lucide-react";
 
 export default function DashboardIndex() {
-  const { site, saveSiteId, clearSite } = useUserSite();
+  const { site, refresh, loading } = useUserSite();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [siteUrl, setSiteUrl] = useState("");
   const [title, setTitle] = useState("");
-  const [email, setEmail] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!siteUrl || !title || !email) return;
+    if (!siteUrl || !title || !user) return;
     setSubmitting(true);
     try {
       const normalizedUrl = siteUrl.startsWith("http") ? siteUrl : `https://${siteUrl}`;
       const baseSlug = slugify(siteUrl);
       let slug = baseSlug;
-      // 충돌 시 suffix
-      const { data: existing } = await supabase.from("user_sites").select("id").eq("site_slug", slug).maybeSingle();
+      const { data: existing } = await supabase
+        .from("user_sites")
+        .select("id")
+        .eq("site_slug", slug)
+        .maybeSingle();
       if (existing) slug = `${baseSlug}-${Math.random().toString(36).slice(2, 6)}`;
 
-      const { data, error } = await supabase.from("user_sites").insert({
-        owner_email: email,
+      const { error } = await supabase.from("user_sites").insert({
+        owner_email: user.email!,
         site_url: normalizedUrl,
         site_slug: slug,
         title,
-      }).select().single();
+        user_id: user.id,
+      });
 
       if (error) throw error;
-      saveSiteId(data.id);
-      // best-effort lead capture
-      supabase.from("email_leads").insert({ email, source: "auto_publish" }).then();
+      await refresh();
       toast({ title: "사이트가 생성되었습니다", description: `/sites/${slug}` });
       navigate("/dashboard/recommendations");
     } catch (err) {
-      toast({ title: "오류", description: err instanceof Error ? err.message : "생성 실패", variant: "destructive" });
+      toast({
+        title: "오류",
+        description: err instanceof Error ? err.message : "생성 실패",
+        variant: "destructive",
+      });
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return <div className="text-sm text-muted-foreground">불러오는 중…</div>;
+  }
 
   return (
     <>
@@ -68,7 +79,7 @@ export default function DashboardIndex() {
 
       {site ? (
         <Card className="p-6">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
               <p className="text-xs text-muted-foreground">내 콘텐츠 허브</p>
               <h2 className="text-xl font-semibold text-foreground mt-1">{site.title}</h2>
@@ -82,36 +93,43 @@ export default function DashboardIndex() {
                 /sites/{site.site_slug} <ExternalLink className="w-3 h-3" />
               </a>
             </div>
-            <div className="flex flex-col gap-2">
-              <Button onClick={() => navigate("/dashboard/recommendations")} className="rounded-full">
-                <Sparkles className="w-4 h-4" /> 콘텐츠 추천 보기
-              </Button>
-              <Button variant="ghost" size="sm" onClick={clearSite}>
-                <Trash2 className="w-3.5 h-3.5" /> 연결 해제
-              </Button>
-            </div>
+            <Button onClick={() => navigate("/dashboard/recommendations")} className="rounded-full">
+              <Sparkles className="w-4 h-4" /> 콘텐츠 추천 보기
+            </Button>
           </div>
         </Card>
       ) : (
         <Card className="p-6">
           <h2 className="text-lg font-semibold text-foreground mb-1">사이트 연결</h2>
-          <p className="text-sm text-muted-foreground mb-4">콘텐츠 허브를 발급받고 자동 발행을 시작하세요.</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            콘텐츠 허브를 발급받고 자동 발행을 시작하세요. (베타: 한 계정당 1개)
+          </p>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="siteUrl">사이트 URL</Label>
-                <Input id="siteUrl" placeholder="example.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} required />
+                <Input
+                  id="siteUrl"
+                  placeholder="example.com"
+                  value={siteUrl}
+                  onChange={(e) => setSiteUrl(e.target.value)}
+                  required
+                />
               </div>
               <div>
                 <Label htmlFor="title">콘텐츠 허브 제목</Label>
-                <Input id="title" placeholder="우리 브랜드 인사이트" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                <Input
+                  id="title"
+                  placeholder="우리 브랜드 인사이트"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  required
+                />
               </div>
             </div>
-            <div>
-              <Label htmlFor="email">이메일</Label>
-              <Input id="email" type="email" placeholder="you@company.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
-              <p className="text-[11px] text-muted-foreground mt-1">발행 알림과 리포트 수신용입니다.</p>
-            </div>
+            <p className="text-[11px] text-muted-foreground">
+              로그인된 계정: <span className="font-medium">{user?.email}</span>
+            </p>
             <Button type="submit" disabled={submitting} className="rounded-full w-full md:w-auto">
               {submitting ? "생성 중..." : "허브 발급받고 시작하기"}
             </Button>
