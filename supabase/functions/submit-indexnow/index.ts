@@ -29,6 +29,14 @@ Deno.serve(async (req) => {
       urls = body.urls;
     } else if (body.slug) {
       urls = [`${SITE_URL}/blog/${body.slug}`];
+    } else if (body.submitAll === true) {
+      // Full re-submission: home + about + blog index + every published post
+      urls = [`${SITE_URL}/`, `${SITE_URL}/about`, `${SITE_URL}/blog`];
+      const { data: posts } = await supabase
+        .from("blog_posts")
+        .select("slug")
+        .eq("published", true);
+      if (posts) urls.push(...posts.map((p: { slug: string }) => `${SITE_URL}/blog/${p.slug}`));
     } else {
       // Submit all blog posts published today
       const today = new Date().toISOString().slice(0, 10);
