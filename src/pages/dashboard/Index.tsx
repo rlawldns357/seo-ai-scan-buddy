@@ -15,15 +15,15 @@ import MarketingLanding from "@/features/publish/landing/MarketingLanding";
 export default function DashboardIndex() {
   const { site, refresh, loading } = useUserSite();
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [siteUrl, setSiteUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   // Guests see the marketing landing.
   if (!authLoading && !user) {
     return <MarketingLanding />;
   }
-  const navigate = useNavigate();
-  const [siteUrl, setSiteUrl] = useState("");
-  const [title, setTitle] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
