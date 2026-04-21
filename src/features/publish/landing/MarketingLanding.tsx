@@ -11,7 +11,7 @@ export default function MarketingLanding() {
   return (
     <>
       <Helmet>
-        <title>Auto Publish — 진단에서 콘텐츠 운영까지 | SearchTune OS</title>
+        <title>Autoblog — 진단에서 콘텐츠 운영까지 | SearchTune OS</title>
         <meta
           name="description"
           content="SEO·AEO·GEO 관점에서 필요한 콘텐츠를 찾고, SearchTune OS 전용 페이지에 자동으로 발행해 사이트 운영을 더 쉽게 시작하세요."
