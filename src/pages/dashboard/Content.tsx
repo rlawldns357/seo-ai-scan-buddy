@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
+import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, Send } from "lucide-react";
 
@@ -15,6 +16,7 @@ export default function Content() {
   const { site } = useUserSite();
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const guard = useRequireAuthAction();
 
   const [topic, setTopic] = useState(params.get("topic") || "");
   const [axis, setAxis] = useState(params.get("axis") || "SEO");
@@ -27,7 +29,7 @@ export default function Content() {
     setAxis(params.get("axis") || "SEO");
   }, [params]);
 
-  const generate = async () => {
+  const generate = guard(async () => {
     if (!topic.trim() || !site) return;
     setGenerating(true);
     try {
@@ -42,9 +44,9 @@ export default function Content() {
     } finally {
       setGenerating(false);
     }
-  };
+  });
 
-  const queueForPublish = async () => {
+  const queueForPublish = guard(async () => {
     if (!draft || !site) return;
     setQueueing(true);
     try {
@@ -66,7 +68,7 @@ export default function Content() {
     } finally {
       setQueueing(false);
     }
-  };
+  });
 
   if (!site) {
     return (

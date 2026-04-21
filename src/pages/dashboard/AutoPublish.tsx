@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
+import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { toast } from "@/hooks/use-toast";
 import { Send, ExternalLink, Trash2 } from "lucide-react";
 
@@ -23,6 +24,7 @@ type Post = {
 export default function AutoPublish() {
   const { site } = useUserSite();
   const navigate = useNavigate();
+  const guard = useRequireAuthAction();
   const [posts, setPosts] = useState<Post[]>([]);
   const [busyId, setBusyId] = useState<string | null>(null);
 
@@ -38,7 +40,7 @@ export default function AutoPublish() {
 
   useEffect(() => { load(); }, [load]);
 
-  const publishNow = async (id: string) => {
+  const publishNow = guard(async (id: string) => {
     setBusyId(id);
     try {
       const { data, error } = await supabase.functions.invoke("publish-site-post", { body: { postId: id } });
@@ -51,14 +53,14 @@ export default function AutoPublish() {
     } finally {
       setBusyId(null);
     }
-  };
+  });
 
-  const removePost = async (id: string) => {
+  const removePost = guard(async (id: string) => {
     if (!confirm("이 글을 삭제할까요?")) return;
     // RLS는 service_role만 delete 허용 → soft 처리 대신 서비스 함수 없이 SDK로는 불가능. 로컬 숨김으로 처리.
     setPosts((prev) => prev.filter((p) => p.id !== id));
     toast({ title: "목록에서 숨겼습니다" });
-  };
+  });
 
   if (!site) {
     return (
