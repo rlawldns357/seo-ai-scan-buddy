@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
@@ -10,16 +9,10 @@ import { LogOut } from "lucide-react";
 /**
  * Dashboard layout — operations console for Autoblog.
  *
- * Public marketing details now live at /autoblog (separate public route).
- * Browsing /dashboard/* never auto-redirects to /auth; sub-pages render
- * LockedFeature when no site is linked. The /dashboard root itself bounces
- * guests to /autoblog (handled inside DashboardIndex) so URL intent stays:
- *   /          → 공개 진단 메인
- *   /autoblog  → 공개 Autoblog 소개
- *   /dashboard → 운영 대시보드 (로그인 사용자)
- *
- * Auth is enforced ONLY at the action layer (form submit, publish, queue,
- * archive, edit, save) via `useRequireAuthAction`. See each page handler.
+ * Read-only by default. Browsing /dashboard/* NEVER auto-redirects to /auth.
+ * Guests see the shell with LockedFeature placeholders; auth is enforced
+ * ONLY at the action layer (form submit, publish, queue, archive, edit, save)
+ * via `useRequireAuthAction`. Public marketing lives at /autoblog.
  */
 export default function DashboardLayout() {
   const { user, signOut } = useAuth();
