@@ -14,7 +14,7 @@ export default function HowItWorks() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 md:mb-14 max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
-            페이지 만들기에서 <span className="text-primary">검색·AI 인용</span>까지
+            페이지 만들기에서 <span className="text-primary">검색·AI가 이해하는 글</span>까지
           </h2>
           <p className="text-sm md:text-base text-muted-foreground mt-4 leading-relaxed">
             5단계 흐름이 자동으로 이어집니다. 매번 직접 점검할 필요가 없습니다.
