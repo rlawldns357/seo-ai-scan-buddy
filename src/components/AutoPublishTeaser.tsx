@@ -35,8 +35,11 @@ export default function AutoPublishTeaser() {
         </p>
 
         <div className="mt-4 p-3 rounded-xl bg-muted/40 border border-border/40">
-          <p className="text-[11px] font-semibold text-muted-foreground mb-2">
-            AutoBlog 페이지에서 자세히 볼 수 있어요
+          <p className="text-[11px] font-semibold text-foreground mb-1">
+            상세 설명은 AutoBlog 페이지로 옮겨졌어요
+          </p>
+          <p className="text-[11px] text-muted-foreground mb-2">
+            아래 항목들은 모두 ‘AutoBlog 자세히 보기’에서 이어서 볼 수 있습니다.
           </p>
           <ul className="flex flex-wrap gap-1.5">
             {PREVIEW_ITEMS.map(({ icon: Icon, label }) => (

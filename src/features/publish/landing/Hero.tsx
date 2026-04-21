@@ -7,9 +7,12 @@ export default function Hero() {
     <section className="py-20 md:py-32 px-2 md:px-6">
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 md:gap-12 items-center">
         <div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-4">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-3">
             <Sparkles className="w-3 h-3" /> Auto Publish · BETA
           </span>
+          <p className="text-[11px] text-muted-foreground mb-4">
+            메인에서 이어진 AutoBlog 상세 설명입니다.
+          </p>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
             진단에서 끝나지 말고,<br />
             <span className="text-primary">콘텐츠 운영까지 자동화</span>하세요
