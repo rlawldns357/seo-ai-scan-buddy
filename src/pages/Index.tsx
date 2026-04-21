@@ -307,6 +307,8 @@ const Index = () => {
         </main>
       )}
 
+      {screen === "home" && <AutoPublishMarketingBlock />}
+
       <Suspense fallback={null}>
         {screen === "loading" && (
           <>
