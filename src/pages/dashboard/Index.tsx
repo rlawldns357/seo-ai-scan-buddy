@@ -10,7 +10,6 @@ import { useAuth } from "@/features/auth/useAuth";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import MarketingLanding from "@/features/publish/landing/MarketingLanding";
 import {
   Sparkles,
   ExternalLink,
@@ -277,9 +276,14 @@ export default function DashboardIndex() {
     navigate(`/dashboard/content?topic=${encodeURIComponent(post.title)}&axis=${post.source_axis ?? "SEO"}`);
   });
 
-  // Public landing: show MarketingLanding for logged-out visitors,
-  // including while the auth session is still being checked.
-  if (!user) return <MarketingLanding />;
+  // /dashboard is the operations console only. Public marketing details
+  // live at /autoblog (separate public route). Bounce guests there so URL
+  // intent stays 1:1 (/=진단, /autoblog=소개, /dashboard=운영).
+  useEffect(() => {
+    if (!authLoading && !user) navigate("/autoblog", { replace: true });
+  }, [authLoading, user, navigate]);
+
+  if (!user) return null;
   if (loading) return <div className="text-sm text-muted-foreground">불러오는 중…</div>;
 
   return (

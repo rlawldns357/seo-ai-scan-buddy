@@ -7,11 +7,15 @@ import { useUserSite } from "@/features/publish/useUserSite";
 import { LogOut } from "lucide-react";
 
 /**
- * Dashboard layout — fully PUBLIC for read access.
+ * Dashboard layout — operations console for Autoblog.
  *
- * Browsing /dashboard and any /dashboard/* page never redirects to /auth.
- * The /dashboard root shows MarketingLanding (public detail) for guests,
- * and the sub-pages render their own LockedFeature when no site is linked.
+ * Public marketing details now live at /autoblog (separate public route).
+ * Browsing /dashboard/* never auto-redirects to /auth; sub-pages render
+ * LockedFeature when no site is linked. The /dashboard root itself bounces
+ * guests to /autoblog (handled inside DashboardIndex) so URL intent stays:
+ *   /          → 공개 진단 메인
+ *   /autoblog  → 공개 Autoblog 소개
+ *   /dashboard → 운영 대시보드 (로그인 사용자)
  *
  * Auth is enforced ONLY at the action layer (form submit, publish, queue,
  * archive, edit, save) via `useRequireAuthAction`. See each page handler.
@@ -21,24 +25,6 @@ export default function DashboardLayout() {
   const { site } = useUserSite();
   const navigate = useNavigate();
   const location = useLocation();
-  const isRoot = location.pathname === "/dashboard" || location.pathname === "/dashboard/";
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/", { replace: true });
-  };
-
-  // Marketing landing at /dashboard root for guests — no sidebar chrome.
-  if (isRoot && !user) {
-    return (
-      <div className="min-h-screen flex flex-col w-full bg-background">
-        <Navbar />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-      </div>
-    );
-  }
 
   return (
     <SidebarProvider>
