@@ -18,11 +18,13 @@ export default function AutoPublishTeaser() {
             진단 그다음 단계
           </span>
         </div>
-        <p className="text-sm sm:text-base text-foreground leading-relaxed">
-          진단으로 끝내지 말고, 콘텐츠 운영까지 이어가세요.
+        <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">
+          진단 이후에는 <span className="text-primary">콘텐츠 운영까지</span> 자동화할 수 있습니다
+        </h2>
+        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
           AutoBlog는 진단 결과를 바탕으로 내 사이트에 필요한 SEO·AEO·GEO 콘텐츠를 자동으로 만들어
-          SearchTune OS 전용 페이지에 발행해주는 기능입니다.
-          별도 블로그 없이도, 진단 다음 단계인 콘텐츠 운영까지 자연스럽게 확장할 수 있습니다.
+          SearchTune OS 전용 페이지에 발행합니다. 별도 블로그 없이도, 진단 다음 단계인
+          콘텐츠 운영까지 자연스럽게 이어갈 수 있습니다.
         </p>
         <Link
           to="/dashboard"
