@@ -26,9 +26,9 @@ export default function AutoPublishTeaser() {
         </p>
         <Link
           to="/dashboard"
-          className="mt-4 inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-primary hover:underline"
+          className="mt-5 inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
         >
-          AutoBlog 자세히 보기 <ArrowRight className="w-3.5 h-3.5" />
+          AutoBlog 페이지로 이동 <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
     </section>
