@@ -99,26 +99,26 @@ export default function OnboardingSteps({
       />
 
       <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-5">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
             <Sparkles className="h-3 w-3" />
             지금 할 일 · {eyebrow}
           </div>
-          <h2 className="mt-2 text-lg md:text-2xl font-bold tracking-tight text-foreground">
+          <h2 className="mt-2 text-lg md:text-2xl font-bold tracking-tight text-foreground break-keep">
             {headline}
           </h2>
-          <p className="mt-1.5 text-xs md:text-sm text-muted-foreground max-w-xl">{sub}</p>
+          <p className="mt-1.5 text-xs md:text-sm text-muted-foreground max-w-xl break-keep">{sub}</p>
         </div>
 
-        <div className="flex flex-col items-stretch md:items-end gap-2 shrink-0">
+        <div className="flex flex-col items-stretch md:items-end gap-2 w-full md:w-auto md:shrink-0">
           <Button
             size="lg"
             onClick={onPrimary}
-            className="rounded-full h-12 px-6 text-sm font-semibold shadow-lg shadow-primary/20"
+            className="rounded-full h-12 px-6 text-sm font-semibold shadow-lg shadow-primary/20 w-full md:w-auto justify-center"
           >
-            <PrimaryIcon className="w-4 h-4" />
-            {primaryLabel}
-            <ArrowRight className="w-4 h-4" />
+            <PrimaryIcon className="w-4 h-4 shrink-0" />
+            <span className="truncate">{primaryLabel}</span>
+            <ArrowRight className="w-4 h-4 shrink-0" />
           </Button>
           {onSecondary && secondaryLabel && (
             <button
