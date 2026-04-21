@@ -23,11 +23,11 @@ export default function AutoPublishTeaser() {
           </span>
         </div>
         <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">
-          진단 다음 단계, <span className="text-primary">검색엔진과 AI 답변 엔진이 인용하는 콘텐츠</span>로 운영하세요
+          진단 다음 단계, <span className="text-primary">검색엔진과 AI가 더 잘 이해하는 콘텐츠</span>로 운영하세요
         </h2>
         <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          단순 블로그 툴이 아닙니다. SEO 검색 노출, AEO 답변 채택, GEO AI 인용까지
-          한 번에 겨냥하도록 글을 자동 설계하고, 구조화된 콘텐츠 운영으로 이어줍니다.
+          주제만 입력하면 Google·Naver가 읽기 좋은 구조와 ChatGPT·Perplexity가 인용하기 좋은
+          형태로 글이 자동 발행됩니다. 매번 따로 점검하지 않아도 됩니다.
         </p>
 
         <ul className="mt-4 grid grid-cols-2 gap-2">
