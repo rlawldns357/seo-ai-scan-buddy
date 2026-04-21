@@ -21,10 +21,10 @@ export default function AutoPublishTeaser() {
       <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-3">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wide">
-            <Sparkles className="w-3 h-3" /> Autoblog
+            <Sparkles className="w-3 h-3" /> NEW
           </span>
           <span className="text-[11px] text-muted-foreground font-medium">
-            진단 그다음 단계
+            Autoblog
           </span>
         </div>
         <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">
