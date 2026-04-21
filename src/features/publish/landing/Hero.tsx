@@ -64,8 +64,8 @@ export default function Hero() {
             ].map((p, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 p-4 rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-shadow"
-                style={{ transform: `translateX(${i * 8}px)` }}
+                className="flex items-start gap-3 p-4 rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-shadow md:[&]:translate-x-[var(--tx)]"
+                style={{ ["--tx" as never]: `${i * 8}px` }}
               >
                 <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <FileText className="w-4 h-4" />
@@ -77,7 +77,7 @@ export default function Hero() {
                     </span>
                     <span className="text-[10px] text-muted-foreground">{p.time}</span>
                   </div>
-                  <p className="text-sm font-medium text-foreground truncate">{p.title}</p>
+                  <p className="text-sm font-medium text-foreground line-clamp-2 break-keep">{p.title}</p>
                 </div>
               </div>
             ))}
