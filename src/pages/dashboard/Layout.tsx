@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
@@ -21,15 +22,23 @@ import { LogOut } from "lucide-react";
  * archive, edit, save) via `useRequireAuthAction`. See each page handler.
  */
 export default function DashboardLayout() {
-  const { user, signOut } = useAuth();
+  const { user, loading, signOut } = useAuth();
   const { site } = useUserSite();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // /dashboard/* is the internal app area. Guests are bounced to the public
+  // Autoblog landing so URL intent stays 1:1 (/=진단, /autoblog=소개, /dashboard=운영).
+  useEffect(() => {
+    if (!loading && !user) navigate("/autoblog", { replace: true });
+  }, [loading, user, navigate]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/", { replace: true });
   };
+
+  if (loading || !user) return null;
 
   return (
     <SidebarProvider>
