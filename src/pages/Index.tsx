@@ -6,6 +6,7 @@ import StickyBottomCTA from "@/components/StickyBottomCTA";
 import SubpageWarning from "@/components/SubpageWarning";
 import RateLimitBanner from "@/components/RateLimitBanner";
 import FaqSection, { faqs } from "@/components/FaqSection";
+import AutoPublishTeaser from "@/components/AutoPublishTeaser";
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
 import { type PsiResult, type PsiError } from "@/lib/psi";
