@@ -22,12 +22,12 @@ export default function Hero() {
           <div className="flex flex-wrap gap-3 mt-8">
             <Link to="/auth?next=/dashboard">
               <Button size="lg" className="rounded-full h-12 px-6 gap-2">
-                내 사이트 연결하기 <ArrowRight className="w-4 h-4" />
+                Autoblog 시작하기 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
             <a href="#how">
               <Button size="lg" variant="outline" className="rounded-full h-12 px-6">
-                어떻게 동작하는지 보기
+                작동 방식 보기
               </Button>
             </a>
           </div>

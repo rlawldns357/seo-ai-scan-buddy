@@ -62,10 +62,10 @@ export default function AutoPublishTeaser() {
             to="/auth?next=/dashboard"
             className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
           >
-            내 사이트 연결하기 <ArrowRight className="w-4 h-4" />
+            Autoblog 시작하기 <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
-            to="/dashboard"
+            to="/autoblog"
             className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-border bg-card text-foreground text-sm font-semibold hover:bg-muted/50 transition-colors"
           >
             Autoblog 자세히 보기

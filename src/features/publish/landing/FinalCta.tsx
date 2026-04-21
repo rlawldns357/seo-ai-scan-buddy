@@ -17,7 +17,7 @@ export default function FinalCta() {
         <div className="mt-8 flex flex-col items-center gap-3">
           <Link to="/auth?next=/dashboard">
             <Button size="lg" className="rounded-full h-12 px-8 gap-2">
-              지금 가입하기 <ArrowRight className="w-4 h-4" />
+              무료로 시작하기 <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
           <p className="text-[11px] text-muted-foreground">베타 기간 무료 · 신용카드 등록 불필요</p>
