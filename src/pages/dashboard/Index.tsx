@@ -276,14 +276,8 @@ export default function DashboardIndex() {
     navigate(`/dashboard/content?topic=${encodeURIComponent(post.title)}&axis=${post.source_axis ?? "SEO"}`);
   });
 
-  // /dashboard is the operations console only. Public marketing details
-  // live at /autoblog (separate public route). Bounce guests there so URL
-  // intent stays 1:1 (/=진단, /autoblog=소개, /dashboard=운영).
-  useEffect(() => {
-    if (!authLoading && !user) navigate("/autoblog", { replace: true });
-  }, [authLoading, user, navigate]);
-
-  if (!user) return null;
+  // No automatic redirect on page access. Guests can preview the dashboard
+  // shell; auth is enforced only when they trigger an action via `guard(...)`.
   if (loading) return <div className="text-sm text-muted-foreground">불러오는 중…</div>;
 
   return (

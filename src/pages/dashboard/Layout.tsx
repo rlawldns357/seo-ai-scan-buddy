@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
@@ -10,35 +9,26 @@ import { LogOut } from "lucide-react";
 /**
  * Dashboard layout — operations console for Autoblog.
  *
- * Public marketing details now live at /autoblog (separate public route).
- * Browsing /dashboard/* never auto-redirects to /auth; sub-pages render
- * LockedFeature when no site is linked. The /dashboard root itself bounces
- * guests to /autoblog (handled inside DashboardIndex) so URL intent stays:
- *   /          → 공개 진단 메인
- *   /autoblog  → 공개 Autoblog 소개
- *   /dashboard → 운영 대시보드 (로그인 사용자)
- *
- * Auth is enforced ONLY at the action layer (form submit, publish, queue,
- * archive, edit, save) via `useRequireAuthAction`. See each page handler.
+ * Read-only by default. Browsing /dashboard/* NEVER auto-redirects to /auth.
+ * Guests see the shell with LockedFeature placeholders; auth is enforced
+ * ONLY at the action layer (form submit, publish, queue, archive, edit, save)
+ * via `useRequireAuthAction`. Public marketing lives at /autoblog.
  */
 export default function DashboardLayout() {
-  const { user, loading, signOut } = useAuth();
+  const { user, signOut } = useAuth();
   const { site } = useUserSite();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // /dashboard/* is the internal app area. Guests are bounced to the public
-  // Autoblog landing so URL intent stays 1:1 (/=진단, /autoblog=소개, /dashboard=운영).
-  useEffect(() => {
-    if (!loading && !user) navigate("/autoblog", { replace: true });
-  }, [loading, user, navigate]);
+  // No automatic redirect on page access. Guests can browse /dashboard/* in
+  // read-only mode; auth is enforced ONLY at the action layer via
+  // `useRequireAuthAction` (form submit, publish, queue, archive, edit, save).
+  // Sub-pages render LockedFeature placeholders when no site is linked.
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/", { replace: true });
   };
-
-  if (loading || !user) return null;
 
   return (
     <SidebarProvider>
