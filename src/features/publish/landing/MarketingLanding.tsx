@@ -11,10 +11,10 @@ export default function MarketingLanding() {
   return (
     <>
       <Helmet>
-        <title>AutoBlog — 진단에서 콘텐츠 운영까지 | SearchTune OS</title>
+        <title>AutoBlog 소개 — 콘텐츠 운영 자동화 | SearchTune OS</title>
         <meta
           name="description"
-          content="SEO·AEO·GEO 관점에서 필요한 콘텐츠를 찾고, SearchTune OS 전용 페이지에 자동으로 발행해 사이트 운영을 더 쉽게 시작하세요."
+          content="SearchTune OS의 AutoBlog 소개 페이지. SEO·AEO·GEO 관점에서 필요한 콘텐츠를 찾고 전용 페이지에 자동 발행하는 흐름을 살펴보세요."
         />
       </Helmet>
       <div className="w-full">
