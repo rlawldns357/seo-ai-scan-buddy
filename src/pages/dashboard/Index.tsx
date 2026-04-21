@@ -271,8 +271,10 @@ export default function DashboardIndex() {
     }
   };
 
-  if (!authLoading && !user) return <MarketingLanding />;
-  if (loading || authLoading) return <div className="text-sm text-muted-foreground">불러오는 중…</div>;
+  // Public landing: show MarketingLanding for logged-out visitors,
+  // including while the auth session is still being checked.
+  if (!user) return <MarketingLanding />;
+  if (loading) return <div className="text-sm text-muted-foreground">불러오는 중…</div>;
 
   return (
     <>
