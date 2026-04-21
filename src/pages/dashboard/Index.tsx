@@ -283,8 +283,8 @@ export default function DashboardIndex() {
   return (
     <>
       <Helmet>
-        <title>AutoBlog 대시보드 | SearchTune OS</title>
-        <meta name="description" content="자동 발행 큐와 발행 성과를 한 번에 관리하세요." />
+        <title>AutoBlog 작업 공간 | SearchTune OS</title>
+        <meta name="description" content="로그인 사용자의 AutoBlog 내부 작업 공간. 발행 큐와 콘텐츠 운영 흐름을 관리합니다." />
       </Helmet>
 
       {!site ? (

@@ -40,17 +40,29 @@ const App = () => (
         <ScrollToTop />
         <Suspense fallback={null}>
           <Routes>
+            {/* ───── 공개 라우트 (Public) ─────────────────────────────── */}
+            {/* /         → 진단 소개 + 무료 사이트 진단 (공개 메인, 고정) */}
             <Route path="/" element={<Index />} />
-            <Route path="/design-test" element={<DesignTest />} />
+            {/* /autoblog → AutoBlog 제품 소개 (공개 마케팅 랜딩) */}
+            <Route path="/autoblog" element={<Autoblog />} />
+            {/* 기타 공개 페이지 */}
             <Route path="/about" element={<About />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
-            <Route path="/unsubscribe" element={<Unsubscribe />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/autoblog" element={<Autoblog />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
+            <Route path="/sites/:siteSlug" element={<SiteHub />} />
+            <Route path="/sites/:siteSlug/:postSlug" element={<SitePost />} />
+            <Route path="/design-test" element={<DesignTest />} />
+
+            {/* ───── 인증 ─────────────────────────────────────────────── */}
+            <Route path="/auth" element={<Auth />} />
+
+            {/* ───── 내부 작업 공간 (읽기 전용 접근 허용, 액션만 가드) ── */}
+            {/* /dashboard/* → 로그인 사용자의 AutoBlog 운영 콘솔.        */}
+            {/* 게스트 접근 시 /auth로 자동 이동하지 않음.               */}
+            {/* 인증은 useRequireAuthAction을 통한 액션 클릭 시점에만.   */}
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardIndex />} />
               <Route path="recommendations" element={<DashboardRecommendations />} />
@@ -58,8 +70,10 @@ const App = () => (
               <Route path="auto-publish" element={<DashboardAutoPublish />} />
               <Route path="reports" element={<DashboardReports />} />
             </Route>
-            <Route path="/sites/:siteSlug" element={<SiteHub />} />
-            <Route path="/sites/:siteSlug/:postSlug" element={<SitePost />} />
+
+            {/* ───── 관리자 ───────────────────────────────────────────── */}
+            <Route path="/admin" element={<Admin />} />
+
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
