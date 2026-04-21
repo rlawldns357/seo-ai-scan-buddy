@@ -6,12 +6,13 @@ import { ArrowRight, Sparkles, ListChecks, Users, LayoutGrid, HelpCircle } from 
  * Acts as a transition hub: explains AutoBlog in 2-3 sentences and
  * makes it visually clear that the detailed sections live on the
  * dedicated AutoBlog page (`/dashboard`) — not removed.
+ * Each preview chip deep-links to the corresponding section anchor.
  */
 const PREVIEW_ITEMS = [
-  { icon: ListChecks, label: "5단계 프로세스" },
-  { icon: Users, label: "타깃 사용자" },
-  { icon: LayoutGrid, label: "핵심 가치 카드" },
-  { icon: HelpCircle, label: "FAQ" },
+  { icon: ListChecks, label: "5단계 프로세스", to: "/dashboard#how" },
+  { icon: Users, label: "타깃 사용자", to: "/dashboard#audience" },
+  { icon: LayoutGrid, label: "핵심 가치 카드", to: "/dashboard#values" },
+  { icon: HelpCircle, label: "FAQ", to: "/dashboard#faq" },
 ];
 
 export default function AutoPublishTeaser() {
@@ -42,13 +43,15 @@ export default function AutoPublishTeaser() {
             아래 항목들은 모두 ‘AutoBlog 자세히 보기’에서 이어서 볼 수 있습니다.
           </p>
           <ul className="flex flex-wrap gap-1.5">
-            {PREVIEW_ITEMS.map(({ icon: Icon, label }) => (
-              <li
-                key={label}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-card border border-border/50 text-[11px] text-foreground"
-              >
-                <Icon className="w-3 h-3 text-primary" />
-                {label}
+            {PREVIEW_ITEMS.map(({ icon: Icon, label, to }) => (
+              <li key={label}>
+                <Link
+                  to={to}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-card border border-border/50 text-[11px] text-foreground hover:border-primary/50 hover:text-primary transition-colors"
+                >
+                  <Icon className="w-3 h-3 text-primary" />
+                  {label}
+                </Link>
               </li>
             ))}
           </ul>

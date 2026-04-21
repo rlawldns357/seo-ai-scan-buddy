@@ -8,7 +8,7 @@ const CARDS = [
 
 export default function ValueCards() {
   return (
-    <section className="py-16 md:py-24 px-2 md:px-6">
+    <section id="values" className="py-16 md:py-24 px-2 md:px-6 scroll-mt-20">
       <div className="max-w-5xl mx-auto">
         <div className="grid md:grid-cols-3 gap-4">
           {CARDS.map((c, i) => {

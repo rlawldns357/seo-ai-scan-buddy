@@ -22,7 +22,7 @@ const FAQS = [
 
 export default function LandingFaq() {
   return (
-    <section className="py-16 md:py-24 px-2 md:px-6 bg-muted/30">
+    <section id="faq" className="py-16 md:py-24 px-2 md:px-6 bg-muted/30 scroll-mt-20">
       <div className="max-w-3xl mx-auto">
         <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground text-center mb-10">
           자주 묻는 질문
