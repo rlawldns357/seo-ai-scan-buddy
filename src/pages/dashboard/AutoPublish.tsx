@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
+import FlowStepper from "@/features/publish/FlowStepper";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { toast } from "@/hooks/use-toast";
 import { Send, ExternalLink, Trash2 } from "lucide-react";
@@ -66,9 +67,11 @@ export default function AutoPublish() {
     return (
       <>
         <Helmet><title>자동 발행 | AutoBlog</title></Helmet>
+        <FlowStepper current="site" completed={["auth", "dashboard"]} />
         <LockedFeature
           title="먼저 내 콘텐츠 페이지를 만들어주세요"
           description="발행할 전용 콘텐츠 페이지가 필요합니다."
+          ctaLabel="페이지 만들러 가기"
           onCta={() => navigate("/dashboard")}
         />
       </>
@@ -81,8 +84,21 @@ export default function AutoPublish() {
   return (
     <>
       <Helmet><title>자동 발행 큐 | AutoBlog</title></Helmet>
-      <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행 큐</h1>
-      <p className="text-sm text-muted-foreground mb-6">대기 중인 글을 즉시 발행하거나 이미 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
+      <FlowStepper current="publish" completed={["auth", "dashboard", "site", "draft", "edit"]} />
+      <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행 큐</h1>
+          <p className="text-sm text-muted-foreground">대기 중인 글을 즉시 발행하거나 이미 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
+        </div>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate("/dashboard/recommendations")}>
+            추천 더 보기
+          </Button>
+          <Button size="sm" className="rounded-full" onClick={() => navigate("/dashboard/content")}>
+            새 글 작성
+          </Button>
+        </div>
+      </div>
 
       <section className="mb-8">
         <h2 className="text-sm font-semibold text-foreground mb-2">발행 대기 ({queued.length})</h2>

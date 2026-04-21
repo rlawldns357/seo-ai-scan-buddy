@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
+import FlowStepper from "@/features/publish/FlowStepper";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, Send } from "lucide-react";
@@ -74,9 +75,11 @@ export default function Content() {
     return (
       <>
         <Helmet><title>글 작성 | Autoblog</title></Helmet>
+        <FlowStepper current="site" completed={["auth", "dashboard"]} />
         <LockedFeature
           title="먼저 내 콘텐츠 페이지를 만들어주세요"
           description="페이지가 있어야 생성된 글을 발행 큐에 담을 수 있어요."
+          ctaLabel="페이지 만들러 가기"
           onCta={() => navigate("/dashboard")}
         />
       </>
@@ -86,8 +89,16 @@ export default function Content() {
   return (
     <>
       <Helmet><title>글 작성 | Autoblog</title></Helmet>
-      <h1 className="text-2xl font-bold text-foreground mb-1">글 작성</h1>
-      <p className="text-sm text-muted-foreground mb-6">주제를 입력하면 AI가 SEO·AEO·GEO 친화적인 글을 작성합니다.</p>
+      <FlowStepper current={draft ? "edit" : "draft"} completed={["auth", "dashboard", "site"]} />
+      <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground mb-1">글 작성</h1>
+          <p className="text-sm text-muted-foreground">주제를 입력하면 AI가 SEO·AEO·GEO 친화적인 초안을 만듭니다. 편집 후 ‘발행 큐에 추가’로 다음 단계로 이동해요.</p>
+        </div>
+        <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={() => navigate("/dashboard/recommendations")}>
+          추천 주제에서 고르기
+        </Button>
+      </div>
 
       <Card className="p-5 mb-4">
         <div className="grid md:grid-cols-[1fr_auto_auto] gap-3 items-end">

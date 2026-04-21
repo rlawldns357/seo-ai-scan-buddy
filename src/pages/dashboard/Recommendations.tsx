@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
+import FlowStepper from "@/features/publish/FlowStepper";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { Sparkles, ArrowRight, TrendingDown } from "lucide-react";
 
@@ -70,9 +71,11 @@ export default function Recommendations() {
     return (
       <>
         <Helmet><title>콘텐츠 추천 | AutoBlog</title></Helmet>
+        <FlowStepper current="site" completed={["auth", "dashboard"]} />
         <LockedFeature
           title="먼저 내 콘텐츠 페이지를 만들어주세요"
           description="콘텐츠 페이지를 만들면 분석 결과를 바탕으로 글 아이디어를 추천해드려요."
+          ctaLabel="페이지 만들러 가기"
           onCta={() => navigate("/dashboard")}
         />
       </>
@@ -82,8 +85,16 @@ export default function Recommendations() {
   return (
     <>
       <Helmet><title>콘텐츠 추천 | AutoBlog</title></Helmet>
-      <h1 className="text-2xl font-bold text-foreground mb-1">콘텐츠 추천</h1>
-      <p className="text-sm text-muted-foreground mb-6">{site.site_url} 분석 결과를 바탕으로 추천된 글 주제입니다.</p>
+      <FlowStepper current="draft" completed={["auth", "dashboard", "site"]} />
+      <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground mb-1">콘텐츠 추천</h1>
+          <p className="text-sm text-muted-foreground">{site.site_url} 분석 결과를 바탕으로 추천된 글 주제입니다. 마음에 드는 주제를 선택하면 바로 다음 단계인 ‘편집’으로 이동해요.</p>
+        </div>
+        <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={() => navigate("/dashboard/content")}>
+          직접 주제 입력하기
+        </Button>
+      </div>
 
       {loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
