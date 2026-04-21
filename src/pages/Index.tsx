@@ -6,6 +6,7 @@ import StickyBottomCTA from "@/components/StickyBottomCTA";
 import SubpageWarning from "@/components/SubpageWarning";
 import RateLimitBanner from "@/components/RateLimitBanner";
 import FaqSection, { faqs } from "@/components/FaqSection";
+import AutoPublishTeaser from "@/components/AutoPublishTeaser";
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
 import { type PsiResult, type PsiError } from "@/lib/psi";
@@ -299,6 +300,7 @@ const Index = () => {
             <div className="mt-14 max-w-lg mx-auto text-left">
               <FaqSection compact />
             </div>
+            <AutoPublishTeaser />
           </div>
           <StickyBottomCTA />
         </main>
