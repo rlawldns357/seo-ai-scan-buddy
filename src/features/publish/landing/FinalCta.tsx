@@ -22,7 +22,7 @@ export default function FinalCta() {
           </a>
           <Link to="/auth?next=/dashboard">
             <Button size="lg" className="rounded-full h-12 px-8 gap-2">
-              내 사이트에 적용해보기 <ArrowRight className="w-4 h-4" />
+              내 사이트 연동해보기 <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
         </div>
