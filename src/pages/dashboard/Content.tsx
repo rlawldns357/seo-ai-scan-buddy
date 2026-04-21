@@ -75,9 +75,11 @@ export default function Content() {
     return (
       <>
         <Helmet><title>글 작성 | Autoblog</title></Helmet>
+        <FlowStepper current="site" completed={["auth", "dashboard"]} />
         <LockedFeature
           title="먼저 내 콘텐츠 페이지를 만들어주세요"
           description="페이지가 있어야 생성된 글을 발행 큐에 담을 수 있어요."
+          ctaLabel="페이지 만들러 가기"
           onCta={() => navigate("/dashboard")}
         />
       </>

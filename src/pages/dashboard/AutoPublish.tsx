@@ -67,9 +67,11 @@ export default function AutoPublish() {
     return (
       <>
         <Helmet><title>자동 발행 | AutoBlog</title></Helmet>
+        <FlowStepper current="site" completed={["auth", "dashboard"]} />
         <LockedFeature
           title="먼저 내 콘텐츠 페이지를 만들어주세요"
           description="발행할 전용 콘텐츠 페이지가 필요합니다."
+          ctaLabel="페이지 만들러 가기"
           onCta={() => navigate("/dashboard")}
         />
       </>
