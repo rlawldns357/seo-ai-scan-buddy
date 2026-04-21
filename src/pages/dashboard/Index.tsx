@@ -417,8 +417,8 @@ export default function DashboardIndex() {
                 <div className="space-y-3">
                   {queueCounts.queued.map((post) => (
                     <div key={post.id} className="rounded-2xl border border-border/50 bg-muted/20 p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0 flex-1">
+                      <div className="flex flex-col gap-4">
+                        <div className="min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-2">
                             {post.source_axis && <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${axisBadgeClass[post.source_axis] ?? "bg-secondary text-secondary-foreground"}`}>{post.source_axis}</span>}
                             {post.is_auto_generated && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary text-secondary-foreground inline-flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> 자동 준비</span>}
@@ -427,7 +427,7 @@ export default function DashboardIndex() {
                           <h3 className="text-base font-semibold text-foreground break-keep">{post.title}</h3>
                           <p className="text-sm text-muted-foreground mt-2 line-clamp-2 break-keep">{post.excerpt || "발행 전 검토가 필요한 자동 생성 콘텐츠입니다."}</p>
                         </div>
-                        <div className="flex flex-wrap gap-2 justify-end shrink-0">
+                        <div className="flex flex-wrap gap-2 sm:justify-end">
                           <Button className="rounded-full" size="sm" onClick={() => publishPost(post.id)} disabled={busyId === post.id}><Send className="w-3.5 h-3.5" /> {busyId === post.id ? "발행 중..." : "콘텐츠 발행하기"}</Button>
                           <Button variant="outline" size="sm" className="rounded-full" onClick={() => goEdit(post)}>콘텐츠 편집하기</Button>
                           <Button variant="ghost" size="sm" className="rounded-full" onClick={() => archivePost(post.id)}>큐에서 제외하기</Button>
