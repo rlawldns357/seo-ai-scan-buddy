@@ -299,16 +299,9 @@ export default function DashboardIndex() {
             state="guest"
             primaryLabel="로그인하고 시작하기"
             onPrimary={() => navigate(`/auth?next=${encodeURIComponent("/dashboard")}`)}
+            secondaryLabel="이미 계정이 있나요? 로그인"
+            onSecondary={() => navigate(`/auth?next=${encodeURIComponent("/dashboard")}`)}
           />
-          <Card className="p-6 border-dashed">
-            <h2 className="text-base font-semibold text-foreground">먼저 로그인이 필요해요</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              로그인하면 사이트 1개를 무료로 연결하고, AI가 준비한 시작용 콘텐츠 3개를 받아볼 수 있어요.
-            </p>
-            <Button className="rounded-full mt-4" onClick={() => navigate(`/auth?next=${encodeURIComponent("/dashboard")}`)}>
-              로그인 / 회원가입
-            </Button>
-          </Card>
         </div>
       ) : !site ? (
         <div className="space-y-6">
@@ -320,6 +313,8 @@ export default function DashboardIndex() {
               el?.scrollIntoView({ behavior: "smooth", block: "center" });
               (el as HTMLInputElement | null)?.focus();
             }}
+            secondaryLabel="먼저 무료 사이트 진단부터 보기"
+            onSecondary={() => navigate("/")}
           />
           <Card className="p-6">
             <h1 className="text-lg font-semibold text-foreground mb-1">내 콘텐츠 페이지 만들기</h1>
