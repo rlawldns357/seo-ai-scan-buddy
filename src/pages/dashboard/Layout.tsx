@@ -26,6 +26,11 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/", { replace: true });
+  };
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex flex-col w-full bg-background">
