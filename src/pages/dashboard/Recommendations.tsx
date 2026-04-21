@@ -20,8 +20,13 @@ const axisColor: Record<string, string> = {
 export default function Recommendations() {
   const { site } = useUserSite();
   const navigate = useNavigate();
+  const guard = useRequireAuthAction();
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const goCreate = guard((idea: Idea) => {
+    navigate(`/dashboard/content?topic=${encodeURIComponent(idea.topic)}&axis=${idea.axis}`);
+  });
 
   useEffect(() => {
     if (!site) return;
