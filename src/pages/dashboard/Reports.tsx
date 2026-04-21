@@ -37,7 +37,7 @@ export default function Reports() {
   if (!site) {
     return (
       <>
-        <Helmet><title>리포트 | Autoblog</title></Helmet>
+        <Helmet><title>리포트 | AutoBlog</title></Helmet>
         <LockedFeature
           title="먼저 사이트를 연결하세요"
           description="허브에 발행된 글의 성과를 추적합니다."
@@ -54,7 +54,7 @@ export default function Reports() {
 
   return (
     <>
-      <Helmet><title>리포트 | Autoblog</title></Helmet>
+      <Helmet><title>리포트 | AutoBlog</title></Helmet>
       <h1 className="text-2xl font-bold text-foreground mb-1">리포트</h1>
       <p className="text-sm text-muted-foreground mb-6">{site.site_url} 의 분석 점수 추이와 발행 현황입니다.</p>
 

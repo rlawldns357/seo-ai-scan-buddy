@@ -24,7 +24,7 @@ export default function AutoPublishTeaser() {
             <Sparkles className="w-3 h-3" /> NEW
           </span>
           <span className="text-[11px] text-muted-foreground font-medium">
-            Autoblog
+            AutoBlog
           </span>
         </div>
         <h2 className="text-base sm:text-lg font-bold text-foreground leading-snug">
@@ -32,16 +32,16 @@ export default function AutoPublishTeaser() {
         </h2>
         <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
           SearchTune OS는 사이트 진단에서 끝나지 않고, 필요한 주제를 찾고
-          전용 페이지로 발행하는 흐름까지 이어집니다. Autoblog에서 내 사이트에
+          전용 페이지로 발행하는 흐름까지 이어집니다. AutoBlog에서 내 사이트에
           맞는 콘텐츠 운영을 더 가볍게 시작해보세요.
         </p>
 
         <div className="mt-4 p-3 rounded-xl bg-muted/40 border border-border/40">
           <p className="text-[11px] font-semibold text-foreground mb-1">
-            상세 설명은 Autoblog 페이지로 옮겨졌어요
+            상세 설명은 AutoBlog 페이지로 옮겨졌어요
           </p>
           <p className="text-[11px] text-muted-foreground mb-2">
-            아래 항목들은 모두 ‘Autoblog 자세히 보기’에서 이어서 볼 수 있습니다.
+            아래 항목들은 모두 ‘AutoBlog 자세히 보기’에서 이어서 볼 수 있습니다.
           </p>
           <ul className="flex flex-wrap gap-1.5">
             {PREVIEW_ITEMS.map(({ icon: Icon, label, to }) => (
@@ -69,7 +69,7 @@ export default function AutoPublishTeaser() {
             to="/autoblog"
             className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-border bg-card text-foreground text-sm font-semibold hover:bg-muted/50 transition-colors"
           >
-            Autoblog 자세히 보기
+            AutoBlog 자세히 보기
           </Link>
         </div>
       </div>

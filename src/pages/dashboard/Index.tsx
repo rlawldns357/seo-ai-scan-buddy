@@ -289,14 +289,14 @@ export default function DashboardIndex() {
   return (
     <>
       <Helmet>
-        <title>Autoblog 대시보드 | SearchTune OS</title>
+        <title>AutoBlog 대시보드 | SearchTune OS</title>
         <meta name="description" content="자동 발행 큐와 발행 성과를 한 번에 관리하세요." />
       </Helmet>
 
       {!site ? (
         <Card className="p-6">
-          <h1 className="text-lg font-semibold text-foreground mb-1">사이트 연결</h1>
-          <p className="text-sm text-muted-foreground mb-4">콘텐츠 허브를 발급받고 자동 발행을 시작하세요. 가입 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
+          <h1 className="text-lg font-semibold text-foreground mb-1">사이트 연결하기</h1>
+          <p className="text-sm text-muted-foreground mb-4">콘텐츠 허브를 만들고 자동 발행을 시작하세요. 연결 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -310,7 +310,7 @@ export default function DashboardIndex() {
             </div>
             <p className="text-[11px] text-muted-foreground">로그인된 계정: <span className="font-medium">{user?.email}</span></p>
             <Button type="submit" disabled={submitting} className="rounded-full w-full md:w-auto">
-              {submitting ? "사이트와 큐 생성 중..." : "허브 발급받고 시작하기"}
+              {submitting ? "사이트 연결 중..." : "사이트 연결하기"}
             </Button>
           </form>
         </Card>
@@ -320,7 +320,7 @@ export default function DashboardIndex() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground inline-flex items-center gap-2">
-                  Autoblog
+                  AutoBlog
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
                 </h1>
                 <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-foreground">
@@ -346,10 +346,10 @@ export default function DashboardIndex() {
             </div>
             <div className="flex gap-2">
               <Button variant="outline" className="rounded-full" onClick={() => navigate("/dashboard/recommendations")}>
-                <Sparkles className="w-4 h-4" /> 추천 보기
+                <Sparkles className="w-4 h-4" /> 콘텐츠 추천 보기
               </Button>
               <Button className="rounded-full" onClick={generateQueuedDraft} disabled={queueing}>
-                <Plus className="w-4 h-4" /> {queueing ? "생성 중..." : "새 큐 생성"}
+                <Plus className="w-4 h-4" /> {queueing ? "생성 중..." : "콘텐츠 큐에 추가하기"}
               </Button>
             </div>
           </section>
@@ -369,7 +369,7 @@ export default function DashboardIndex() {
                   <p className="text-sm text-muted-foreground mt-1">가입 직후 자동으로 준비된 후보 포함, 원하는 글만 선택해 발행합니다.</p>
                 </div>
                 <Button variant="outline" className="rounded-full shrink-0" onClick={() => navigate("/dashboard/content")}>
-                  <FileText className="w-4 h-4" /> 직접 작성
+                  <FileText className="w-4 h-4" /> 콘텐츠 직접 작성하기
                 </Button>
               </div>
 
@@ -377,7 +377,7 @@ export default function DashboardIndex() {
                 <div className="rounded-2xl border border-dashed border-border p-8 text-center">
                   <p className="text-sm font-medium text-foreground">아직 발행 대기 중인 콘텐츠가 없습니다</p>
                   <p className="text-xs text-muted-foreground mt-2">새 콘텐츠를 생성해 먼저 후보를 채워보세요.</p>
-                  <Button className="rounded-full mt-4" onClick={generateQueuedDraft} disabled={queueing}><Plus className="w-4 h-4" /> {queueing ? "생성 중..." : "새 콘텐츠 생성하기"}</Button>
+                  <Button className="rounded-full mt-4" onClick={generateQueuedDraft} disabled={queueing}><Plus className="w-4 h-4" /> {queueing ? "생성 중..." : "콘텐츠 큐에 추가하기"}</Button>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -394,9 +394,9 @@ export default function DashboardIndex() {
                           <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{post.excerpt || "발행 전 검토가 필요한 자동 생성 콘텐츠입니다."}</p>
                         </div>
                         <div className="flex flex-wrap gap-2 justify-end shrink-0">
-                          <Button className="rounded-full" size="sm" onClick={() => publishPost(post.id)} disabled={busyId === post.id}><Send className="w-3.5 h-3.5" /> {busyId === post.id ? "발행 중..." : "발행"}</Button>
-                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => goEdit(post)}>편집</Button>
-                          <Button variant="ghost" size="sm" className="rounded-full" onClick={() => archivePost(post.id)}>버리기</Button>
+                          <Button className="rounded-full" size="sm" onClick={() => publishPost(post.id)} disabled={busyId === post.id}><Send className="w-3.5 h-3.5" /> {busyId === post.id ? "발행 중..." : "콘텐츠 발행하기"}</Button>
+                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => goEdit(post)}>콘텐츠 편집하기</Button>
+                          <Button variant="ghost" size="sm" className="rounded-full" onClick={() => archivePost(post.id)}>큐에서 제외하기</Button>
                         </div>
                       </div>
                     </div>

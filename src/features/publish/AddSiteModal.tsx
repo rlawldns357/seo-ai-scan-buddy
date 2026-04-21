@@ -113,7 +113,7 @@ export default function AddSiteModal({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>새 콘텐츠 허브 만들기</DialogTitle>
+              <DialogTitle>사이트 연결하기</DialogTitle>
               <DialogDescription>
                 자동 발행할 사이트의 URL과 표시 제목을 입력하세요.
               </DialogDescription>
@@ -144,7 +144,7 @@ export default function AddSiteModal({
                   취소
                 </Button>
                 <Button type="submit" disabled={submitting} className="rounded-full">
-                  {submitting ? "만드는 중..." : "사이트 추가"}
+                  {submitting ? "연결 중..." : "사이트 연결하기"}
                 </Button>
               </DialogFooter>
             </form>
