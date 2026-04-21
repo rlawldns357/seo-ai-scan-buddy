@@ -169,7 +169,7 @@ export default function DashboardIndex() {
     if (insertError) throw insertError;
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = guard(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!siteUrl || !title || !user) return;
     setSubmitting(true);
@@ -211,9 +211,9 @@ export default function DashboardIndex() {
     } finally {
       setSubmitting(false);
     }
-  };
+  });
 
-  const publishPost = async (postId: string) => {
+  const publishPost = guard(async (postId: string) => {
     setBusyId(postId);
     try {
       const { error } = await (supabase as any)
@@ -232,9 +232,9 @@ export default function DashboardIndex() {
     } finally {
       setBusyId(null);
     }
-  };
+  });
 
-  const archivePost = async (postId: string) => {
+  const archivePost = guard(async (postId: string) => {
     setBusyId(postId);
     try {
       const { error } = await (supabase as any)
@@ -253,9 +253,9 @@ export default function DashboardIndex() {
     } finally {
       setBusyId(null);
     }
-  };
+  });
 
-  const generateQueuedDraft = async () => {
+  const generateQueuedDraft = guard(async () => {
     if (!site) return;
     setQueueing(true);
     try {
@@ -271,7 +271,11 @@ export default function DashboardIndex() {
     } finally {
       setQueueing(false);
     }
-  };
+  });
+
+  const goEdit = guard((post: SitePost) => {
+    navigate(`/dashboard/content?topic=${encodeURIComponent(post.title)}&axis=${post.source_axis ?? "SEO"}`);
+  });
 
   // Public landing: show MarketingLanding for logged-out visitors,
   // including while the auth session is still being checked.
