@@ -391,7 +391,7 @@ export default function DashboardIndex() {
                         </div>
                         <div className="flex flex-wrap gap-2 justify-end shrink-0">
                           <Button className="rounded-full" size="sm" onClick={() => publishPost(post.id)} disabled={busyId === post.id}><Send className="w-3.5 h-3.5" /> {busyId === post.id ? "발행 중..." : "발행"}</Button>
-                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate(`/dashboard/content?topic=${encodeURIComponent(post.title)}&axis=${post.source_axis ?? "SEO"}`)}>편집</Button>
+                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => goEdit(post)}>편집</Button>
                           <Button variant="ghost" size="sm" className="rounded-full" onClick={() => archivePost(post.id)}>버리기</Button>
                         </div>
                       </div>
