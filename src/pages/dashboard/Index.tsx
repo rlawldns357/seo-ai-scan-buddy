@@ -348,7 +348,13 @@ export default function DashboardIndex() {
             state="has-site"
             queuedCount={queueCounts.queued.length}
             publishedCount={queueCounts.published.length}
-            primaryLabel={queueCounts.queued.length > 0 ? "대기 큐 검토하기" : "콘텐츠 큐에 추가하기"}
+            primaryLabel={
+              queueCounts.queued.length > 0
+                ? `대기 ${queueCounts.queued.length}건 검토하기`
+                : queueing
+                ? "생성 중..."
+                : "콘텐츠 큐에 추가하기"
+            }
             onPrimary={() => {
               if (queueCounts.queued.length > 0) {
                 document.getElementById("queue-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -356,42 +362,34 @@ export default function DashboardIndex() {
                 generateQueuedDraft();
               }
             }}
+            secondaryLabel={
+              queueCounts.queued.length > 0
+                ? "또는 새 후보 추가하기"
+                : "또는 추천 주제에서 고르기"
+            }
+            onSecondary={() => {
+              if (queueCounts.queued.length > 0) {
+                generateQueuedDraft();
+              } else {
+                navigate("/dashboard/recommendations");
+              }
+            }}
           />
-          <section className="flex items-start justify-between gap-4 flex-wrap rounded-3xl border border-border/50 bg-card p-6 shadow-card">
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground inline-flex items-center gap-2">
-                  AutoBlog
-                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
-                </h1>
-                <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-foreground">
-                  <span className="h-2 w-2 rounded-full bg-primary" /> 로그인됨
-                </span>
-              </div>
-              <p className="text-sm text-muted-foreground mt-2 max-w-2xl">
-                AI가 미리 준비한 최적화 콘텐츠 큐를 검토하고, 선택해서 발행하세요.
-                <br />
-                발행 이후에는 조회와 유입 흐름도 함께 확인할 수 있습니다.
-              </p>
-              <div className="mt-4">
-                <p className="text-xs text-muted-foreground">내 콘텐츠 허브</p>
-                <h2 className="text-lg font-semibold text-foreground mt-1">{site.title}</h2>
-                <p className="text-sm text-muted-foreground mt-1">{site.site_url}</p>
-                <div className="flex flex-wrap items-center gap-3 mt-3">
-                  <a href={`/sites/${site.site_slug}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-                    /sites/{site.site_slug} <ExternalLink className="w-3 h-3" />
-                  </a>
-                  <span className="text-[11px] text-muted-foreground">계정: {user?.email}</span>
-                </div>
-              </div>
+          <section className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-border/50 bg-card px-5 py-4">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">내 콘텐츠 허브</p>
+              <h2 className="text-base font-semibold text-foreground mt-0.5 truncate">{site.title}</h2>
+              <p className="text-xs text-muted-foreground mt-0.5 truncate">{site.site_url}</p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" className="rounded-full" onClick={() => navigate("/dashboard/recommendations")}>
-                <Sparkles className="w-4 h-4" /> 콘텐츠 추천 보기
-              </Button>
-              <Button className="rounded-full" onClick={generateQueuedDraft} disabled={queueing}>
-                <Plus className="w-4 h-4" /> {queueing ? "생성 중..." : "콘텐츠 큐에 추가하기"}
-              </Button>
+            <div className="flex items-center gap-3 shrink-0">
+              <a
+                href={`/sites/${site.site_slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                라이브 보기 <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
           </section>
 
