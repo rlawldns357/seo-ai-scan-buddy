@@ -25,12 +25,20 @@ export default function AutoPublishTeaser() {
           SearchTune OS는 사이트 진단에서 끝나지 않고, 필요한 콘텐츠를 찾고
           전용 페이지에 자동 발행하는 운영 흐름까지 확장할 수 있습니다.
         </p>
-        <Link
-          to="/dashboard"
-          className="mt-5 inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
-        >
-          AutoBlog 페이지로 이동 <ArrowRight className="w-4 h-4" />
-        </Link>
+        <div className="mt-5 flex flex-col sm:flex-row gap-2">
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
+          >
+            내 사이트 연결하기 <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-border bg-card text-foreground text-sm font-semibold hover:bg-muted/50 transition-colors"
+          >
+            AutoBlog 자세히 보기
+          </Link>
+        </div>
       </div>
     </section>
   );
