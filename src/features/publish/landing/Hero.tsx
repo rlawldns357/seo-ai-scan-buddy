@@ -10,11 +10,11 @@ export default function Hero() {
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-4">
             <Sparkles className="w-3 h-3" /> NEW · AutoBlog 베타 오픈
           </span>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
-            검색엔진과 AI가 더 잘 이해하는<br />
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight break-keep">
+            검색엔진과 AI가 더 잘 이해하는{" "}
             <span className="text-primary">콘텐츠 운영</span>을 시작하세요
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
+          <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed break-keep">
             주제만 입력하면 Google·Naver가 읽기 좋은 구조와 ChatGPT·Perplexity가 인용하기 좋은
             형태로 글이 자동 발행됩니다. 매번 SEO·AEO·GEO를 따로 점검하지 않아도 됩니다.
           </p>
@@ -34,7 +34,7 @@ export default function Hero() {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[11px] font-bold text-foreground">{label}</span>
-                  <span className="block text-[10px] text-muted-foreground truncate">{desc}</span>
+                  <span className="block text-[10px] text-muted-foreground break-keep">{desc}</span>
                 </span>
               </li>
             ))}
@@ -64,8 +64,8 @@ export default function Hero() {
             ].map((p, i) => (
               <div
                 key={i}
-                className="flex items-start gap-3 p-4 rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-shadow"
-                style={{ transform: `translateX(${i * 8}px)` }}
+                className="flex items-start gap-3 p-4 rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-shadow md:[&]:translate-x-[var(--tx)]"
+                style={{ ["--tx" as never]: `${i * 8}px` }}
               >
                 <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
                   <FileText className="w-4 h-4" />
@@ -77,7 +77,7 @@ export default function Hero() {
                     </span>
                     <span className="text-[10px] text-muted-foreground">{p.time}</span>
                   </div>
-                  <p className="text-sm font-medium text-foreground truncate">{p.title}</p>
+                  <p className="text-sm font-medium text-foreground line-clamp-2 break-keep">{p.title}</p>
                 </div>
               </div>
             ))}
