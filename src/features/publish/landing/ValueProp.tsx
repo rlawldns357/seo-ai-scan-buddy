@@ -22,9 +22,8 @@ export default function ValueProp() {
           </p>
         </div>
         <p className="text-xs md:text-sm text-muted-foreground mt-8 max-w-2xl mx-auto leading-relaxed">
-          SearchTune OS는 내 사이트 주제와 운영 방향에 맞는 글을 만들어
-          내 전용 콘텐츠 페이지에 자동으로 쌓아줍니다.
-          처음부터 큰 블로그를 만들기보다, 필요한 콘텐츠를 빠르게 운영해보는 데 적합합니다.
+          내 사이트의 주제와 운영 방향에 맞는 글을 자동으로 만들어 쌓아주기 때문에,
+          처음부터 블로그를 키우기보다 필요한 콘텐츠를 가볍게 운영해보고 싶은 분에게 잘 맞습니다.
         </p>
       </div>
     </section>
