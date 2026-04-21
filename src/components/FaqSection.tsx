@@ -12,7 +12,7 @@ export const faqs = [
   },
   {
     q: "서치튠OS(SearchTune OS)는 어떤 서비스인가요?",
-    a: "URL만 입력하면 SEO·AEO·GEO 3개 축 점수를 즉시 분석하는 무료 AI 검색 진단 도구입니다. 서치튠OS(SearchTune OS)는 2025년 출시되어, 항목별 개선 포인트와 우선순위를 자동으로 알려줍니다. Google Lighthouse v12 실측 데이터와 AI 기반 콘텐츠 분석을 결합한 하이브리드 방식을 사용합니다.",
+    a: "URL만 입력하면 SEO·AEO·GEO 3개 축 점수를 즉시 분석하는 무료 AI 검색 진단 도구입니다. 서치튠OS(SearchTune OS)는 2026년 출시되어, 항목별 개선 포인트와 우선순위를 자동으로 알려줍니다. Google Lighthouse v12 실측 데이터와 AI 기반 콘텐츠 분석을 결합한 하이브리드 방식을 사용합니다.",
   },
   {
     q: "분석에 비용이 드나요?",
