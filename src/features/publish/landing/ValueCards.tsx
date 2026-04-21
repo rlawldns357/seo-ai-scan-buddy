@@ -27,7 +27,7 @@ export default function ValueCards() {
             왜 <span className="text-primary">AutoBlog</span>인가요?
           </h2>
           <p className="text-sm md:text-base text-muted-foreground mt-4 leading-relaxed">
-            검색·AI 답변 엔진이 인용하기 좋은 형태로 콘텐츠가 운영되는지 직접 챙기지 않아도 됩니다.
+            검색엔진과 AI가 헷갈리지 않게 글을 정리하는 작업을, 매번 직접 챙기지 않아도 됩니다.
           </p>
         </div>
         <div className="grid md:grid-cols-3 gap-4">
