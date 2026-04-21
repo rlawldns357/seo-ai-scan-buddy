@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
+import FlowStepper from "@/features/publish/FlowStepper";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { toast } from "@/hooks/use-toast";
 import { Sparkles, Send } from "lucide-react";
