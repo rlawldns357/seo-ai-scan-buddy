@@ -4,17 +4,17 @@ import { ArrowRight, FileText, Sparkles, Search, MessageSquareQuote, Quote } fro
 
 export default function Hero() {
   return (
-    <section className="py-20 md:py-32 px-2 md:px-6">
+    <section className="py-12 md:py-32 px-4 md:px-6">
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 md:gap-12 items-center">
         <div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-4">
             <Sparkles className="w-3 h-3" /> NEW · AutoBlog 베타 오픈
           </span>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight break-keep">
+          <h1 className="text-[28px] leading-[1.25] md:text-5xl md:leading-tight font-bold tracking-tight text-foreground break-keep">
             검색엔진과 AI가 더 잘 이해하는{" "}
             <span className="text-primary">콘텐츠 운영</span>을 시작하세요
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed break-keep">
+          <p className="text-[15px] leading-[1.7] md:text-base md:leading-relaxed text-muted-foreground mt-5 break-keep">
             주제만 입력하면 Google·Naver가 읽기 좋은 구조와 ChatGPT·Perplexity가 인용하기 좋은
             형태로 글이 자동 발행됩니다. 매번 SEO·AEO·GEO를 따로 점검하지 않아도 됩니다.
           </p>
