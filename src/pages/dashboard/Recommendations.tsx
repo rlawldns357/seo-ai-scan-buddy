@@ -69,7 +69,7 @@ export default function Recommendations() {
   if (!site) {
     return (
       <>
-        <Helmet><title>콘텐츠 추천 | Auto Publish</title></Helmet>
+        <Helmet><title>콘텐츠 추천 | Autoblog</title></Helmet>
         <LockedFeature
           title="먼저 사이트를 연결하세요"
           description="콘텐츠 허브를 만들면 분석 결과를 바탕으로 글 아이디어를 추천해드려요."
@@ -81,7 +81,7 @@ export default function Recommendations() {
 
   return (
     <>
-      <Helmet><title>콘텐츠 추천 | Auto Publish</title></Helmet>
+      <Helmet><title>콘텐츠 추천 | Autoblog</title></Helmet>
       <h1 className="text-2xl font-bold text-foreground mb-1">콘텐츠 추천</h1>
       <p className="text-sm text-muted-foreground mb-6">{site.site_url} 분석 결과를 바탕으로 추천된 글 주제입니다.</p>
 

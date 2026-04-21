@@ -285,7 +285,7 @@ export default function DashboardIndex() {
   return (
     <>
       <Helmet>
-        <title>Auto Publish 대시보드 | SearchTune OS</title>
+        <title>Autoblog 대시보드 | SearchTune OS</title>
         <meta name="description" content="자동 발행 큐와 발행 성과를 한 번에 관리하세요." />
       </Helmet>
 
