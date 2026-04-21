@@ -307,7 +307,7 @@ export default function DashboardIndex() {
         <div className="space-y-6">
           <OnboardingSteps
             state="no-site"
-            primaryLabel="사이트 연결하기"
+            primaryLabel="페이지 만들러 가기"
             onPrimary={() => {
               const el = document.getElementById("siteUrl");
               el?.scrollIntoView({ behavior: "smooth", block: "center" });
