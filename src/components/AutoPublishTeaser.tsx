@@ -19,9 +19,10 @@ export default function AutoPublishTeaser() {
           </span>
         </div>
         <p className="text-sm sm:text-base text-foreground leading-relaxed">
-          AutoBlog는 내 사이트에 맞는 SEO·AEO·GEO 콘텐츠를 자동으로 만들어
-          SearchTune OS 안의 전용 페이지에 발행해주는 기능입니다.
-          별도 블로그를 구축하지 않아도, 사이트를 한 번 연결해두면 콘텐츠 운영을 바로 시작할 수 있습니다.
+          진단으로 끝내지 말고, 콘텐츠 운영까지 이어가세요.
+          AutoBlog는 진단 결과를 바탕으로 내 사이트에 필요한 SEO·AEO·GEO 콘텐츠를 자동으로 만들어
+          SearchTune OS 전용 페이지에 발행해주는 기능입니다.
+          별도 블로그 없이도, 진단 다음 단계인 콘텐츠 운영까지 자연스럽게 확장할 수 있습니다.
         </p>
         <Link
           to="/dashboard"
