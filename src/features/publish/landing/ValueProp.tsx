@@ -8,12 +8,12 @@ export default function ValueProp() {
         </h2>
         <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
           복잡한 CMS 설정 없이<br />
-          내 사이트와 연결된 전용 콘텐츠 페이지를 만들고<br />
+          내 전용 콘텐츠 페이지를 만들고<br />
           필요한 글을 자동으로 발행해보세요.
         </p>
         <div className="mt-8 p-6 md:p-8 rounded-2xl border border-border/50 bg-card text-left max-w-2xl mx-auto">
           <p className="text-sm md:text-base text-foreground leading-relaxed">
-            사이트를 연결하면 <span className="font-semibold text-primary">SearchTune OS 안에 전용 콘텐츠 페이지</span>가 생성됩니다.
+            사이트 정보를 입력하면 <span className="font-semibold text-primary">SearchTune OS 안에 내 전용 콘텐츠 페이지</span>가 만들어집니다.
             이후 필요한 글이 자동으로 발행되어, 콘텐츠 운영을 더 가볍게 시작할 수 있습니다.
           </p>
           <p className="text-xs md:text-sm text-muted-foreground mt-4 leading-relaxed">

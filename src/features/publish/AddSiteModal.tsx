@@ -113,9 +113,9 @@ export default function AddSiteModal({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>사이트 연결하기</DialogTitle>
+              <DialogTitle>내 콘텐츠 페이지 만들기</DialogTitle>
               <DialogDescription>
-                자동 발행할 사이트의 URL과 표시 제목을 입력하세요.
+                자동 발행할 사이트의 URL과 표시 제목을 입력하면 전용 페이지가 만들어집니다.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 py-2">
@@ -144,7 +144,7 @@ export default function AddSiteModal({
                   취소
                 </Button>
                 <Button type="submit" disabled={submitting} className="rounded-full">
-                  {submitting ? "연결 중..." : "사이트 연결하기"}
+                  {submitting ? "만드는 중..." : "페이지 만들기"}
                 </Button>
               </DialogFooter>
             </form>

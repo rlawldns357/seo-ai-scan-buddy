@@ -75,8 +75,8 @@ export default function Content() {
       <>
         <Helmet><title>글 작성 | Autoblog</title></Helmet>
         <LockedFeature
-          title="먼저 사이트를 연결하세요"
-          description="허브가 있어야 생성된 글을 발행 큐에 담을 수 있어요."
+          title="먼저 내 콘텐츠 페이지를 만들어주세요"
+          description="페이지가 있어야 생성된 글을 발행 큐에 담을 수 있어요."
           onCta={() => navigate("/dashboard")}
         />
       </>

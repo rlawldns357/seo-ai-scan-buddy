@@ -67,8 +67,8 @@ export default function AutoPublish() {
       <>
         <Helmet><title>자동 발행 | AutoBlog</title></Helmet>
         <LockedFeature
-          title="먼저 사이트를 연결하세요"
-          description="발행할 콘텐츠 허브가 필요합니다."
+          title="먼저 내 콘텐츠 페이지를 만들어주세요"
+          description="발행할 전용 콘텐츠 페이지가 필요합니다."
           onCta={() => navigate("/dashboard")}
         />
       </>
