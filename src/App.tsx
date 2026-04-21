@@ -26,6 +26,7 @@ const DashboardReports = lazy(() => import("./pages/dashboard/Reports.tsx"));
 const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
 const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
+const Autoblog = lazy(() => import("./pages/Autoblog.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -47,6 +48,7 @@ const App = () => (
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/auth" element={<Auth />} />
+            <Route path="/autoblog" element={<Autoblog />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/dashboard" element={<DashboardLayout />}>
