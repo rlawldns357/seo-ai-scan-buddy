@@ -31,8 +31,9 @@ export default function AutoPublishTeaser() {
           진단 이후에는 <span className="text-primary">콘텐츠 운영까지</span> 자동화할 수 있습니다
         </h2>
         <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-          SearchTune OS는 사이트 진단에서 끝나지 않고, 필요한 콘텐츠를 찾고
-          전용 페이지에 자동 발행하는 운영 흐름까지 확장할 수 있습니다.
+          SearchTune OS는 사이트 진단에서 끝나지 않고, 필요한 주제를 찾고
+          전용 페이지로 발행하는 흐름까지 이어집니다. Autoblog에서 내 사이트에
+          맞는 콘텐츠 운영을 더 가볍게 시작해보세요.
         </p>
 
         <div className="mt-4 p-3 rounded-xl bg-muted/40 border border-border/40">
