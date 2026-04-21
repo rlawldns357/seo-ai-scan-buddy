@@ -10,7 +10,7 @@ import MarketingLanding from "@/features/publish/landing/MarketingLanding";
  */
 export default function AutoblogPage() {
   return (
-    <div className="min-h-screen flex flex-col w-full bg-background">
+    <div className="min-h-screen flex flex-col w-full bg-background overflow-x-hidden">
       <Navbar />
       <main className="flex-1">
         <MarketingLanding />
