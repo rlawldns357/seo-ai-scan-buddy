@@ -4,20 +4,20 @@ const AXES = [
   {
     icon: Search,
     tag: "SEO",
-    title: "검색엔진 노출",
-    desc: "Google·Naver가 페이지 의도와 키워드를 정확히 이해하도록 메타·헤딩·내부 링크 구조까지 잡아드립니다.",
+    title: "검색엔진이 잘 읽는 글",
+    desc: "Google·Naver가 무슨 글인지 바로 이해하도록 제목·메타·헤딩·내부 링크 구조를 자동으로 잡아드립니다.",
   },
   {
     icon: MessageSquareQuote,
     tag: "AEO",
-    title: "AI 답변 채택",
-    desc: "검색 답변 박스와 음성 답변에 채택되도록 질문–답변 형식, FAQ 스키마, 핵심 정의 문장을 설계합니다.",
+    title: "답변 박스에 뽑히는 글",
+    desc: "검색 답변 박스와 음성 답변에 그대로 인용되도록 질문–답변 형식과 핵심 정의 문장을 함께 만들어 둡니다.",
   },
   {
     icon: Quote,
     tag: "GEO",
-    title: "AI 답변 엔진 인용",
-    desc: "ChatGPT·Perplexity·Gemini가 우리 브랜드를 출처로 인용할 수 있게 엔티티·근거 문장·구조화 데이터를 강화합니다.",
+    title: "AI가 출처로 가져가는 글",
+    desc: "ChatGPT·Perplexity·Gemini가 답변할 때 우리 브랜드를 출처로 가져갈 수 있게 근거 문장과 구조화 데이터를 더해줍니다.",
   },
 ];
 
