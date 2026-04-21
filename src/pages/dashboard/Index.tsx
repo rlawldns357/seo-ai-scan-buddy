@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
+import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import MarketingLanding from "@/features/publish/landing/MarketingLanding";
@@ -57,6 +58,7 @@ export default function DashboardIndex() {
   const { site, refresh, loading } = useUserSite();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const guard = useRequireAuthAction();
   const [siteUrl, setSiteUrl] = useState("");
   const [title, setTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
