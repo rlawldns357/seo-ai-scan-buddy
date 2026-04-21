@@ -36,11 +36,11 @@ export default function ValueProp() {
           </p>
         </div>
 
-        <div className="mt-10 grid md:grid-cols-3 gap-4">
+        <div className="mt-10 grid md:grid-cols-3 gap-3 md:gap-4">
           {AXES.map(({ icon: Icon, tag, title, desc }) => (
             <div
               key={tag}
-              className="p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/40 transition-colors"
+              className="p-5 md:p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/40 transition-colors"
             >
               <div className="flex items-center gap-2 mb-3">
                 <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
@@ -48,13 +48,13 @@ export default function ValueProp() {
                 </span>
                 <span className="text-[11px] font-bold text-primary tracking-wider">{tag}</span>
               </div>
-              <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">{title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+              <h3 className="text-base md:text-lg font-semibold text-foreground mb-2 break-keep">{title}</h3>
+              <p className="text-[14px] leading-[1.65] md:text-sm md:leading-relaxed text-muted-foreground break-keep">{desc}</p>
             </div>
           ))}
         </div>
 
-        <p className="text-xs md:text-sm text-muted-foreground mt-8 text-center max-w-2xl mx-auto leading-relaxed">
+        <p className="text-xs md:text-sm text-muted-foreground mt-8 text-center max-w-2xl mx-auto leading-relaxed break-keep">
           복잡한 CMS 없이도 위 3개 축이 자동 반영된 콘텐츠가 내 전용 페이지에 차곡차곡 쌓입니다.
         </p>
       </div>
