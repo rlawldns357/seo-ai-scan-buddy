@@ -63,7 +63,7 @@ export default function AutoPublishTeaser() {
             to="/auth?next=/dashboard"
             className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
           >
-            내 콘텐츠 페이지 만들기 <ArrowRight className="w-4 h-4" />
+            AutoBlog 시작해보기 <ArrowRight className="w-4 h-4" />
           </Link>
           <Link
             to="/autoblog"
