@@ -82,8 +82,21 @@ export default function AutoPublish() {
   return (
     <>
       <Helmet><title>자동 발행 큐 | AutoBlog</title></Helmet>
-      <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행 큐</h1>
-      <p className="text-sm text-muted-foreground mb-6">대기 중인 글을 즉시 발행하거나 이미 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
+      <FlowStepper current="publish" completed={["auth", "dashboard", "site", "draft", "edit"]} />
+      <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행 큐</h1>
+          <p className="text-sm text-muted-foreground">대기 중인 글을 즉시 발행하거나 이미 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
+        </div>
+        <div className="flex gap-2 shrink-0">
+          <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate("/dashboard/recommendations")}>
+            추천 더 보기
+          </Button>
+          <Button size="sm" className="rounded-full" onClick={() => navigate("/dashboard/content")}>
+            새 글 작성
+          </Button>
+        </div>
+      </div>
 
       <section className="mb-8">
         <h2 className="text-sm font-semibold text-foreground mb-2">발행 대기 ({queued.length})</h2>
