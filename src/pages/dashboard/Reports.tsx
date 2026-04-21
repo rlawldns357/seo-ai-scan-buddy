@@ -39,8 +39,8 @@ export default function Reports() {
       <>
         <Helmet><title>리포트 | AutoBlog</title></Helmet>
         <LockedFeature
-          title="먼저 사이트를 연결하세요"
-          description="허브에 발행된 글의 성과를 추적합니다."
+          title="먼저 내 콘텐츠 페이지를 만들어주세요"
+          description="페이지에 발행된 글의 성과를 추적합니다."
           onCta={() => navigate("/dashboard")}
         />
       </>

@@ -289,8 +289,8 @@ export default function DashboardIndex() {
 
       {!site ? (
         <Card className="p-6">
-          <h1 className="text-lg font-semibold text-foreground mb-1">사이트 연결하기</h1>
-          <p className="text-sm text-muted-foreground mb-4">콘텐츠 허브를 만들고 자동 발행을 시작하세요. 연결 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
+          <h1 className="text-lg font-semibold text-foreground mb-1">내 콘텐츠 페이지 만들기</h1>
+          <p className="text-sm text-muted-foreground mb-4">전용 콘텐츠 페이지를 만들고 자동 발행을 시작하세요. 생성 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
           <form onSubmit={handleCreate} className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -304,7 +304,7 @@ export default function DashboardIndex() {
             </div>
             <p className="text-[11px] text-muted-foreground">로그인된 계정: <span className="font-medium">{user?.email}</span></p>
             <Button type="submit" disabled={submitting} className="rounded-full w-full md:w-auto">
-              {submitting ? "사이트 연결 중..." : "사이트 연결하기"}
+              {submitting ? "만드는 중..." : "페이지 만들기"}
             </Button>
           </form>
         </Card>
