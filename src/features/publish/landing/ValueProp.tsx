@@ -1,29 +1,61 @@
+import { Search, MessageSquareQuote, Quote } from "lucide-react";
+
+const AXES = [
+  {
+    icon: Search,
+    tag: "SEO",
+    title: "검색엔진 노출",
+    desc: "Google·Naver가 페이지 의도와 키워드를 정확히 이해하도록 메타·헤딩·내부 링크 구조까지 잡아드립니다.",
+  },
+  {
+    icon: MessageSquareQuote,
+    tag: "AEO",
+    title: "AI 답변 채택",
+    desc: "검색 답변 박스와 음성 답변에 채택되도록 질문–답변 형식, FAQ 스키마, 핵심 정의 문장을 설계합니다.",
+  },
+  {
+    icon: Quote,
+    tag: "GEO",
+    title: "AI 답변 엔진 인용",
+    desc: "ChatGPT·Perplexity·Gemini가 우리 브랜드를 출처로 인용할 수 있게 엔티티·근거 문장·구조화 데이터를 강화합니다.",
+  },
+];
+
 export default function ValueProp() {
   return (
     <section className="py-16 md:py-24 px-2 md:px-6 bg-muted/30">
-      <div className="max-w-4xl mx-auto text-center">
-        <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
-          블로그를 따로 구축하지 않아도,<br />
-          <span className="text-primary">콘텐츠 운영은 바로 시작</span>할 수 있습니다
-        </h2>
-        <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
-          복잡한 CMS 설정 없이<br />
-          내 전용 콘텐츠 페이지를 만들고<br />
-          필요한 글을 자동으로 발행해보세요.
-        </p>
-        <div className="mt-8 p-6 md:p-8 rounded-2xl border border-border/50 bg-card text-left max-w-2xl mx-auto">
-          <p className="text-sm md:text-base text-foreground leading-relaxed">
-            사이트 정보를 입력하면 <span className="font-semibold text-primary">SearchTune OS 안에 내 전용 콘텐츠 페이지</span>가 만들어집니다.
-            이후 필요한 글이 자동으로 발행되어, 콘텐츠 운영을 더 가볍게 시작할 수 있습니다.
-          </p>
-          <p className="text-xs md:text-sm text-muted-foreground mt-4 leading-relaxed">
-            직접 블로그를 구축하지 않아도 되고,<br />
-            무엇을 써야 할지 매번 고민하지 않아도 됩니다.
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center max-w-3xl mx-auto">
+          <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
+            단순 블로그 툴이 아닙니다.<br />
+            <span className="text-primary">검색·AI 인용 인프라</span>입니다
+          </h2>
+          <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
+            AutoBlog는 SEO·AEO·GEO 3개 축을 동시에 겨냥해 글을 자동 설계하고,
+            구조화된 형태로 발행해 검색엔진과 AI 답변 엔진이 모두 인용할 수 있게 만듭니다.
           </p>
         </div>
-        <p className="text-xs md:text-sm text-muted-foreground mt-8 max-w-2xl mx-auto leading-relaxed">
-          내 사이트의 주제와 운영 방향에 맞는 글을 자동으로 만들어 쌓아주기 때문에,
-          처음부터 블로그를 키우기보다 필요한 콘텐츠를 가볍게 운영해보고 싶은 분에게 잘 맞습니다.
+
+        <div className="mt-10 grid md:grid-cols-3 gap-4">
+          {AXES.map(({ icon: Icon, tag, title, desc }) => (
+            <div
+              key={tag}
+              className="p-6 rounded-2xl border border-border/50 bg-card hover:border-primary/40 transition-colors"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <Icon className="w-4 h-4" />
+                </span>
+                <span className="text-[11px] font-bold text-primary tracking-wider">{tag}</span>
+              </div>
+              <h3 className="text-base md:text-lg font-semibold text-foreground mb-2">{title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-xs md:text-sm text-muted-foreground mt-8 text-center max-w-2xl mx-auto leading-relaxed">
+          복잡한 CMS 없이도 위 3개 축이 자동 반영된 콘텐츠가 내 전용 페이지에 차곡차곡 쌓입니다.
         </p>
       </div>
     </section>

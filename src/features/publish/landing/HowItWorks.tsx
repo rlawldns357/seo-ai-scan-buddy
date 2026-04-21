@@ -1,21 +1,24 @@
-import { Link2, Settings, Sparkles, FileText, CheckCircle2 } from "lucide-react";
+import { Link2, Sparkles, FileText, Quote, LineChart } from "lucide-react";
 
 const STEPS = [
-  { icon: Link2, title: "내 페이지 만들기", desc: "사이트 URL과 기본 주제를 입력해 전용 콘텐츠 페이지를 만듭니다." },
-  { icon: Settings, title: "발행 규칙 설정", desc: "어떤 주제로, 얼마나 자주 글을 올릴지 정합니다." },
-  { icon: Sparkles, title: "콘텐츠 자동 생성", desc: "SearchTune OS가 사이트에 맞는 글을 준비합니다." },
-  { icon: FileText, title: "전용 페이지에 자동 발행", desc: "글이 SearchTune OS 안의 내 전용 페이지에 차곡차곡 쌓입니다." },
-  { icon: CheckCircle2, title: "필요하면 승인 후 발행", desc: "원하면 자동발행 대신 승인 후 발행으로 운영할 수 있습니다." },
+  { icon: Link2, title: "페이지 만들기", desc: "사이트 URL과 주제만 입력하면 전용 콘텐츠 페이지가 만들어집니다." },
+  { icon: Sparkles, title: "SEO·AEO·GEO 자동 설계", desc: "3개 축이 동시에 반영된 초안이 자동 생성됩니다." },
+  { icon: FileText, title: "구조화된 형태로 발행", desc: "FAQ·HowTo 스키마와 내부 링크가 포함된 형태로 발행됩니다." },
+  { icon: Quote, title: "검색·AI 인용 가능성 확보", desc: "Google·Naver 노출과 ChatGPT·Perplexity 인용에 동시에 대응합니다." },
+  { icon: LineChart, title: "성과 이어보기", desc: "조회·세션과 인용 가능성을 같은 화면에서 추적합니다." },
 ];
 
 export default function HowItWorks() {
   return (
     <section id="how" className="py-16 md:py-24 px-2 md:px-6 scroll-mt-20">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-10 md:mb-14">
+        <div className="text-center mb-10 md:mb-14 max-w-2xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
-            설정은 간단하고, <span className="text-primary">운영은 자동</span>입니다
+            페이지 만들기에서 <span className="text-primary">검색·AI 인용</span>까지
           </h2>
+          <p className="text-sm md:text-base text-muted-foreground mt-4 leading-relaxed">
+            5단계 흐름이 자동으로 이어집니다. 매번 직접 점검할 필요가 없습니다.
+          </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           {STEPS.map((s, i) => {
