@@ -35,18 +35,18 @@ export default function OnboardingSteps({
     state === "guest"
       ? [
           { label: "로그인", hint: "30초", state: "current" },
-          { label: "사이트 연결", hint: "URL 1개", state: "todo" },
+          { label: "페이지 만들기", hint: "URL 1개", state: "todo" },
           { label: "콘텐츠 발행", hint: "큐에서 선택", state: "todo" },
         ]
       : state === "no-site"
       ? [
           { label: "로그인", state: "done" },
-          { label: "사이트 연결", hint: "지금 할 일", state: "current" },
-          { label: "콘텐츠 발행", hint: "연결 직후 자동 준비", state: "todo" },
+          { label: "페이지 만들기", hint: "지금 할 일", state: "current" },
+          { label: "콘텐츠 발행", hint: "생성 직후 자동 준비", state: "todo" },
         ]
       : [
           { label: "로그인", state: "done" },
-          { label: "사이트 연결", state: "done" },
+          { label: "페이지 만들기", state: "done" },
           {
             label: publishedCount === 0 ? "첫 콘텐츠 발행" : "큐 검토 후 발행",
             hint:
@@ -69,23 +69,23 @@ export default function OnboardingSteps({
 
   const headline =
     state === "guest"
-      ? "지금 로그인하고 첫 콘텐츠를 발행해보세요"
+      ? "검색엔진과 AI 답변에 인용되는 콘텐츠를 발행하세요"
       : state === "no-site"
-      ? "사이트 1개를 연결하면 자동 발행이 시작돼요"
+      ? "내 콘텐츠 페이지를 만들고 검색·AI 인용을 시작하세요"
       : queuedCount > 0
-      ? `대기 중인 콘텐츠 ${queuedCount}건을 검토하세요`
+      ? `검색·AI 인용을 위한 대기 콘텐츠 ${queuedCount}건`
       : publishedCount === 0
-      ? "첫 콘텐츠를 발행할 차례예요"
-      : "다음 발행 후보를 추가하세요";
+      ? "첫 콘텐츠를 발행해 검색·AI 인용을 시작하세요"
+      : "검색·AI 인용을 늘릴 다음 콘텐츠를 추가하세요";
 
   const sub =
     state === "guest"
-      ? "로그인 후 사이트 1개를 연결하면, AI가 시작용 콘텐츠 3개를 자동으로 준비합니다."
+      ? "Google·Naver 검색은 물론, ChatGPT·Perplexity 같은 AI 답변 엔진이 더 잘 이해하고 인용할 수 있도록 SEO·AEO·GEO 3개 축으로 콘텐츠를 자동 설계합니다."
       : state === "no-site"
-      ? "연결 즉시 SEO·AEO·GEO 축으로 시작용 콘텐츠 3개가 큐에 채워집니다."
+      ? "페이지를 만들면 SEO·AEO·GEO 축으로 시작용 콘텐츠 3개가 자동으로 준비됩니다. 검색엔진과 AI 답변 엔진이 우리 브랜드를 더 정확히 인용하도록 돕는 첫 단계예요."
       : queuedCount > 0
-      ? "준비된 후보를 살펴보고, 마음에 드는 글을 선택해 발행하세요."
-      : "큐가 비었어요. 새 후보를 만들어 다음 발행을 이어가세요.";
+      ? "검색·답변 인용 가능성이 높은 후보들이 대기 중입니다. 검토하고 발행하세요."
+      : "큐가 비었어요. 검색엔진과 AI 답변 엔진이 인용할 다음 콘텐츠를 추가하세요.";
 
   const PrimaryIcon =
     state === "guest" ? LogIn : state === "no-site" ? Globe : queuedCount > 0 ? Send : Plus;

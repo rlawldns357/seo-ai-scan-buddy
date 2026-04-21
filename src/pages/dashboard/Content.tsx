@@ -92,8 +92,8 @@ export default function Content() {
       <FlowStepper current={draft ? "edit" : "draft"} completed={["auth", "dashboard", "site"]} />
       <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">글 작성</h1>
-          <p className="text-sm text-muted-foreground">주제를 입력하면 AI가 SEO·AEO·GEO 친화적인 초안을 만듭니다. 편집 후 ‘발행 큐에 추가’로 다음 단계로 이동해요.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-1">검색·AI 답변에 인용되는 글 작성</h1>
+          <p className="text-sm text-muted-foreground">주제만 입력하면 AI가 SEO(검색 노출)·AEO(답변 채택)·GEO(AI 인용) 3개 축에 맞춘 초안을 만듭니다. 편집 후 ‘발행 큐에 추가’로 다음 단계로 넘어가요.</p>
         </div>
         <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={() => navigate("/dashboard/recommendations")}>
           추천 주제에서 고르기

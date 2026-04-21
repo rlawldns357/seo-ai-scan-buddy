@@ -88,8 +88,8 @@ export default function Recommendations() {
       <FlowStepper current="draft" completed={["auth", "dashboard", "site"]} />
       <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">콘텐츠 추천</h1>
-          <p className="text-sm text-muted-foreground">{site.site_url} 분석 결과를 바탕으로 추천된 글 주제입니다. 마음에 드는 주제를 선택하면 바로 다음 단계인 ‘편집’으로 이동해요.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-1">검색·AI 인용을 위한 콘텐츠 추천</h1>
+          <p className="text-sm text-muted-foreground">{site.site_url} 분석을 토대로, Google·Naver 검색과 ChatGPT·Perplexity 같은 AI 답변 엔진이 더 잘 이해하고 인용할 수 있는 주제를 골라드려요.</p>
         </div>
         <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={() => navigate("/dashboard/content")}>
           직접 주제 입력하기
