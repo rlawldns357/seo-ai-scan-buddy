@@ -10,17 +10,17 @@ const STEPS = [
 
 export default function HowItWorks() {
   return (
-    <section id="how" className="py-16 md:py-24 px-2 md:px-6 scroll-mt-20">
+    <section id="how" className="py-12 md:py-24 px-4 md:px-6 scroll-mt-20">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 md:mb-14 max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
+          <h2 className="text-[24px] leading-[1.3] md:text-4xl md:leading-tight font-bold tracking-tight text-foreground break-keep">
             페이지 만들기에서 <span className="text-primary">검색·AI가 이해하는 글</span>까지
           </h2>
-          <p className="text-sm md:text-base text-muted-foreground mt-4 leading-relaxed">
+          <p className="text-[15px] leading-[1.7] md:text-base md:leading-relaxed text-muted-foreground mt-4 break-keep">
             5단계 흐름이 자동으로 이어집니다. 매번 직접 점검할 필요가 없습니다.
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4">
           {STEPS.map((s, i) => {
             const Icon = s.icon;
             return (
@@ -34,8 +34,8 @@ export default function HowItWorks() {
                 <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-3">
                   <Icon className="w-5 h-5" />
                 </div>
-                <h3 className="text-sm md:text-base font-semibold text-foreground mb-2">{s.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">{s.desc}</p>
+                <h3 className="text-[15px] md:text-base font-semibold text-foreground mb-2 break-keep">{s.title}</h3>
+                <p className="text-[13px] leading-[1.65] md:text-xs md:leading-relaxed text-muted-foreground break-keep">{s.desc}</p>
               </div>
             );
           })}
