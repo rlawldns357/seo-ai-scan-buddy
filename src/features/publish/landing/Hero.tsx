@@ -34,7 +34,7 @@ export default function Hero() {
                 </span>
                 <span className="min-w-0">
                   <span className="block text-[11px] font-bold text-foreground">{label}</span>
-                  <span className="block text-[10px] text-muted-foreground truncate">{desc}</span>
+                  <span className="block text-[10px] text-muted-foreground break-keep">{desc}</span>
                 </span>
               </li>
             ))}
