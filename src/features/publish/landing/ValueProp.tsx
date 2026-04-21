@@ -23,14 +23,14 @@ const AXES = [
 
 export default function ValueProp() {
   return (
-    <section className="py-16 md:py-24 px-2 md:px-6 bg-muted/30">
+    <section className="py-12 md:py-24 px-4 md:px-6 bg-muted/30">
       <div className="max-w-5xl mx-auto">
         <div className="text-center max-w-3xl mx-auto">
-          <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground break-keep">
+          <h2 className="text-[24px] leading-[1.3] md:text-4xl md:leading-tight font-bold tracking-tight text-foreground break-keep">
             검색엔진과 AI가{" "}
             <span className="text-primary">더 잘 이해하는 글</span>로 발행됩니다
           </h2>
-          <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed break-keep">
+          <p className="text-[15px] leading-[1.7] md:text-base md:leading-relaxed text-muted-foreground mt-5 break-keep">
             글 1개를 쓰면 Google 검색 노출, 답변 박스 채택, ChatGPT·Perplexity 인용까지
             한 번에 겨냥하도록 자동으로 정리됩니다.
           </p>
