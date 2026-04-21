@@ -398,7 +398,7 @@ export default function DashboardIndex() {
           </section>
 
           <section className="grid xl:grid-cols-[1.35fr_0.9fr] gap-6 items-start">
-            <Card className="p-6 rounded-3xl border-border/50 shadow-card">
+            <Card id="queue-section" className="p-6 rounded-3xl border-border/50 shadow-card scroll-mt-20">
               <div className="flex items-start justify-between gap-3 mb-5">
                 <div>
                   <h2 className="text-xl font-semibold text-foreground">🪄 발행 대기 중인 콘텐츠</h2>
