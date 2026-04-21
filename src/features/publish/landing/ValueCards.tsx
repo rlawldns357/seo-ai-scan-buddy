@@ -3,18 +3,18 @@ import { Layers, Repeat, LineChart } from "lucide-react";
 const CARDS = [
   {
     icon: Layers,
-    title: "구조화된 콘텐츠 운영",
-    desc: "FAQ·HowTo·Article 스키마, 내부 링크, 엔티티 정의가 포함된 형태로 발행돼 검색·AI 양쪽이 안정적으로 인용합니다.",
+    title: "글마다 자동으로 구조 잡기",
+    desc: "FAQ·HowTo 스키마, 내부 링크, 핵심 정의 문장이 글에 자동으로 들어가서 검색엔진과 AI가 헷갈리지 않습니다.",
   },
   {
     icon: Repeat,
-    title: "3개 축 자동 설계",
-    desc: "주제만 입력하면 SEO·AEO·GEO 관점이 동시에 반영된 초안이 자동 생성됩니다. 매번 따로 점검할 필요가 없습니다.",
+    title: "3개 관점 자동 반영",
+    desc: "주제만 입력하면 검색 노출(SEO)·답변 채택(AEO)·AI 인용(GEO) 관점이 하나의 글에 같이 반영됩니다.",
   },
   {
     icon: LineChart,
-    title: "발행 → 인용까지 추적",
-    desc: "발행한 글의 조회·세션은 물론, 검색 노출·AI 인용 가능성까지 같은 화면에서 이어서 확인할 수 있습니다.",
+    title: "발행 후 성과까지 한 화면",
+    desc: "조회·세션은 물론, 검색 노출 가능성과 AI 인용 가능성까지 같은 화면에서 이어서 확인할 수 있습니다.",
   },
 ];
 
