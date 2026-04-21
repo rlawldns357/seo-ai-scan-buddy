@@ -32,11 +32,11 @@ export default function DashboardLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex flex-col w-full bg-background">
+      <div className="min-h-screen flex flex-col w-full bg-background overflow-x-hidden">
         <Navbar />
-        <div className="flex flex-1 w-full">
+        <div className="flex flex-1 w-full min-w-0">
           <AppSidebar />
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 min-w-0 flex flex-col">
             <header className="h-12 flex items-center justify-between border-b px-2 sticky top-16 bg-background/95 backdrop-blur z-40 gap-3">
               <div className="flex items-center min-w-0">
                 <SidebarTrigger />
@@ -68,7 +68,7 @@ export default function DashboardLayout() {
                 </button>
               )}
             </header>
-            <main className="flex-1 container max-w-5xl py-6 px-3 md:px-6">
+            <main className="flex-1 w-full min-w-0 container max-w-5xl py-6 px-3 md:px-6">
               <Outlet />
             </main>
           </div>
