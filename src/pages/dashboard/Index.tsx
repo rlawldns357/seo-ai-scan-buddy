@@ -288,29 +288,70 @@ export default function DashboardIndex() {
         <meta name="description" content="로그인 사용자의 AutoBlog 내부 작업 공간. 발행 큐와 콘텐츠 운영 흐름을 관리합니다." />
       </Helmet>
 
-      {!site ? (
-        <Card className="p-6">
-          <h1 className="text-lg font-semibold text-foreground mb-1">내 콘텐츠 페이지 만들기</h1>
-          <p className="text-sm text-muted-foreground mb-4">전용 콘텐츠 페이지를 만들고 자동 발행을 시작하세요. 생성 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
-          <form onSubmit={handleCreate} className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="siteUrl">사이트 URL</Label>
-                <Input id="siteUrl" placeholder="example.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} required />
-              </div>
-              <div>
-                <Label htmlFor="title">콘텐츠 허브 제목</Label>
-                <Input id="title" placeholder="우리 브랜드 인사이트" value={title} onChange={(e) => setTitle(e.target.value)} required />
-              </div>
-            </div>
-            <p className="text-[11px] text-muted-foreground">로그인된 계정: <span className="font-medium">{user?.email}</span></p>
-            <Button type="submit" disabled={submitting} className="rounded-full w-full md:w-auto">
-              {submitting ? "만드는 중..." : "페이지 만들기"}
+      {!user ? (
+        <div className="space-y-6">
+          <OnboardingSteps
+            state="guest"
+            primaryLabel="로그인하고 시작하기"
+            onPrimary={() => navigate(`/auth?next=${encodeURIComponent("/dashboard")}`)}
+          />
+          <Card className="p-6 border-dashed">
+            <h2 className="text-base font-semibold text-foreground">먼저 로그인이 필요해요</h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              로그인하면 사이트 1개를 무료로 연결하고, AI가 준비한 시작용 콘텐츠 3개를 받아볼 수 있어요.
+            </p>
+            <Button className="rounded-full mt-4" onClick={() => navigate(`/auth?next=${encodeURIComponent("/dashboard")}`)}>
+              로그인 / 회원가입
             </Button>
-          </form>
-        </Card>
+          </Card>
+        </div>
+      ) : !site ? (
+        <div className="space-y-6">
+          <OnboardingSteps
+            state="no-site"
+            primaryLabel="사이트 연결하기"
+            onPrimary={() => {
+              const el = document.getElementById("siteUrl");
+              el?.scrollIntoView({ behavior: "smooth", block: "center" });
+              (el as HTMLInputElement | null)?.focus();
+            }}
+          />
+          <Card className="p-6">
+            <h1 className="text-lg font-semibold text-foreground mb-1">내 콘텐츠 페이지 만들기</h1>
+            <p className="text-sm text-muted-foreground mb-4">전용 콘텐츠 페이지를 만들고 자동 발행을 시작하세요. 생성 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="siteUrl">사이트 URL</Label>
+                  <Input id="siteUrl" placeholder="example.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} required />
+                </div>
+                <div>
+                  <Label htmlFor="title">콘텐츠 허브 제목</Label>
+                  <Input id="title" placeholder="우리 브랜드 인사이트" value={title} onChange={(e) => setTitle(e.target.value)} required />
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground">로그인된 계정: <span className="font-medium">{user?.email}</span></p>
+              <Button type="submit" disabled={submitting} className="rounded-full w-full md:w-auto">
+                {submitting ? "만드는 중..." : "페이지 만들기"}
+              </Button>
+            </form>
+          </Card>
+        </div>
       ) : (
         <div className="space-y-6">
+          <OnboardingSteps
+            state="has-site"
+            queuedCount={queueCounts.queued.length}
+            publishedCount={queueCounts.published.length}
+            primaryLabel={queueCounts.queued.length > 0 ? "대기 큐 검토하기" : "콘텐츠 큐에 추가하기"}
+            onPrimary={() => {
+              if (queueCounts.queued.length > 0) {
+                document.getElementById("queue-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+              } else {
+                generateQueuedDraft();
+              }
+            }}
+          />
           <section className="flex items-start justify-between gap-4 flex-wrap rounded-3xl border border-border/50 bg-card p-6 shadow-card">
             <div>
               <div className="flex items-center gap-2 flex-wrap">
