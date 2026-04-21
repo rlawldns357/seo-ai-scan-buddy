@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
+import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { Sparkles, ArrowRight, TrendingDown } from "lucide-react";
 
 type Idea = { topic: string; axis: "SEO" | "AEO" | "GEO"; reason: string };
@@ -19,8 +20,13 @@ const axisColor: Record<string, string> = {
 export default function Recommendations() {
   const { site } = useUserSite();
   const navigate = useNavigate();
+  const guard = useRequireAuthAction();
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const goCreate = guard((idea: Idea) => {
+    navigate(`/dashboard/content?topic=${encodeURIComponent(idea.topic)}&axis=${idea.axis}`);
+  });
 
   useEffect(() => {
     if (!site) return;
@@ -97,7 +103,7 @@ export default function Recommendations() {
               <Button
                 size="sm"
                 className="rounded-full shrink-0"
-                onClick={() => navigate(`/dashboard/content?topic=${encodeURIComponent(idea.topic)}&axis=${idea.axis}`)}
+                onClick={() => goCreate(idea)}
               >
                 <Sparkles className="w-3.5 h-3.5" /> 글로 만들기 <ArrowRight className="w-3.5 h-3.5" />
               </Button>

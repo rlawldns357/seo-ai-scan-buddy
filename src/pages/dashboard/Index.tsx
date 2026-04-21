@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
+import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import MarketingLanding from "@/features/publish/landing/MarketingLanding";
@@ -57,6 +58,7 @@ export default function DashboardIndex() {
   const { site, refresh, loading } = useUserSite();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const guard = useRequireAuthAction();
   const [siteUrl, setSiteUrl] = useState("");
   const [title, setTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -167,7 +169,7 @@ export default function DashboardIndex() {
     if (insertError) throw insertError;
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = guard(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!siteUrl || !title || !user) return;
     setSubmitting(true);
@@ -209,9 +211,9 @@ export default function DashboardIndex() {
     } finally {
       setSubmitting(false);
     }
-  };
+  });
 
-  const publishPost = async (postId: string) => {
+  const publishPost = guard(async (postId: string) => {
     setBusyId(postId);
     try {
       const { error } = await (supabase as any)
@@ -230,9 +232,9 @@ export default function DashboardIndex() {
     } finally {
       setBusyId(null);
     }
-  };
+  });
 
-  const archivePost = async (postId: string) => {
+  const archivePost = guard(async (postId: string) => {
     setBusyId(postId);
     try {
       const { error } = await (supabase as any)
@@ -251,9 +253,9 @@ export default function DashboardIndex() {
     } finally {
       setBusyId(null);
     }
-  };
+  });
 
-  const generateQueuedDraft = async () => {
+  const generateQueuedDraft = guard(async () => {
     if (!site) return;
     setQueueing(true);
     try {
@@ -269,7 +271,11 @@ export default function DashboardIndex() {
     } finally {
       setQueueing(false);
     }
-  };
+  });
+
+  const goEdit = guard((post: SitePost) => {
+    navigate(`/dashboard/content?topic=${encodeURIComponent(post.title)}&axis=${post.source_axis ?? "SEO"}`);
+  });
 
   // Public landing: show MarketingLanding for logged-out visitors,
   // including while the auth session is still being checked.
@@ -385,7 +391,7 @@ export default function DashboardIndex() {
                         </div>
                         <div className="flex flex-wrap gap-2 justify-end shrink-0">
                           <Button className="rounded-full" size="sm" onClick={() => publishPost(post.id)} disabled={busyId === post.id}><Send className="w-3.5 h-3.5" /> {busyId === post.id ? "발행 중..." : "발행"}</Button>
-                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate(`/dashboard/content?topic=${encodeURIComponent(post.title)}&axis=${post.source_axis ?? "SEO"}`)}>편집</Button>
+                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => goEdit(post)}>편집</Button>
                           <Button variant="ghost" size="sm" className="rounded-full" onClick={() => archivePost(post.id)}>버리기</Button>
                         </div>
                       </div>
