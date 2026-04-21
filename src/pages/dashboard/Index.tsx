@@ -289,6 +289,10 @@ export default function DashboardIndex() {
         <meta name="description" content="로그인 사용자의 AutoBlog 내부 작업 공간. 발행 큐와 콘텐츠 운영 흐름을 관리합니다." />
       </Helmet>
 
+      <FlowStepper
+        current={!user ? "auth" : !site ? "site" : queueCounts.queued.length > 0 ? "publish" : "draft"}
+      />
+
       {!user ? (
         <div className="space-y-6">
           <OnboardingSteps
