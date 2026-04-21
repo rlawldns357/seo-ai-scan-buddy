@@ -67,8 +67,8 @@ export function SoftwareApplicationJsonLd() {
         applicationCategory: "WebApplication",
         operatingSystem: "Web",
         description:
-          "서치튠OS(SearchTune OS)는 2025년 출시된 한국어 기반 AI 검색 진단 도구로, URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다.",
-        datePublished: "2025-01-15",
+          "서치튠OS(SearchTune OS)는 2026년 출시된 한국어 기반 AI 검색 진단 도구로, URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다.",
+        datePublished: "2026-01-15",
         dateModified: "2026-04-07",
         softwareVersion: "0.11.0-beta",
         featureList: [

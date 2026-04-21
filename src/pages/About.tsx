@@ -61,7 +61,7 @@ export default function About() {
             SearchTune <span className="font-extrabold">OS</span>
           </h1>
           <p className="text-center text-foreground text-base sm:text-lg mb-3 leading-relaxed font-medium">
-            서치튠OS(SearchTune OS)는 2025년 출시된 한국어 기반 AI 검색 진단 도구로,<br className="hidden sm:block" />
+            서치튠OS(SearchTune OS)는 2026년 출시된 한국어 기반 AI 검색 진단 도구로,<br className="hidden sm:block" />
             URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다.
           </p>
           <p className="text-center text-muted-foreground text-sm mb-12 leading-relaxed">
