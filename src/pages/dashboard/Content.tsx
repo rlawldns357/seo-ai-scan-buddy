@@ -73,7 +73,7 @@ export default function Content() {
   if (!site) {
     return (
       <>
-        <Helmet><title>글 작성 | Auto Publish</title></Helmet>
+        <Helmet><title>글 작성 | Autoblog</title></Helmet>
         <LockedFeature
           title="먼저 사이트를 연결하세요"
           description="허브가 있어야 생성된 글을 발행 큐에 담을 수 있어요."
@@ -85,7 +85,7 @@ export default function Content() {
 
   return (
     <>
-      <Helmet><title>글 작성 | Auto Publish</title></Helmet>
+      <Helmet><title>글 작성 | Autoblog</title></Helmet>
       <h1 className="text-2xl font-bold text-foreground mb-1">글 작성</h1>
       <p className="text-sm text-muted-foreground mb-6">주제를 입력하면 AI가 SEO·AEO·GEO 친화적인 글을 작성합니다.</p>
 

@@ -8,7 +8,7 @@ export default function Hero() {
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 md:gap-12 items-center">
         <div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-3">
-            <Sparkles className="w-3 h-3" /> NEW · Auto Publish 베타 오픈
+            <Sparkles className="w-3 h-3" /> NEW · Autoblog 베타 오픈
           </span>
           <p className="text-[11px] text-muted-foreground mb-4">
             메인에서 이어진 AutoBlog 상세 설명입니다.
