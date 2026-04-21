@@ -10,8 +10,8 @@ export default function Hero() {
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-4">
             <Sparkles className="w-3 h-3" /> NEW · AutoBlog 베타 오픈
           </span>
-          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
-            검색엔진과 AI가 더 잘 이해하는<br />
+          <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight break-keep">
+            검색엔진과 AI가 더 잘 이해하는{" "}
             <span className="text-primary">콘텐츠 운영</span>을 시작하세요
           </h1>
           <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
