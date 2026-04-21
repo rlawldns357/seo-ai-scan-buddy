@@ -7,15 +7,12 @@ export default function Hero() {
     <section className="py-20 md:py-32 px-2 md:px-6">
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 md:gap-12 items-center">
         <div>
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-3">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-4">
             <Sparkles className="w-3 h-3" /> NEW · Autoblog 베타 오픈
           </span>
-          <p className="text-[11px] text-muted-foreground mb-4">
-            메인에서 이어진 AutoBlog 상세 설명입니다.
-          </p>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
             진단 다음 단계,<br />
-            <span className="text-primary">콘텐츠 운영까지 자동화</span>가 새로 열렸어요
+            <span className="text-primary">콘텐츠 운영까지 자동화</span>하세요
           </h1>
           <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
             SearchTune OS의 신규 기능 AutoBlog로<br />
