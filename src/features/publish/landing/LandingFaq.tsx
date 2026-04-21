@@ -22,22 +22,22 @@ const FAQS = [
 
 export default function LandingFaq() {
   return (
-    <section id="faq" className="py-16 md:py-24 px-2 md:px-6 bg-muted/30 scroll-mt-20">
+    <section id="faq" className="py-12 md:py-24 px-4 md:px-6 bg-muted/30 scroll-mt-20">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground text-center mb-10">
+        <h2 className="text-[24px] leading-[1.3] md:text-4xl md:leading-tight font-bold tracking-tight text-foreground text-center mb-8 md:mb-10 break-keep">
           자주 묻는 질문
         </h2>
-        <Accordion type="single" collapsible className="space-y-3">
+        <Accordion type="single" collapsible className="space-y-2.5 md:space-y-3">
           {FAQS.map((f, i) => (
             <AccordionItem
               key={i}
               value={`item-${i}`}
               className="border border-border/50 bg-card rounded-2xl px-5 border-b"
             >
-              <AccordionTrigger className="text-sm md:text-base font-semibold text-foreground hover:no-underline">
+              <AccordionTrigger className="text-[15px] md:text-base font-semibold text-foreground hover:no-underline text-left break-keep">
                 {f.q}
               </AccordionTrigger>
-              <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
+              <AccordionContent className="text-[14px] leading-[1.7] md:text-sm md:leading-relaxed text-muted-foreground break-keep">
                 {f.a}
               </AccordionContent>
             </AccordionItem>
