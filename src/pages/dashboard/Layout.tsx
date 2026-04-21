@@ -19,7 +19,11 @@ export default function DashboardLayout() {
   const location = useLocation();
   const isRoot = location.pathname === "/dashboard" || location.pathname === "/dashboard/";
 
-  if (isRoot && !user && !loading) {
+  // Public access for the AutoBlog landing at /dashboard root.
+  // Render WITHOUT RequireAuth regardless of loading state so visitors
+  // never get bounced to /auth while the session is being checked.
+  // Logged-in vs logged-out content is handled inside DashboardIndex.
+  if (isRoot && !user) {
     return (
       <div className="min-h-screen flex flex-col w-full bg-background">
         <Navbar />
