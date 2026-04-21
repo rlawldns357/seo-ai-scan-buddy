@@ -63,14 +63,14 @@ export default function AppSidebar() {
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>자동 발행 운영</SidebarGroupLabel>
+          <SidebarGroupLabel>Autoblog 운영</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{workflowItems.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
         <SidebarGroup>
-          <SidebarGroupLabel>자동 발행 분석</SidebarGroupLabel>
+          <SidebarGroupLabel>Autoblog 분석</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{analyticsItems.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>

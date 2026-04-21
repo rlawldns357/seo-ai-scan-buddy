@@ -21,7 +21,7 @@ export default function AutoPublishTeaser() {
       <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
         <div className="flex items-center gap-2 mb-3">
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold tracking-wide">
-            <Sparkles className="w-3 h-3" /> AutoBlog
+            <Sparkles className="w-3 h-3" /> Autoblog
           </span>
           <span className="text-[11px] text-muted-foreground font-medium">
             진단 그다음 단계
@@ -37,10 +37,10 @@ export default function AutoPublishTeaser() {
 
         <div className="mt-4 p-3 rounded-xl bg-muted/40 border border-border/40">
           <p className="text-[11px] font-semibold text-foreground mb-1">
-            상세 설명은 AutoBlog 페이지로 옮겨졌어요
+            상세 설명은 Autoblog 페이지로 옮겨졌어요
           </p>
           <p className="text-[11px] text-muted-foreground mb-2">
-            아래 항목들은 모두 ‘AutoBlog 자세히 보기’에서 이어서 볼 수 있습니다.
+            아래 항목들은 모두 ‘Autoblog 자세히 보기’에서 이어서 볼 수 있습니다.
           </p>
           <ul className="flex flex-wrap gap-1.5">
             {PREVIEW_ITEMS.map(({ icon: Icon, label, to }) => (
@@ -68,7 +68,7 @@ export default function AutoPublishTeaser() {
             to="/dashboard"
             className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-border bg-card text-foreground text-sm font-semibold hover:bg-muted/50 transition-colors"
           >
-            AutoBlog 자세히 보기
+            Autoblog 자세히 보기
           </Link>
         </div>
       </div>

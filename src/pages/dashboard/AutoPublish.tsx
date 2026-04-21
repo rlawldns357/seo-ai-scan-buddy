@@ -80,9 +80,9 @@ export default function AutoPublish() {
 
   return (
     <>
-      <Helmet><title>자동 발행 | Autoblog</title></Helmet>
-      <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행</h1>
-      <p className="text-sm text-muted-foreground mb-6">발행 대기 중인 글을 즉시 게시하거나 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
+      <Helmet><title>자동 발행 큐 | Autoblog</title></Helmet>
+      <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행 큐</h1>
+      <p className="text-sm text-muted-foreground mb-6">대기 중인 Autoblog 글을 즉시 게시하거나 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
 
       <section className="mb-8">
         <h2 className="text-sm font-semibold text-foreground mb-2">발행 대기 ({queued.length})</h2>

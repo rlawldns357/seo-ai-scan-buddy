@@ -316,7 +316,7 @@ export default function DashboardIndex() {
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground inline-flex items-center gap-2">
-                  오토블로그
+                  Autoblog
                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
                 </h1>
                 <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-foreground">
