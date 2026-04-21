@@ -132,7 +132,7 @@ export default function OnboardingSteps({
       </div>
 
       {/* Progress chips — subdued, supports but does not compete with the CTA. */}
-      <ol className="relative mt-5 grid grid-cols-3 gap-1.5">
+      <ol className="relative mt-5 flex sm:grid sm:grid-cols-3 gap-1.5 overflow-x-auto sm:overflow-visible -mx-1 px-1 sm:mx-0 sm:px-0 snap-x">
         {steps.map((step, i) => {
           const tone =
             step.state === "done"
@@ -143,7 +143,7 @@ export default function OnboardingSteps({
           return (
             <li
               key={i}
-              className={`flex items-center gap-2 rounded-xl border px-2.5 py-2 text-[11px] min-w-0 ${tone}`}
+              className={`flex items-center gap-2 rounded-xl border px-2.5 py-2 text-[11px] min-w-[9.5rem] sm:min-w-0 shrink-0 sm:shrink snap-start ${tone}`}
             >
               <span
                 className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
