@@ -27,12 +27,12 @@ export default function ValueProp() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center max-w-3xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
-            단순 블로그 툴이 아닙니다.<br />
-            <span className="text-primary">검색·AI 인용 인프라</span>입니다
+            검색엔진과 AI가<br />
+            <span className="text-primary">더 잘 이해하는 글</span>로 발행됩니다
           </h2>
           <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
-            AutoBlog는 SEO·AEO·GEO 3개 축을 동시에 겨냥해 글을 자동 설계하고,
-            구조화된 형태로 발행해 검색엔진과 AI 답변 엔진이 모두 인용할 수 있게 만듭니다.
+            글 1개를 쓰면 Google 검색 노출, 답변 박스 채택, ChatGPT·Perplexity 인용까지
+            한 번에 겨냥하도록 자동으로 정리됩니다.
           </p>
         </div>
 
