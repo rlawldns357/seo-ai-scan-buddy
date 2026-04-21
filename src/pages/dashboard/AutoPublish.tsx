@@ -65,7 +65,7 @@ export default function AutoPublish() {
   if (!site) {
     return (
       <>
-        <Helmet><title>자동 발행 | Auto Publish</title></Helmet>
+        <Helmet><title>자동 발행 | Autoblog</title></Helmet>
         <LockedFeature
           title="먼저 사이트를 연결하세요"
           description="발행할 콘텐츠 허브가 필요합니다."
@@ -80,7 +80,7 @@ export default function AutoPublish() {
 
   return (
     <>
-      <Helmet><title>자동 발행 | Auto Publish</title></Helmet>
+      <Helmet><title>자동 발행 | Autoblog</title></Helmet>
       <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행</h1>
       <p className="text-sm text-muted-foreground mb-6">발행 대기 중인 글을 즉시 게시하거나 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
 
