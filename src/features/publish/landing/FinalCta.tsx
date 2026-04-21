@@ -8,19 +8,23 @@ export default function FinalCta() {
       <div className="max-w-3xl mx-auto text-center p-8 md:p-12 rounded-3xl border border-border/50 bg-gradient-to-br from-primary/5 via-card to-card">
         <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground">
           내 사이트용 콘텐츠 운영,<br />
-          <span className="text-primary">오늘 바로 시작</span>해보세요
+          <span className="text-primary">어떻게 작동하는지</span> 살펴보세요
         </h2>
         <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
-          사이트를 연결하고 규칙만 정하면<br />
-          SearchTune OS가 전용 콘텐츠 페이지를 만들고 자동으로 글을 발행합니다.
+          사이트 연결부터 자동 발행까지의 흐름을<br />
+          내 사이트에 어떻게 적용할 수 있는지 미리 확인해볼 수 있습니다.
         </p>
-        <div className="mt-8 flex flex-col items-center gap-3">
+        <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="#how">
+            <Button size="lg" variant="outline" className="rounded-full h-12 px-6">
+              작동 방식 보기
+            </Button>
+          </a>
           <Link to="/auth?next=/dashboard">
             <Button size="lg" className="rounded-full h-12 px-8 gap-2">
               내 사이트에 적용해보기 <ArrowRight className="w-4 h-4" />
             </Button>
           </Link>
-          <p className="text-[11px] text-muted-foreground">베타 기간 무료 · 신용카드 등록 불필요</p>
         </div>
       </div>
     </section>
