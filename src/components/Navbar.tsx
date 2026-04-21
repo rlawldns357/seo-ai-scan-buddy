@@ -61,51 +61,50 @@ export default function Navbar() {
   return (
     <>
       <nav className="w-full bg-background sticky top-0 z-50">
-        <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-2.5">
-            <Link to="/" className="flex items-center gap-2.5">
-              <div className="gradient-primary rounded-xl p-2">
+        <div className="container flex items-center justify-between h-16 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Link to="/" className="flex items-center gap-2 min-w-0">
+              <div className="gradient-primary rounded-xl p-2 shrink-0">
                 <Search className="w-4 h-4 text-primary-foreground" />
               </div>
-              <div className="flex flex-col leading-none">
-                <span className="text-lg font-bold text-foreground tracking-tight">
+              <div className="flex flex-col leading-none min-w-0">
+                <span className="text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap">
                   SearchTune <span className="font-extrabold">OS</span>
                 </span>
-                <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide">
+                <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide whitespace-nowrap">
                   v0.11.0-beta{engineVersion !== null && ` · Engine v${engineVersion}`}
                 </span>
               </div>
             </Link>
-            <span className="hidden sm:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent">Beta</span>
-            <span className="sm:hidden px-1.5 py-px rounded text-[8px] font-bold uppercase tracking-wider bg-accent/10 text-accent leading-none">β</span>
+            <span className="hidden sm:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent shrink-0">Beta</span>
             {isAdmin && (
               <Link
                 to="/admin"
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20 hover:bg-score-excellent/20 transition-colors"
+                className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20 hover:bg-score-excellent/20 transition-colors shrink-0"
               >
                 <ShieldCheck className="w-3 h-3" />
                 Admin
               </Link>
             )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <Link
               to={user ? "/dashboard" : "/autoblog"}
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+              className="inline-flex items-center gap-1 sm:gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium whitespace-nowrap"
             >
-              {!user && <LogIn className="w-3.5 h-3.5" />}
+              {!user && <LogIn className="w-3.5 h-3.5 hidden sm:inline-block" />}
               <span>AutoBlog</span>
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
             </Link>
             <Link
               to="/blog"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+              className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
               Blog
             </Link>
             <Link
               to="/about"
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+              className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
               About
             </Link>
