@@ -14,7 +14,7 @@ export default function Hero() {
             검색엔진과 AI가 더 잘 이해하는{" "}
             <span className="text-primary">콘텐츠 운영</span>을 시작하세요
           </h1>
-          <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
+          <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed break-keep">
             주제만 입력하면 Google·Naver가 읽기 좋은 구조와 ChatGPT·Perplexity가 인용하기 좋은
             형태로 글이 자동 발행됩니다. 매번 SEO·AEO·GEO를 따로 점검하지 않아도 됩니다.
           </p>
