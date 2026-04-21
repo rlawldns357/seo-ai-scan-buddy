@@ -396,13 +396,13 @@ export default function DashboardIndex() {
           </section>
 
           <section className="grid xl:grid-cols-[1.35fr_0.9fr] gap-6 items-start">
-            <Card id="queue-section" className="p-6 rounded-3xl border-border/50 shadow-card scroll-mt-20">
-              <div className="flex items-start justify-between gap-3 mb-5">
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">🪄 발행 대기 중인 콘텐츠</h2>
-                  <p className="text-sm text-muted-foreground mt-1">가입 직후 자동으로 준비된 후보 포함, 원하는 글만 선택해 발행합니다.</p>
+            <Card id="queue-section" className="p-5 md:p-6 rounded-3xl border-border/50 shadow-card scroll-mt-20">
+              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-5">
+                <div className="min-w-0">
+                  <h2 className="text-lg md:text-xl font-semibold text-foreground break-keep">🪄 발행 대기 중인 콘텐츠</h2>
+                  <p className="text-sm text-muted-foreground mt-1 break-keep">가입 직후 자동으로 준비된 후보 포함, 원하는 글만 선택해 발행합니다.</p>
                 </div>
-                <Button variant="outline" className="rounded-full shrink-0" onClick={() => navigate("/dashboard/content")}>
+                <Button variant="outline" className="rounded-full shrink-0 w-full md:w-auto justify-center" onClick={() => navigate("/dashboard/content")}>
                   <FileText className="w-4 h-4" /> 콘텐츠 직접 작성하기
                 </Button>
               </div>
