@@ -11,12 +11,12 @@ export default function Hero() {
             <Sparkles className="w-3 h-3" /> NEW · AutoBlog 베타 오픈
           </span>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
-            검색엔진과 AI 답변 엔진이<br />
-            <span className="text-primary">우리 브랜드를 인용하게</span> 만드세요
+            검색엔진과 AI가 더 잘 이해하는<br />
+            <span className="text-primary">콘텐츠 운영</span>을 시작하세요
           </h1>
           <p className="text-sm md:text-base text-muted-foreground mt-5 leading-relaxed">
-            단순 블로그 툴이 아닙니다. AutoBlog는 SEO(검색 노출)·AEO(답변 채택)·GEO(AI 인용)
-            3개 축에 맞춰 글을 자동 설계하고, 구조화된 콘텐츠 운영으로 이어줍니다.
+            주제만 입력하면 Google·Naver가 읽기 좋은 구조와 ChatGPT·Perplexity가 인용하기 좋은
+            형태로 글이 자동 발행됩니다. 매번 SEO·AEO·GEO를 따로 점검하지 않아도 됩니다.
           </p>
 
           <ul className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-2">
