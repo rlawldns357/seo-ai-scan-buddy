@@ -424,8 +424,8 @@ export default function DashboardIndex() {
                             {post.is_auto_generated && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary text-secondary-foreground inline-flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> 자동 준비</span>}
                             <span className="text-[11px] text-muted-foreground inline-flex items-center gap-1"><Clock3 className="w-3 h-3" /> {Math.max(1, Math.round(post.content.length / 700))}분 읽기</span>
                           </div>
-                          <h3 className="text-base font-semibold text-foreground">{post.title}</h3>
-                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2">{post.excerpt || "발행 전 검토가 필요한 자동 생성 콘텐츠입니다."}</p>
+                          <h3 className="text-base font-semibold text-foreground break-keep">{post.title}</h3>
+                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2 break-keep">{post.excerpt || "발행 전 검토가 필요한 자동 생성 콘텐츠입니다."}</p>
                         </div>
                         <div className="flex flex-wrap gap-2 justify-end shrink-0">
                           <Button className="rounded-full" size="sm" onClick={() => publishPost(post.id)} disabled={busyId === post.id}><Send className="w-3.5 h-3.5" /> {busyId === post.id ? "발행 중..." : "콘텐츠 발행하기"}</Button>
