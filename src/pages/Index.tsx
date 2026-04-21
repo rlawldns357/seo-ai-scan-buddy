@@ -299,6 +299,7 @@ const Index = () => {
             <div className="mt-14 max-w-lg mx-auto text-left">
               <FaqSection compact />
             </div>
+            <AutoPublishTeaser />
           </div>
           <StickyBottomCTA />
         </main>
