@@ -90,7 +90,7 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-4">
             <Link
-              to={user ? "/dashboard" : "/auth"}
+              to="/dashboard"
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
               {!user && <LogIn className="w-3.5 h-3.5" />}
