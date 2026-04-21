@@ -87,8 +87,8 @@ export default function AutoPublish() {
       <FlowStepper current="publish" completed={["auth", "dashboard", "site", "draft", "edit"]} />
       <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행 큐</h1>
-          <p className="text-sm text-muted-foreground">대기 중인 글을 즉시 발행하거나 이미 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
+          <h1 className="text-2xl font-bold text-foreground mb-1">검색·AI 인용 발행 큐</h1>
+          <p className="text-sm text-muted-foreground">검색엔진과 AI 답변 엔진이 더 잘 인용할 수 있도록 준비된 글을 즉시 발행하거나, 이미 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
         </div>
         <div className="flex gap-2 shrink-0">
           <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate("/dashboard/recommendations")}>

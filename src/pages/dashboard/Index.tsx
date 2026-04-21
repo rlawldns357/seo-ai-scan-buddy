@@ -372,7 +372,7 @@ export default function DashboardIndex() {
           />
           <section className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-border/50 bg-card px-5 py-4">
             <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">내 콘텐츠 허브</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">검색·AI 인용 허브</p>
               <h2 className="text-base font-semibold text-foreground mt-0.5 truncate">{site.title}</h2>
               <p className="text-xs text-muted-foreground mt-0.5 truncate">{site.site_url}</p>
             </div>
