@@ -8,7 +8,7 @@ export default function Hero() {
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 md:gap-12 items-center">
         <div>
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-[11px] font-semibold mb-4">
-            <Sparkles className="w-3 h-3" /> NEW · Autoblog 베타 오픈
+            <Sparkles className="w-3 h-3" /> NEW · AutoBlog 베타 오픈
           </span>
           <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">
             진단 다음 단계,<br />

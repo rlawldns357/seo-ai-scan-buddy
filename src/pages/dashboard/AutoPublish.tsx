@@ -65,7 +65,7 @@ export default function AutoPublish() {
   if (!site) {
     return (
       <>
-        <Helmet><title>자동 발행 | Autoblog</title></Helmet>
+        <Helmet><title>자동 발행 | AutoBlog</title></Helmet>
         <LockedFeature
           title="먼저 사이트를 연결하세요"
           description="발행할 콘텐츠 허브가 필요합니다."
@@ -80,9 +80,9 @@ export default function AutoPublish() {
 
   return (
     <>
-      <Helmet><title>자동 발행 큐 | Autoblog</title></Helmet>
+      <Helmet><title>자동 발행 큐 | AutoBlog</title></Helmet>
       <h1 className="text-2xl font-bold text-foreground mb-1">자동 발행 큐</h1>
-      <p className="text-sm text-muted-foreground mb-6">대기 중인 Autoblog 글을 즉시 게시하거나 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
+      <p className="text-sm text-muted-foreground mb-6">대기 중인 글을 즉시 발행하거나 이미 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
 
       <section className="mb-8">
         <h2 className="text-sm font-semibold text-foreground mb-2">발행 대기 ({queued.length})</h2>
@@ -101,7 +101,7 @@ export default function AutoPublish() {
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <Button size="sm" onClick={() => publishNow(p.id)} disabled={busyId === p.id} className="rounded-full">
-                    <Send className="w-3.5 h-3.5" /> {busyId === p.id ? "발행 중..." : "지금 발행"}
+                    <Send className="w-3.5 h-3.5" /> {busyId === p.id ? "발행 중..." : "콘텐츠 발행하기"}
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => removePost(p.id)}>
                     <Trash2 className="w-3.5 h-3.5" />
