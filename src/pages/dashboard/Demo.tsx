@@ -818,24 +818,24 @@ export default function Demo() {
       {/* Scores */}
       {scores && (() => {
         const avgPrep = Math.round((scores.seo.score + scores.aeo.score + scores.geo.score) / 3);
-        const verdict = avgPrep >= 80 ? { label: "발행 추천", tone: "bg-emerald-500 text-white" }
-          : avgPrep >= 65 ? { label: "검수 후 발행", tone: "bg-primary text-primary-foreground" }
-          : { label: "수정 권장", tone: "bg-destructive text-destructive-foreground" };
+        const verdict = avgPrep >= 80 ? { label: "발행 준비 완료", tone: "bg-emerald-500 text-white" }
+          : avgPrep >= 65 ? { label: "가벼운 검수 후 발행", tone: "bg-primary text-primary-foreground" }
+          : { label: "보완 후 재검수", tone: "bg-destructive text-destructive-foreground" };
         return (
           <Card className="p-5 mb-4">
             <div className="flex items-start justify-between gap-3 mb-1 flex-wrap">
               <div>
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <Gauge className="w-4 h-4 text-primary" />
-                  발행 전 콘텐츠 품질 검수
+                  발행 전 콘텐츠 품질 점검
                 </h2>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  사람 검수 1시간을 AI가 3초로 — SEO·AEO·GEO 3축 자동 채점
+                  사람 검수 1시간 분량을 3초 안에 — SEO·AEO·GEO 3축 신호를 자동 점검합니다
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-right">
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">평균</div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">종합</div>
                   <div className="text-2xl font-extrabold text-foreground leading-none tabular-nums">{avgPrep}<span className="text-sm text-muted-foreground font-normal">/100</span></div>
                 </div>
                 <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold", verdict.tone)}>
@@ -934,11 +934,11 @@ export default function Demo() {
           <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <TrendingUp className="w-4 h-4 text-primary" />
-              <h2 className="text-sm font-bold text-foreground">SEO 기대효과 — 절감 광고비로 환산하면</h2>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">핵심 KPI</span>
+              <h2 className="text-sm font-bold text-foreground">SEO 기대효과 · 광고비로 환산해 보면</h2>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">핵심 지표</span>
             </div>
             <p className="text-[11px] text-muted-foreground mb-4">
-              평균 점수 <span className="font-bold text-foreground">{avg}점</span> 기준 · 색인 안정화(약 4~8주) 후 <span className="font-bold text-foreground">글 1편</span>의 월간 기대치 ·
+              평균 점수 <span className="font-bold text-foreground">{avg}점</span> 기준 · 색인 안정화(약 4~8주) 이후 <span className="font-bold text-foreground">글 1편</span>이 한 달간 만들어낼 수 있는 추정치 ·
               CPC 벤치마크 <span className="font-mono text-foreground">₩{f.avgCpc.toLocaleString()}</span> 적용
             </p>
 
@@ -947,17 +947,17 @@ export default function Demo() {
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold opacity-90 mb-1">
-                    <TrendingUp className="w-3.5 h-3.5" /> 월 절감 광고비 (예상)
+                    <TrendingUp className="w-3.5 h-3.5" /> 월 광고비 절감 추정액
                   </div>
                   <div className="text-3xl font-extrabold tabular-nums leading-none">{krw(f.adSavings)}</div>
                   <div className="text-[11px] opacity-85 mt-1">
-                    무료 유입 클릭 {f.monthlyClicks.toLocaleString()}회를 광고로 사려면 필요한 비용
+                    같은 트래픽({f.monthlyClicks.toLocaleString()}회 클릭)을 광고로 확보할 때 드는 비용 기준
                   </div>
                 </div>
-                <div className="text-right text-[10px] opacity-80 max-w-[160px]">
-                  💡 절감된 예산을<br/>
-                  <span className="font-bold">핵심 캠페인 / 신규 채널</span>에<br/>
-                  재투자할 여력 확보
+                <div className="text-right text-[10px] opacity-80 max-w-[170px]">
+                  💡 절감한 예산은<br/>
+                  <span className="font-bold">핵심 캠페인 강화·신규 채널 테스트</span>에<br/>
+                  재투자할 여력으로 활용 가능
                 </div>
               </div>
             </div>
@@ -967,12 +967,12 @@ export default function Demo() {
               <div className="p-3 rounded-lg bg-card border">
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><Eye className="w-3 h-3" /> 검색 노출</div>
                 <div className="text-lg font-bold text-foreground tabular-nums">{f.monthlyImpressions.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">월 노출 (Google·Naver)</div>
+                <div className="text-[10px] text-muted-foreground">월 노출 추정 (Google·Naver)</div>
               </div>
               <div className="p-3 rounded-lg bg-card border">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 무료 유입</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 자연 유입</div>
                 <div className="text-lg font-bold text-foreground tabular-nums">{f.monthlyClicks.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">광고비 0원 클릭</div>
+                <div className="text-[10px] text-muted-foreground">광고비 없이 유입되는 클릭</div>
               </div>
               <div className="p-3 rounded-lg bg-card border">
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><ShoppingBag className="w-3 h-3" /> 기대 주문</div>
@@ -985,7 +985,7 @@ export default function Demo() {
             <div className="mt-3 p-3 rounded-lg bg-muted/40 border border-dashed">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="text-[11px] text-muted-foreground">
-                  <span className="font-semibold text-foreground">참고</span> · 위 주문이 매출로 이어질 경우 기대 범위 (객단가 ₩48,000 가정)
+                  <span className="font-semibold text-foreground">참고치</span> · 주문이 매출로 이어질 경우 추정 범위 (객단가 ₩48,000 가정, 카테고리에 따라 변동)
                 </div>
                 <div className="text-sm font-bold text-foreground tabular-nums">
                   {krw(f.revenueLow)} ~ {krw(f.revenueHigh)}
@@ -999,14 +999,14 @@ export default function Demo() {
                 <div>
                   <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    매일 1편 발행 시 12개월 절감 광고비 누적
+                    하루 1편씩, 12개월간 쌓이는 절감 광고비 시뮬레이션
                   </div>
-                  <div className="text-[11px] text-muted-foreground">절감액을 다른 캠페인에 재투자할 수 있는 여력 시뮬레이션</div>
+                  <div className="text-[11px] text-muted-foreground">절감액을 다른 캠페인·채널 테스트에 재투자할 수 있는 여력 추정</div>
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-muted-foreground">12개월차 월 절감 광고비</div>
                   <div className="text-2xl font-extrabold text-primary leading-none tabular-nums">{krw(month12.adSavings)}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">누적 자산 글 {month12.articles}편</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">누적 콘텐츠 자산 {month12.articles}편</div>
                 </div>
               </div>
               <div className="flex items-end gap-1 h-32 mt-2">
@@ -1049,11 +1049,11 @@ export default function Demo() {
             </div>
 
             <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
-              💡 <span className="font-bold text-foreground">광고는 끄는 순간 노출이 멈추지만</span>, SEO 콘텐츠는
-              <span className="font-bold text-foreground"> 발행 후에도 24시간 검색 노출을 만드는 자산</span>입니다.
-              절감된 광고비는 <span className="font-bold text-foreground">핵심 캠페인 강화·신규 채널 테스트</span>에 재투자할 수 있는 여력으로 환원됩니다.
+              💡 광고는 집행을 멈추는 순간 노출도 함께 멈추지만,
+              <span className="font-bold text-foreground"> 잘 만들어진 SEO 콘텐츠는 발행 이후에도 검색 결과에서 24시간 일하는 자산</span>으로 남습니다.
+              여기서 절감되는 광고비만큼 <span className="font-bold text-foreground">핵심 캠페인을 더 두텁게, 신규 채널을 더 과감하게</span> 시도할 여력이 생깁니다.
               <br/>
-              <span className="text-muted-foreground/80">※ 추정치 · 카테고리·경쟁도·CPC 변동에 따라 실제 수치는 달라질 수 있습니다.</span>
+              <span className="text-muted-foreground/80">※ 위 수치는 카테고리·경쟁도·CPC 변동에 따라 달라질 수 있는 추정치이며, 검색 순위나 매출을 보장하지 않습니다.</span>
             </p>
           </Card>
         );
@@ -1066,13 +1066,13 @@ export default function Demo() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold text-foreground flex items-center gap-2 flex-wrap">
-                오늘 밤 자동 발행 예약 완료
+                오늘 밤 자동 발행 일정에 등록되었습니다
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-bold">
-                  <Send className="w-2.5 h-2.5" /> 큐 등록됨
+                  <Send className="w-2.5 h-2.5" /> 발행 큐 대기
                 </span>
               </div>
               <div className="text-[11px] text-muted-foreground mt-0.5">
-                다음 자동 발행 시간 <span className="font-mono font-semibold text-foreground">08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연이라 실제 저장 X
+                다음 자동 발행 시각 <span className="font-mono font-semibold text-foreground">08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연 모드라 실제 저장은 일어나지 않아요
               </div>
             </div>
             <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={runFullDemo} disabled={running}>
