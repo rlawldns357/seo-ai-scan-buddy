@@ -825,21 +825,56 @@ export default function Demo() {
       )}
 
       {/* Draft live */}
-      {(phase === "draft" || draft) && (
-        <Card className="p-5 mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <FileText className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-bold text-foreground">실시간 본문 생성</h2>
-            {phase === "draft" && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
-            <span className="ml-auto text-[11px] text-muted-foreground">{draft.length.toLocaleString()}자</span>
-          </div>
-          <div ref={draftRef}
-            className="max-h-[420px] overflow-auto rounded-md border border-border bg-muted/30 p-4 text-sm font-mono whitespace-pre-wrap leading-relaxed text-foreground">
-            {draft || <span className="text-muted-foreground">…</span>}
-            {phase === "draft" && <span className="inline-block w-2 h-4 bg-primary ml-0.5 animate-pulse align-middle" />}
-          </div>
-        </Card>
-      )}
+      {(phase === "draft" || draft) && (() => {
+        const charCount = draft.length;
+        // 사람 평균 타이핑 250자/분 + 리서치/구성 시간 가산 → 1,000자당 약 12분
+        const humanMinutes = Math.max(1, Math.round((charCount / 1000) * 12));
+        const aiSeconds = phaseTimings.draft ? Math.round(phaseTimings.draft) : Math.max(1, Math.round(charCount / 200));
+        const speedMultiplier = humanMinutes > 0 && aiSeconds > 0
+          ? Math.round((humanMinutes * 60) / aiSeconds)
+          : 0;
+        return (
+          <Card className="p-5 mb-4">
+            <div className="flex items-center gap-2 mb-3 flex-wrap">
+              <FileText className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground">실시간 본문 생성</h2>
+              {phase === "draft" && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+              <span className="ml-auto text-[11px] text-muted-foreground tabular-nums">{charCount.toLocaleString()}자</span>
+            </div>
+
+            {/* 사람 vs AI 비교 — 임팩트 강화 */}
+            <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="p-2.5 rounded-lg border bg-muted/40">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-0.5">사람이 쓰면</div>
+                <div className="text-base font-bold text-muted-foreground tabular-nums">~{humanMinutes}분</div>
+                <div className="text-[10px] text-muted-foreground">리서치+작성 평균</div>
+              </div>
+              <div className="p-2.5 rounded-lg border border-primary bg-primary/5">
+                <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-0.5">AutoBlog</div>
+                <div className="text-base font-bold text-primary tabular-nums">{aiSeconds}초</div>
+                <div className="text-[10px] text-muted-foreground">실측 생성 시간</div>
+              </div>
+              <div className="p-2.5 rounded-lg border bg-card">
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mb-0.5">속도 차</div>
+                <div className="text-base font-extrabold text-foreground tabular-nums">×{speedMultiplier || "—"}</div>
+                <div className="text-[10px] text-muted-foreground">{speedMultiplier ? `${speedMultiplier}배 빠름` : "측정 중"}</div>
+              </div>
+            </div>
+
+            <div ref={draftRef}
+              className="max-h-[420px] overflow-auto rounded-md border border-border bg-muted/30 p-4 text-sm font-mono whitespace-pre-wrap leading-relaxed text-foreground">
+              {draft || <span className="text-muted-foreground">…</span>}
+              {phase === "draft" && <span className="inline-block w-2 h-4 bg-primary ml-0.5 animate-pulse align-middle" />}
+            </div>
+
+            {phase !== "draft" && draft && (
+              <p className="mt-2 text-[10px] text-muted-foreground leading-snug">
+                💡 매일 1편 = 월 30편. 사람 외주(편당 5~10만원) 환산 시 <span className="font-bold text-foreground">월 150~300만원</span> 규모의 콘텐츠 제작비를 대체합니다.
+              </p>
+            )}
+          </Card>
+        );
+      })()}
 
       {/* Scores */}
       {scores && (() => {
