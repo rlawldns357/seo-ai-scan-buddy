@@ -128,19 +128,39 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
   const r = 36;
   const c = 2 * Math.PI * r;
   const off = c - (v / 100) * c;
+  const tier =
+    value >= 80 ? { label: "우수", emoji: "🏆", ring: "ring-emerald-500/30", glow: "from-emerald-500/15 to-transparent", chip: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" }
+    : value >= 65 ? { label: "양호", emoji: "✨", ring: "ring-primary/30", glow: "from-primary/15 to-transparent", chip: "bg-primary/15 text-primary" }
+    : value >= 50 ? { label: "보완 필요", emoji: "⚠️", ring: "ring-amber-500/30", glow: "from-amber-500/15 to-transparent", chip: "bg-amber-500/15 text-amber-700 dark:text-amber-400" }
+    : { label: "긴급 점검", emoji: "🚨", ring: "ring-destructive/30", glow: "from-destructive/15 to-transparent", chip: "bg-destructive/15 text-destructive" };
+
   return (
-    <div className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-card">
+    <div className={cn(
+      "relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card overflow-hidden ring-1 transition-all hover:shadow-md",
+      tier.ring,
+    )}>
+      <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", tier.glow)} />
+      <div className="relative w-full flex items-center justify-between">
+        <span className="text-[10px] font-extrabold tracking-widest text-foreground uppercase">{label}</span>
+        <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full", tier.chip)}>
+          {tier.emoji} {tier.label}
+        </span>
+      </div>
       <div className="relative w-24 h-24">
         <svg className="w-24 h-24 -rotate-90" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r={r} stroke="hsl(var(--muted))" strokeWidth="6" fill="none" />
           <circle cx="40" cy="40" r={r} stroke={color} strokeWidth="6" fill="none"
             strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
-            style={{ transition: "stroke-dashoffset 0.1s linear" }} />
+            style={{ transition: "stroke-dashoffset 0.1s linear", filter: `drop-shadow(0 0 6px ${color}66)` }} />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-foreground">{v}</div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-extrabold text-foreground tabular-nums leading-none">{v}</span>
+          <span className="text-[9px] text-muted-foreground font-mono mt-0.5">/100</span>
+        </div>
       </div>
-      <div className="text-xs font-bold tracking-wide text-foreground">{label}</div>
-      <div className="text-[11px] text-muted-foreground text-center leading-tight min-h-[28px]">{comment || "—"}</div>
+      <div className="relative text-[11px] text-muted-foreground text-center leading-tight min-h-[28px] px-1">
+        {comment || "—"}
+      </div>
     </div>
   );
 }
@@ -909,32 +929,64 @@ export default function Demo() {
       {/* Scores */}
       {scores && (() => {
         const avgPrep = Math.round((scores.seo.score + scores.aeo.score + scores.geo.score) / 3);
-        const verdict = avgPrep >= 80 ? { label: "발행 준비 완료", tone: "bg-emerald-500 text-white" }
-          : avgPrep >= 65 ? { label: "가벼운 검수 후 발행", tone: "bg-primary text-primary-foreground" }
-          : { label: "보완 후 재검수", tone: "bg-destructive text-destructive-foreground" };
+        const verdict = avgPrep >= 80 ? { label: "발행 준비 완료", tone: "bg-emerald-500 text-white", icon: "🟢" }
+          : avgPrep >= 65 ? { label: "가벼운 검수 후 발행", tone: "bg-primary text-primary-foreground", icon: "🔵" }
+          : { label: "보완 후 재검수", tone: "bg-destructive text-destructive-foreground", icon: "🔴" };
+        const axes = [
+          { key: "SEO" as const, score: scores.seo.score },
+          { key: "AEO" as const, score: scores.aeo.score },
+          { key: "GEO" as const, score: scores.geo.score },
+        ];
+        const sorted = [...axes].sort((a, b) => b.score - a.score);
+        const strongest = sorted[0];
+        const weakest = sorted[sorted.length - 1];
         return (
-          <Card className="p-5 mb-4">
-            <div className="flex items-start justify-between gap-3 mb-1 flex-wrap">
-              <div>
-                <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+          <Card className="p-5 mb-4 border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
+            <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+              <div className="min-w-0">
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-2 flex-wrap">
                   <Gauge className="w-4 h-4 text-primary" />
                   발행 전 콘텐츠 품질 점검
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/15 text-primary font-bold uppercase tracking-wider">실시간 채점</span>
                 </h2>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  사람 검수 1시간 분량을 3초 안에 — SEO·AEO·GEO 3축 신호를 자동 점검합니다 · <span className="font-mono">{new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</span> 기준
+                  사람 검수 1시간 분량을 3초 안에 — SEO·AEO·GEO 3축 신호 자동 점검 · <span className="font-mono">{new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</span> 기준
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-right">
                   <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">종합</div>
-                  <div className="text-2xl font-extrabold text-foreground leading-none tabular-nums">{avgPrep}<span className="text-sm text-muted-foreground font-normal">/100</span></div>
+                  <div className="text-3xl font-extrabold text-foreground leading-none tabular-nums">{avgPrep}<span className="text-sm text-muted-foreground font-normal">/100</span></div>
                 </div>
-                <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold", verdict.tone)}>
-                  ✓ {verdict.label}
+                <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap", verdict.tone)}>
+                  {verdict.icon} {verdict.label}
                 </span>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 mt-3">
+
+            {/* 강점·약점 하이라이트 띠 */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              <div className="flex-1 min-w-[160px] p-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 flex items-center gap-2">
+                <span className="text-base">💪</span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">가장 강한 축</div>
+                  <div className="text-xs font-bold text-foreground truncate">
+                    {strongest.key} <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">{strongest.score}점</span> · 유지하세요
+                  </div>
+                </div>
+              </div>
+              <div className="flex-1 min-w-[160px] p-2 rounded-lg border border-amber-500/30 bg-amber-500/5 flex items-center gap-2">
+                <span className="text-base">🎯</span>
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">가장 먼저 손볼 축</div>
+                  <div className="text-xs font-bold text-foreground truncate">
+                    {weakest.key} <span className="text-amber-700 dark:text-amber-400 tabular-nums">{weakest.score}점</span> · 개선 시 +{Math.max(5, 80 - weakest.score)}점 여력
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
               <ScoreGauge label="SEO" value={scores.seo.score} comment={scores.seo.comment} color={axisColor("SEO")} />
               <ScoreGauge label="AEO" value={scores.aeo.score} comment={scores.aeo.comment} color={axisColor("AEO")} />
               <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} />
