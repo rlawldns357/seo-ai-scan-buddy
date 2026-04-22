@@ -8,15 +8,28 @@ import { toast } from "@/hooks/use-toast";
 import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Phase = "idle" | "recommend" | "draft" | "score" | "publish" | "done";
+type Phase = "idle" | "recommend" | "brief" | "draft" | "score" | "publish" | "done";
 type Topic = { axis: "SEO" | "AEO" | "GEO"; title: string; reason: string };
 type Scores = { seo: { score: number; comment: string }; aeo: { score: number; comment: string }; geo: { score: number; comment: string } };
+type SeoBrief = {
+  topic: string;
+  intent: "informational" | "commercial" | "transactional";
+  title: string;
+  metaDescription: string;
+  primaryKeyword: string;
+  secondaryKeywords: string[];
+  outline: { h2: string; points: string[] }[];
+  faq: { q: string; a: string }[];
+  structuredData: string[];
+  internalLinkHints: string[];
+};
 
 const STREAM_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-stream-content`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
 const PHASES: { key: Phase; label: string; sub: string; icon: typeof Lightbulb }[] = [
   { key: "recommend", label: "구매 의도 토픽 추천", sub: "검색량 있는 키워드 발굴", icon: Lightbulb },
+  { key: "brief", label: "SEO 기획 패키지", sub: "제목·메타·키워드·FAQ·구조", icon: ClipboardList },
   { key: "draft", label: "SEO 친화 본문 생성", sub: "롱테일 + 상품 의도 반영", icon: FileText },
   { key: "score", label: "3축 콘텐츠 채점", sub: "발행 전 검색 적합도 검증", icon: Gauge },
   { key: "publish", label: "발행 큐 등록", sub: "예약 발행 시뮬레이션", icon: Send },
@@ -118,6 +131,8 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
 
 export default function Demo() {
   const [siteUrl, setSiteUrl] = useState("https://my-brand-shop.com");
+  const [seedTopic, setSeedTopic] = useState("");
+  const [brief, setBrief] = useState<SeoBrief | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicBuf, setTopicBuf] = useState("");
@@ -156,7 +171,8 @@ export default function Demo() {
   const SCRIPT: { phase: Phase; line: string }[] = [
     { phase: "idle", line: "지금 보시는 건 내부 시연 전용 페이지예요. DB에는 아무것도 저장되지 않습니다." },
     { phase: "recommend", line: "사이트만 보고 AI가 구매 의도가 있는 키워드 토픽 3개를 즉석에서 뽑습니다. SEO·AEO·GEO 3축이 골고루 나오는지 봐주세요." },
-    { phase: "draft", line: "이게 바로 실시간으로 글이 써지는 모습이에요. 사람이 1시간 걸릴 글을 30초 안에 마크다운으로 완성합니다." },
+    { phase: "brief", line: "본문을 쓰기 전에 먼저 SEO 기획 패키지를 만들어요 — 제목·메타·키워드·FAQ·구조까지 발행 직전 형태로 한 번에 나옵니다." },
+    { phase: "draft", line: "이 기획대로 실시간으로 글이 써지는 모습이에요. 사람이 1시간 걸릴 글을 30초 안에 마크다운으로 완성합니다." },
     { phase: "score", line: "발행 전에 자동으로 SEO·AEO·GEO 3축 점수를 매겨요. 약점이 보이면 다시 생성하거나 수동 보정이 가능합니다." },
     { phase: "publish", line: "이 글이 발행 큐에 올라가면, 매일 정해진 시간에 자동으로 사이트에 게시됩니다." },
     { phase: "done", line: "맨 아래 카드 보세요 — 글 1편이 매월 자산처럼 매출을 만들어주는 게 핵심입니다. 발행할수록 곱해집니다." },
@@ -164,7 +180,7 @@ export default function Demo() {
   const currentLine = SCRIPT.find(s => s.phase === phase)?.line ?? SCRIPT[0].line;
 
   const completed = useMemo(() => {
-    const order: Phase[] = ["recommend", "draft", "score", "publish"];
+    const order: Phase[] = ["recommend", "brief", "draft", "score", "publish"];
     const idx = order.indexOf(phase);
     if (phase === "done") return order;
     return order.slice(0, idx);
@@ -172,7 +188,7 @@ export default function Demo() {
 
   const reset = () => {
     setPhase("idle"); setTopics([]); setTopicBuf(""); setPicked(null);
-    setDraft(""); setScores(null); setQueueId(null); setRunning(false);
+    setBrief(null); setDraft(""); setScores(null); setQueueId(null); setRunning(false);
   };
 
   const runFullDemo = async () => {
@@ -180,7 +196,7 @@ export default function Demo() {
     reset();
     setRunning(true);
     try {
-      // 1) Recommend
+      // 1) Recommend topics (skipped only visually if seedTopic provided — we still recommend for variety)
       setPhase("recommend");
       let buf = "";
       await streamEndpoint({ mode: "recommend", siteUrl }, (chunk) => {
@@ -191,15 +207,33 @@ export default function Demo() {
       const finalTopics = parseTopicsFromBuffer(buf);
       if (finalTopics.length === 0) throw new Error("토픽 추천 실패");
       setTopics(finalTopics);
-      // Pick first non-SEO axis with lowest implied priority — just pick first
-      const chosen = finalTopics[0];
+      // If user provided a seed topic, build a virtual chosen topic with SEO axis;
+      // otherwise pick the first recommended topic.
+      const chosen: Topic = seedTopic.trim()
+        ? { axis: "SEO", title: seedTopic.trim(), reason: "사용자가 직접 지정" }
+        : finalTopics[0];
       setPicked(chosen);
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, 500));
 
-      // 2) Draft streaming
+      // 2) SEO Brief (제목·메타·키워드·FAQ·구조화)
+      setPhase("brief");
+      const briefResp = await fetch(STREAM_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${ANON_KEY}` },
+        body: JSON.stringify({ mode: "seo-brief", siteUrl, topic: chosen.title }),
+      });
+      if (!briefResp.ok) {
+        const errBody = await briefResp.json().catch(() => ({}));
+        throw new Error(errBody.error || "SEO 기획 패키지 생성 실패");
+      }
+      const briefData = (await briefResp.json()) as SeoBrief;
+      setBrief(briefData);
+      await new Promise(r => setTimeout(r, 700));
+
+      // 3) Draft streaming (uses brief.title as the topic for tighter alignment)
       setPhase("draft");
       let bodyBuf = "";
-      await streamEndpoint({ mode: "draft", siteUrl, topic: chosen.title, axis: chosen.axis }, (chunk) => {
+      await streamEndpoint({ mode: "draft", siteUrl, topic: briefData.title || chosen.title, axis: chosen.axis }, (chunk) => {
         bodyBuf += chunk;
         setDraft(bodyBuf);
         if (draftRef.current) draftRef.current.scrollTop = draftRef.current.scrollHeight;
@@ -258,11 +292,19 @@ export default function Demo() {
 
       {/* Control */}
       <Card className="p-5 mb-4">
-        <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <div className="grid md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
           <div>
             <Label htmlFor="demo-url">쇼핑몰 / 브랜드 사이트 URL</Label>
             <Input id="demo-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)}
               placeholder="https://my-brand-shop.com" disabled={running} />
+          </div>
+          <div>
+            <Label htmlFor="demo-topic" className="flex items-center gap-1">
+              브랜드/상품 주제
+              <span className="text-[10px] font-normal text-muted-foreground">(선택)</span>
+            </Label>
+            <Input id="demo-topic" value={seedTopic} onChange={(e) => setSeedTopic(e.target.value)}
+              placeholder="예: 여성 린넨 셔츠, 비건 단백질 파우더" disabled={running} />
           </div>
           <Button onClick={runFullDemo} disabled={running} className="rounded-full h-10">
             {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
@@ -270,7 +312,7 @@ export default function Demo() {
           </Button>
         </div>
         <p className="mt-2 text-[11px] text-muted-foreground">
-          💡 시연 팁: 실제 브랜드 URL을 넣으면 추천 키워드가 더 사실감 있게 나옵니다. (예: <code className="font-mono">musinsa.com</code>, <code className="font-mono">kream.co.kr</code>)
+          💡 주제를 비우면 AI가 사이트를 분석해 자동 추천합니다. 입력하면 그 주제로 바로 SEO 기획 패키지를 만들어요.
         </p>
       </Card>
 
@@ -382,6 +424,7 @@ export default function Demo() {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">LIVE</span>
                 <span className="text-sm font-bold text-foreground truncate">
                   {phase === "recommend" && "AI가 구매 의도 키워드를 발굴하고 있어요…"}
+                  {phase === "brief" && "AI가 제목·메타·키워드·FAQ·구조를 한 번에 설계 중이에요…"}
                   {phase === "draft" && "AI가 SEO 친화 본문을 한 글자씩 작성 중이에요…"}
                   {phase === "score" && "AI가 발행 전 3축 콘텐츠 품질을 채점 중이에요…"}
                   {phase === "publish" && "발행 큐에 자동으로 등록 중이에요…"}
@@ -390,7 +433,7 @@ export default function Demo() {
               <div className="mt-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-primary via-primary/70 to-primary animate-pulse"
                   style={{
-                    width: phase === "recommend" ? "20%" : phase === "draft" ? "55%" : phase === "score" ? "80%" : phase === "publish" ? "95%" : "100%",
+                    width: phase === "recommend" ? "15%" : phase === "brief" ? "35%" : phase === "draft" ? "60%" : phase === "score" ? "82%" : phase === "publish" ? "95%" : "100%",
                     transition: "width 0.6s ease-out",
                   }} />
               </div>
@@ -400,7 +443,7 @@ export default function Demo() {
       )}
 
       {/* Stepper */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
         {PHASES.map((p) => {
           const isDone = completed.includes(p.key) || phase === "done";
           const isActive = phase === p.key;
@@ -458,6 +501,104 @@ export default function Demo() {
               </div>
             ))}
           </div>
+        </Card>
+      )}
+
+      {/* SEO Brief Package — 발행 직전 기획 */}
+      {(phase === "brief" || brief) && (
+        <Card className="p-5 mb-4 border-primary/30">
+          <div className="flex items-center gap-2 mb-3">
+            <ClipboardList className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">SEO 기획 패키지</h2>
+            {brief && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold uppercase tracking-wider">
+                {brief.intent === "transactional" ? "거래형" : brief.intent === "commercial" ? "구매검토형" : "정보형"}
+              </span>
+            )}
+            {phase === "brief" && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+          </div>
+          {!brief && phase === "brief" && (
+            <p className="text-xs text-muted-foreground">AI가 제목·메타·키워드·FAQ·구조를 동시에 설계 중…</p>
+          )}
+          {brief && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">최종 주제</div>
+                  <div className="text-sm font-semibold text-foreground">{brief.topic}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">H1 제목 ({brief.title.length}자)</div>
+                  <div className="text-base font-bold text-foreground leading-snug">{brief.title}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">메타 설명 ({brief.metaDescription.length}자)</div>
+                  <div className="text-xs text-foreground leading-relaxed bg-muted/40 rounded-md p-2 border">{brief.metaDescription}</div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">핵심 키워드</div>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                    🎯 {brief.primaryKeyword}
+                  </span>
+                  {brief.secondaryKeywords.map((kw, i) => (
+                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-full bg-muted text-foreground text-[11px] border">
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">본문 구조 (H2 {brief.outline.length}개)</div>
+                <ol className="space-y-2">
+                  {brief.outline.map((sec, i) => (
+                    <li key={i} className="border-l-2 border-primary/30 pl-3 py-0.5">
+                      <div className="text-sm font-semibold text-foreground">H2. {sec.h2}</div>
+                      <ul className="mt-1 space-y-0.5">
+                        {sec.points.map((pt, j) => (
+                          <li key={j} className="text-[11px] text-muted-foreground leading-snug">· {pt}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">FAQ (AEO · AI 답변 채택, {brief.faq.length}개)</div>
+                <div className="space-y-1.5">
+                  {brief.faq.map((f, i) => (
+                    <details key={i} className="rounded-md border bg-card p-2">
+                      <summary className="text-xs font-semibold text-foreground cursor-pointer">Q. {f.q}</summary>
+                      <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed pl-3">A. {f.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">권장 schema.org</div>
+                  <div className="flex flex-wrap gap-1">
+                    {brief.structuredData.map((s, i) => (
+                      <code key={i} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted border text-foreground">{s}</code>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">내부 링크 힌트</div>
+                  <ul className="space-y-0.5">
+                    {brief.internalLinkHints.map((h, i) => (
+                      <li key={i} className="text-[11px] text-muted-foreground">→ {h}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
         </Card>
       )}
 
