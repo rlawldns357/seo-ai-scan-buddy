@@ -571,21 +571,47 @@ export default function Demo() {
             <pre className="text-[11px] font-mono text-muted-foreground whitespace-pre-wrap break-all max-h-32 overflow-auto">{topicBuf || "AI가 사이트를 분석 중…"}</pre>
           )}
           <div className="grid md:grid-cols-3 gap-2">
-            {topics.map((t, i) => (
-              <div key={i}
-                className={cn(
-                  "p-3 rounded-lg border text-left",
-                  picked?.title === t.title ? "border-primary bg-primary/5" : "border-border bg-card",
-                )}>
-                <div className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold mb-1.5"
-                  style={{ background: `${axisColor(t.axis)}20`, color: axisColor(t.axis) }}>
-                  {t.axis}
+            {topics.map((t, i) => {
+              // 데모 시그널: 토픽 제목 길이/축 기반의 의사결정 보조 지표 (deterministic)
+              const seedHash = t.title.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+              const monthlyVolume = 800 + (seedHash % 28) * 250; // 800~7,800
+              const competition = ["낮음", "중간", "중상"][seedHash % 3];
+              const intent = t.axis === "AEO" ? "정보 탐색" : t.axis === "GEO" ? "비교 검토" : "구매 직결";
+              const intentTone = t.axis === "SEO" ? "text-emerald-600 dark:text-emerald-400" : t.axis === "GEO" ? "text-primary" : "text-foreground";
+              return (
+                <div key={i}
+                  className={cn(
+                    "p-3 rounded-lg border text-left",
+                    picked?.title === t.title ? "border-primary bg-primary/5" : "border-border bg-card",
+                  )}>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="inline-block px-1.5 py-0.5 rounded text-[9px] font-bold"
+                      style={{ background: `${axisColor(t.axis)}20`, color: axisColor(t.axis) }}>
+                      {t.axis}
+                    </div>
+                    <span className={cn("text-[9px] font-bold uppercase tracking-wider", intentTone)}>{intent}</span>
+                  </div>
+                  <div className="text-sm font-semibold text-foreground leading-snug mb-1">{t.title}</div>
+                  <div className="text-[11px] text-muted-foreground leading-tight mb-2">{t.reason}</div>
+                  <div className="grid grid-cols-2 gap-1.5 pt-2 border-t border-border/60">
+                    <div>
+                      <div className="text-[9px] text-muted-foreground uppercase tracking-wider">월 검색량(추정)</div>
+                      <div className="text-[11px] font-bold text-foreground tabular-nums">{monthlyVolume.toLocaleString()}회</div>
+                    </div>
+                    <div>
+                      <div className="text-[9px] text-muted-foreground uppercase tracking-wider">경쟁도</div>
+                      <div className="text-[11px] font-bold text-foreground">{competition}</div>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-sm font-semibold text-foreground leading-snug mb-1">{t.title}</div>
-                <div className="text-[11px] text-muted-foreground leading-tight">{t.reason}</div>
-              </div>
-            ))}
+              );
+            })}
           </div>
+          {topics.length > 0 && (
+            <p className="mt-2 text-[10px] text-muted-foreground leading-snug">
+              ※ 검색량·경쟁도는 데모용 추정 지표입니다. 실제 운영에서는 Search Console·키워드 도구 데이터로 교체됩니다.
+            </p>
+          )}
         </Card>
       )}
 
