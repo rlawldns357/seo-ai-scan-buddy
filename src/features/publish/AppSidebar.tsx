@@ -52,8 +52,11 @@ export default function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent className="pt-[var(--dash-subheader-h,3.75rem)]">
+    <Sidebar
+      collapsible="icon"
+      className="!top-[calc(4rem+var(--dash-subheader-h,3.75rem))] !h-[calc(100svh-4rem-var(--dash-subheader-h,3.75rem))]"
+    >
+      <SidebarContent>
         <SiteSwitcher />
 
         <SidebarGroup>
