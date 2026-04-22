@@ -424,6 +424,7 @@ export default function Demo() {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">LIVE</span>
                 <span className="text-sm font-bold text-foreground truncate">
                   {phase === "recommend" && "AI가 구매 의도 키워드를 발굴하고 있어요…"}
+                  {phase === "brief" && "AI가 제목·메타·키워드·FAQ·구조를 한 번에 설계 중이에요…"}
                   {phase === "draft" && "AI가 SEO 친화 본문을 한 글자씩 작성 중이에요…"}
                   {phase === "score" && "AI가 발행 전 3축 콘텐츠 품질을 채점 중이에요…"}
                   {phase === "publish" && "발행 큐에 자동으로 등록 중이에요…"}
@@ -432,7 +433,7 @@ export default function Demo() {
               <div className="mt-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
                 <div className="h-full bg-gradient-to-r from-primary via-primary/70 to-primary animate-pulse"
                   style={{
-                    width: phase === "recommend" ? "20%" : phase === "draft" ? "55%" : phase === "score" ? "80%" : phase === "publish" ? "95%" : "100%",
+                    width: phase === "recommend" ? "15%" : phase === "brief" ? "35%" : phase === "draft" ? "60%" : phase === "score" ? "82%" : phase === "publish" ? "95%" : "100%",
                     transition: "width 0.6s ease-out",
                   }} />
               </div>
