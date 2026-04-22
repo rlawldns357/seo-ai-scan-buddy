@@ -37,7 +37,7 @@ export default function DashboardLayout() {
         <div className="flex flex-1 w-full min-w-0">
           <AppSidebar />
           <div className="flex-1 min-w-0 flex flex-col">
-            <header className="h-[var(--dash-subheader-h,3.5rem)] flex items-center justify-between border-b px-2 sticky top-16 bg-background/95 backdrop-blur z-40 gap-3">
+            <header className="h-[var(--dash-subheader-h,3.75rem)] flex items-center justify-between border-b px-2 sticky top-16 bg-background/95 backdrop-blur z-40 gap-3">
               <div className="flex items-center min-w-0">
                 <SidebarTrigger />
                 <span className="ml-3 text-sm font-semibold tracking-tight">AutoBlog</span>
