@@ -292,11 +292,19 @@ export default function Demo() {
 
       {/* Control */}
       <Card className="p-5 mb-4">
-        <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
+        <div className="grid md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
           <div>
             <Label htmlFor="demo-url">쇼핑몰 / 브랜드 사이트 URL</Label>
             <Input id="demo-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)}
               placeholder="https://my-brand-shop.com" disabled={running} />
+          </div>
+          <div>
+            <Label htmlFor="demo-topic" className="flex items-center gap-1">
+              브랜드/상품 주제
+              <span className="text-[10px] font-normal text-muted-foreground">(선택)</span>
+            </Label>
+            <Input id="demo-topic" value={seedTopic} onChange={(e) => setSeedTopic(e.target.value)}
+              placeholder="예: 여성 린넨 셔츠, 비건 단백질 파우더" disabled={running} />
           </div>
           <Button onClick={runFullDemo} disabled={running} className="rounded-full h-10">
             {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
@@ -304,7 +312,7 @@ export default function Demo() {
           </Button>
         </div>
         <p className="mt-2 text-[11px] text-muted-foreground">
-          💡 시연 팁: 실제 브랜드 URL을 넣으면 추천 키워드가 더 사실감 있게 나옵니다. (예: <code className="font-mono">musinsa.com</code>, <code className="font-mono">kream.co.kr</code>)
+          💡 주제를 비우면 AI가 사이트를 분석해 자동 추천합니다. 입력하면 그 주제로 바로 SEO 기획 패키지를 만들어요.
         </p>
       </Card>
 
