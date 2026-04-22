@@ -848,6 +848,61 @@ export default function Demo() {
               <ScoreGauge label="AEO" value={scores.aeo.score} comment={scores.aeo.comment} color={axisColor("AEO")} />
               <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} />
             </div>
+
+            {/* 내부 팀용 — SEO 기대효과 즉시 이해 체크리스트 */}
+            {(() => {
+              const checks = [
+                {
+                  label: "타깃 키워드 적합도",
+                  hint: "선정 토픽이 검색 의도·우리 서비스와 정렬된 정도",
+                  value: Math.round((scores.seo.score * 0.6 + scores.aeo.score * 0.4)),
+                },
+                {
+                  label: "검색 노출 가능성",
+                  hint: "메타·Heading·내부링크 등 색인 친화도",
+                  value: scores.seo.score,
+                },
+                {
+                  label: "콘텐츠 구조 완성도",
+                  hint: "도입–본문–결론·소제목·표/리스트 가독성",
+                  value: Math.round((scores.aeo.score * 0.7 + scores.seo.score * 0.3)),
+                },
+                {
+                  label: "FAQ·스키마 활용도",
+                  hint: "AI 답변·리치결과 인용 준비도(JSON-LD/FAQ)",
+                  value: Math.round((scores.aeo.score * 0.5 + scores.geo.score * 0.5)),
+                },
+              ];
+              const tone = (v: number) =>
+                v >= 80 ? { txt: "우수", cls: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400", bar: "bg-emerald-500" }
+                : v >= 65 ? { txt: "양호", cls: "bg-primary/15 text-primary", bar: "bg-primary" }
+                : { txt: "보완 필요", cls: "bg-destructive/15 text-destructive", bar: "bg-destructive" };
+              return (
+                <div className="mt-4 pt-4 border-t border-border">
+                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+                    <h3 className="text-[12px] font-bold text-foreground">내부 팀 빠른 체크 — SEO 기대효과</h3>
+                    <span className="text-[10px] text-muted-foreground">발행 직전 검수 기준 · 자동 채점</span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {checks.map((c) => {
+                      const t = tone(c.value);
+                      return (
+                        <div key={c.label} className="p-3 rounded-lg border bg-card">
+                          <div className="flex items-center justify-between gap-2 mb-1">
+                            <div className="text-[12px] font-bold text-foreground">{c.label}</div>
+                            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", t.cls)}>{t.txt} {c.value}</span>
+                          </div>
+                          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
+                            <div className={cn("h-full rounded-full transition-all", t.bar)} style={{ width: `${c.value}%` }} />
+                          </div>
+                          <div className="text-[10.5px] text-muted-foreground leading-snug">{c.hint}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })()}
           </Card>
         );
       })()}
