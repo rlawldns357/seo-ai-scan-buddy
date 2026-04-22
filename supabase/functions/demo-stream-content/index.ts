@@ -52,6 +52,102 @@ serve(async (req) => {
 - 1200~2000자
 - 코드펜스나 메타 텍스트 금지`;
       user = `이커머스/브랜드 사이트: ${siteUrl || "데모 쇼핑몰"}\n타겟 축: ${axis}\n주제: ${topic}\n\n검색 노출과 매출 전환을 동시에 노리는 발행 가능한 마크다운 본문을 작성하세요.`;
+    } else if (mode === "seo-brief") {
+      // SEO 기획 패키지: 주제·제목·메타·키워드·FAQ·구조화 outline 한 번에 (tool call)
+      const briefSystem = `당신은 2026년 한국 이커머스/브랜드 SEO 전문가입니다. 주어진 사이트(또는 브랜드/상품 주제)에 대해 구글·네이버 검색과 AI 답변엔진(ChatGPT, Perplexity, Gemini)에서 동시에 노출될 수 있는 발행 직전 단계의 SEO 기획 패키지를 한국어로 만듭니다. 모든 출력은 한국어로, 구매 의도와 자연스러운 롱테일 키워드를 반영하세요.`;
+      const userTopicHint = topic ? `\n\n사용자가 직접 지정한 주제: "${topic}"\n이 주제를 중심으로 기획해 주세요.` : `\n\n사용자가 주제를 지정하지 않았습니다. 사이트/브랜드에서 가장 매출 기여도가 높을 토픽 1개를 직접 골라 기획해 주세요.`;
+      const briefUser = `사이트: ${siteUrl || "데모 쇼핑몰"}${userTopicHint}`;
+
+      const briefResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [
+            { role: "system", content: briefSystem },
+            { role: "user", content: briefUser },
+          ],
+          tools: [{
+            type: "function",
+            function: {
+              name: "build_seo_brief",
+              description: "Generate full SEO planning package for one blog post",
+              parameters: {
+                type: "object",
+                properties: {
+                  topic: { type: "string", description: "최종 선정 주제 (한 문장, 50자 이내)" },
+                  intent: { type: "string", enum: ["informational", "commercial", "transactional"], description: "주 검색 의도" },
+                  title: { type: "string", description: "검색 친화 H1 제목 (60자 이내, 핵심 키워드 포함)" },
+                  metaDescription: { type: "string", description: "메타 설명 (150자 이내, 클릭 유도 + 답변형 도입)" },
+                  primaryKeyword: { type: "string", description: "주력 키워드 1개" },
+                  secondaryKeywords: { type: "array", items: { type: "string" }, description: "보조/롱테일 키워드 4~6개" },
+                  outline: {
+                    type: "array",
+                    description: "본문 구조 (H2 단위 4~6개)",
+                    items: {
+                      type: "object",
+                      properties: {
+                        h2: { type: "string", description: "H2 제목" },
+                        points: { type: "array", items: { type: "string" }, description: "이 섹션에서 다룰 핵심 포인트 2~3개" },
+                      },
+                      required: ["h2", "points"],
+                      additionalProperties: false,
+                    },
+                  },
+                  faq: {
+                    type: "array",
+                    description: "AEO/AI 답변 채택을 노린 FAQ 4~6개",
+                    items: {
+                      type: "object",
+                      properties: {
+                        q: { type: "string", description: "사용자 질문 (자연어)" },
+                        a: { type: "string", description: "답변 (1~2문장, 직접 답변형)" },
+                      },
+                      required: ["q", "a"],
+                      additionalProperties: false,
+                    },
+                  },
+                  structuredData: {
+                    type: "array",
+                    items: { type: "string", enum: ["Article", "FAQPage", "Product", "BreadcrumbList", "Organization", "HowTo", "Review"] },
+                    description: "이 글에 적용 권장 schema.org 타입 (2~4개)",
+                  },
+                  internalLinkHints: {
+                    type: "array",
+                    items: { type: "string" },
+                    description: "내부 링크로 연결하면 좋은 페이지 유형/카테고리 힌트 2~4개",
+                  },
+                },
+                required: ["topic", "intent", "title", "metaDescription", "primaryKeyword", "secondaryKeywords", "outline", "faq", "structuredData", "internalLinkHints"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "build_seo_brief" } },
+        }),
+      });
+      if (briefResp.status === 429 || briefResp.status === 402) {
+        return new Response(JSON.stringify({ error: briefResp.status === 429 ? "Rate limit" : "Credits exhausted" }), {
+          status: briefResp.status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      if (!briefResp.ok) {
+        const t = await briefResp.text();
+        console.error("brief gateway", briefResp.status, t);
+        return new Response(JSON.stringify({ error: "AI gateway error" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const briefData = await briefResp.json();
+      const briefArgs = briefData.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+      if (!briefArgs) {
+        return new Response(JSON.stringify({ error: "Brief generation failed" }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      return new Response(briefArgs, {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     } else if (mode === "score") {
       // Score is non-streaming JSON via tool call; use a separate path
       const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
