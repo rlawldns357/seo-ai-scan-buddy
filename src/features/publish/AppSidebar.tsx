@@ -1,4 +1,4 @@
-import { LayoutDashboard, Lightbulb, FileText, Send, BarChart3, ExternalLink, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, Lightbulb, FileText, Send, BarChart3, ExternalLink, LogOut, Home, Clapperboard } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -22,6 +22,10 @@ const workflowItems: NavItem[] = [
 
 const analyticsItems: NavItem[] = [
   { title: "리포트", url: "/dashboard/reports", icon: BarChart3 },
+];
+
+const internalItems: NavItem[] = [
+  { title: "라이브 데모", url: "/dashboard/demo", icon: Clapperboard },
 ];
 
 export default function AppSidebar() {
@@ -73,6 +77,13 @@ export default function AppSidebar() {
           <SidebarGroupLabel>성과 분석</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>{analyticsItems.map(renderItem)}</SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>🎬 내부 시연</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>{internalItems.map(renderItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
