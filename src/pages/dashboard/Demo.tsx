@@ -149,23 +149,20 @@ function ScoreGauge({
   const c = 2 * Math.PI * r;
   const off = c - (v / 100) * c;
   const tier =
-    value >= 80 ? { label: "우수", emoji: "🏆", ring: "ring-emerald-500/30", glow: "from-emerald-500/15 to-transparent", chip: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" }
-    : value >= 65 ? { label: "양호", emoji: "✨", ring: "ring-primary/30", glow: "from-primary/15 to-transparent", chip: "bg-primary/15 text-primary" }
-    : value >= 50 ? { label: "보완 필요", emoji: "⚠️", ring: "ring-amber-500/30", glow: "from-amber-500/15 to-transparent", chip: "bg-amber-500/15 text-amber-700 dark:text-amber-400" }
-    : { label: "긴급 점검", emoji: "🚨", ring: "ring-destructive/30", glow: "from-destructive/15 to-transparent", chip: "bg-destructive/15 text-destructive" };
+    value >= 80 ? { label: "우수", emoji: "🏆", chip: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400" }
+    : value >= 65 ? { label: "양호", emoji: "✨", chip: "bg-primary/10 text-primary" }
+    : value >= 50 ? { label: "보완 필요", emoji: "⚠️", chip: "bg-amber-500/10 text-amber-700 dark:text-amber-400" }
+    : { label: "긴급 점검", emoji: "🚨", chip: "bg-destructive/10 text-destructive" };
 
   const upliftPotential = weakest ? Math.min(99, value + 15) : null;
 
   return (
     <div className={cn(
-      "relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card overflow-hidden ring-1 transition-all hover:shadow-md",
-      tier.ring,
-      weakest && "ring-2 ring-amber-500/60 shadow-[0_0_24px_-4px] shadow-amber-500/40 animate-[pulse_2.4s_ease-in-out_infinite] -translate-y-0.5",
+      "relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card transition-colors hover:border-foreground/20",
+      weakest && "border-amber-500/50",
     )}>
-      <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", tier.glow)} />
-
       {weakest && (
-        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold shadow-md whitespace-nowrap">
+        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold whitespace-nowrap">
           🎯 가장 먼저 보강
         </div>
       )}
