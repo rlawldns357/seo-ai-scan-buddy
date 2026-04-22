@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic } from "lucide-react";
+import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PURELEAF_DEMO } from "@/data/demoBrandSeed";
 
 type Phase = "idle" | "recommend" | "brief" | "draft" | "score" | "publish" | "done";
 type Topic = { axis: "SEO" | "AEO" | "GEO"; title: string; reason: string };
@@ -265,6 +266,37 @@ export default function Demo() {
     }
   };
 
+  /**
+   * 사전 제작된 PURELEAF 브랜드 시드를 즉시 주입.
+   * AI 호출/네트워크 없이 풀 데모 결과 화면을 그대로 보여줄 때 사용.
+   * 시연 리허설, 오프라인 시연, AI 크레딧 절약 시나리오에 유용.
+   */
+  const loadSampleSeed = () => {
+    if (running) return;
+    const seed = PURELEAF_DEMO;
+    setSiteUrl(seed.brand.siteUrl);
+    setSeedTopic("");
+    setTopics(seed.topics);
+    setTopicBuf("");
+    setPicked(seed.topics.find((t) => t.title === seed.pickedTopicTitle) ?? seed.topics[0]);
+    setBrief(seed.brief);
+    setDraft(seed.draftMarkdown);
+    setScores(seed.scores);
+    setQueueId(`sample-${Date.now().toString(36)}`);
+    setPhaseTimings({
+      recommend: 4.2,
+      brief: 6.8,
+      draft: 22.5,
+      score: 3.1,
+      publish: 0.7,
+    });
+    setPhase("done");
+    toast({
+      title: "샘플 데이터를 불러왔어요",
+      description: `${seed.brand.name} (${seed.brand.category}) — 시연 리허설용`,
+    });
+  };
+
   const axisColor = (a: string) =>
     a === "SEO" ? "hsl(var(--primary))" : a === "AEO" ? "hsl(217 91% 60%)" : "hsl(280 70% 60%)";
 
@@ -311,9 +343,23 @@ export default function Demo() {
             {running ? "데모 진행 중…" : "라이브 데모 시작"}
           </Button>
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">
-          💡 주제를 비우면 AI가 사이트를 분석해 자동 추천합니다. 입력하면 그 주제로 바로 SEO 기획 패키지를 만들어요.
-        </p>
+        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-[11px] text-muted-foreground">
+            💡 주제를 비우면 AI가 사이트를 분석해 자동 추천합니다. 입력하면 그 주제로 바로 SEO 기획 패키지를 만들어요.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-full h-8 text-[11px] shrink-0"
+            onClick={loadSampleSeed}
+            disabled={running}
+            title="AI 호출 없이 사전 제작된 PURELEAF 브랜드 결과를 즉시 표시합니다"
+          >
+            <FlaskConical className="w-3.5 h-3.5" />
+            샘플 데이터로 미리보기 (PURELEAF · 비건 스킨케어)
+          </Button>
+        </div>
       </Card>
 
       {/* 5분 시연 가이드 (접이식) */}
