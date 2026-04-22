@@ -24,6 +24,7 @@ const DashboardRecommendations = lazy(() => import("./pages/dashboard/Recommenda
 const DashboardContent = lazy(() => import("./pages/dashboard/Content.tsx"));
 const DashboardAutoPublish = lazy(() => import("./pages/dashboard/AutoPublish.tsx"));
 const DashboardReports = lazy(() => import("./pages/dashboard/Reports.tsx"));
+const DashboardDemo = lazy(() => import("./pages/dashboard/Demo.tsx"));
 const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
 const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="content" element={<DashboardContent />} />
               <Route path="auto-publish" element={<DashboardAutoPublish />} />
               <Route path="reports" element={<DashboardReports />} />
+              <Route path="demo" element={<DashboardDemo />} />
             </Route>
 
             {/* ───── 관리자 ───────────────────────────────────────────── */}
