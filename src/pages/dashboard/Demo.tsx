@@ -1116,41 +1116,55 @@ export default function Demo() {
                 : { txt: "수정 필요", cls: "bg-destructive/15 text-destructive", bar: "bg-destructive" };
               return (
                 <div className="mt-4 pt-4 border-t border-border">
-                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                    <h3 className="text-[12px] font-bold text-foreground">내부 팀 빠른 체크 — 발행 전 신호 점검</h3>
-                    <span className="text-[10px] text-muted-foreground">실측 신호 기반 자동 채점 · 참고용</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {checks.map((c) => {
-                      const t = tone(c.value);
-                      return (
-                        <div key={c.label} className="p-3 rounded-lg border bg-card">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <div className="text-[12px] font-bold text-foreground">{c.label}</div>
-                            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", t.cls)}>{t.txt} {c.value}</span>
-                          </div>
-                          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
-                            <div className={cn("h-full rounded-full transition-all", t.bar)} style={{ width: `${c.value}%` }} />
-                          </div>
-                          <div className="text-[10.5px] text-muted-foreground leading-snug mb-1.5">{c.hint}</div>
-                          <ul className="space-y-0.5 pt-1.5 border-t border-border/60">
-                            {c.evidence.map((e, i) => (
-                              <li key={i} className="text-[10.5px] text-foreground/80 leading-snug flex gap-1.5">
-                                <span className="text-muted-foreground shrink-0">·</span>
-                                <span className="font-mono">{e}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="mt-2 text-[10px] text-muted-foreground leading-snug">
-                    * 검색 순위·트래픽을 보장하지 않으며, 발행 직전 콘텐츠의 구조·메타 신호를 기준으로 한 자체 진단 점수입니다.
-                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowScoreDetail((v) => !v)}
+                    className="w-full flex items-center justify-between gap-2 text-left"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h3 className="text-[12px] font-bold text-foreground">내부 팀 빠른 체크 — 발행 전 신호 4종</h3>
+                      <span className="text-[10px] text-muted-foreground hidden sm:inline">실측 신호 기반</span>
+                    </div>
+                    {showScoreDetail
+                      ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                      : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+                  </button>
+                  {showScoreDetail && (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                        {checks.map((c) => {
+                          const t = tone(c.value);
+                          return (
+                            <div key={c.label} className="p-3 rounded-lg border bg-card">
+                              <div className="flex items-center justify-between gap-2 mb-1">
+                                <div className="text-[12px] font-bold text-foreground">{c.label}</div>
+                                <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", t.cls)}>{t.txt} {c.value}</span>
+                              </div>
+                              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
+                                <div className={cn("h-full rounded-full transition-all", t.bar)} style={{ width: `${c.value}%` }} />
+                              </div>
+                              <div className="text-[10.5px] text-muted-foreground leading-snug mb-1.5">{c.hint}</div>
+                              <ul className="space-y-0.5 pt-1.5 border-t border-border/60">
+                                {c.evidence.map((e, i) => (
+                                  <li key={i} className="text-[10.5px] text-foreground/80 leading-snug flex gap-1.5">
+                                    <span className="text-muted-foreground shrink-0">·</span>
+                                    <span className="font-mono">{e}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="mt-2 text-[10px] text-muted-foreground leading-snug">
+                        * 검색 순위·트래픽을 보장하지 않으며, 발행 직전 콘텐츠의 구조·메타 신호를 기준으로 한 자체 진단 점수입니다.
+                      </p>
+                    </>
+                  )}
                 </div>
               );
             })()}
+
           </Card>
         );
       })()}
