@@ -471,9 +471,9 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
   const animatedLost = useAnimatedNumber(lostVisitors);
 
   const tierConfig = {
-    critical: { lossPct: "73%", source: "zero-click 검색 73% · KEO Marketing, 2025", statusLabel: "위험" },
-    warning: { lossPct: "60%", source: "zero-click 검색 60% · SparkToro & Datos, 2025", statusLabel: "개선 필요" },
-    decent: { lossPct: "35%", source: "AI 검색 미반영 트래픽 추정 35% · 업계 평균, 2025", statusLabel: "양호" },
+    critical: { lossPct: "73%", source: "zero-click 검색 73% · KEO Marketing, 2026", statusLabel: "위험" },
+    warning: { lossPct: "60%", source: "zero-click 검색 60% · SparkToro & Datos, 2026", statusLabel: "개선 필요" },
+    decent: { lossPct: "35%", source: "AI 검색 미반영 트래픽 추정 35% · 업계 평균, 2026", statusLabel: "양호" },
     good: { lossPct: "", source: "", statusLabel: "우수" },
   };
 

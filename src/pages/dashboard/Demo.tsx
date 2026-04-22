@@ -830,7 +830,7 @@ export default function Demo() {
                   발행 전 콘텐츠 품질 점검
                 </h2>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  사람 검수 1시간 분량을 3초 안에 — SEO·AEO·GEO 3축 신호를 자동 점검합니다
+                  사람 검수 1시간 분량을 3초 안에 — SEO·AEO·GEO 3축 신호를 자동 점검합니다 · <span className="font-mono">{new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</span> 기준
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -1001,7 +1001,9 @@ export default function Demo() {
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
                     하루 1편씩, 12개월간 쌓이는 절감 광고비 시뮬레이션
                   </div>
-                  <div className="text-[11px] text-muted-foreground">절감액을 다른 캠페인·채널 테스트에 재투자할 수 있는 여력 추정</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long" })} 기준 시작 · 절감액을 다른 캠페인·채널 테스트에 재투자할 수 있는 여력 추정
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-muted-foreground">12개월차 월 절감 광고비</div>
@@ -1072,7 +1074,7 @@ export default function Demo() {
                 </span>
               </div>
               <div className="text-[11px] text-muted-foreground mt-0.5">
-                다음 자동 발행 시각 <span className="font-mono font-semibold text-foreground">08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연 모드라 실제 저장은 일어나지 않아요
+                다음 자동 발행 시각 <span className="font-mono font-semibold text-foreground">{(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" }); })()} 08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연 모드라 실제 저장은 일어나지 않아요
               </div>
             </div>
             <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={runFullDemo} disabled={running}>
