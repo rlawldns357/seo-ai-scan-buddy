@@ -72,18 +72,23 @@ site_posts:
 - 색상은 score-based-ui-feedback 규칙 재사용 (red <50 / orange 50~74 / blue ≥75).
 
 ## 8. Naming & Copy (확정)
-**명명 규칙**
-- 정식: **"콘텐츠 품질 점수"** (Content Quality Score, `contentQualityScore`) — 종합 라벨.
-- 보조: **"검수 추천 점수"** (Review Priority Score, `reviewPriorityScore`) — 큐 정렬 컨텍스트 한정.
-- "SEO 점수" 단독 표기 금지. 세 축은 항상 "콘텐츠 품질 점수"의 하위 지표로 표기.
+**명명 규칙 (계층)**
+- **상위 우산**: "콘텐츠 품질 점수" (Content Quality Score, `contentQualityScore`) — 시스템 전체 라벨.
+- **발행 전**: "콘텐츠 준비 점수" (Content Readiness Score, `readinessScore`)
+  - 보조: "검수 추천 점수" (Review Priority Score, `reviewPriorityScore`) — 큐 정렬 한정
+- **발행 후**: "콘텐츠 성장 점수" (Content Growth Score, `growthScore`)
+  - 보조: "성과 건강도" (Performance Health, `performanceHealth`) — 대시보드/추세 한정
+- "SEO 점수" 단독 표기 금지. 세 축은 항상 위 점수의 하위 지표로 표기.
 
 **Copy**
-- Headline: **"발행 전에 콘텐츠 품질 점수를 확인하세요."**
+- 발행 전 Headline: **"발행 전에 콘텐츠 준비 점수를 확인하세요."**
+- 발행 후 Headline: **"발행 후 콘텐츠 성장 점수가 갱신됐어요."**
 - Sub: "SEO·AEO·GEO 세 축을 합쳐 글 한 편의 인용 가능성을 점수화합니다."
-- 배지 툴팁: "콘텐츠 품질 점수 — 검색·AI 답변 인용 가능성 (0~100)"
+- 준비 점수 배지 툴팁: "콘텐츠 준비 점수 — 발행 전 검수 우선순위 (0~100)"
+- 성장 점수 배지 툴팁: "콘텐츠 성장 점수 — 발행본 구조 품질 추세 (0~100)"
 - 정렬 토글: "검수 추천 순 (낮은 점수 우선)"
-- 낮은 점수: "지금 5분만 다듬으면 품질 점수를 올릴 수 있어요."
-- 재채점: "발행본 품질 점수가 갱신되었어요. 초안 대비 +N점."
+- 낮은 준비 점수: "지금 5분만 다듬으면 준비 점수를 올릴 수 있어요."
+- 재채점 결과: "성장 점수가 갱신됐어요. 준비 점수 대비 +N점."
 
 **오해 방지 (Anti-misleading) — 필수**
 - 금지: "검색 1위", "상위 노출 보장", "순위 상승 점수", "랭킹 점수", "구글 점수", "SEO 보장".
