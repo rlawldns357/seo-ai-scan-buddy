@@ -955,24 +955,31 @@ export default function Demo() {
             </div>
 
             <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
-              ⚠️ 시연용 추정치입니다. 실제 성과는 카테고리·경쟁도·내부 링크 구조에 따라 달라집니다.
-              핵심은 <span className="font-semibold text-foreground">광고비 없이 매월 누적되는 자산형 트래픽</span>이라는 점입니다 —
-              발행 글이 늘어날수록 위 수치는 곱해집니다.
+              💡 <span className="font-bold text-foreground">광고는 끄면 매출이 0</span>이지만, SEO 콘텐츠는
+              <span className="font-bold text-foreground"> 한 번 발행하면 24시간 일하는 자산</span>이 됩니다.
+              발행 글이 늘어날수록 위 수치는 곱해집니다. (시연용 추정치 · 카테고리·경쟁도에 따라 변동)
             </p>
           </Card>
         );
       })()}
       {phase === "done" && queueId && (
-        <Card className="p-5 mb-4 border-primary/40 bg-primary/5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+        <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-r from-primary/10 to-primary/5">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-md">
               <Check className="w-5 h-5" />
             </div>
-            <div className="flex-1">
-              <div className="text-sm font-bold text-foreground">발행 큐 등록 완료 (시뮬레이션)</div>
-              <div className="text-xs text-muted-foreground">큐 ID: <span className="font-mono">{queueId}</span> · 실제 DB 저장은 일어나지 않았습니다.</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-foreground flex items-center gap-2 flex-wrap">
+                오늘 밤 자동 발행 예약 완료
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-bold">
+                  <Send className="w-2.5 h-2.5" /> 큐 등록됨
+                </span>
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">
+                다음 자동 발행 시간 <span className="font-mono font-semibold text-foreground">08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연이라 실제 저장 X
+              </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-full" onClick={runFullDemo} disabled={running}>
+            <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={runFullDemo} disabled={running}>
               <Sparkles className="w-3.5 h-3.5" /> 다시 시연
             </Button>
           </div>
