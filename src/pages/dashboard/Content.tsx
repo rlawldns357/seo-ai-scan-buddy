@@ -60,7 +60,9 @@ export default function Content() {
         content: draft.content,
         status: "queued",
         source_axis: axis,
-      });
+        keywords: Array.isArray((draft as any).keywords) ? (draft as any).keywords : [],
+        faq: Array.isArray((draft as any).faq) ? (draft as any).faq : [],
+      } as any);
       if (error) throw error;
       toast({ title: "발행 큐에 추가되었습니다" });
       navigate("/dashboard/auto-publish");
