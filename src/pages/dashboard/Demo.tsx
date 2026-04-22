@@ -47,9 +47,9 @@ const PHASE_GROUPS: {
   icon: typeof Lightbulb;
   includes: Phase[];
 }[] = [
-  { key: "diagnose", label: "진단 · 기획", sub: "구매 의도 토픽 + SEO 패키지", icon: Lightbulb, includes: ["recommend", "brief"] },
-  { key: "generate", label: "자동 생성", sub: "기획 그대로 본문 작성", icon: FileText, includes: ["draft"] },
-  { key: "ship", label: "발행 검수", sub: "3축 채점 후 큐 등록", icon: Send, includes: ["score", "publish"] },
+  { key: "diagnose", label: "1 · 진단 & 기획", sub: "구매 키워드 + 발행 패키지", icon: Lightbulb, includes: ["recommend", "brief"] },
+  { key: "generate", label: "2 · 자동 생성", sub: "1시간짜리 글을 30초에", icon: FileText, includes: ["draft"] },
+  { key: "ship", label: "3 · 발행 검수", sub: "3축 채점 → 자동 발행 큐", icon: Send, includes: ["score", "publish"] },
 ];
 
 
@@ -122,7 +122,19 @@ function parseTopicsFromBuffer(text: string): Topic[] {
   }).filter(Boolean) as Topic[];
 }
 
-function ScoreGauge({ label, value, comment, color }: { label: string; value: number; comment: string; color: string }) {
+function ScoreGauge({
+  label,
+  value,
+  comment,
+  color,
+  weakest = false,
+}: {
+  label: string;
+  value: number;
+  comment: string;
+  color: string;
+  weakest?: boolean;
+}) {
   const [v, setV] = useState(0);
   useEffect(() => {
     const start = performance.now();
@@ -143,12 +155,22 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
     : value >= 50 ? { label: "보완 필요", emoji: "⚠️", ring: "ring-amber-500/30", glow: "from-amber-500/15 to-transparent", chip: "bg-amber-500/15 text-amber-700 dark:text-amber-400" }
     : { label: "긴급 점검", emoji: "🚨", ring: "ring-destructive/30", glow: "from-destructive/15 to-transparent", chip: "bg-destructive/15 text-destructive" };
 
+  const upliftPotential = weakest ? Math.min(99, value + 15) : null;
+
   return (
     <div className={cn(
       "relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card overflow-hidden ring-1 transition-all hover:shadow-md",
       tier.ring,
+      weakest && "ring-2 ring-amber-500/60 shadow-[0_0_24px_-4px] shadow-amber-500/40 animate-[pulse_2.4s_ease-in-out_infinite] -translate-y-0.5",
     )}>
       <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", tier.glow)} />
+
+      {weakest && (
+        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold shadow-md whitespace-nowrap">
+          🎯 가장 먼저 보강
+        </div>
+      )}
+
       <div className="relative w-full flex items-center justify-between">
         <span className="text-[10px] font-extrabold tracking-widest text-foreground uppercase">{label}</span>
         <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full", tier.chip)}>
@@ -170,6 +192,16 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
       <div className="relative text-[11px] text-muted-foreground text-center leading-tight min-h-[28px] px-1">
         {comment || "—"}
       </div>
+
+      {weakest && upliftPotential !== null && (
+        <div className="relative w-full mt-1 px-2 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/30 flex items-center justify-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+          <span>보강 시</span>
+          <span className="tabular-nums">{value}</span>
+          <span>→</span>
+          <span className="tabular-nums text-amber-600 dark:text-amber-200">{upliftPotential}</span>
+          <span>점 가능</span>
+        </div>
+      )}
     </div>
   );
 }
@@ -357,9 +389,17 @@ export default function Demo() {
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/5 text-foreground text-[10px] font-bold">
               <ShoppingBag className="w-3 h-3" /> 이커머스 / 브랜드
             </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
+              ⏱ 5분 풀 시연
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">검색 노출로 광고비 없이 매출 만드는 AutoBlog</h1>
-          <p className="text-sm text-muted-foreground">사이트 URL 1개만 넣으면 구매 의도 키워드 발굴 → SEO 친화 본문 → 발행 큐까지 전 과정이 라이브로 진행됩니다. 끝나면 월 예상 SEO 기대효과까지 같이 보여드립니다.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-1 leading-tight">
+            광고 끄면 0원, <span className="text-primary">검색은 자산</span>이 됩니다
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            URL 1개 → <b className="text-foreground">진단·기획 → 자동 생성 → 발행 검수</b> 3단계로 5분 안에 끝.
+            데모 마지막에 <b className="text-foreground">월 SEO 기대 매출</b>까지 함께 나옵니다.
+          </p>
         </div>
         <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={reset} disabled={running}>
           <RotateCcw className="w-3.5 h-3.5" /> 초기화
@@ -1001,11 +1041,17 @@ export default function Demo() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <ScoreGauge label="SEO" value={scores.seo.score} comment={scores.seo.comment} color={axisColor("SEO")} />
-              <ScoreGauge label="AEO" value={scores.aeo.score} comment={scores.aeo.comment} color={axisColor("AEO")} />
-              <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} />
-            </div>
+            {(() => {
+              // 자동으로 가장 낮은 축을 약점으로 선정
+              const minScore = Math.min(scores.seo.score, scores.aeo.score, scores.geo.score);
+              return (
+                <div className="grid grid-cols-3 gap-3 pt-2">
+                  <ScoreGauge label="SEO" value={scores.seo.score} comment={scores.seo.comment} color={axisColor("SEO")} weakest={scores.seo.score === minScore} />
+                  <ScoreGauge label="AEO" value={scores.aeo.score} comment={scores.aeo.comment} color={axisColor("AEO")} weakest={scores.aeo.score === minScore} />
+                  <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} weakest={scores.geo.score === minScore} />
+                </div>
+              );
+            })()}
 
             {/* 내부 팀용 — 발행 전 신호 점검 (관찰된 근거 함께 노출) */}
             {(() => {
