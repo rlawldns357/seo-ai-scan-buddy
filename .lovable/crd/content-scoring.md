@@ -34,15 +34,27 @@
 | 출력 | `{ seo, aeo, geo, summary, tips[≤3] }` |
 | 캡 규칙 | 기존 score-caps 재사용 (직접답변 부재 → AEO 캡, 출처 부재 → GEO 캡) |
 
-### 점수 2종 구분
-| 종류 | 시점 | 용도 | 저장 필드 |
-|---|---|---|---|
-| **초안 품질 점수** (Draft Score) | 초안 생성 직후 | 발행 전 개선 방향 제시 | `draft_score` |
-| **발행 품질 점수** (Published Score) | 발행 직후 (재채점) | 최종본 품질 추적, 개선 효과 측정 | `published_score` |
+### 점수 2종 구분 (확정 명명)
+
+**발행 전 — 콘텐츠 준비 점수 (Content Readiness Score)**
+- 보조 라벨: **검수 추천 점수** (Review Priority Score) — 큐 정렬 컨텍스트 한정
+- 시점: 초안 생성 직후
+- 용도: 발행 전 개선 방향 제시, 검수 우선순위 정렬
+- 저장 필드: `draft_score` (jsonb)
+- 영문 변수: `readinessScore` / `reviewPriorityScore`
+
+**발행 후 — 콘텐츠 성장 점수 (Content Growth Score)**
+- 보조 라벨: **성과 건강도** (Performance Health) — 대시보드/추세 컨텍스트
+- 시점: 발행 직후 재채점 (+ 추후 주기적 갱신 여지)
+- 용도: 최종본 품질 추적, 초안 대비 개선 효과(Δ) 측정
+- 저장 필드: `published_score` (jsonb), `score_updated_at`
+- 영문 변수: `growthScore` / `performanceHealth`
+
+> **상위 우산 명칭**은 여전히 "콘텐츠 품질 점수" (Content Quality Score). 두 점수 모두 그 하위 시점별 표현이다.
 
 ## 5. Lifecycle
-1. **Draft scored** — `generate-content-draft` 응답에 `score` 포함 → `site_posts.draft_score`에 저장(저장 시점은 큐 추가 시).
-2. **Published rescored** — `status: published` 전이 시 `publish-site-post`가 백그라운드로 재채점 → `published_score`, `score_updated_at` 갱신.
+1. **Readiness scored (콘텐츠 준비 점수)** — `generate-content-draft` 응답에 `score` 포함 → `draft_score` 저장.
+2. **Growth rescored (콘텐츠 성장 점수)** — `status: published` 전이 시 `publish-site-post`가 백그라운드로 재채점 → `published_score`, `score_updated_at` 갱신.
 3. **Failure** — 점수 실패는 발행을 막지 않는다. UI는 "측정 실패" 표기만.
 
 ## 6. Data (additive only)
@@ -60,18 +72,23 @@ site_posts:
 - 색상은 score-based-ui-feedback 규칙 재사용 (red <50 / orange 50~74 / blue ≥75).
 
 ## 8. Naming & Copy (확정)
-**명명 규칙**
-- 정식: **"콘텐츠 품질 점수"** (Content Quality Score, `contentQualityScore`) — 종합 라벨.
-- 보조: **"검수 추천 점수"** (Review Priority Score, `reviewPriorityScore`) — 큐 정렬 컨텍스트 한정.
-- "SEO 점수" 단독 표기 금지. 세 축은 항상 "콘텐츠 품질 점수"의 하위 지표로 표기.
+**명명 규칙 (계층)**
+- **상위 우산**: "콘텐츠 품질 점수" (Content Quality Score, `contentQualityScore`) — 시스템 전체 라벨.
+- **발행 전**: "콘텐츠 준비 점수" (Content Readiness Score, `readinessScore`)
+  - 보조: "검수 추천 점수" (Review Priority Score, `reviewPriorityScore`) — 큐 정렬 한정
+- **발행 후**: "콘텐츠 성장 점수" (Content Growth Score, `growthScore`)
+  - 보조: "성과 건강도" (Performance Health, `performanceHealth`) — 대시보드/추세 한정
+- "SEO 점수" 단독 표기 금지. 세 축은 항상 위 점수의 하위 지표로 표기.
 
 **Copy**
-- Headline: **"발행 전에 콘텐츠 품질 점수를 확인하세요."**
+- 발행 전 Headline: **"발행 전에 콘텐츠 준비 점수를 확인하세요."**
+- 발행 후 Headline: **"발행 후 콘텐츠 성장 점수가 갱신됐어요."**
 - Sub: "SEO·AEO·GEO 세 축을 합쳐 글 한 편의 인용 가능성을 점수화합니다."
-- 배지 툴팁: "콘텐츠 품질 점수 — 검색·AI 답변 인용 가능성 (0~100)"
+- 준비 점수 배지 툴팁: "콘텐츠 준비 점수 — 발행 전 검수 우선순위 (0~100)"
+- 성장 점수 배지 툴팁: "콘텐츠 성장 점수 — 발행본 구조 품질 추세 (0~100)"
 - 정렬 토글: "검수 추천 순 (낮은 점수 우선)"
-- 낮은 점수: "지금 5분만 다듬으면 품질 점수를 올릴 수 있어요."
-- 재채점: "발행본 품질 점수가 갱신되었어요. 초안 대비 +N점."
+- 낮은 준비 점수: "지금 5분만 다듬으면 준비 점수를 올릴 수 있어요."
+- 재채점 결과: "성장 점수가 갱신됐어요. 준비 점수 대비 +N점."
 
 **오해 방지 (Anti-misleading) — 필수**
 - 금지: "검색 1위", "상위 노출 보장", "순위 상승 점수", "랭킹 점수", "구글 점수", "SEO 보장".
