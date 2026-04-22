@@ -45,6 +45,7 @@ const PHASES: { key: Phase; label: string; sub: string; icon: typeof Lightbulb }
 ];
 
 // 평균 점수 → 월 SEO 기대효과 (데모용 추정 공식)
+// ⚠️ 매출은 단정형이 아닌 "기대 범위"로 노출. 광고대행 컨텍스트에서 절감 광고비를 강조.
 function estimateSeoImpact(avg: number) {
   const k = Math.max(0.2, avg / 100); // 0.2~1.0
   const monthlyImpressions = Math.round(2400 * k * (1 + k));      // ~480 ~ 4,800
@@ -53,7 +54,13 @@ function estimateSeoImpact(avg: number) {
   const orders = Math.max(0, Math.round(monthlyClicks * conv));
   const aov = 48000;                                               // 평균 객단가 가정
   const revenue = orders * aov;
-  return { monthlyImpressions, monthlyClicks, orders, revenue };
+  // 매출 기대 범위 (보수적 70% ~ 낙관 130%)
+  const revenueLow = Math.round(revenue * 0.7);
+  const revenueHigh = Math.round(revenue * 1.3);
+  // 절감 광고비 = 무료 유입 클릭 × 평균 CPC (네이버·구글 이커머스 벤치마크 ₩850 가정)
+  const avgCpc = 850;
+  const adSavings = monthlyClicks * avgCpc;
+  return { monthlyImpressions, monthlyClicks, orders, revenue, revenueLow, revenueHigh, adSavings, avgCpc };
 }
 
 const krw = (n: number) => "₩" + n.toLocaleString("ko-KR");
