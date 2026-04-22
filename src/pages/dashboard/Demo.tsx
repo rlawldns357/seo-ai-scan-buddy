@@ -396,6 +396,9 @@ export default function Demo() {
           <h1 className="text-2xl font-bold text-foreground mb-1 leading-tight tracking-tight">
             검색 유입을 만드는 콘텐츠 시스템, <span className="text-primary">AutoBlog</span>
           </h1>
+          <p className="text-base font-semibold text-foreground/90 mb-1.5 leading-snug">
+            광고 끄면 0원, <span className="text-primary">검색은 자산</span>이 됩니다.
+          </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
             URL 1개 → <b className="text-foreground">진단·기획 → 자동 생성 → 발행 검수</b> 3단계로 5분 안에 끝.
             데모 마지막에 <b className="text-foreground">월 SEO 기대 매출</b>까지 함께 나옵니다.
