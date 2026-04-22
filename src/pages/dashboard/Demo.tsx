@@ -809,19 +809,41 @@ export default function Demo() {
       )}
 
       {/* Scores */}
-      {scores && (
-        <Card className="p-5 mb-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Gauge className="w-4 h-4 text-primary" />
-            <h2 className="text-sm font-bold text-foreground">콘텐츠 준비 점수 (SEO · AEO · GEO)</h2>
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <ScoreGauge label="SEO" value={scores.seo.score} comment={scores.seo.comment} color={axisColor("SEO")} />
-            <ScoreGauge label="AEO" value={scores.aeo.score} comment={scores.aeo.comment} color={axisColor("AEO")} />
-            <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} />
-          </div>
-        </Card>
-      )}
+      {scores && (() => {
+        const avgPrep = Math.round((scores.seo.score + scores.aeo.score + scores.geo.score) / 3);
+        const verdict = avgPrep >= 80 ? { label: "발행 추천", tone: "bg-emerald-500 text-white" }
+          : avgPrep >= 65 ? { label: "검수 후 발행", tone: "bg-primary text-primary-foreground" }
+          : { label: "수정 권장", tone: "bg-destructive text-destructive-foreground" };
+        return (
+          <Card className="p-5 mb-4">
+            <div className="flex items-start justify-between gap-3 mb-1 flex-wrap">
+              <div>
+                <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+                  <Gauge className="w-4 h-4 text-primary" />
+                  발행 전 콘텐츠 품질 검수
+                </h2>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  사람 검수 1시간을 AI가 3초로 — SEO·AEO·GEO 3축 자동 채점
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="text-right">
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">평균</div>
+                  <div className="text-2xl font-extrabold text-foreground leading-none tabular-nums">{avgPrep}<span className="text-sm text-muted-foreground font-normal">/100</span></div>
+                </div>
+                <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold", verdict.tone)}>
+                  ✓ {verdict.label}
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3 mt-3">
+              <ScoreGauge label="SEO" value={scores.seo.score} comment={scores.seo.comment} color={axisColor("SEO")} />
+              <ScoreGauge label="AEO" value={scores.aeo.score} comment={scores.aeo.comment} color={axisColor("AEO")} />
+              <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} />
+            </div>
+          </Card>
+        );
+      })()}
 
       {/* SEO Impact Forecast — 강조 포인트 */}
       {scores && (() => {
@@ -846,30 +868,33 @@ export default function Demo() {
           <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="w-4 h-4 text-primary" />
-              <h2 className="text-sm font-bold text-foreground">이 글 1편이 가져올 월 예상 SEO 기대효과</h2>
+              <h2 className="text-sm font-bold text-foreground">광고비 0원 · 매월 누적되는 매출 자산</h2>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">핵심 KPI</span>
             </div>
-            <p className="text-[11px] text-muted-foreground mb-4">평균 점수 {avg}점 기준 · 발행 후 색인 안정화(약 4~8주) 가정 · 광고비 0원</p>
+            <p className="text-[11px] text-muted-foreground mb-4">
+              평균 점수 <span className="font-bold text-foreground">{avg}점</span> 기준 · 색인 안정화(약 4~8주) 후 <span className="font-bold text-foreground">글 1편</span>이 만들 월간 성과 추정
+            </p>
 
             {/* 글 1편 기준 4지표 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="p-3 rounded-lg bg-card border">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><Eye className="w-3 h-3" /> 월 노출</div>
-                <div className="text-xl font-bold text-foreground">{f.monthlyImpressions.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">검색 결과 노출 횟수</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><Eye className="w-3 h-3" /> 검색 노출</div>
+                <div className="text-xl font-bold text-foreground tabular-nums">{f.monthlyImpressions.toLocaleString()}</div>
+                <div className="text-[10px] text-muted-foreground">월 노출 (Google·Naver)</div>
               </div>
               <div className="p-3 rounded-lg bg-card border">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 월 클릭</div>
-                <div className="text-xl font-bold text-foreground">{f.monthlyClicks.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">신규 사이트 유입</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 무료 유입</div>
+                <div className="text-xl font-bold text-foreground tabular-nums">{f.monthlyClicks.toLocaleString()}</div>
+                <div className="text-[10px] text-muted-foreground">광고비 0원 클릭</div>
               </div>
               <div className="p-3 rounded-lg bg-card border">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><ShoppingBag className="w-3 h-3" /> 예상 주문</div>
-                <div className="text-xl font-bold text-foreground">{f.orders.toLocaleString()}건</div>
-                <div className="text-[10px] text-muted-foreground">평균 전환율 적용</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><ShoppingBag className="w-3 h-3" /> 주문 전환</div>
+                <div className="text-xl font-bold text-foreground tabular-nums">{f.orders.toLocaleString()}건</div>
+                <div className="text-[10px] text-muted-foreground">평균 전환율 {(1.8 + (avg / 100) * 1.2).toFixed(1)}% 적용</div>
               </div>
-              <div className="p-3 rounded-lg bg-primary text-primary-foreground border border-primary">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold opacity-90 mb-1"><TrendingUp className="w-3 h-3" /> 예상 매출</div>
-                <div className="text-xl font-bold">{krw(f.revenue)}</div>
+              <div className="p-3 rounded-lg bg-primary text-primary-foreground border border-primary shadow-md">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold opacity-90 mb-1"><TrendingUp className="w-3 h-3" /> 광고비 0원 매출</div>
+                <div className="text-xl font-bold tabular-nums">{krw(f.revenue)}</div>
                 <div className="text-[10px] opacity-80">객단가 ₩48,000 가정</div>
               </div>
             </div>
@@ -878,12 +903,16 @@ export default function Demo() {
             <div className="mt-5 p-4 rounded-xl bg-card border">
               <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
                 <div>
-                  <div className="text-xs font-bold text-foreground">매일 1편씩 발행하면 12개월 후</div>
-                  <div className="text-[11px] text-muted-foreground">자산형 트래픽 누적 시뮬레이션 · 매월 30편 추가</div>
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    1편이 365편 자산이 되는 순간
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">매일 1편 자동 발행 · 12개월 누적 시뮬레이션</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-extrabold text-primary leading-none">{krw(month12.revenue)}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">12개월차 월 예상 매출 · 누적 {month12.articles}편</div>
+                  <div className="text-[10px] text-muted-foreground">12개월차 월 매출</div>
+                  <div className="text-2xl font-extrabold text-primary leading-none tabular-nums">{krw(month12.revenue)}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">누적 자산 글 {month12.articles}편</div>
                 </div>
               </div>
               <div className="flex items-end gap-1 h-32 mt-2">
@@ -926,24 +955,31 @@ export default function Demo() {
             </div>
 
             <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
-              ⚠️ 시연용 추정치입니다. 실제 성과는 카테고리·경쟁도·내부 링크 구조에 따라 달라집니다.
-              핵심은 <span className="font-semibold text-foreground">광고비 없이 매월 누적되는 자산형 트래픽</span>이라는 점입니다 —
-              발행 글이 늘어날수록 위 수치는 곱해집니다.
+              💡 <span className="font-bold text-foreground">광고는 끄면 매출이 0</span>이지만, SEO 콘텐츠는
+              <span className="font-bold text-foreground"> 한 번 발행하면 24시간 일하는 자산</span>이 됩니다.
+              발행 글이 늘어날수록 위 수치는 곱해집니다. (시연용 추정치 · 카테고리·경쟁도에 따라 변동)
             </p>
           </Card>
         );
       })()}
       {phase === "done" && queueId && (
-        <Card className="p-5 mb-4 border-primary/40 bg-primary/5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+        <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-r from-primary/10 to-primary/5">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center shrink-0 shadow-md">
               <Check className="w-5 h-5" />
             </div>
-            <div className="flex-1">
-              <div className="text-sm font-bold text-foreground">발행 큐 등록 완료 (시뮬레이션)</div>
-              <div className="text-xs text-muted-foreground">큐 ID: <span className="font-mono">{queueId}</span> · 실제 DB 저장은 일어나지 않았습니다.</div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold text-foreground flex items-center gap-2 flex-wrap">
+                오늘 밤 자동 발행 예약 완료
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-bold">
+                  <Send className="w-2.5 h-2.5" /> 큐 등록됨
+                </span>
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">
+                다음 자동 발행 시간 <span className="font-mono font-semibold text-foreground">08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연이라 실제 저장 X
+              </div>
             </div>
-            <Button variant="outline" size="sm" className="rounded-full" onClick={runFullDemo} disabled={running}>
+            <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={runFullDemo} disabled={running}>
               <Sparkles className="w-3.5 h-3.5" /> 다시 시연
             </Button>
           </div>
