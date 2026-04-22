@@ -1001,7 +1001,7 @@ export default function Demo() {
         const strongest = sorted[0];
         const weakest = sorted[sorted.length - 1];
         return (
-          <Card className="p-5 mb-4 border-primary/20 bg-gradient-to-br from-card via-card to-primary/5">
+          <Card className="p-5 mb-4">
             <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
               <div className="min-w-0">
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2 flex-wrap">
