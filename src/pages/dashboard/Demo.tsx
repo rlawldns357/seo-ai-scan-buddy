@@ -438,7 +438,8 @@ export default function Demo() {
         </div>
       </Card>
 
-      {/* 10초 라이브 가이드 (접이식) */}
+      {/* 10초 라이브 가이드 — 진행자 모드에서만 표시 */}
+      {presenterMode && (
       <Card className="p-0 mb-4 overflow-hidden border-primary/30">
         <button
           onClick={() => setGuideOpen(o => !o)}
@@ -531,6 +532,7 @@ export default function Demo() {
           </div>
         )}
       </Card>
+      )}
 
       {/* Live Generation Bar — 실시간 생성 중 강조 */}
       {running && (
