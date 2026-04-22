@@ -52,14 +52,6 @@ const PHASE_GROUPS: {
   { key: "ship", label: "발행 검수", sub: "3축 채점 후 큐 등록", icon: Send, includes: ["score", "publish"] },
 ];
 
-// (legacy) 내부 5단계 정의 — SCRIPT/타이밍 매핑에만 사용
-const PHASES: { key: Phase; label: string; sub: string; icon: typeof Lightbulb }[] = [
-  { key: "recommend", label: "구매 의도 토픽 추천", sub: "검색량 있는 키워드 발굴", icon: Lightbulb },
-  { key: "brief", label: "SEO 기획 패키지", sub: "제목·메타·키워드·FAQ·구조", icon: ClipboardList },
-  { key: "draft", label: "SEO 친화 본문 생성", sub: "롱테일 + 상품 의도 반영", icon: FileText },
-  { key: "score", label: "3축 콘텐츠 채점", sub: "발행 전 검색 적합도 검증", icon: Gauge },
-  { key: "publish", label: "발행 큐 등록", sub: "예약 발행 시뮬레이션", icon: Send },
-];
 
 // 평균 점수 → 월 SEO 기대효과 (데모용 추정 공식)
 // ⚠️ 매출은 단정형이 아닌 "기대 범위"로 노출. 광고대행 컨텍스트에서 절감 광고비를 강조.
