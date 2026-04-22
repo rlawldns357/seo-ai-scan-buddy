@@ -818,24 +818,24 @@ export default function Demo() {
       {/* Scores */}
       {scores && (() => {
         const avgPrep = Math.round((scores.seo.score + scores.aeo.score + scores.geo.score) / 3);
-        const verdict = avgPrep >= 80 ? { label: "발행 추천", tone: "bg-emerald-500 text-white" }
-          : avgPrep >= 65 ? { label: "검수 후 발행", tone: "bg-primary text-primary-foreground" }
-          : { label: "수정 권장", tone: "bg-destructive text-destructive-foreground" };
+        const verdict = avgPrep >= 80 ? { label: "발행 준비 완료", tone: "bg-emerald-500 text-white" }
+          : avgPrep >= 65 ? { label: "가벼운 검수 후 발행", tone: "bg-primary text-primary-foreground" }
+          : { label: "보완 후 재검수", tone: "bg-destructive text-destructive-foreground" };
         return (
           <Card className="p-5 mb-4">
             <div className="flex items-start justify-between gap-3 mb-1 flex-wrap">
               <div>
                 <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
                   <Gauge className="w-4 h-4 text-primary" />
-                  발행 전 콘텐츠 품질 검수
+                  발행 전 콘텐츠 품질 점검
                 </h2>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  사람 검수 1시간을 AI가 3초로 — SEO·AEO·GEO 3축 자동 채점
+                  사람 검수 1시간 분량을 3초 안에 — SEO·AEO·GEO 3축 신호를 자동 점검합니다
                 </p>
               </div>
               <div className="flex items-center gap-2">
                 <div className="text-right">
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">평균</div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">종합</div>
                   <div className="text-2xl font-extrabold text-foreground leading-none tabular-nums">{avgPrep}<span className="text-sm text-muted-foreground font-normal">/100</span></div>
                 </div>
                 <span className={cn("inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold", verdict.tone)}>
