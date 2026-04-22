@@ -34,15 +34,27 @@
 | 출력 | `{ seo, aeo, geo, summary, tips[≤3] }` |
 | 캡 규칙 | 기존 score-caps 재사용 (직접답변 부재 → AEO 캡, 출처 부재 → GEO 캡) |
 
-### 점수 2종 구분
-| 종류 | 시점 | 용도 | 저장 필드 |
-|---|---|---|---|
-| **초안 품질 점수** (Draft Score) | 초안 생성 직후 | 발행 전 개선 방향 제시 | `draft_score` |
-| **발행 품질 점수** (Published Score) | 발행 직후 (재채점) | 최종본 품질 추적, 개선 효과 측정 | `published_score` |
+### 점수 2종 구분 (확정 명명)
+
+**발행 전 — 콘텐츠 준비 점수 (Content Readiness Score)**
+- 보조 라벨: **검수 추천 점수** (Review Priority Score) — 큐 정렬 컨텍스트 한정
+- 시점: 초안 생성 직후
+- 용도: 발행 전 개선 방향 제시, 검수 우선순위 정렬
+- 저장 필드: `draft_score` (jsonb)
+- 영문 변수: `readinessScore` / `reviewPriorityScore`
+
+**발행 후 — 콘텐츠 성장 점수 (Content Growth Score)**
+- 보조 라벨: **성과 건강도** (Performance Health) — 대시보드/추세 컨텍스트
+- 시점: 발행 직후 재채점 (+ 추후 주기적 갱신 여지)
+- 용도: 최종본 품질 추적, 초안 대비 개선 효과(Δ) 측정
+- 저장 필드: `published_score` (jsonb), `score_updated_at`
+- 영문 변수: `growthScore` / `performanceHealth`
+
+> **상위 우산 명칭**은 여전히 "콘텐츠 품질 점수" (Content Quality Score). 두 점수 모두 그 하위 시점별 표현이다.
 
 ## 5. Lifecycle
-1. **Draft scored** — `generate-content-draft` 응답에 `score` 포함 → `site_posts.draft_score`에 저장(저장 시점은 큐 추가 시).
-2. **Published rescored** — `status: published` 전이 시 `publish-site-post`가 백그라운드로 재채점 → `published_score`, `score_updated_at` 갱신.
+1. **Readiness scored (콘텐츠 준비 점수)** — `generate-content-draft` 응답에 `score` 포함 → `draft_score` 저장.
+2. **Growth rescored (콘텐츠 성장 점수)** — `status: published` 전이 시 `publish-site-post`가 백그라운드로 재채점 → `published_score`, `score_updated_at` 갱신.
 3. **Failure** — 점수 실패는 발행을 막지 않는다. UI는 "측정 실패" 표기만.
 
 ## 6. Data (additive only)
