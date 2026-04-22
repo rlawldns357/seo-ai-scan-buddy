@@ -122,7 +122,19 @@ function parseTopicsFromBuffer(text: string): Topic[] {
   }).filter(Boolean) as Topic[];
 }
 
-function ScoreGauge({ label, value, comment, color }: { label: string; value: number; comment: string; color: string }) {
+function ScoreGauge({
+  label,
+  value,
+  comment,
+  color,
+  weakest = false,
+}: {
+  label: string;
+  value: number;
+  comment: string;
+  color: string;
+  weakest?: boolean;
+}) {
   const [v, setV] = useState(0);
   useEffect(() => {
     const start = performance.now();
@@ -143,12 +155,22 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
     : value >= 50 ? { label: "보완 필요", emoji: "⚠️", ring: "ring-amber-500/30", glow: "from-amber-500/15 to-transparent", chip: "bg-amber-500/15 text-amber-700 dark:text-amber-400" }
     : { label: "긴급 점검", emoji: "🚨", ring: "ring-destructive/30", glow: "from-destructive/15 to-transparent", chip: "bg-destructive/15 text-destructive" };
 
+  const upliftPotential = weakest ? Math.min(99, value + 15) : null;
+
   return (
     <div className={cn(
       "relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card overflow-hidden ring-1 transition-all hover:shadow-md",
       tier.ring,
+      weakest && "ring-2 ring-amber-500/60 shadow-[0_0_24px_-4px] shadow-amber-500/40 animate-[pulse_2.4s_ease-in-out_infinite] -translate-y-0.5",
     )}>
       <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", tier.glow)} />
+
+      {weakest && (
+        <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold shadow-md whitespace-nowrap">
+          🎯 가장 먼저 보강
+        </div>
+      )}
+
       <div className="relative w-full flex items-center justify-between">
         <span className="text-[10px] font-extrabold tracking-widest text-foreground uppercase">{label}</span>
         <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full", tier.chip)}>
@@ -170,6 +192,16 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
       <div className="relative text-[11px] text-muted-foreground text-center leading-tight min-h-[28px] px-1">
         {comment || "—"}
       </div>
+
+      {weakest && upliftPotential !== null && (
+        <div className="relative w-full mt-1 px-2 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/30 flex items-center justify-center gap-1 text-[10px] font-bold text-amber-800 dark:text-amber-300">
+          <span>보강 시</span>
+          <span className="tabular-nums">{value}</span>
+          <span>→</span>
+          <span className="tabular-nums text-amber-600 dark:text-amber-200">{upliftPotential}</span>
+          <span>점 가능</span>
+        </div>
+      )}
     </div>
   );
 }
