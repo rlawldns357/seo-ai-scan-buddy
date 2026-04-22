@@ -268,22 +268,6 @@ export default function Demo() {
             {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             {running ? "데모 진행 중…" : "라이브 데모 시작"}
           </Button>
-      </div>
-
-      {/* 5분 시연 가이드 (접이식) */}
-      <Card className="p-0 mb-4 overflow-hidden border-primary/30">
-      {/* Control */}
-      <Card className="p-5 mb-4">
-        <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
-          <div>
-            <Label htmlFor="demo-url">쇼핑몰 / 브랜드 사이트 URL</Label>
-            <Input id="demo-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)}
-              placeholder="https://my-brand-shop.com" disabled={running} />
-          </div>
-          <Button onClick={runFullDemo} disabled={running} className="rounded-full h-10">
-            {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-            {running ? "데모 진행 중…" : "라이브 데모 시작"}
-          </Button>
         </div>
         <p className="mt-2 text-[11px] text-muted-foreground">
           💡 시연 팁: 실제 브랜드 URL을 넣으면 추천 키워드가 더 사실감 있게 나옵니다. (예: <code className="font-mono">musinsa.com</code>, <code className="font-mono">kream.co.kr</code>)
