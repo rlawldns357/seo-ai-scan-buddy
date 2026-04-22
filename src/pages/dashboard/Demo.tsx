@@ -564,31 +564,37 @@ export default function Demo() {
         );
       })()}
 
-      {/* Stepper */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
-        {PHASES.map((p) => {
-          const isDone = completed.includes(p.key) || phase === "done";
-          const isActive = phase === p.key;
-          const Icon = p.icon;
-          const dur = phaseTimings[p.key];
+      {/* Stepper — 미니멀 3단계 (진단 · 자동생성 · 발행검수) */}
+      <div className="grid grid-cols-3 gap-2 mb-5">
+        {PHASE_GROUPS.map((g) => {
+          const isActive = g.includes.includes(phase);
+          const isDone =
+            phase === "done" ||
+            (g.includes.every((p) => completed.includes(p)) && !isActive);
+          const Icon = g.icon;
+          const dur = g.includes.reduce((sum, p) => sum + (phaseTimings[p] || 0), 0);
           return (
-            <div key={p.key}
+            <div
+              key={g.key}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all",
                 isActive && "border-primary bg-primary/5 shadow-sm scale-[1.02]",
                 isDone && "border-primary/30 bg-primary/5",
                 !isActive && !isDone && "border-border bg-card opacity-60",
-              )}>
-              <div className={cn(
-                "w-7 h-7 rounded-full flex items-center justify-center shrink-0",
-                isDone ? "bg-primary text-primary-foreground" : isActive ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground",
-              )}>
+              )}
+            >
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                  isDone ? "bg-primary text-primary-foreground" : isActive ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground",
+                )}
+              >
                 {isDone ? <Check className="w-4 h-4" /> : isActive ? <Loader2 className="w-4 h-4 animate-spin" /> : <Icon className="w-4 h-4" />}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-foreground truncate">{p.label}</div>
+                <div className="text-xs font-bold text-foreground truncate">{g.label}</div>
                 <div className="text-[10px] text-muted-foreground truncate">
-                  {isDone && dur ? `✓ ${dur.toFixed(1)}초 만에 완료` : isActive ? "진행 중…" : p.sub}
+                  {isDone && dur > 0 ? `✓ ${dur.toFixed(1)}초` : isActive ? "진행 중…" : g.sub}
                 </div>
               </div>
             </div>
