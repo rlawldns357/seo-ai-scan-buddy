@@ -390,7 +390,10 @@ export default function Demo() {
               <ShoppingBag className="w-3 h-3" /> 이커머스 / 브랜드
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
-              ⚡ 10초 라이브 — URL → 30편 플랜 → 기대 매출
+              ⚡ 10초 생성
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 text-[10px] font-bold">
+              🌙 다음 30편 큐 대기
             </span>
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-1 leading-tight tracking-tight">
@@ -400,8 +403,8 @@ export default function Demo() {
             광고는 끄면 멈추고, <span className="text-primary">검색은 잠들어도 일합니다.</span>
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            URL 1개로 <b className="text-foreground">진단 → 기획 → 자동 생성·발행</b>까지.
-            데모 끝엔 <b className="text-foreground">월 SEO 기대 매출</b>이 숫자로 나옵니다.
+            <b className="text-foreground">다음 30편이 미리 큐에 쌓이고</b>, 매일 예약 시간에 알아서 발행됩니다.
+            당신은 아침에 <b className="text-foreground">승인 한 번</b>. 데모 끝엔 <b className="text-foreground">월 SEO 기대 매출</b>까지 숫자로.
           </p>
         </div>
         <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={reset} disabled={running}>
