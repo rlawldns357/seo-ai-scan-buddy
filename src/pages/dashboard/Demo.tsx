@@ -867,9 +867,10 @@ export default function Demo() {
             articles,
             revenue: Math.round(matured * f.revenue),
             clicks: Math.round(matured * f.monthlyClicks),
+            adSavings: Math.round(matured * f.adSavings),
           };
         });
-        const maxRev = Math.max(...months.map(x => x.revenue));
+        const maxAdSavings = Math.max(...months.map(x => x.adSavings));
         const month12 = months[11];
         return (
           <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
