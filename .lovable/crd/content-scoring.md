@@ -1,8 +1,43 @@
 # CRD: 자동 발행 콘텐츠 점수 시스템
 
-> Status: **Proposed (additive, not yet implemented)**
+> Status: **Proposed — Future Implementation (additive, not yet shipped)**
 > Owner: SearchTune OS
 > Related memory: `mem://features/content-scoring`
+
+## 0. 현재 유저 플로우와의 관계 (Compatibility Notice)
+
+이 문서의 모든 항목은 **향후 구현 대상**이다. 현재 라이브 플로우를 변경하지 않으며, 합의 전 어떤 코드도 작성하지 않는다.
+
+**현재 라이브 플로우 (변경 금지)**
+- 단계: `draft → queued → published` (3단계, `site_posts.status` 기존값 유지)
+- 발행 액션: `AutoPublish` 페이지의 "콘텐츠 발행하기" 버튼 → `publish-site-post` Edge Function
+- 큐 정렬: `created_at` 내림차순
+- 점수 표시: 없음 (`source_axis` 배지만 노출)
+- 한도: 월 5건 (`MONTHLY_LIMIT`)
+
+**향후 구현 항목 (이 CRD 범위 — 합의 후 별도 PR로 단계 도입)**
+| 항목 | 충돌 영역 | 도입 방식 |
+|---|---|---|
+| 4단계 큐 (`draft→review→queued→published`) | `site_posts.status` enum 확장 | `review` 값 추가, 기존 `draft/queued/published` 의미 보존 |
+| 점수 컬럼 (`draft_score`, `published_score`, `score_updated_at`) | 신규 컬럼 | nullable로 추가, 기존 SELECT/RLS 무영향 |
+| `humanReview` 플래그 | 신규 컬럼 | `boolean default false`, 기존 발행 흐름 무차단 |
+| `score-content` Edge Function | 신규 함수 | 단독 신설, 실패해도 발행 흐름 무영향 |
+| AutoPublish 큐 배지/정렬 토글 | UI 추가 | 점수 없으면 미노출 (graceful) |
+| Content 초안 점수 카드 | UI 추가 | `draft_score === null`이면 기존 UI 그대로 |
+| 표준 마이크로카피 4종 | 신규 카피 | 점수 컬럼 도입 후에만 노출 |
+
+**충돌 방지 원칙**
+1. 모든 신규 컬럼은 **nullable + default**. 기존 INSERT/UPDATE 경로 변경 금지.
+2. `status` enum에 `review` 추가 시 기존 코드 경로(`queued`/`published`)는 그대로 동작.
+3. 점수 채점 실패는 어떤 상태 전이도 막지 않는다 (현재와 동일하게 발행 가능).
+4. 표준 문구·아이콘·정렬 토글은 점수 데이터 존재 시에만 활성화 (점진적 롤아웃).
+5. RLS 정책 변경 없음. 기존 `site_posts` 정책 6개 그대로 유지.
+6. `publish-site-post` Edge Function 시그니처 유지 — 재채점은 백그라운드 fire-and-forget.
+
+**도입 순서 (Sec. 9 Rollout과 동기화)**
+1. 마이그레이션 (컬럼 추가) → 2. `score-content` 함수 → 3. 초안 채점 연동 → 4. UI 점수 표시 → 5. `review` status 추가 → 6. 큐 정렬/액션 매트릭스 → 7. 발행 후 재채점.
+
+각 단계는 **이전 단계 없이도 라이브가 정상 동작**해야 한다.
 
 ## 1. Purpose (목적)
 **랭킹 예측이 아닌**, 발행 전후 콘텐츠 품질 판단, 검수 우선순위 정리, 운영 재미 요소 제공.
