@@ -242,6 +242,16 @@ export default function Demo() {
     phaseStartRef.current = { phase, t: now };
   }, [phase]);
 
+  // 단계 진행에 따라 결과 탭을 자동 전환 (사용자가 직접 탭 클릭하면 그 선택을 유지)
+  const tabAutoRef = useRef(true);
+  useEffect(() => {
+    if (!tabAutoRef.current) return;
+    if (phase === "recommend") setResultTab("topics");
+    else if (phase === "brief") setResultTab("brief");
+    else if (phase === "draft") setResultTab("draft");
+    else if (phase === "score" || phase === "publish" || phase === "done") setResultTab("scores");
+  }, [phase]);
+
   const SAMPLE_URLS = [
     { url: "https://www.musinsa.com", label: "무신사 (패션 카테고리)" },
     { url: "https://kream.co.kr", label: "KREAM (한정판/리셀)" },
