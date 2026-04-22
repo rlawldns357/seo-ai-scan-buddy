@@ -934,11 +934,11 @@ export default function Demo() {
           <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
             <div className="flex items-center gap-2 mb-1 flex-wrap">
               <TrendingUp className="w-4 h-4 text-primary" />
-              <h2 className="text-sm font-bold text-foreground">SEO 기대효과 — 절감 광고비로 환산하면</h2>
-              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">핵심 KPI</span>
+              <h2 className="text-sm font-bold text-foreground">SEO 기대효과 · 광고비로 환산해 보면</h2>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">핵심 지표</span>
             </div>
             <p className="text-[11px] text-muted-foreground mb-4">
-              평균 점수 <span className="font-bold text-foreground">{avg}점</span> 기준 · 색인 안정화(약 4~8주) 후 <span className="font-bold text-foreground">글 1편</span>의 월간 기대치 ·
+              평균 점수 <span className="font-bold text-foreground">{avg}점</span> 기준 · 색인 안정화(약 4~8주) 이후 <span className="font-bold text-foreground">글 1편</span>이 한 달간 만들어낼 수 있는 추정치 ·
               CPC 벤치마크 <span className="font-mono text-foreground">₩{f.avgCpc.toLocaleString()}</span> 적용
             </p>
 
@@ -947,17 +947,17 @@ export default function Demo() {
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold opacity-90 mb-1">
-                    <TrendingUp className="w-3.5 h-3.5" /> 월 절감 광고비 (예상)
+                    <TrendingUp className="w-3.5 h-3.5" /> 월 광고비 절감 추정액
                   </div>
                   <div className="text-3xl font-extrabold tabular-nums leading-none">{krw(f.adSavings)}</div>
                   <div className="text-[11px] opacity-85 mt-1">
-                    무료 유입 클릭 {f.monthlyClicks.toLocaleString()}회를 광고로 사려면 필요한 비용
+                    같은 트래픽({f.monthlyClicks.toLocaleString()}회 클릭)을 광고로 확보할 때 드는 비용 기준
                   </div>
                 </div>
-                <div className="text-right text-[10px] opacity-80 max-w-[160px]">
-                  💡 절감된 예산을<br/>
-                  <span className="font-bold">핵심 캠페인 / 신규 채널</span>에<br/>
-                  재투자할 여력 확보
+                <div className="text-right text-[10px] opacity-80 max-w-[170px]">
+                  💡 절감한 예산은<br/>
+                  <span className="font-bold">핵심 캠페인 강화·신규 채널 테스트</span>에<br/>
+                  재투자할 여력으로 활용 가능
                 </div>
               </div>
             </div>
@@ -967,12 +967,12 @@ export default function Demo() {
               <div className="p-3 rounded-lg bg-card border">
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><Eye className="w-3 h-3" /> 검색 노출</div>
                 <div className="text-lg font-bold text-foreground tabular-nums">{f.monthlyImpressions.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">월 노출 (Google·Naver)</div>
+                <div className="text-[10px] text-muted-foreground">월 노출 추정 (Google·Naver)</div>
               </div>
               <div className="p-3 rounded-lg bg-card border">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 무료 유입</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 자연 유입</div>
                 <div className="text-lg font-bold text-foreground tabular-nums">{f.monthlyClicks.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">광고비 0원 클릭</div>
+                <div className="text-[10px] text-muted-foreground">광고비 없이 유입되는 클릭</div>
               </div>
               <div className="p-3 rounded-lg bg-card border">
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><ShoppingBag className="w-3 h-3" /> 기대 주문</div>
@@ -985,7 +985,7 @@ export default function Demo() {
             <div className="mt-3 p-3 rounded-lg bg-muted/40 border border-dashed">
               <div className="flex items-center justify-between gap-2 flex-wrap">
                 <div className="text-[11px] text-muted-foreground">
-                  <span className="font-semibold text-foreground">참고</span> · 위 주문이 매출로 이어질 경우 기대 범위 (객단가 ₩48,000 가정)
+                  <span className="font-semibold text-foreground">참고치</span> · 주문이 매출로 이어질 경우 추정 범위 (객단가 ₩48,000 가정, 카테고리에 따라 변동)
                 </div>
                 <div className="text-sm font-bold text-foreground tabular-nums">
                   {krw(f.revenueLow)} ~ {krw(f.revenueHigh)}
