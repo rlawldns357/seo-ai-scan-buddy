@@ -6,6 +6,11 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// 자체 SEO/AEO/GEO 채점 통과 임계 (평균)
+const QUALITY_PASS_THRESHOLD = 70;
+const MAX_QUALITY_RETRIES = 2; // 임계 미달 시 추가 재시도 (최대)
+const ENABLE_FRESH_REFERENCES = true; // Firecrawl로 최신 레퍼런스 1~2개 자동 수집
+
 const TOPICS = [
   {
     category: "SEO",
