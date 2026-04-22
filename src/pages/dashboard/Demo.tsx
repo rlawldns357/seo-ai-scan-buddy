@@ -443,7 +443,7 @@ export default function Demo() {
       )}
 
       {/* Stepper */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
         {PHASES.map((p) => {
           const isDone = completed.includes(p.key) || phase === "done";
           const isActive = phase === p.key;
