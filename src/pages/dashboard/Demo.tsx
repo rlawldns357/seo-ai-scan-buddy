@@ -330,7 +330,47 @@ export default function Demo() {
         </Card>
       )}
 
-      {/* Publish */}
+      {/* SEO Impact Forecast — 강조 포인트 */}
+      {scores && (() => {
+        const avg = Math.round((scores.seo.score + scores.aeo.score + scores.geo.score) / 3);
+        const f = estimateSeoImpact(avg);
+        return (
+          <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
+            <div className="flex items-center gap-2 mb-1">
+              <TrendingUp className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground">이 글 1편이 가져올 월 예상 SEO 기대효과</h2>
+            </div>
+            <p className="text-[11px] text-muted-foreground mb-4">평균 점수 {avg}점 기준 · 발행 후 색인 안정화(약 4~8주) 가정 · 광고비 0원</p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="p-3 rounded-lg bg-card border">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><Eye className="w-3 h-3" /> 월 노출</div>
+                <div className="text-xl font-bold text-foreground">{f.monthlyImpressions.toLocaleString()}</div>
+                <div className="text-[10px] text-muted-foreground">검색 결과 노출 횟수</div>
+              </div>
+              <div className="p-3 rounded-lg bg-card border">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 월 클릭</div>
+                <div className="text-xl font-bold text-foreground">{f.monthlyClicks.toLocaleString()}</div>
+                <div className="text-[10px] text-muted-foreground">신규 사이트 유입</div>
+              </div>
+              <div className="p-3 rounded-lg bg-card border">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><ShoppingBag className="w-3 h-3" /> 예상 주문</div>
+                <div className="text-xl font-bold text-foreground">{f.orders.toLocaleString()}건</div>
+                <div className="text-[10px] text-muted-foreground">평균 전환율 적용</div>
+              </div>
+              <div className="p-3 rounded-lg bg-primary text-primary-foreground border border-primary">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold opacity-90 mb-1"><TrendingUp className="w-3 h-3" /> 예상 매출</div>
+                <div className="text-xl font-bold">{krw(f.revenue)}</div>
+                <div className="text-[10px] opacity-80">객단가 ₩48,000 가정</div>
+              </div>
+            </div>
+            <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
+              ⚠️ 시연용 추정치입니다. 실제 성과는 카테고리·경쟁도·내부 링크 구조에 따라 달라집니다.
+              핵심은 <span className="font-semibold text-foreground">광고비 없이 매월 누적되는 자산형 트래픽</span>이라는 점입니다 —
+              발행 글이 늘어날수록 위 수치는 곱해집니다.
+            </p>
+          </Card>
+        );
+      })()}
       {phase === "done" && queueId && (
         <Card className="p-5 mb-4 border-primary/40 bg-primary/5">
           <div className="flex items-center gap-3">
