@@ -1024,26 +1024,14 @@ export default function Demo() {
               </div>
             </div>
 
-            {/* 강점·약점 하이라이트 띠 */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              <div className="flex-1 min-w-[160px] p-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 flex items-center gap-2">
-                <span className="text-base">💪</span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">가장 강한 축</div>
-                  <div className="text-xs font-bold text-foreground truncate">
-                    {strongest.key} <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">{strongest.score}점</span> · 유지하세요
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 min-w-[160px] p-2 rounded-lg border border-amber-500/30 bg-amber-500/5 flex items-center gap-2">
-                <span className="text-base">🎯</span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">가장 먼저 손볼 축</div>
-                  <div className="text-xs font-bold text-foreground truncate">
-                    {weakest.key} <span className="text-amber-700 dark:text-amber-400 tabular-nums">{weakest.score}점</span> · 개선 시 +{Math.max(5, 80 - weakest.score)}점 여력
-                  </div>
-                </div>
-              </div>
+            {/* 강점·약점 한 줄 요약 */}
+            <div className="flex items-center gap-2 mb-3 text-[11px] flex-wrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold">
+                💪 강점 {strongest.key} <span className="tabular-nums">{strongest.score}</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold">
+                🎯 보완 {weakest.key} <span className="tabular-nums">{weakest.score}</span> · +{Math.max(5, 80 - weakest.score)}점 여력
+              </span>
             </div>
 
             {(() => {
