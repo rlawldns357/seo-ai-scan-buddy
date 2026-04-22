@@ -5,8 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic } from "lucide-react";
+import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PURELEAF_DEMO } from "@/data/demoBrandSeed";
 
 type Phase = "idle" | "recommend" | "brief" | "draft" | "score" | "publish" | "done";
 type Topic = { axis: "SEO" | "AEO" | "GEO"; title: string; reason: string };
