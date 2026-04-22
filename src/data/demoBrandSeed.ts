@@ -20,9 +20,20 @@ export type DemoBriefSeed = {
   topic: string;
   intent: "informational" | "commercial" | "transactional";
   title: string;
+  /** 시연용 제목 후보 3안 — A/B/C 테스트 발화에 활용. */
+  titleVariants?: { label: string; value: string; angle: string }[];
   metaDescription: string;
+  /** 시연용 메타 설명 후보 2안 — 톤·길이 차이를 보여줌. */
+  metaDescriptionVariants?: { label: string; value: string; angle: string }[];
   primaryKeyword: string;
   secondaryKeywords: string[];
+  /** 키워드 묶음 — Primary / Secondary / Long-tail / LSI 4분류. */
+  keywordClusters?: {
+    primary: string[];
+    secondary: string[];
+    longTail: string[];
+    lsi: string[];
+  };
   outline: { h2: string; points: string[] }[];
   faq: { q: string; a: string }[];
   structuredData: string[];
