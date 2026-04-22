@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb } from "lucide-react";
+import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Phase = "idle" | "recommend" | "draft" | "score" | "publish" | "done";
@@ -15,12 +15,26 @@ type Scores = { seo: { score: number; comment: string }; aeo: { score: number; c
 const STREAM_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-stream-content`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
-const PHASES: { key: Phase; label: string; icon: typeof Lightbulb }[] = [
-  { key: "recommend", label: "토픽 추천", icon: Lightbulb },
-  { key: "draft", label: "본문 실시간 생성", icon: FileText },
-  { key: "score", label: "3축 채점", icon: Gauge },
-  { key: "publish", label: "발행 큐 등록", icon: Send },
+const PHASES: { key: Phase; label: string; sub: string; icon: typeof Lightbulb }[] = [
+  { key: "recommend", label: "구매 의도 토픽 추천", sub: "검색량 있는 키워드 발굴", icon: Lightbulb },
+  { key: "draft", label: "SEO 친화 본문 생성", sub: "롱테일 + 상품 의도 반영", icon: FileText },
+  { key: "score", label: "3축 콘텐츠 채점", sub: "발행 전 검색 적합도 검증", icon: Gauge },
+  { key: "publish", label: "발행 큐 등록", sub: "예약 발행 시뮬레이션", icon: Send },
 ];
+
+// 평균 점수 → 월 SEO 기대효과 (데모용 추정 공식)
+function estimateSeoImpact(avg: number) {
+  const k = Math.max(0.2, avg / 100); // 0.2~1.0
+  const monthlyImpressions = Math.round(2400 * k * (1 + k));      // ~480 ~ 4,800
+  const monthlyClicks = Math.round(monthlyImpressions * (0.04 + k * 0.06)); // CTR 4~10%
+  const conv = 0.018 + k * 0.012;                                  // 1.8~3.0%
+  const orders = Math.max(0, Math.round(monthlyClicks * conv));
+  const aov = 48000;                                               // 평균 객단가 가정
+  const revenue = orders * aov;
+  return { monthlyImpressions, monthlyClicks, orders, revenue };
+}
+
+const krw = (n: number) => "₩" + n.toLocaleString("ko-KR");
 
 async function streamEndpoint(body: any, onDelta: (s: string) => void): Promise<void> {
   const resp = await fetch(STREAM_URL, {
@@ -103,7 +117,7 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
 }
 
 export default function Demo() {
-  const [siteUrl, setSiteUrl] = useState("https://example.com");
+  const [siteUrl, setSiteUrl] = useState("https://my-brand-shop.com");
   const [phase, setPhase] = useState<Phase>("idle");
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicBuf, setTopicBuf] = useState("");
@@ -191,11 +205,16 @@ export default function Demo() {
 
       <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
         <div>
-          <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold mb-2">
-            <Zap className="w-3 h-3" /> INTERNAL DEMO · 데이터 저장 안 됨
+          <div className="flex flex-wrap items-center gap-1.5 mb-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+              <Zap className="w-3 h-3" /> INTERNAL DEMO · 저장 안 됨
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/5 text-foreground text-[10px] font-bold">
+              <ShoppingBag className="w-3 h-3" /> 이커머스 / 브랜드
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">AutoBlog 라이브 시연</h1>
-          <p className="text-sm text-muted-foreground">URL 1개로 추천→실시간 본문 생성→3축 채점→발행 큐 등록까지 전 과정을 한 번에 보여줍니다.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-1">검색 노출로 광고비 없이 매출 만드는 AutoBlog</h1>
+          <p className="text-sm text-muted-foreground">사이트 URL 1개만 넣으면 구매 의도 키워드 발굴 → SEO 친화 본문 → 발행 큐까지 전 과정이 라이브로 진행됩니다. 끝나면 월 예상 SEO 기대효과까지 같이 보여드립니다.</p>
         </div>
         <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={reset} disabled={running}>
           <RotateCcw className="w-3.5 h-3.5" /> 초기화
@@ -206,15 +225,18 @@ export default function Demo() {
       <Card className="p-5 mb-4">
         <div className="grid md:grid-cols-[1fr_auto] gap-3 items-end">
           <div>
-            <Label htmlFor="demo-url">사이트 URL</Label>
+            <Label htmlFor="demo-url">쇼핑몰 / 브랜드 사이트 URL</Label>
             <Input id="demo-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)}
-              placeholder="https://example.com" disabled={running} />
+              placeholder="https://my-brand-shop.com" disabled={running} />
           </div>
           <Button onClick={runFullDemo} disabled={running} className="rounded-full h-10">
             {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-            {running ? "데모 진행 중…" : "전체 데모 시작"}
+            {running ? "데모 진행 중…" : "라이브 데모 시작"}
           </Button>
         </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          💡 시연 팁: 실제 브랜드 URL을 넣으면 추천 키워드가 더 사실감 있게 나옵니다. (예: <code className="font-mono">musinsa.com</code>, <code className="font-mono">kream.co.kr</code>)
+        </p>
       </Card>
 
       {/* Stepper */}
@@ -237,7 +259,10 @@ export default function Demo() {
               )}>
                 {isDone ? <Check className="w-4 h-4" /> : isActive ? <Loader2 className="w-4 h-4 animate-spin" /> : <Icon className="w-4 h-4" />}
               </div>
-              <div className="text-xs font-semibold text-foreground">{p.label}</div>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-foreground truncate">{p.label}</div>
+                <div className="text-[10px] text-muted-foreground truncate">{p.sub}</div>
+              </div>
             </div>
           );
         })}
