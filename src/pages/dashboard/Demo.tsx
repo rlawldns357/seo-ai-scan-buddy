@@ -16,9 +16,17 @@ type SeoBrief = {
   topic: string;
   intent: "informational" | "commercial" | "transactional";
   title: string;
+  titleVariants?: { label: string; value: string; angle: string }[];
   metaDescription: string;
+  metaDescriptionVariants?: { label: string; value: string; angle: string }[];
   primaryKeyword: string;
   secondaryKeywords: string[];
+  keywordClusters?: {
+    primary: string[];
+    secondary: string[];
+    longTail: string[];
+    lsi: string[];
+  };
   outline: { h2: string; points: string[] }[];
   faq: { q: string; a: string }[];
   structuredData: string[];
