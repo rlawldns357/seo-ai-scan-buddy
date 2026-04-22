@@ -36,13 +36,22 @@ type SeoBrief = {
 const STREAM_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-stream-content`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
-const PHASES: { key: Phase; label: string; sub: string; icon: typeof Lightbulb }[] = [
-  { key: "recommend", label: "구매 의도 토픽 추천", sub: "검색량 있는 키워드 발굴", icon: Lightbulb },
-  { key: "brief", label: "SEO 기획 패키지", sub: "제목·메타·키워드·FAQ·구조", icon: ClipboardList },
-  { key: "draft", label: "SEO 친화 본문 생성", sub: "롱테일 + 상품 의도 반영", icon: FileText },
-  { key: "score", label: "3축 콘텐츠 채점", sub: "발행 전 검색 적합도 검증", icon: Gauge },
-  { key: "publish", label: "발행 큐 등록", sub: "예약 발행 시뮬레이션", icon: Send },
+// 미니멀 3단계 그룹 — 내부 5단계 로직은 유지하되 시연자/관객 시점에서는 3단계만 보여줌
+// 1) 진단·기획  ← recommend + brief
+// 2) 자동 생성  ← draft
+// 3) 발행 검수  ← score + publish
+const PHASE_GROUPS: {
+  key: "diagnose" | "generate" | "ship";
+  label: string;
+  sub: string;
+  icon: typeof Lightbulb;
+  includes: Phase[];
+}[] = [
+  { key: "diagnose", label: "진단 · 기획", sub: "구매 의도 토픽 + SEO 패키지", icon: Lightbulb, includes: ["recommend", "brief"] },
+  { key: "generate", label: "자동 생성", sub: "기획 그대로 본문 작성", icon: FileText, includes: ["draft"] },
+  { key: "ship", label: "발행 검수", sub: "3축 채점 후 큐 등록", icon: Send, includes: ["score", "publish"] },
 ];
+
 
 // 평균 점수 → 월 SEO 기대효과 (데모용 추정 공식)
 // ⚠️ 매출은 단정형이 아닌 "기대 범위"로 노출. 광고대행 컨텍스트에서 절감 광고비를 강조.
@@ -547,31 +556,37 @@ export default function Demo() {
         );
       })()}
 
-      {/* Stepper */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
-        {PHASES.map((p) => {
-          const isDone = completed.includes(p.key) || phase === "done";
-          const isActive = phase === p.key;
-          const Icon = p.icon;
-          const dur = phaseTimings[p.key];
+      {/* Stepper — 미니멀 3단계 (진단 · 자동생성 · 발행검수) */}
+      <div className="grid grid-cols-3 gap-2 mb-5">
+        {PHASE_GROUPS.map((g) => {
+          const isActive = g.includes.includes(phase);
+          const isDone =
+            phase === "done" ||
+            (g.includes.every((p) => completed.includes(p)) && !isActive);
+          const Icon = g.icon;
+          const dur = g.includes.reduce((sum, p) => sum + (phaseTimings[p] || 0), 0);
           return (
-            <div key={p.key}
+            <div
+              key={g.key}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
+                "flex items-center gap-2 px-3 py-2.5 rounded-lg border transition-all",
                 isActive && "border-primary bg-primary/5 shadow-sm scale-[1.02]",
                 isDone && "border-primary/30 bg-primary/5",
                 !isActive && !isDone && "border-border bg-card opacity-60",
-              )}>
-              <div className={cn(
-                "w-7 h-7 rounded-full flex items-center justify-center shrink-0",
-                isDone ? "bg-primary text-primary-foreground" : isActive ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground",
-              )}>
+              )}
+            >
+              <div
+                className={cn(
+                  "w-8 h-8 rounded-full flex items-center justify-center shrink-0",
+                  isDone ? "bg-primary text-primary-foreground" : isActive ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground",
+                )}
+              >
                 {isDone ? <Check className="w-4 h-4" /> : isActive ? <Loader2 className="w-4 h-4 animate-spin" /> : <Icon className="w-4 h-4" />}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs font-semibold text-foreground truncate">{p.label}</div>
+                <div className="text-xs font-bold text-foreground truncate">{g.label}</div>
                 <div className="text-[10px] text-muted-foreground truncate">
-                  {isDone && dur ? `✓ ${dur.toFixed(1)}초 만에 완료` : isActive ? "진행 중…" : p.sub}
+                  {isDone && dur > 0 ? `✓ ${dur.toFixed(1)}초` : isActive ? "진행 중…" : g.sub}
                 </div>
               </div>
             </div>
