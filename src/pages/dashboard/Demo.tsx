@@ -131,6 +131,8 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
 
 export default function Demo() {
   const [siteUrl, setSiteUrl] = useState("https://my-brand-shop.com");
+  const [seedTopic, setSeedTopic] = useState("");
+  const [brief, setBrief] = useState<SeoBrief | null>(null);
   const [phase, setPhase] = useState<Phase>("idle");
   const [topics, setTopics] = useState<Topic[]>([]);
   const [topicBuf, setTopicBuf] = useState("");
