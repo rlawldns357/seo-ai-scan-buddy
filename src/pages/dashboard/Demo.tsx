@@ -219,6 +219,8 @@ export default function Demo() {
   const [running, setRunning] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [presenterMode, setPresenterMode] = useState(false);
+  const [showScoreDetail, setShowScoreDetail] = useState(false);
+  const [showForecastDetail, setShowForecastDetail] = useState(false);
   // 결과 탭 상태 (다음 단계: Topics/Brief/Draft/Scores를 단일 카드 + 탭으로 통합 예정)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [resultTab, setResultTab] = useState<"topics" | "brief" | "draft" | "scores">("topics");
@@ -1022,26 +1024,14 @@ export default function Demo() {
               </div>
             </div>
 
-            {/* 강점·약점 하이라이트 띠 */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              <div className="flex-1 min-w-[160px] p-2 rounded-lg border border-emerald-500/30 bg-emerald-500/5 flex items-center gap-2">
-                <span className="text-base">💪</span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">가장 강한 축</div>
-                  <div className="text-xs font-bold text-foreground truncate">
-                    {strongest.key} <span className="text-emerald-600 dark:text-emerald-400 tabular-nums">{strongest.score}점</span> · 유지하세요
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 min-w-[160px] p-2 rounded-lg border border-amber-500/30 bg-amber-500/5 flex items-center gap-2">
-                <span className="text-base">🎯</span>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">가장 먼저 손볼 축</div>
-                  <div className="text-xs font-bold text-foreground truncate">
-                    {weakest.key} <span className="text-amber-700 dark:text-amber-400 tabular-nums">{weakest.score}점</span> · 개선 시 +{Math.max(5, 80 - weakest.score)}점 여력
-                  </div>
-                </div>
-              </div>
+            {/* 강점·약점 한 줄 요약 */}
+            <div className="flex items-center gap-2 mb-3 text-[11px] flex-wrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold">
+                💪 강점 {strongest.key} <span className="tabular-nums">{strongest.score}</span>
+              </span>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 font-semibold">
+                🎯 보완 {weakest.key} <span className="tabular-nums">{weakest.score}</span> · +{Math.max(5, 80 - weakest.score)}점 여력
+              </span>
             </div>
 
             {(() => {
@@ -1126,41 +1116,55 @@ export default function Demo() {
                 : { txt: "수정 필요", cls: "bg-destructive/15 text-destructive", bar: "bg-destructive" };
               return (
                 <div className="mt-4 pt-4 border-t border-border">
-                  <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                    <h3 className="text-[12px] font-bold text-foreground">내부 팀 빠른 체크 — 발행 전 신호 점검</h3>
-                    <span className="text-[10px] text-muted-foreground">실측 신호 기반 자동 채점 · 참고용</span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {checks.map((c) => {
-                      const t = tone(c.value);
-                      return (
-                        <div key={c.label} className="p-3 rounded-lg border bg-card">
-                          <div className="flex items-center justify-between gap-2 mb-1">
-                            <div className="text-[12px] font-bold text-foreground">{c.label}</div>
-                            <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", t.cls)}>{t.txt} {c.value}</span>
-                          </div>
-                          <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
-                            <div className={cn("h-full rounded-full transition-all", t.bar)} style={{ width: `${c.value}%` }} />
-                          </div>
-                          <div className="text-[10.5px] text-muted-foreground leading-snug mb-1.5">{c.hint}</div>
-                          <ul className="space-y-0.5 pt-1.5 border-t border-border/60">
-                            {c.evidence.map((e, i) => (
-                              <li key={i} className="text-[10.5px] text-foreground/80 leading-snug flex gap-1.5">
-                                <span className="text-muted-foreground shrink-0">·</span>
-                                <span className="font-mono">{e}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="mt-2 text-[10px] text-muted-foreground leading-snug">
-                    * 검색 순위·트래픽을 보장하지 않으며, 발행 직전 콘텐츠의 구조·메타 신호를 기준으로 한 자체 진단 점수입니다.
-                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowScoreDetail((v) => !v)}
+                    className="w-full flex items-center justify-between gap-2 text-left"
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <h3 className="text-[12px] font-bold text-foreground">내부 팀 빠른 체크 — 발행 전 신호 4종</h3>
+                      <span className="text-[10px] text-muted-foreground hidden sm:inline">실측 신호 기반</span>
+                    </div>
+                    {showScoreDetail
+                      ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                      : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+                  </button>
+                  {showScoreDetail && (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3">
+                        {checks.map((c) => {
+                          const t = tone(c.value);
+                          return (
+                            <div key={c.label} className="p-3 rounded-lg border bg-card">
+                              <div className="flex items-center justify-between gap-2 mb-1">
+                                <div className="text-[12px] font-bold text-foreground">{c.label}</div>
+                                <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", t.cls)}>{t.txt} {c.value}</span>
+                              </div>
+                              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
+                                <div className={cn("h-full rounded-full transition-all", t.bar)} style={{ width: `${c.value}%` }} />
+                              </div>
+                              <div className="text-[10.5px] text-muted-foreground leading-snug mb-1.5">{c.hint}</div>
+                              <ul className="space-y-0.5 pt-1.5 border-t border-border/60">
+                                {c.evidence.map((e, i) => (
+                                  <li key={i} className="text-[10.5px] text-foreground/80 leading-snug flex gap-1.5">
+                                    <span className="text-muted-foreground shrink-0">·</span>
+                                    <span className="font-mono">{e}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p className="mt-2 text-[10px] text-muted-foreground leading-snug">
+                        * 검색 순위·트래픽을 보장하지 않으며, 발행 직전 콘텐츠의 구조·메타 신호를 기준으로 한 자체 진단 점수입니다.
+                      </p>
+                    </>
+                  )}
                 </div>
               );
             })()}
+
           </Card>
         );
       })()}
@@ -1248,70 +1252,71 @@ export default function Demo() {
               </div>
             </div>
 
-            {/* 12개월 누적 절감 광고비 차트 */}
-            <div className="mt-5 p-4 rounded-xl bg-card border">
-              <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
-                <div>
-                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    하루 1편씩, 12개월간 쌓이는 절감 광고비 시뮬레이션
-                  </div>
-                  <div className="text-[11px] text-muted-foreground">
-                    {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long" })} 기준 시작 · 절감액을 다른 캠페인·채널 테스트에 재투자할 수 있는 여력 추정
+            {/* 12개월 누적 절감 광고비 — 토글 */}
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={() => setShowForecastDetail((v) => !v)}
+                className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border bg-card hover:bg-muted/40 transition"
+              >
+                <div className="flex items-center gap-2 min-w-0 text-left">
+                  <Sparkles className="w-3.5 h-3.5 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-[12px] font-bold text-foreground">12개월 누적 시뮬레이션 보기</div>
+                    <div className="text-[10px] text-muted-foreground truncate">12개월차 절감 광고비 <span className="font-bold text-primary">{krw(month12.adSavings)}</span> · 누적 {month12.articles}편</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-muted-foreground">12개월차 월 절감 광고비</div>
-                  <div className="text-2xl font-extrabold text-primary leading-none tabular-nums">{krw(month12.adSavings)}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">누적 콘텐츠 자산 {month12.articles}편</div>
-                </div>
-              </div>
-              <div className="flex items-end gap-1 h-32 mt-2">
-                {months.map((mo, i) => {
-                  const h = maxAdSavings > 0 ? (mo.adSavings / maxAdSavings) * 100 : 0;
-                  const isLast = i === months.length - 1;
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
-                      <div className="text-[9px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {Math.round(mo.adSavings / 10000).toLocaleString()}만
-                      </div>
-                      <div
-                        className={cn(
-                          "w-full rounded-t transition-all duration-500",
-                          isLast ? "bg-primary" : "bg-primary/40"
-                        )}
-                        style={{ height: `${h}%`, minHeight: "4px" }}
-                      />
-                      <div className={cn("text-[9px] font-mono", isLast ? "text-primary font-bold" : "text-muted-foreground")}>
-                        {mo.m}M
-                      </div>
+                {showForecastDetail
+                  ? <ChevronUp className="w-4 h-4 text-muted-foreground shrink-0" />
+                  : <ChevronDown className="w-4 h-4 text-muted-foreground shrink-0" />}
+              </button>
+              {showForecastDetail && (
+                <div className="mt-3 p-4 rounded-xl bg-card border">
+                  <div className="text-[11px] text-muted-foreground mb-3">
+                    하루 1편씩 발행 가정 · {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long" })} 기준 시작
+                  </div>
+                  <div className="flex items-end gap-1 h-32">
+                    {months.map((mo, i) => {
+                      const h = maxAdSavings > 0 ? (mo.adSavings / maxAdSavings) * 100 : 0;
+                      const isLast = i === months.length - 1;
+                      return (
+                        <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                          <div className="text-[9px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            {Math.round(mo.adSavings / 10000).toLocaleString()}만
+                          </div>
+                          <div
+                            className={cn("w-full rounded-t transition-all duration-500", isLast ? "bg-primary" : "bg-primary/40")}
+                            style={{ height: `${h}%`, minHeight: "4px" }}
+                          />
+                          <div className={cn("text-[9px] font-mono", isLast ? "text-primary font-bold" : "text-muted-foreground")}>
+                            {mo.m}M
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 rounded bg-muted/40">
+                      <div className="text-[10px] text-muted-foreground">3개월차</div>
+                      <div className="text-xs font-bold text-foreground">{krw(months[2].adSavings)}</div>
                     </div>
-                  );
-                })}
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                <div className="p-2 rounded bg-muted/40">
-                  <div className="text-[10px] text-muted-foreground">3개월차</div>
-                  <div className="text-xs font-bold text-foreground">{krw(months[2].adSavings)}</div>
+                    <div className="p-2 rounded bg-muted/40">
+                      <div className="text-[10px] text-muted-foreground">6개월차</div>
+                      <div className="text-xs font-bold text-foreground">{krw(months[5].adSavings)}</div>
+                    </div>
+                    <div className="p-2 rounded bg-primary/15 border border-primary/30">
+                      <div className="text-[10px] text-primary font-bold">12개월차</div>
+                      <div className="text-xs font-extrabold text-primary">{krw(month12.adSavings)}</div>
+                    </div>
+                  </div>
+                  <p className="mt-3 text-[10.5px] text-muted-foreground leading-relaxed">
+                    💡 광고는 멈추면 노출도 멈추지만, SEO 콘텐츠는 발행 후에도 검색결과에서 24시간 일하는 자산으로 남습니다.
+                    <span className="text-muted-foreground/80"> ※ 카테고리·CPC 변동에 따른 추정치이며 순위·매출을 보장하지 않습니다.</span>
+                  </p>
                 </div>
-                <div className="p-2 rounded bg-muted/40">
-                  <div className="text-[10px] text-muted-foreground">6개월차</div>
-                  <div className="text-xs font-bold text-foreground">{krw(months[5].adSavings)}</div>
-                </div>
-                <div className="p-2 rounded bg-primary/15 border border-primary/30">
-                  <div className="text-[10px] text-primary font-bold">12개월차</div>
-                  <div className="text-xs font-extrabold text-primary">{krw(month12.adSavings)}</div>
-                </div>
-              </div>
+              )}
             </div>
 
-            <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
-              💡 광고는 집행을 멈추는 순간 노출도 함께 멈추지만,
-              <span className="font-bold text-foreground"> 잘 만들어진 SEO 콘텐츠는 발행 이후에도 검색 결과에서 24시간 일하는 자산</span>으로 남습니다.
-              여기서 절감되는 광고비만큼 <span className="font-bold text-foreground">핵심 캠페인을 더 두텁게, 신규 채널을 더 과감하게</span> 시도할 여력이 생깁니다.
-              <br/>
-              <span className="text-muted-foreground/80">※ 위 수치는 카테고리·경쟁도·CPC 변동에 따라 달라질 수 있는 추정치이며, 검색 순위나 매출을 보장하지 않습니다.</span>
-            </p>
           </Card>
         );
       })()}
