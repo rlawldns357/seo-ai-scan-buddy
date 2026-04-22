@@ -36,6 +36,23 @@ type SeoBrief = {
 const STREAM_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-stream-content`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
 
+// 미니멀 3단계 그룹 — 내부 5단계 로직은 유지하되 시연자/관객 시점에서는 3단계만 보여줌
+// 1) 진단·기획  ← recommend + brief
+// 2) 자동 생성  ← draft
+// 3) 발행 검수  ← score + publish
+const PHASE_GROUPS: {
+  key: "diagnose" | "generate" | "ship";
+  label: string;
+  sub: string;
+  icon: typeof Lightbulb;
+  includes: Phase[];
+}[] = [
+  { key: "diagnose", label: "진단 · 기획", sub: "구매 의도 토픽 + SEO 패키지", icon: Lightbulb, includes: ["recommend", "brief"] },
+  { key: "generate", label: "자동 생성", sub: "기획 그대로 본문 작성", icon: FileText, includes: ["draft"] },
+  { key: "ship", label: "발행 검수", sub: "3축 채점 후 큐 등록", icon: Send, includes: ["score", "publish"] },
+];
+
+// (legacy) 내부 5단계 정의 — SCRIPT/타이밍 매핑에만 사용
 const PHASES: { key: Phase; label: string; sub: string; icon: typeof Lightbulb }[] = [
   { key: "recommend", label: "구매 의도 토픽 추천", sub: "검색량 있는 키워드 발굴", icon: Lightbulb },
   { key: "brief", label: "SEO 기획 패키지", sub: "제목·메타·키워드·FAQ·구조", icon: ClipboardList },
