@@ -830,7 +830,7 @@ export default function Demo() {
                   발행 전 콘텐츠 품질 점검
                 </h2>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  사람 검수 1시간 분량을 3초 안에 — SEO·AEO·GEO 3축 신호를 자동 점검합니다
+                  사람 검수 1시간 분량을 3초 안에 — SEO·AEO·GEO 3축 신호를 자동 점검합니다 · <span className="font-mono">{new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</span> 기준
                 </p>
               </div>
               <div className="flex items-center gap-2">
