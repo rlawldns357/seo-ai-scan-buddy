@@ -390,7 +390,10 @@ export default function Demo() {
               <ShoppingBag className="w-3 h-3" /> 이커머스 / 브랜드
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
-              ⚡ 10초 라이브 — URL → 30편 플랜 → 기대 매출
+              ⚡ 10초 생성
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 text-[10px] font-bold">
+              🌙 다음 30편 큐 대기
             </span>
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-1 leading-tight tracking-tight">
@@ -400,8 +403,8 @@ export default function Demo() {
             광고는 끄면 멈추고, <span className="text-primary">검색은 잠들어도 일합니다.</span>
           </p>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            URL 1개로 <b className="text-foreground">진단 → 기획 → 자동 생성·발행</b>까지.
-            데모 끝엔 <b className="text-foreground">월 SEO 기대 매출</b>이 숫자로 나옵니다.
+            <b className="text-foreground">다음 30편이 미리 큐에 쌓이고</b>, 매일 예약 시간에 알아서 발행됩니다.
+            당신은 아침에 <b className="text-foreground">승인 한 번</b>. 데모 끝엔 <b className="text-foreground">월 SEO 기대 매출</b>까지 숫자로.
           </p>
         </div>
         <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={reset} disabled={running}>
@@ -523,10 +526,9 @@ export default function Demo() {
                 <Mic className="w-3 h-3" /> 마무리 멘트 (결과 카드 등장 직후)
               </div>
               <blockquote className="text-sm text-foreground leading-relaxed border-l-2 border-primary pl-3 py-1">
-                "지금 보신 게 글 <span className="font-bold">딱 1편</span>이에요. 이걸 매일 자동으로 1편씩 발행하면
-                한 달 뒤엔 <span className="font-bold">30편</span>, 1년 뒤엔 <span className="font-bold">365편</span>이
-                자산처럼 쌓입니다. <span className="font-bold">광고는 끄면 매출이 0</span>이지만,
-                SEO 콘텐츠는 끄지 않는 한 계속 매출을 만들어요.
+                "방금 보신 건 <span className="font-bold">10초 만에 만든 1편</span>이에요. 그런데 진짜 무기는 속도가 아니라 <span className="font-bold">재고</span>예요.
+                자는 동안 <span className="font-bold">다음 30편이 큐에 미리 쌓이고</span>, 매일 예약 시간에 알아서 발행됩니다.
+                당신이 해야 할 일은 아침에 <span className="font-bold">승인 한 번</span>. 광고는 끄면 0이지만, 큐에 쌓인 콘텐츠는 매일 자산이 됩니다.
                 다음 단계는 실제 사이트 URL 한 번 직접 넣어보시는 거예요."
               </blockquote>
             </div>
