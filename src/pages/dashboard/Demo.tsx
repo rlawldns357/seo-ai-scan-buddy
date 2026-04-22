@@ -854,34 +854,34 @@ export default function Demo() {
               const checks = [
                 {
                   label: "타깃 키워드 적합도",
-                  hint: "선정 토픽이 검색 의도·우리 서비스와 정렬된 정도",
+                  hint: "선정 토픽이 검색 의도·서비스 영역과 얼마나 정렬되어 있는지 추정",
                   value: Math.round((scores.seo.score * 0.6 + scores.aeo.score * 0.4)),
                 },
                 {
-                  label: "검색 노출 가능성",
-                  hint: "메타·Heading·내부링크 등 색인 친화도",
+                  label: "색인·노출 친화도",
+                  hint: "메타·Heading·내부링크 등 검색엔진이 읽기 쉬운 구조인지 점검",
                   value: scores.seo.score,
                 },
                 {
                   label: "콘텐츠 구조 완성도",
-                  hint: "도입–본문–결론·소제목·표/리스트 가독성",
+                  hint: "도입–본문–결론, 소제목·표·리스트의 가독성 신호",
                   value: Math.round((scores.aeo.score * 0.7 + scores.seo.score * 0.3)),
                 },
                 {
                   label: "FAQ·스키마 활용도",
-                  hint: "AI 답변·리치결과 인용 준비도(JSON-LD/FAQ)",
+                  hint: "AI 답변·리치결과에 인용되기 쉬운 FAQ/JSON-LD 준비 수준",
                   value: Math.round((scores.aeo.score * 0.5 + scores.geo.score * 0.5)),
                 },
               ];
               const tone = (v: number) =>
-                v >= 80 ? { txt: "우수", cls: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400", bar: "bg-emerald-500" }
-                : v >= 65 ? { txt: "양호", cls: "bg-primary/15 text-primary", bar: "bg-primary" }
-                : { txt: "보완 필요", cls: "bg-destructive/15 text-destructive", bar: "bg-destructive" };
+                v >= 80 ? { txt: "준비 양호", cls: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400", bar: "bg-emerald-500" }
+                : v >= 65 ? { txt: "보완 권장", cls: "bg-primary/15 text-primary", bar: "bg-primary" }
+                : { txt: "수정 필요", cls: "bg-destructive/15 text-destructive", bar: "bg-destructive" };
               return (
                 <div className="mt-4 pt-4 border-t border-border">
                   <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                    <h3 className="text-[12px] font-bold text-foreground">내부 팀 빠른 체크 — SEO 기대효과</h3>
-                    <span className="text-[10px] text-muted-foreground">발행 직전 검수 기준 · 자동 채점</span>
+                    <h3 className="text-[12px] font-bold text-foreground">내부 팀 빠른 체크 — 발행 전 신호 점검</h3>
+                    <span className="text-[10px] text-muted-foreground">발행 직전 자동 채점 · 참고용 신호</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {checks.map((c) => {
@@ -900,6 +900,9 @@ export default function Demo() {
                       );
                     })}
                   </div>
+                  <p className="mt-2 text-[10px] text-muted-foreground leading-snug">
+                    * 검색 순위·트래픽을 보장하지 않으며, 발행 직전 콘텐츠의 구조·메타 신호를 기준으로 한 자체 진단 점수입니다.
+                  </p>
                 </div>
               );
             })()}
