@@ -71,6 +71,47 @@ site_posts:
 - **AutoPublish 페이지**: 큐 아이템에 점수 배지("AEO 62"), "낮은 점수 우선" 정렬 토글.
 - 색상은 score-based-ui-feedback 규칙 재사용 (red <50 / orange 50~74 / blue ≥75).
 
+### 7.1 노출 원칙: 총점만 보여주지 않는다
+모든 점수 노출 지점은 다음 3계층을 함께 제공해야 한다.
+
+1. **총점 (Headline Score)** — 0~100, 시점 라벨(준비/성장) + 색상 상태.
+2. **세부 항목 (Breakdown)** — SEO·AEO·GEO 3축 점수 + 각 축의 *왜 깎였는지* 한 줄 사유.
+   - 예: `AEO 62 — 도입부에 직접 답변 문장이 없습니다.`
+   - 캡 적용 시 사유에 명시: `(캡 적용: 직접 답변 부재)`
+3. **액션 제안 (Actionable Tips)** — 사용자가 바로 실행 가능한 제안 1~3개.
+   - 형식: `[축] 행동 동사로 시작 + 구체 위치/예시`
+   - 예: `[AEO] 첫 문단을 "결론부터: ..." 1~2문장으로 다시 써보세요.`
+   - 예: `[GEO] 본문에 출처 링크 1개 이상 추가 (현재 0개).`
+   - 예: `[SEO] H2를 5개로 줄이고 핵심 키워드를 H2에 1회 포함.`
+
+**축출 데이터 모델 (확장)**
+```ts
+type AxisDetail = { score: number; reason: string; capped?: boolean };
+type ActionTip   = { axis: 'seo'|'aeo'|'geo'; action: string; impact?: 'high'|'med'|'low' };
+type ContentScore = {
+  total: number;                 // 0~100 가중 평균
+  seo: AxisDetail;
+  aeo: AxisDetail;
+  geo: AxisDetail;
+  summary: string;               // 1~2문장 총평
+  tips: ActionTip[];             // 최대 3개, impact 내림차순
+};
+```
+이 구조는 `draft_score` / `published_score` jsonb에 그대로 저장한다.
+
+**노출 컨텍스트별 표시량**
+| 컨텍스트 | 총점 | 세부 항목 | 액션 제안 |
+|---|---|---|---|
+| AutoPublish 큐 배지 | ✅ | 가장 낮은 축만 1줄 | 0개 (호버/탭 시 1개) |
+| Content 초안 카드 | ✅ | 3축 모두 + 사유 | 최대 2개 (high/med) |
+| Content 상세/모달 | ✅ | 3축 + 캡 사유 | 최대 3개 (전체) |
+| 발행 후 토스트 | ✅ + Δ | Δ가 가장 큰 축 1줄 | 0개 |
+
+**액션 제안 작성 규칙 (AI 프롬프트)**
+- 한국어, 명령형/권유형. ("~해보세요", "~를 추가하세요")
+- "검색 순위 상승" 류 인과 금지. 행위 결과만 ("구조가 명확해집니다").
+- 비어있을 수 있다 (100점 = `tips: []`, "검수 권장 항목 없음").
+
 ## 8. Naming & Copy (확정)
 **명명 규칙 (계층)**
 - **상위 우산**: "콘텐츠 품질 점수" (Content Quality Score, `contentQualityScore`) — 시스템 전체 라벨.
