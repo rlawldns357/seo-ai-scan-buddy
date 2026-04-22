@@ -868,30 +868,33 @@ export default function Demo() {
           <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp className="w-4 h-4 text-primary" />
-              <h2 className="text-sm font-bold text-foreground">이 글 1편이 가져올 월 예상 SEO 기대효과</h2>
+              <h2 className="text-sm font-bold text-foreground">광고비 0원 · 매월 누적되는 매출 자산</h2>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold uppercase tracking-wider">핵심 KPI</span>
             </div>
-            <p className="text-[11px] text-muted-foreground mb-4">평균 점수 {avg}점 기준 · 발행 후 색인 안정화(약 4~8주) 가정 · 광고비 0원</p>
+            <p className="text-[11px] text-muted-foreground mb-4">
+              평균 점수 <span className="font-bold text-foreground">{avg}점</span> 기준 · 색인 안정화(약 4~8주) 후 <span className="font-bold text-foreground">글 1편</span>이 만들 월간 성과 추정
+            </p>
 
             {/* 글 1편 기준 4지표 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="p-3 rounded-lg bg-card border">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><Eye className="w-3 h-3" /> 월 노출</div>
-                <div className="text-xl font-bold text-foreground">{f.monthlyImpressions.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">검색 결과 노출 횟수</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><Eye className="w-3 h-3" /> 검색 노출</div>
+                <div className="text-xl font-bold text-foreground tabular-nums">{f.monthlyImpressions.toLocaleString()}</div>
+                <div className="text-[10px] text-muted-foreground">월 노출 (Google·Naver)</div>
               </div>
               <div className="p-3 rounded-lg bg-card border">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 월 클릭</div>
-                <div className="text-xl font-bold text-foreground">{f.monthlyClicks.toLocaleString()}</div>
-                <div className="text-[10px] text-muted-foreground">신규 사이트 유입</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><MousePointerClick className="w-3 h-3" /> 무료 유입</div>
+                <div className="text-xl font-bold text-foreground tabular-nums">{f.monthlyClicks.toLocaleString()}</div>
+                <div className="text-[10px] text-muted-foreground">광고비 0원 클릭</div>
               </div>
               <div className="p-3 rounded-lg bg-card border">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><ShoppingBag className="w-3 h-3" /> 예상 주문</div>
-                <div className="text-xl font-bold text-foreground">{f.orders.toLocaleString()}건</div>
-                <div className="text-[10px] text-muted-foreground">평균 전환율 적용</div>
+                <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><ShoppingBag className="w-3 h-3" /> 주문 전환</div>
+                <div className="text-xl font-bold text-foreground tabular-nums">{f.orders.toLocaleString()}건</div>
+                <div className="text-[10px] text-muted-foreground">평균 전환율 {(1.8 + (avg / 100) * 1.2).toFixed(1)}% 적용</div>
               </div>
-              <div className="p-3 rounded-lg bg-primary text-primary-foreground border border-primary">
-                <div className="flex items-center gap-1.5 text-[10px] font-bold opacity-90 mb-1"><TrendingUp className="w-3 h-3" /> 예상 매출</div>
-                <div className="text-xl font-bold">{krw(f.revenue)}</div>
+              <div className="p-3 rounded-lg bg-primary text-primary-foreground border border-primary shadow-md">
+                <div className="flex items-center gap-1.5 text-[10px] font-bold opacity-90 mb-1"><TrendingUp className="w-3 h-3" /> 광고비 0원 매출</div>
+                <div className="text-xl font-bold tabular-nums">{krw(f.revenue)}</div>
                 <div className="text-[10px] opacity-80">객단가 ₩48,000 가정</div>
               </div>
             </div>
