@@ -33,21 +33,25 @@ serve(async (req) => {
     let user = "";
 
     if (mode === "recommend") {
-      system = `당신은 SEO/AEO/GEO 전략가입니다. 한국어로 사이트에 적합한 콘텐츠 토픽 3개를 추천합니다.
-각 토픽은 정확히 다음 JSON 라인 형식으로만 출력하세요(설명 금지):
-{"axis":"SEO|AEO|GEO","title":"60자 이내","reason":"40자 이내 한 줄"}
+      system = `당신은 이커머스/브랜드 사이트 전문 SEO 전략가입니다. 한국어로, 검색 노출(SEO)을 통해 광고비 없이 신규 매출을 만들 수 있는 콘텐츠 토픽 3개를 추천합니다.
+- 구매 의도(commercial / transactional / informational) 키워드를 골고루 활용
+- 상품 카테고리, 브랜드 스토리, 비교/리뷰형 중 하나씩 포함 권장
+- 각 토픽은 정확히 다음 JSON 라인 형식으로만 출력 (설명 금지):
+{"axis":"SEO|AEO|GEO","title":"60자 이내 검색 친화 제목","reason":"40자 이내, 어떤 검색 의도/매출 기여인지"}
 세 줄을 줄바꿈으로 구분하여 출력하세요.`;
-      user = `사이트: ${siteUrl || "데모 사이트"}
-3가지 축(SEO 검색노출 / AEO 답변채택 / GEO AI인용)에 각각 1개씩, 총 3개의 토픽을 추천하세요.`;
+      user = `이커머스/브랜드 사이트: ${siteUrl || "데모 쇼핑몰"}
+3가지 축(SEO 검색노출 / AEO 답변채택 / GEO AI인용)에 각각 1개씩, 총 3개의 토픽을 추천하세요.
+모든 토픽은 검색 트래픽 → 상품 페이지 유입 → 매출 전환을 염두에 두어야 합니다.`;
     } else if (mode === "draft") {
-      system = `당신은 한국어 SEO/AEO/GEO 콘텐츠 전문가입니다. 2026년 기준 검색 엔진과 AI 검색(ChatGPT, Perplexity, Gemini)에서 잘 인용되도록 작성합니다.
+      system = `당신은 이커머스/브랜드 콘텐츠 SEO 전문가입니다. 2026년 기준 Google·Naver 검색과 AI 검색(ChatGPT, Perplexity, Gemini)에서 상위 노출되도록 작성합니다.
 - 마크다운 본문만 출력 (제목 H1 포함)
 - H2(##) 3~5개, 각 섹션 2~3문단
-- 직접 답변형 도입부 (AEO 친화)
-- 구체적 수치/예시
+- 도입부는 직접 답변형 + 구매 의도 자극 (AEO 친화)
+- 상품/브랜드 관련 롱테일 키워드 자연스럽게 포함
+- 구체적 수치, 사용 시나리오, 비교 표/리스트 활용
 - 1200~2000자
-- 다른 메타 텍스트나 코드펜스 금지`;
-      user = `사이트: ${siteUrl || "데모"}\n타겟 축: ${axis}\n주제: ${topic}\n\n위 정보로 발행 가능한 마크다운 본문을 작성하세요.`;
+- 코드펜스나 메타 텍스트 금지`;
+      user = `이커머스/브랜드 사이트: ${siteUrl || "데모 쇼핑몰"}\n타겟 축: ${axis}\n주제: ${topic}\n\n검색 노출과 매출 전환을 동시에 노리는 발행 가능한 마크다운 본문을 작성하세요.`;
     } else if (mode === "score") {
       // Score is non-streaming JSON via tool call; use a separate path
       const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
