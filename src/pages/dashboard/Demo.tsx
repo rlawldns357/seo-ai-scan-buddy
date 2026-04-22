@@ -849,28 +849,68 @@ export default function Demo() {
               <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} />
             </div>
 
-            {/* 내부 팀용 — SEO 기대효과 즉시 이해 체크리스트 */}
+            {/* 내부 팀용 — 발행 전 신호 점검 (관찰된 근거 함께 노출) */}
             {(() => {
+              // brief에서 직접 측정 가능한 신호들
+              const titleLen = brief?.title?.length ?? 0;
+              const metaLen = brief?.metaDescription?.length ?? 0;
+              const primaryKw = brief?.primaryKeyword ?? "";
+              const titleHasKw = primaryKw && brief?.title?.includes(primaryKw);
+              const metaHasKw = primaryKw && brief?.metaDescription?.includes(primaryKw);
+              const h2Count = brief?.outline?.length ?? 0;
+              const faqCount = brief?.faq?.length ?? 0;
+              const schemaCount = brief?.structuredData?.length ?? 0;
+              const internalLinks = brief?.internalLinkHints?.length ?? 0;
+              const totalKw =
+                (brief?.keywordClusters?.primary?.length ?? 0) +
+                (brief?.keywordClusters?.secondary?.length ?? 0) +
+                (brief?.keywordClusters?.longTail?.length ?? 0) +
+                (brief?.keywordClusters?.lsi?.length ?? 0);
+
               const checks = [
                 {
                   label: "타깃 키워드 적합도",
-                  hint: "선정 토픽이 검색 의도·서비스 영역과 얼마나 정렬되어 있는지 추정",
+                  hint: "주 키워드가 제목·메타에 자연스럽게 들어갔는지",
                   value: Math.round((scores.seo.score * 0.6 + scores.aeo.score * 0.4)),
+                  evidence: brief
+                    ? [
+                        `주 키워드 "${primaryKw}" — 제목 포함 ${titleHasKw ? "✓" : "✗"} · 메타 포함 ${metaHasKw ? "✓" : "✗"}`,
+                        `클러스터 키워드 ${totalKw}개 (Primary/Secondary/Long-tail/LSI 분포)`,
+                      ]
+                    : ["기획안 생성 후 측정"],
                 },
                 {
                   label: "색인·노출 친화도",
-                  hint: "메타·Heading·내부링크 등 검색엔진이 읽기 쉬운 구조인지 점검",
+                  hint: "메타 길이·H2 구조 등 검색엔진이 읽기 쉬운 신호",
                   value: scores.seo.score,
+                  evidence: brief
+                    ? [
+                        `제목 ${titleLen}자 ${titleLen >= 25 && titleLen <= 60 ? "(권장 범위)" : "(권장 25~60자)"}`,
+                        `메타 ${metaLen}자 ${metaLen >= 80 && metaLen <= 160 ? "(권장 범위)" : "(권장 80~160자)"} · 내부링크 후보 ${internalLinks}개`,
+                      ]
+                    : ["기획안 생성 후 측정"],
                 },
                 {
                   label: "콘텐츠 구조 완성도",
                   hint: "도입–본문–결론, 소제목·표·리스트의 가독성 신호",
                   value: Math.round((scores.aeo.score * 0.7 + scores.seo.score * 0.3)),
+                  evidence: brief
+                    ? [
+                        `H2 소제목 ${h2Count}개 ${h2Count >= 4 ? "(충분)" : "(보완 권장)"}`,
+                        `본문 약 ${draft ? draft.length.toLocaleString() : "—"}자 · 마크다운 구조 적용`,
+                      ]
+                    : ["기획안 생성 후 측정"],
                 },
                 {
                   label: "FAQ·스키마 활용도",
-                  hint: "AI 답변·리치결과에 인용되기 쉬운 FAQ/JSON-LD 준비 수준",
+                  hint: "AI 답변·리치결과에 인용되기 쉬운 FAQ/JSON-LD 준비",
                   value: Math.round((scores.aeo.score * 0.5 + scores.geo.score * 0.5)),
+                  evidence: brief
+                    ? [
+                        `FAQ 질문 ${faqCount}개 ${faqCount >= 3 ? "(AEO 충족)" : "(3개 이상 권장)"}`,
+                        `스키마 ${schemaCount}종: ${(brief.structuredData ?? []).slice(0, 3).join(" · ") || "—"}`,
+                      ]
+                    : ["기획안 생성 후 측정"],
                 },
               ];
               const tone = (v: number) =>
@@ -881,7 +921,7 @@ export default function Demo() {
                 <div className="mt-4 pt-4 border-t border-border">
                   <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
                     <h3 className="text-[12px] font-bold text-foreground">내부 팀 빠른 체크 — 발행 전 신호 점검</h3>
-                    <span className="text-[10px] text-muted-foreground">발행 직전 자동 채점 · 참고용 신호</span>
+                    <span className="text-[10px] text-muted-foreground">실측 신호 기반 자동 채점 · 참고용</span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {checks.map((c) => {
@@ -895,7 +935,15 @@ export default function Demo() {
                           <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden mb-1.5">
                             <div className={cn("h-full rounded-full transition-all", t.bar)} style={{ width: `${c.value}%` }} />
                           </div>
-                          <div className="text-[10.5px] text-muted-foreground leading-snug">{c.hint}</div>
+                          <div className="text-[10.5px] text-muted-foreground leading-snug mb-1.5">{c.hint}</div>
+                          <ul className="space-y-0.5 pt-1.5 border-t border-border/60">
+                            {c.evidence.map((e, i) => (
+                              <li key={i} className="text-[10.5px] text-foreground/80 leading-snug flex gap-1.5">
+                                <span className="text-muted-foreground shrink-0">·</span>
+                                <span className="font-mono">{e}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       );
                     })}
