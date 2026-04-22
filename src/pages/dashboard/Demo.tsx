@@ -449,7 +449,7 @@ export default function Demo() {
         </div>
       </Card>
 
-      {/* 5분 시연 가이드 (접이식) */}
+      {/* 10초 라이브 가이드 (접이식) */}
       <Card className="p-0 mb-4 overflow-hidden border-primary/30">
         <button
           onClick={() => setGuideOpen(o => !o)}
@@ -457,7 +457,7 @@ export default function Demo() {
         >
           <div className="flex items-center gap-2 min-w-0">
             <ClipboardList className="w-4 h-4 text-primary shrink-0" />
-            <span className="text-sm font-bold text-foreground">5분 시연 시나리오 가이드</span>
+            <span className="text-sm font-bold text-foreground">10초 라이브 시연 가이드</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold">진행자용</span>
           </div>
           {guideOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
