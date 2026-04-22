@@ -1066,13 +1066,13 @@ export default function Demo() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold text-foreground flex items-center gap-2 flex-wrap">
-                오늘 밤 자동 발행 예약 완료
+                오늘 밤 자동 발행 일정에 등록되었습니다
                 <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/15 text-primary text-[10px] font-bold">
-                  <Send className="w-2.5 h-2.5" /> 큐 등록됨
+                  <Send className="w-2.5 h-2.5" /> 발행 큐 대기
                 </span>
               </div>
               <div className="text-[11px] text-muted-foreground mt-0.5">
-                다음 자동 발행 시간 <span className="font-mono font-semibold text-foreground">08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연이라 실제 저장 X
+                다음 자동 발행 시각 <span className="font-mono font-semibold text-foreground">08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연 모드라 실제 저장은 일어나지 않아요
               </div>
             </div>
             <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={runFullDemo} disabled={running}>
