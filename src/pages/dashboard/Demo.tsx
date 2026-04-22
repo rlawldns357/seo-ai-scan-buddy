@@ -467,11 +467,11 @@ export default function Demo() {
             {/* 시작 멘트 */}
             <div>
               <div className="text-[11px] font-bold text-muted-foreground mb-1.5 flex items-center gap-1">
-                <Mic className="w-3 h-3" /> 시작 멘트 (0:00–0:30)
+                <Mic className="w-3 h-3" /> 시작 멘트 (클릭 직전)
               </div>
               <blockquote className="text-sm text-foreground leading-relaxed border-l-2 border-primary pl-3 py-1">
-                "오늘 5분 안에, <span className="font-bold">광고비 0원으로 검색에서 매출이 들어오는 과정</span>을 직접 보여드릴게요.
-                URL 하나만 있으면 됩니다. AI가 토픽을 뽑고, 글을 쓰고, 채점하고, 발행 큐까지 자동으로 올립니다.
+                "지금부터 <span className="font-bold">10초 안에</span>, 광고비 0원으로 검색에서 매출이 들어오는 과정을 보여드릴게요.
+                URL 하나면 됩니다. AI가 토픽을 뽑고, 글을 쓰고, 채점하고, 발행 큐까지 자동으로 올립니다.
                 마지막엔 이 글 1편이 매달 얼마를 벌어줄지 숫자로 보여드릴게요."
               </blockquote>
             </div>
