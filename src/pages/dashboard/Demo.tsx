@@ -219,6 +219,8 @@ export default function Demo() {
   const [running, setRunning] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [presenterMode, setPresenterMode] = useState(false);
+  const [showScoreDetail, setShowScoreDetail] = useState(false);
+  const [showForecastDetail, setShowForecastDetail] = useState(false);
   // 결과 탭 상태 (다음 단계: Topics/Brief/Draft/Scores를 단일 카드 + 탭으로 통합 예정)
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [resultTab, setResultTab] = useState<"topics" | "brief" | "draft" | "scores">("topics");
