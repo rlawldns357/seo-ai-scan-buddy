@@ -14,7 +14,11 @@ declare global {
   }
 }
 
-const MEASUREMENT_ID = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined;
+// Prefer build-time env var; fall back to hardcoded ID (safe to expose publicly).
+const ENV_ID = import.meta.env.VITE_GA_MEASUREMENT_ID as string | undefined;
+const MEASUREMENT_ID: string | undefined = ENV_ID && ENV_ID.trim().length > 0
+  ? ENV_ID
+  : "G-KGHC8QDM10";
 let initialized = false;
 
 export function isGAEnabled(): boolean {
