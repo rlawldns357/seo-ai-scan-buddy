@@ -1049,11 +1049,11 @@ export default function Demo() {
             </div>
 
             <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
-              💡 <span className="font-bold text-foreground">광고는 끄는 순간 노출이 멈추지만</span>, SEO 콘텐츠는
-              <span className="font-bold text-foreground"> 발행 후에도 24시간 검색 노출을 만드는 자산</span>입니다.
-              절감된 광고비는 <span className="font-bold text-foreground">핵심 캠페인 강화·신규 채널 테스트</span>에 재투자할 수 있는 여력으로 환원됩니다.
+              💡 광고는 집행을 멈추는 순간 노출도 함께 멈추지만,
+              <span className="font-bold text-foreground"> 잘 만들어진 SEO 콘텐츠는 발행 이후에도 검색 결과에서 24시간 일하는 자산</span>으로 남습니다.
+              여기서 절감되는 광고비만큼 <span className="font-bold text-foreground">핵심 캠페인을 더 두텁게, 신규 채널을 더 과감하게</span> 시도할 여력이 생깁니다.
               <br/>
-              <span className="text-muted-foreground/80">※ 추정치 · 카테고리·경쟁도·CPC 변동에 따라 실제 수치는 달라질 수 있습니다.</span>
+              <span className="text-muted-foreground/80">※ 위 수치는 카테고리·경쟁도·CPC 변동에 따라 달라질 수 있는 추정치이며, 검색 순위나 매출을 보장하지 않습니다.</span>
             </p>
           </Card>
         );
