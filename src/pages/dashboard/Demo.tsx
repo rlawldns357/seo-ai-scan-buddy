@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye } from "lucide-react";
+import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Phase = "idle" | "recommend" | "draft" | "score" | "publish" | "done";
@@ -126,7 +126,24 @@ export default function Demo() {
   const [scores, setScores] = useState<Scores | null>(null);
   const [queueId, setQueueId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(true);
   const draftRef = useRef<HTMLDivElement>(null);
+
+  const SAMPLE_URLS = [
+    { url: "https://www.musinsa.com", label: "무신사 (패션 카테고리)" },
+    { url: "https://kream.co.kr", label: "KREAM (한정판/리셀)" },
+    { url: "https://my-brand-shop.com", label: "가상 브랜드 쇼핑몰" },
+  ];
+
+  const SCRIPT: { phase: Phase; line: string }[] = [
+    { phase: "idle", line: "지금 보시는 건 내부 시연 전용 페이지예요. DB에는 아무것도 저장되지 않습니다." },
+    { phase: "recommend", line: "사이트만 보고 AI가 구매 의도가 있는 키워드 토픽 3개를 즉석에서 뽑습니다. SEO·AEO·GEO 3축이 골고루 나오는지 봐주세요." },
+    { phase: "draft", line: "이게 바로 실시간으로 글이 써지는 모습이에요. 사람이 1시간 걸릴 글을 30초 안에 마크다운으로 완성합니다." },
+    { phase: "score", line: "발행 전에 자동으로 SEO·AEO·GEO 3축 점수를 매겨요. 약점이 보이면 다시 생성하거나 수동 보정이 가능합니다." },
+    { phase: "publish", line: "이 글이 발행 큐에 올라가면, 매일 정해진 시간에 자동으로 사이트에 게시됩니다." },
+    { phase: "done", line: "맨 아래 카드 보세요 — 글 1편이 매월 자산처럼 매출을 만들어주는 게 핵심입니다. 발행할수록 곱해집니다." },
+  ];
+  const currentLine = SCRIPT.find(s => s.phase === phase)?.line ?? SCRIPT[0].line;
 
   const completed = useMemo(() => {
     const order: Phase[] = ["recommend", "draft", "score", "publish"];
@@ -233,7 +250,88 @@ export default function Demo() {
             {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             {running ? "데모 진행 중…" : "라이브 데모 시작"}
           </Button>
-        </div>
+      </div>
+
+      {/* 5분 시연 가이드 (접이식) */}
+      <Card className="p-0 mb-4 overflow-hidden border-primary/30">
+        <button
+          onClick={() => setGuideOpen(o => !o)}
+          className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-primary/5 hover:bg-primary/10 transition-colors text-left"
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <ClipboardList className="w-4 h-4 text-primary shrink-0" />
+            <span className="text-sm font-bold text-foreground">5분 시연 시나리오 가이드</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold">진행자용</span>
+          </div>
+          {guideOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+        </button>
+        {guideOpen && (
+          <div className="p-4 space-y-4 border-t bg-card">
+            {/* 시작 멘트 */}
+            <div>
+              <div className="text-[11px] font-bold text-muted-foreground mb-1.5 flex items-center gap-1">
+                <Mic className="w-3 h-3" /> 시작 멘트 (0:00–0:30)
+              </div>
+              <blockquote className="text-sm text-foreground leading-relaxed border-l-2 border-primary pl-3 py-1">
+                "오늘 5분 안에, <span className="font-bold">광고비 0원으로 검색에서 매출이 들어오는 과정</span>을 직접 보여드릴게요.
+                URL 하나만 있으면 됩니다. AI가 토픽을 뽑고, 글을 쓰고, 채점하고, 발행 큐까지 자동으로 올립니다.
+                마지막엔 이 글 1편이 매달 얼마를 벌어줄지 숫자로 보여드릴게요."
+              </blockquote>
+            </div>
+
+            {/* 입력값 예시 */}
+            <div>
+              <div className="text-[11px] font-bold text-muted-foreground mb-1.5">추천 입력 URL (클릭하면 자동 입력)</div>
+              <div className="flex flex-wrap gap-1.5">
+                {SAMPLE_URLS.map(s => (
+                  <button
+                    key={s.url}
+                    onClick={() => setSiteUrl(s.url)}
+                    disabled={running}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-background hover:bg-muted text-[11px] text-foreground transition-colors disabled:opacity-50"
+                  >
+                    <span className="font-mono text-foreground">{s.url.replace(/^https?:\/\//, "")}</span>
+                    <span className="text-muted-foreground">· {s.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* 클릭 흐름 + 결과 노출 순서 */}
+            <div>
+              <div className="text-[11px] font-bold text-muted-foreground mb-1.5">클릭 흐름 & 결과 노출 순서</div>
+              <ol className="text-xs text-foreground space-y-1.5">
+                {[
+                  ["0:30", "「라이브 데모 시작」 클릭", "한 번의 클릭으로 전 과정이 자동 진행됨을 강조"],
+                  ["0:35", "추천 토픽 3개 카드 등장", "축별 색상(SEO/AEO/GEO)으로 다양성 어필"],
+                  ["0:50", "본문이 타이핑되며 차오름", "‘이게 바로 사람이 1시간 걸릴 일’이라고 멘트"],
+                  ["2:30", "3축 게이지가 0→점수까지 애니메이션", "발행 전 자동 검수가 된다는 신뢰 포인트"],
+                  ["3:00", "월 예상 SEO 매출 카드 (가장 강조)", "여기서 한 박자 쉬며 숫자 짚어주기"],
+                  ["4:30", "발행 큐 등록 완료 카드", "매일 자동 발행 → 자산이 누적됨을 마무리 멘트"],
+                ].map(([t, action, tip]) => (
+                  <li key={t as string} className="flex gap-2">
+                    <span className="font-mono text-[10px] text-primary font-bold shrink-0 w-9 pt-0.5">{t}</span>
+                    <div className="min-w-0">
+                      <div className="font-semibold">{action}</div>
+                      <div className="text-[11px] text-muted-foreground">→ {tip}</div>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* 실시간 멘트 헬퍼 */}
+            {running && (
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <Mic className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
+                <div className="text-xs text-foreground leading-relaxed">
+                  <span className="font-bold text-primary">[지금 말할 멘트]</span> {currentLine}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
         <p className="mt-2 text-[11px] text-muted-foreground">
           💡 시연 팁: 실제 브랜드 URL을 넣으면 추천 키워드가 더 사실감 있게 나옵니다. (예: <code className="font-mono">musinsa.com</code>, <code className="font-mono">kream.co.kr</code>)
         </p>
