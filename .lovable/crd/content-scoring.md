@@ -45,25 +45,52 @@ AI에게 더 정확한 채점을 시키기 위해 4개의 세부 루브릭으로
 
 | 루브릭 (2차 축) | 정의 | 1차 축 매핑 가중 |
 |---|---|---|
-| **검색 의도 적합성** (Intent Fit) | 타겟 키워드/질문에 본문이 답하는 정도, 토픽 일치도 | SEO 0.6 / AEO 0.4 |
-| **제목·요약 명확성** (Title & Excerpt Clarity) | 제목 60자 내 핵심어, 요약의 직접 답변성 | SEO 0.4 / AEO 0.6 |
-| **본문 구조화** (Structure) | H2 개수·계층, 문단 길이, 리스트/표 활용 | SEO 0.7 / AEO 0.3 |
-| **근거·사실성** (Evidence & Factuality) | 출처 링크, 수치 근거, 인용 가능 문장 비율 | GEO 0.7 / AEO 0.3 |
+| **검색 의도 적합성** (Intent Fit) | 타겟 키워드/질문에 본문이 답하는 정도, 토픽 일치도 | SEO 0.5 / AEO 0.4 |
+| **제목·요약 명확성** (Title & Excerpt Clarity) | 제목 60자 내 핵심어, 요약의 직접 답변성 | SEO 0.3 / AEO 0.5 |
+| **본문 구조화** (Structure) | H2 개수·계층, 문단 길이, 리스트/표 활용 | SEO 0.5 / AEO 0.2 |
+| **근거·사실성** (Evidence & Factuality) | 출처 링크, 수치 근거, 인용 가능 문장 비율 | GEO 0.6 / AEO 0.2 |
+| **중복·뻔한 표현 비율** (Originality) | 클리셰·상투구 비중, 동일 표현 반복도 (낮을수록 점수↑) | SEO 0.2 / AEO 0.2 / GEO 0.1 |
+| **인용 친화 문장 밀도** (Quotability) | 검색엔진/AI가 이해·인용하기 좋은 자기완결형 문장 비율 | AEO 0.4 / GEO 0.4 |
+| **내부 링크/주제 연결성** (Topical Connectivity) | 같은 사이트 내 관련 글 링크, 주제 클러스터 응집도 | SEO 0.3 / GEO 0.2 |
+| **사람 검수 여부** (Human Review) | 사람이 검수/편집했는지 (boolean → 0 또는 100) | meta 가중 (총점 +0~5 보정) |
 
 총점 산식 (의사코드):
 ```
-rubric = { intentFit, titleClarity, structure, evidence }   // each 0~100
-seo  = round(intentFit*0.6 + titleClarity*0.4 + structure*0.7) / weights_sum
-aeo  = round(intentFit*0.4 + titleClarity*0.6 + structure*0.3 + evidence*0.3) / weights_sum
-geo  = round(evidence*0.7 + intentFit*0.3) / weights_sum
-total = round(seo*0.35 + aeo*0.35 + geo*0.30)   // 사용자 노출 총점
+rubric = { intentFit, titleClarity, structure, evidence,
+           originality, quotability, connectivity, humanReview }   // 0~100
+// 1차 축 합성 (가중 평균, weights_sum 기준 정규화)
+seo = weighted_avg(intentFit:0.5, titleClarity:0.3, structure:0.5,
+                   originality:0.2, connectivity:0.3)
+aeo = weighted_avg(intentFit:0.4, titleClarity:0.5, structure:0.2,
+                   evidence:0.2, originality:0.2, quotability:0.4)
+geo = weighted_avg(evidence:0.6, originality:0.1, quotability:0.4,
+                   connectivity:0.2)
+base  = round(seo*0.35 + aeo*0.35 + geo*0.30)
+total = clamp(base + (humanReview ? 5 : 0), 0, 100)   // 검수 보너스 +5
 ```
-> 가중치는 초기값. 운영 데이터 기반으로 조정 가능 (engine_config로 외부화 검토).
+> 가중치는 초기값. 운영 데이터 기반으로 조정 (engine_config로 외부화 검토).
 
 **왜 2-Layer인가**
 - 사용자에게는 익숙한 SEO/AEO/GEO를 유지 (학습 비용 0).
-- AI 채점은 더 구체적인 루브릭으로 분해해야 안정적 (deterministic + 비교 가능).
+- AI 채점은 더 구체적인 루브릭(8개)으로 분해해야 안정적 (deterministic + 비교 가능).
 - 사유 칩(reasons)과 액션 제안(tips)은 루브릭 단위로 생성 후, 표시 시 1차 축 라벨을 붙인다.
+
+### 4.2 제품 내 역할 (Product Roles)
+
+점수는 단순 숫자가 아니라 운영 흐름의 **결정·정렬·추적 기준**으로 사용된다.
+
+| 역할 | 사용처 | 설명 |
+|---|---|---|
+| **검수 우선순위 정렬** | 대시보드 발행 큐 / Content 목록 | 준비 점수 오름차순 정렬 = "검수 추천 순". 낮은 글이 먼저 노출되어 운영자가 우선 다듬도록 유도 |
+| **발행 가능 여부 신호** | 초안 카드 라벨 | 점수대별 마이크로카피 (재작성/보강/검수 후/바로 발행) — 강제 게이팅 X, 권고만 |
+| **편집 효과 측정** | 발행 후 토스트 + 대시보드 추세 | 준비 → 성장 점수 Δ 표시. 사람 검수 시 +5 보너스 자동 반영 |
+| **품질 게이미피케이션** | 사이트 허브 통계 | 사이트별 평균 성장 점수, 90+ 비율 등으로 운영 동기 부여 |
+| **AI 학습 피드백** | engine_update 로그 | 낮은 루브릭 통계로 차기 프롬프트 개선 힌트 추출 |
+
+**기본 정렬 규칙 (대시보드)**
+- 발행 큐 기본 정렬: `검수 추천 순 (준비 점수 오름차순)` → 낮은 점수 먼저.
+- 발행 완료 목록 기본 정렬: `최신순`. 토글로 `성장 점수 높은 순` / `Δ 큰 순` 제공.
+- 사람 검수 미완료(`humanReview=false`) 글은 같은 점수대에서 **상단 우선** 노출.
 
 ### 점수 2종 구분 (확정 명명)
 
