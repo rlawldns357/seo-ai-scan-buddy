@@ -171,7 +171,8 @@ export default function Demo() {
   const SCRIPT: { phase: Phase; line: string }[] = [
     { phase: "idle", line: "지금 보시는 건 내부 시연 전용 페이지예요. DB에는 아무것도 저장되지 않습니다." },
     { phase: "recommend", line: "사이트만 보고 AI가 구매 의도가 있는 키워드 토픽 3개를 즉석에서 뽑습니다. SEO·AEO·GEO 3축이 골고루 나오는지 봐주세요." },
-    { phase: "draft", line: "이게 바로 실시간으로 글이 써지는 모습이에요. 사람이 1시간 걸릴 글을 30초 안에 마크다운으로 완성합니다." },
+    { phase: "brief", line: "본문을 쓰기 전에 먼저 SEO 기획 패키지를 만들어요 — 제목·메타·키워드·FAQ·구조까지 발행 직전 형태로 한 번에 나옵니다." },
+    { phase: "draft", line: "이 기획대로 실시간으로 글이 써지는 모습이에요. 사람이 1시간 걸릴 글을 30초 안에 마크다운으로 완성합니다." },
     { phase: "score", line: "발행 전에 자동으로 SEO·AEO·GEO 3축 점수를 매겨요. 약점이 보이면 다시 생성하거나 수동 보정이 가능합니다." },
     { phase: "publish", line: "이 글이 발행 큐에 올라가면, 매일 정해진 시간에 자동으로 사이트에 게시됩니다." },
     { phase: "done", line: "맨 아래 카드 보세요 — 글 1편이 매월 자산처럼 매출을 만들어주는 게 핵심입니다. 발행할수록 곱해집니다." },
@@ -179,7 +180,7 @@ export default function Demo() {
   const currentLine = SCRIPT.find(s => s.phase === phase)?.line ?? SCRIPT[0].line;
 
   const completed = useMemo(() => {
-    const order: Phase[] = ["recommend", "draft", "score", "publish"];
+    const order: Phase[] = ["recommend", "brief", "draft", "score", "publish"];
     const idx = order.indexOf(phase);
     if (phase === "done") return order;
     return order.slice(0, idx);
@@ -187,7 +188,7 @@ export default function Demo() {
 
   const reset = () => {
     setPhase("idle"); setTopics([]); setTopicBuf(""); setPicked(null);
-    setDraft(""); setScores(null); setQueueId(null); setRunning(false);
+    setBrief(null); setDraft(""); setScores(null); setQueueId(null); setRunning(false);
   };
 
   const runFullDemo = async () => {
