@@ -842,6 +842,36 @@ export default function Demo() {
               <span className="ml-auto text-[11px] text-muted-foreground tabular-nums">{charCount.toLocaleString()}자</span>
             </div>
 
+            {/* 실시간 마이크로카피 — 진행 중일 때만 노출 */}
+            {phase === "draft" && (() => {
+              const headingMatches = draft.match(/^##\s+(.+)$/gm) ?? [];
+              const lastH2 = headingMatches.length > 0
+                ? headingMatches[headingMatches.length - 1].replace(/^##\s+/, "").trim().slice(0, 40)
+                : null;
+              const stage = charCount < 200 ? "도입부 · 검색 의도 정리"
+                : charCount < 800 ? "기획안 → 본문 매핑"
+                : charCount < 2000 ? "근거·예시 단락 작성"
+                : charCount < 3500 ? "비교·체크리스트 구성"
+                : "FAQ·결론 마무리";
+              const elapsed = phaseStartRef.current?.phase === "draft"
+                ? Math.max(0.1, (performance.now() - phaseStartRef.current.t) / 1000)
+                : 1;
+              const tokensPerSec = Math.round(charCount / elapsed);
+              const liveLabel = lastH2 ? `H2 작성 중 — "${lastH2}"` : stage;
+              return (
+                <div className="mb-3 p-2.5 rounded-md border border-primary/30 bg-primary/5 flex items-center gap-2 flex-wrap">
+                  <span className="relative flex h-2 w-2 shrink-0">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
+                  <span className="text-[11px] font-semibold text-primary truncate flex-1 min-w-0">{liveLabel}</span>
+                  <span className="text-[10px] text-muted-foreground tabular-nums font-mono shrink-0">
+                    ~{tokensPerSec.toLocaleString()} 자/초 · {elapsed.toFixed(1)}s
+                  </span>
+                </div>
+              );
+            })()}
+
             {/* 사람 vs AI 비교 — 임팩트 강화 */}
             <div className="grid grid-cols-3 gap-2 mb-3">
               <div className="p-2.5 rounded-lg border bg-muted/40">
@@ -863,7 +893,7 @@ export default function Demo() {
 
             <div ref={draftRef}
               className="max-h-[420px] overflow-auto rounded-md border border-border bg-muted/30 p-4 text-sm font-mono whitespace-pre-wrap leading-relaxed text-foreground">
-              {draft || <span className="text-muted-foreground">…</span>}
+              {draft || <span className="text-muted-foreground">기획안을 본문으로 옮기는 중…</span>}
               {phase === "draft" && <span className="inline-block w-2 h-4 bg-primary ml-0.5 animate-pulse align-middle" />}
             </div>
 
