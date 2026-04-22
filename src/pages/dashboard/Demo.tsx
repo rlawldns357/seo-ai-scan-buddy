@@ -903,12 +903,16 @@ export default function Demo() {
             <div className="mt-5 p-4 rounded-xl bg-card border">
               <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
                 <div>
-                  <div className="text-xs font-bold text-foreground">매일 1편씩 발행하면 12개월 후</div>
-                  <div className="text-[11px] text-muted-foreground">자산형 트래픽 누적 시뮬레이션 · 매월 30편 추가</div>
+                  <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    1편이 365편 자산이 되는 순간
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">매일 1편 자동 발행 · 12개월 누적 시뮬레이션</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-2xl font-extrabold text-primary leading-none">{krw(month12.revenue)}</div>
-                  <div className="text-[10px] text-muted-foreground mt-0.5">12개월차 월 예상 매출 · 누적 {month12.articles}편</div>
+                  <div className="text-[10px] text-muted-foreground">12개월차 월 매출</div>
+                  <div className="text-2xl font-extrabold text-primary leading-none tabular-nums">{krw(month12.revenue)}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">누적 자산 글 {month12.articles}편</div>
                 </div>
               </div>
               <div className="flex items-end gap-1 h-32 mt-2">
