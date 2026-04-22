@@ -504,6 +504,104 @@ export default function Demo() {
         </Card>
       )}
 
+      {/* SEO Brief Package — 발행 직전 기획 */}
+      {(phase === "brief" || brief) && (
+        <Card className="p-5 mb-4 border-primary/30">
+          <div className="flex items-center gap-2 mb-3">
+            <ClipboardList className="w-4 h-4 text-primary" />
+            <h2 className="text-sm font-bold text-foreground">SEO 기획 패키지</h2>
+            {brief && (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold uppercase tracking-wider">
+                {brief.intent === "transactional" ? "거래형" : brief.intent === "commercial" ? "구매검토형" : "정보형"}
+              </span>
+            )}
+            {phase === "brief" && <Loader2 className="w-3.5 h-3.5 animate-spin text-muted-foreground" />}
+          </div>
+          {!brief && phase === "brief" && (
+            <p className="text-xs text-muted-foreground">AI가 제목·메타·키워드·FAQ·구조를 동시에 설계 중…</p>
+          )}
+          {brief && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">최종 주제</div>
+                  <div className="text-sm font-semibold text-foreground">{brief.topic}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">H1 제목 ({brief.title.length}자)</div>
+                  <div className="text-base font-bold text-foreground leading-snug">{brief.title}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">메타 설명 ({brief.metaDescription.length}자)</div>
+                  <div className="text-xs text-foreground leading-relaxed bg-muted/40 rounded-md p-2 border">{brief.metaDescription}</div>
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">핵심 키워드</div>
+                <div className="flex flex-wrap gap-1.5">
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                    🎯 {brief.primaryKeyword}
+                  </span>
+                  {brief.secondaryKeywords.map((kw, i) => (
+                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-full bg-muted text-foreground text-[11px] border">
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">본문 구조 (H2 {brief.outline.length}개)</div>
+                <ol className="space-y-2">
+                  {brief.outline.map((sec, i) => (
+                    <li key={i} className="border-l-2 border-primary/30 pl-3 py-0.5">
+                      <div className="text-sm font-semibold text-foreground">H2. {sec.h2}</div>
+                      <ul className="mt-1 space-y-0.5">
+                        {sec.points.map((pt, j) => (
+                          <li key={j} className="text-[11px] text-muted-foreground leading-snug">· {pt}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">FAQ (AEO · AI 답변 채택, {brief.faq.length}개)</div>
+                <div className="space-y-1.5">
+                  {brief.faq.map((f, i) => (
+                    <details key={i} className="rounded-md border bg-card p-2">
+                      <summary className="text-xs font-semibold text-foreground cursor-pointer">Q. {f.q}</summary>
+                      <p className="mt-1 text-[11px] text-muted-foreground leading-relaxed pl-3">A. {f.a}</p>
+                    </details>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-3">
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">권장 schema.org</div>
+                  <div className="flex flex-wrap gap-1">
+                    {brief.structuredData.map((s, i) => (
+                      <code key={i} className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-muted border text-foreground">{s}</code>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">내부 링크 힌트</div>
+                  <ul className="space-y-0.5">
+                    {brief.internalLinkHints.map((h, i) => (
+                      <li key={i} className="text-[11px] text-muted-foreground">→ {h}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
       {/* Draft live */}
       {(phase === "draft" || draft) && (
         <Card className="p-5 mb-4">
