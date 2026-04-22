@@ -128,19 +128,39 @@ function ScoreGauge({ label, value, comment, color }: { label: string; value: nu
   const r = 36;
   const c = 2 * Math.PI * r;
   const off = c - (v / 100) * c;
+  const tier =
+    value >= 80 ? { label: "우수", emoji: "🏆", ring: "ring-emerald-500/30", glow: "from-emerald-500/15 to-transparent", chip: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400" }
+    : value >= 65 ? { label: "양호", emoji: "✨", ring: "ring-primary/30", glow: "from-primary/15 to-transparent", chip: "bg-primary/15 text-primary" }
+    : value >= 50 ? { label: "보완 필요", emoji: "⚠️", ring: "ring-amber-500/30", glow: "from-amber-500/15 to-transparent", chip: "bg-amber-500/15 text-amber-700 dark:text-amber-400" }
+    : { label: "긴급 점검", emoji: "🚨", ring: "ring-destructive/30", glow: "from-destructive/15 to-transparent", chip: "bg-destructive/15 text-destructive" };
+
   return (
-    <div className="flex flex-col items-center gap-2 p-4 rounded-xl border bg-card">
+    <div className={cn(
+      "relative flex flex-col items-center gap-2 p-4 rounded-xl border bg-card overflow-hidden ring-1 transition-all hover:shadow-md",
+      tier.ring,
+    )}>
+      <div className={cn("absolute inset-0 bg-gradient-to-br pointer-events-none", tier.glow)} />
+      <div className="relative w-full flex items-center justify-between">
+        <span className="text-[10px] font-extrabold tracking-widest text-foreground uppercase">{label}</span>
+        <span className={cn("text-[9px] font-bold px-1.5 py-0.5 rounded-full", tier.chip)}>
+          {tier.emoji} {tier.label}
+        </span>
+      </div>
       <div className="relative w-24 h-24">
         <svg className="w-24 h-24 -rotate-90" viewBox="0 0 80 80">
           <circle cx="40" cy="40" r={r} stroke="hsl(var(--muted))" strokeWidth="6" fill="none" />
           <circle cx="40" cy="40" r={r} stroke={color} strokeWidth="6" fill="none"
             strokeDasharray={c} strokeDashoffset={off} strokeLinecap="round"
-            style={{ transition: "stroke-dashoffset 0.1s linear" }} />
+            style={{ transition: "stroke-dashoffset 0.1s linear", filter: `drop-shadow(0 0 6px ${color}66)` }} />
         </svg>
-        <div className="absolute inset-0 flex items-center justify-center text-xl font-bold text-foreground">{v}</div>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-extrabold text-foreground tabular-nums leading-none">{v}</span>
+          <span className="text-[9px] text-muted-foreground font-mono mt-0.5">/100</span>
+        </div>
       </div>
-      <div className="text-xs font-bold tracking-wide text-foreground">{label}</div>
-      <div className="text-[11px] text-muted-foreground text-center leading-tight min-h-[28px]">{comment || "—"}</div>
+      <div className="relative text-[11px] text-muted-foreground text-center leading-tight min-h-[28px] px-1">
+        {comment || "—"}
+      </div>
     </div>
   );
 }
