@@ -1001,7 +1001,9 @@ export default function Demo() {
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
                     하루 1편씩, 12개월간 쌓이는 절감 광고비 시뮬레이션
                   </div>
-                  <div className="text-[11px] text-muted-foreground">절감액을 다른 캠페인·채널 테스트에 재투자할 수 있는 여력 추정</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    {new Date().toLocaleDateString("ko-KR", { year: "numeric", month: "long" })} 기준 시작 · 절감액을 다른 캠페인·채널 테스트에 재투자할 수 있는 여력 추정
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-muted-foreground">12개월차 월 절감 광고비</div>
