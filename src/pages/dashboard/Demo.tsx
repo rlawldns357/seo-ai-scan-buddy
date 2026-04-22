@@ -3,9 +3,8 @@ import { Helmet } from "react-helmet-async";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic, FlaskConical } from "lucide-react";
+import { Sparkles, Play, RotateCcw, Check, Loader2, Send, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PURELEAF_DEMO } from "@/data/demoBrandSeed";
 
@@ -218,7 +217,11 @@ export default function Demo() {
   const [scores, setScores] = useState<Scores | null>(null);
   const [queueId, setQueueId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
-  const [guideOpen, setGuideOpen] = useState(true);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [presenterMode, setPresenterMode] = useState(false);
+  // 결과 탭 상태 (다음 단계: Topics/Brief/Draft/Scores를 단일 카드 + 탭으로 통합 예정)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [resultTab, setResultTab] = useState<"topics" | "brief" | "draft" | "scores">("topics");
   const [phaseTimings, setPhaseTimings] = useState<Partial<Record<Phase, number>>>({});
   const phaseStartRef = useRef<{ phase: Phase; t: number } | null>(null);
   const draftRef = useRef<HTMLDivElement>(null);
@@ -237,6 +240,16 @@ export default function Demo() {
       setPhaseTimings((m) => ({ ...m, [prev.phase]: dur }));
     }
     phaseStartRef.current = { phase, t: now };
+  }, [phase]);
+
+  // 단계 진행에 따라 결과 탭을 자동 전환 (사용자가 직접 탭 클릭하면 그 선택을 유지)
+  const tabAutoRef = useRef(true);
+  useEffect(() => {
+    if (!tabAutoRef.current) return;
+    if (phase === "recommend") setResultTab("topics");
+    else if (phase === "brief") setResultTab("brief");
+    else if (phase === "draft") setResultTab("draft");
+    else if (phase === "score" || phase === "publish" || phase === "done") setResultTab("scores");
   }, [phase]);
 
   const SAMPLE_URLS = [
@@ -380,79 +393,63 @@ export default function Demo() {
     <>
       <Helmet><title>AutoBlog 라이브 데모 | 내부 시연용</title></Helmet>
 
-      <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
-        <div>
-          <div className="flex flex-wrap items-center gap-1.5 mb-2">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
-              <Zap className="w-3 h-3" /> INTERNAL DEMO · 저장 안 됨
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/5 text-foreground text-[10px] font-bold">
-              <ShoppingBag className="w-3 h-3" /> 이커머스 / 브랜드
-            </span>
+      <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
               ⚡ 10초 생성
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-700 dark:text-blue-400 text-[10px] font-bold">
-              🌙 다음 30편 큐 대기
+              📦 다음 30편 큐 대기
             </span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-1 leading-tight tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-foreground leading-tight tracking-tight">
             검색 유입을 만드는 콘텐츠 시스템, <span className="text-primary">AutoBlog</span>
           </h1>
-          <p className="text-base font-semibold text-foreground/90 mb-1.5 leading-snug">
-            광고는 끄면 멈추고, <span className="text-primary">검색은 잠들어도 일합니다.</span>
-          </p>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            <b className="text-foreground">다음 30편이 미리 큐에 쌓이고</b>, 매일 예약 시간에 알아서 발행됩니다.
-            당신은 아침에 <b className="text-foreground">승인 한 번</b>. 데모 끝엔 <b className="text-foreground">월 SEO 기대 매출</b>까지 숫자로.
+          <p className="text-sm text-muted-foreground mt-1 leading-snug">
+            광고는 끄면 멈추고 <span className="text-foreground font-semibold">검색은 잠들어도 일합니다</span>. 다음 30편이 큐에 쌓여 매일 자동 발행 — 아침에 승인 한 번.
           </p>
         </div>
-        <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={reset} disabled={running}>
-          <RotateCcw className="w-3.5 h-3.5" /> 초기화
-        </Button>
-      </div>
-
-      {/* Control */}
-      <Card className="p-5 mb-4">
-        <div className="grid md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
-          <div>
-            <Label htmlFor="demo-url">쇼핑몰 / 브랜드 사이트 URL</Label>
-            <Input id="demo-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)}
-              placeholder="https://my-brand-shop.com" disabled={running} />
-          </div>
-          <div>
-            <Label htmlFor="demo-topic" className="flex items-center gap-1">
-              브랜드/상품 주제
-              <span className="text-[10px] font-normal text-muted-foreground">(선택)</span>
-            </Label>
-            <Input id="demo-topic" value={seedTopic} onChange={(e) => setSeedTopic(e.target.value)}
-              placeholder="예: 여성 린넨 셔츠, 비건 단백질 파우더" disabled={running} />
-          </div>
-          <Button onClick={runFullDemo} disabled={running} className="rounded-full h-10">
-            {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-            {running ? "데모 진행 중…" : "라이브 데모 시작"}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Button
+            variant={presenterMode ? "default" : "outline"}
+            size="sm"
+            className="rounded-full h-8 text-[11px]"
+            onClick={() => { setPresenterMode(v => !v); if (!presenterMode) setGuideOpen(true); }}
+            title="시연 진행자용 가이드/멘트 표시"
+          >
+            <Mic className="w-3.5 h-3.5" /> 진행자
+          </Button>
+          <Button variant="outline" size="icon" className="rounded-full h-8 w-8" onClick={reset} disabled={running} title="초기화">
+            <RotateCcw className="w-3.5 h-3.5" />
           </Button>
         </div>
-        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-[11px] text-muted-foreground">
-            💡 주제를 비우면 AI가 사이트를 분석해 자동 추천합니다. 입력하면 그 주제로 바로 SEO 기획 패키지를 만들어요.
-          </p>
+      </div>
+
+      {/* Control — 컴팩트 한 줄 */}
+      <Card className="p-3 mb-3">
+        <div className="grid md:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center">
+          <Input id="demo-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)}
+            placeholder="사이트 URL (예: https://my-brand-shop.com)" disabled={running} className="h-10" />
+          <Input id="demo-topic" value={seedTopic} onChange={(e) => setSeedTopic(e.target.value)}
+            placeholder="주제 (선택) — 비우면 AI가 자동 추천" disabled={running} className="h-10" />
           <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="rounded-full h-8 text-[11px] shrink-0"
-            onClick={loadSampleSeed}
-            disabled={running}
-            title="AI 호출 없이 사전 제작된 PURELEAF 브랜드 결과를 즉시 표시합니다"
+            type="button" variant="outline" size="sm"
+            className="rounded-full h-10 text-[11px] whitespace-nowrap"
+            onClick={loadSampleSeed} disabled={running}
+            title="AI 호출 없이 사전 제작된 PURELEAF 결과를 즉시 표시"
           >
-            <FlaskConical className="w-3.5 h-3.5" />
-            샘플 데이터로 미리보기 (PURELEAF · 비건 스킨케어)
+            <FlaskConical className="w-3.5 h-3.5" /> 샘플
+          </Button>
+          <Button onClick={runFullDemo} disabled={running} className="rounded-full h-10 whitespace-nowrap">
+            {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            {running ? "진행 중…" : "라이브 데모 시작"}
           </Button>
         </div>
       </Card>
 
-      {/* 10초 라이브 가이드 (접이식) */}
+      {/* 10초 라이브 가이드 — 진행자 모드에서만 표시 */}
+      {presenterMode && (
       <Card className="p-0 mb-4 overflow-hidden border-primary/30">
         <button
           onClick={() => setGuideOpen(o => !o)}
@@ -545,6 +542,7 @@ export default function Demo() {
           </div>
         )}
       </Card>
+      )}
 
       {/* Live Generation Bar — 실시간 생성 중 강조 */}
       {running && (
