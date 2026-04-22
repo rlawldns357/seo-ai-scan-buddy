@@ -26,13 +26,44 @@
 ## 4. Scoring Model
 | 항목 | 값 |
 |---|---|
-| 축 | SEO / AEO / GEO (사이트 분석과 동일) |
-| 범위 | 0 ~ 100 정수 |
+| 1차 축 (User-facing) | **SEO / AEO / GEO** — 사이트 분석과 동일, 사용자 노출 라벨 |
+| 2차 축 (평가 루브릭) | **검색 의도 적합성 / 제목·요약 명확성 / 본문 구조화 / 근거·사실성** — AI 채점 시 내부 루브릭 |
+| 범위 | 각 0~100 정수, 총점은 1차 축 가중 평균 |
 | 모델 | `google/gemini-2.5-flash` via Lovable AI Gateway |
 | 결정성 | temperature = 0 |
 | 입력 | title, excerpt, content(markdown), source_axis, (옵션) siteUrl |
-| 출력 | `{ seo, aeo, geo, summary, tips[≤3] }` |
+| 출력 | `{ seo, aeo, geo, rubric, summary, tips[≤3], reasons[2~4] }` |
 | 캡 규칙 | 기존 score-caps 재사용 (직접답변 부재 → AEO 캡, 출처 부재 → GEO 캡) |
+
+### 4.1 평가 축 (2-Layer)
+
+**1차 축 — 사용자 노출용 (UI 라벨)**
+사이트 분석과 동일한 SEO/AEO/GEO 3축. 사용자에게 노출되는 점수와 배지는 항상 이 축으로 표기.
+
+**2차 축 — AI 평가 루브릭 (내부 채점 기준)**
+AI에게 더 정확한 채점을 시키기 위해 4개의 세부 루브릭으로 분해 후, 1차 축에 매핑한다.
+
+| 루브릭 (2차 축) | 정의 | 1차 축 매핑 가중 |
+|---|---|---|
+| **검색 의도 적합성** (Intent Fit) | 타겟 키워드/질문에 본문이 답하는 정도, 토픽 일치도 | SEO 0.6 / AEO 0.4 |
+| **제목·요약 명확성** (Title & Excerpt Clarity) | 제목 60자 내 핵심어, 요약의 직접 답변성 | SEO 0.4 / AEO 0.6 |
+| **본문 구조화** (Structure) | H2 개수·계층, 문단 길이, 리스트/표 활용 | SEO 0.7 / AEO 0.3 |
+| **근거·사실성** (Evidence & Factuality) | 출처 링크, 수치 근거, 인용 가능 문장 비율 | GEO 0.7 / AEO 0.3 |
+
+총점 산식 (의사코드):
+```
+rubric = { intentFit, titleClarity, structure, evidence }   // each 0~100
+seo  = round(intentFit*0.6 + titleClarity*0.4 + structure*0.7) / weights_sum
+aeo  = round(intentFit*0.4 + titleClarity*0.6 + structure*0.3 + evidence*0.3) / weights_sum
+geo  = round(evidence*0.7 + intentFit*0.3) / weights_sum
+total = round(seo*0.35 + aeo*0.35 + geo*0.30)   // 사용자 노출 총점
+```
+> 가중치는 초기값. 운영 데이터 기반으로 조정 가능 (engine_config로 외부화 검토).
+
+**왜 2-Layer인가**
+- 사용자에게는 익숙한 SEO/AEO/GEO를 유지 (학습 비용 0).
+- AI 채점은 더 구체적인 루브릭으로 분해해야 안정적 (deterministic + 비교 가능).
+- 사유 칩(reasons)과 액션 제안(tips)은 루브릭 단위로 생성 후, 표시 시 1차 축 라벨을 붙인다.
 
 ### 점수 2종 구분 (확정 명명)
 
