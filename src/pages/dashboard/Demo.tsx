@@ -600,33 +600,144 @@ export default function Demo() {
           )}
           {brief && (
             <div className="space-y-4">
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <div>
                   <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">최종 주제</div>
                   <div className="text-sm font-semibold text-foreground">{brief.topic}</div>
                 </div>
+
+                {/* 블로그 제목 3안 */}
                 <div>
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">H1 제목 ({brief.title.length}자)</div>
-                  <div className="text-base font-bold text-foreground leading-snug">{brief.title}</div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                    H1 제목 후보 {brief.titleVariants?.length ?? 1}안
+                  </div>
+                  {brief.titleVariants && brief.titleVariants.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {brief.titleVariants.map((v, i) => {
+                        const isPicked = v.value === brief.title;
+                        return (
+                          <div
+                            key={i}
+                            className={cn(
+                              "rounded-md border p-2.5",
+                              isPicked
+                                ? "border-primary bg-primary/5"
+                                : "border-border bg-card",
+                            )}
+                          >
+                            <div className="flex items-baseline justify-between gap-2 mb-1 flex-wrap">
+                              <span className={cn(
+                                "text-[10px] font-bold uppercase tracking-wider",
+                                isPicked ? "text-primary" : "text-muted-foreground",
+                              )}>
+                                {v.label}{isPicked && " ✓"}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground tabular-nums">{v.value.length}자</span>
+                            </div>
+                            <div className={cn(
+                              "text-sm font-semibold leading-snug",
+                              isPicked ? "text-foreground" : "text-foreground/80",
+                            )}>
+                              {v.value}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground mt-1 leading-snug">→ {v.angle}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-base font-bold text-foreground leading-snug">{brief.title}</div>
+                  )}
                 </div>
+
+                {/* 메타 설명 2안 */}
                 <div>
-                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-0.5">메타 설명 ({brief.metaDescription.length}자)</div>
-                  <div className="text-xs text-foreground leading-relaxed bg-muted/40 rounded-md p-2 border">{brief.metaDescription}</div>
+                  <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
+                    메타 설명 후보 {brief.metaDescriptionVariants?.length ?? 1}안
+                  </div>
+                  {brief.metaDescriptionVariants && brief.metaDescriptionVariants.length > 0 ? (
+                    <div className="space-y-1.5">
+                      {brief.metaDescriptionVariants.map((v, i) => {
+                        const isPicked = v.value === brief.metaDescription;
+                        return (
+                          <div
+                            key={i}
+                            className={cn(
+                              "rounded-md border p-2.5",
+                              isPicked
+                                ? "border-primary bg-primary/5"
+                                : "border-border bg-card",
+                            )}
+                          >
+                            <div className="flex items-baseline justify-between gap-2 mb-1 flex-wrap">
+                              <span className={cn(
+                                "text-[10px] font-bold uppercase tracking-wider",
+                                isPicked ? "text-primary" : "text-muted-foreground",
+                              )}>
+                                {v.label}{isPicked && " ✓"}
+                              </span>
+                              <span className="text-[10px] text-muted-foreground tabular-nums">{v.value.length}자</span>
+                            </div>
+                            <div className="text-xs text-foreground leading-relaxed">{v.value}</div>
+                            <div className="text-[10px] text-muted-foreground mt-1">→ {v.angle}</div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-foreground leading-relaxed bg-muted/40 rounded-md p-2 border">{brief.metaDescription}</div>
+                  )}
                 </div>
               </div>
 
+              {/* 핵심 키워드 묶음 (4분류) */}
               <div>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">핵심 키워드</div>
-                <div className="flex flex-wrap gap-1.5">
-                  <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
-                    🎯 {brief.primaryKeyword}
-                  </span>
-                  {brief.secondaryKeywords.map((kw, i) => (
-                    <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-full bg-muted text-foreground text-[11px] border">
-                      {kw}
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">핵심 키워드 묶음</div>
+                {brief.keywordClusters ? (
+                  <div className="space-y-2">
+                    {([
+                      { key: "primary", label: "🎯 Primary (1~2개)", desc: "본문·제목·메타에 반드시 들어가야 하는 메인 타깃", chip: "bg-primary text-primary-foreground border-primary" },
+                      { key: "secondary", label: "📌 Secondary", desc: "H2·문단에 자연스럽게 분포시킬 보조 키워드", chip: "bg-foreground/10 text-foreground border-foreground/20" },
+                      { key: "longTail", label: "🔍 Long-tail", desc: "검색 의도가 명확한 롱테일 — FAQ·소제목에 활용", chip: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" },
+                      { key: "lsi", label: "🧬 LSI / 의미 연관", desc: "본문 자연 노출로 주제 권위 강화 (의미·성분·인증)", chip: "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/30" },
+                    ] as const).map((g) => {
+                      const items = brief.keywordClusters![g.key];
+                      if (!items?.length) return null;
+                      return (
+                        <div key={g.key} className="rounded-md border bg-card p-2.5">
+                          <div className="flex items-baseline justify-between gap-2 flex-wrap mb-1.5">
+                            <span className="text-[11px] font-bold text-foreground">{g.label}</span>
+                            <span className="text-[10px] text-muted-foreground">{g.desc}</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            {items.map((kw, i) => (
+                              <span
+                                key={i}
+                                className={cn(
+                                  "inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-medium border",
+                                  g.chip,
+                                )}
+                              >
+                                {kw}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">
+                      🎯 {brief.primaryKeyword}
                     </span>
-                  ))}
-                </div>
+                    {brief.secondaryKeywords.map((kw, i) => (
+                      <span key={i} className="inline-flex items-center px-2 py-0.5 rounded-full bg-muted text-foreground text-[11px] border">
+                        {kw}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               <div>
