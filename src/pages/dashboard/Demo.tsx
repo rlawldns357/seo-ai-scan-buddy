@@ -266,6 +266,37 @@ export default function Demo() {
     }
   };
 
+  /**
+   * 사전 제작된 PURELEAF 브랜드 시드를 즉시 주입.
+   * AI 호출/네트워크 없이 풀 데모 결과 화면을 그대로 보여줄 때 사용.
+   * 시연 리허설, 오프라인 시연, AI 크레딧 절약 시나리오에 유용.
+   */
+  const loadSampleSeed = () => {
+    if (running) return;
+    const seed = PURELEAF_DEMO;
+    setSiteUrl(seed.brand.siteUrl);
+    setSeedTopic("");
+    setTopics(seed.topics);
+    setTopicBuf("");
+    setPicked(seed.topics.find((t) => t.title === seed.pickedTopicTitle) ?? seed.topics[0]);
+    setBrief(seed.brief);
+    setDraft(seed.draftMarkdown);
+    setScores(seed.scores);
+    setQueueId(`sample-${Date.now().toString(36)}`);
+    setPhaseTimings({
+      recommend: 4.2,
+      brief: 6.8,
+      draft: 22.5,
+      score: 3.1,
+      publish: 0.7,
+    });
+    setPhase("done");
+    toast({
+      title: "샘플 데이터를 불러왔어요",
+      description: `${seed.brand.name} (${seed.brand.category}) — 시연 리허설용`,
+    });
+  };
+
   const axisColor = (a: string) =>
     a === "SEO" ? "hsl(var(--primary))" : a === "AEO" ? "hsl(217 91% 60%)" : "hsl(280 70% 60%)";
 
