@@ -520,7 +520,7 @@ export default function Demo() {
             {/* 마무리 멘트 */}
             <div>
               <div className="text-[11px] font-bold text-muted-foreground mb-1.5 flex items-center gap-1">
-                <Mic className="w-3 h-3" /> 마무리 멘트 (4:30–5:00)
+                <Mic className="w-3 h-3" /> 마무리 멘트 (결과 카드 등장 직후)
               </div>
               <blockquote className="text-sm text-foreground leading-relaxed border-l-2 border-primary pl-3 py-1">
                 "지금 보신 게 글 <span className="font-bold">딱 1편</span>이에요. 이걸 매일 자동으로 1편씩 발행하면
