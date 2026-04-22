@@ -1074,7 +1074,7 @@ export default function Demo() {
                 </span>
               </div>
               <div className="text-[11px] text-muted-foreground mt-0.5">
-                다음 자동 발행 시각 <span className="font-mono font-semibold text-foreground">08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연 모드라 실제 저장은 일어나지 않아요
+                다음 자동 발행 시각 <span className="font-mono font-semibold text-foreground">{(() => { const d = new Date(); d.setDate(d.getDate() + 1); return d.toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" }); })()} 08:50 KST</span> · 큐 ID <span className="font-mono">{queueId}</span> · 시연 모드라 실제 저장은 일어나지 않아요
               </div>
             </div>
             <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={runFullDemo} disabled={running}>
