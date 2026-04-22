@@ -53,7 +53,7 @@ export default function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="pt-28">
         <SiteSwitcher />
 
         <SidebarGroup>
