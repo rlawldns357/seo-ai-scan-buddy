@@ -662,6 +662,21 @@ export default function Demo() {
       {scores && (() => {
         const avg = Math.round((scores.seo.score + scores.aeo.score + scores.geo.score) / 3);
         const f = estimateSeoImpact(avg);
+        // 12개월 누적: 매일 1편 발행 가정. n번째 달까지 누적 발행 글 수 = 30 * n.
+        // 각 글은 발행 후 1~2개월부터 성숙 → 단순화: 발행된 글의 평균 성숙도 0.6 적용
+        const months = Array.from({ length: 12 }, (_, i) => {
+          const m = i + 1;
+          const articles = 30 * m;
+          const matured = articles * 0.6; // 평균 성숙도 보정
+          return {
+            m,
+            articles,
+            revenue: Math.round(matured * f.revenue),
+            clicks: Math.round(matured * f.monthlyClicks),
+          };
+        });
+        const maxRev = Math.max(...months.map(x => x.revenue));
+        const month12 = months[11];
         return (
           <Card className="p-5 mb-4 border-primary/40 bg-gradient-to-br from-primary/10 via-primary/5 to-background">
             <div className="flex items-center gap-2 mb-1">
@@ -669,6 +684,8 @@ export default function Demo() {
               <h2 className="text-sm font-bold text-foreground">이 글 1편이 가져올 월 예상 SEO 기대효과</h2>
             </div>
             <p className="text-[11px] text-muted-foreground mb-4">평균 점수 {avg}점 기준 · 발행 후 색인 안정화(약 4~8주) 가정 · 광고비 0원</p>
+
+            {/* 글 1편 기준 4지표 */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <div className="p-3 rounded-lg bg-card border">
                 <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground mb-1"><Eye className="w-3 h-3" /> 월 노출</div>
@@ -691,6 +708,58 @@ export default function Demo() {
                 <div className="text-[10px] opacity-80">객단가 ₩48,000 가정</div>
               </div>
             </div>
+
+            {/* 12개월 누적 자산화 차트 */}
+            <div className="mt-5 p-4 rounded-xl bg-card border">
+              <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
+                <div>
+                  <div className="text-xs font-bold text-foreground">매일 1편씩 발행하면 12개월 후</div>
+                  <div className="text-[11px] text-muted-foreground">자산형 트래픽 누적 시뮬레이션 · 매월 30편 추가</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-2xl font-extrabold text-primary leading-none">{krw(month12.revenue)}</div>
+                  <div className="text-[10px] text-muted-foreground mt-0.5">12개월차 월 예상 매출 · 누적 {month12.articles}편</div>
+                </div>
+              </div>
+              <div className="flex items-end gap-1 h-32 mt-2">
+                {months.map((mo, i) => {
+                  const h = maxRev > 0 ? (mo.revenue / maxRev) * 100 : 0;
+                  const isLast = i === months.length - 1;
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                      <div className="text-[9px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                        {Math.round(mo.revenue / 10000).toLocaleString()}만
+                      </div>
+                      <div
+                        className={cn(
+                          "w-full rounded-t transition-all duration-500",
+                          isLast ? "bg-primary" : "bg-primary/40"
+                        )}
+                        style={{ height: `${h}%`, minHeight: "4px" }}
+                      />
+                      <div className={cn("text-[9px] font-mono", isLast ? "text-primary font-bold" : "text-muted-foreground")}>
+                        {mo.m}M
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                <div className="p-2 rounded bg-muted/40">
+                  <div className="text-[10px] text-muted-foreground">3개월차</div>
+                  <div className="text-xs font-bold text-foreground">{krw(months[2].revenue)}</div>
+                </div>
+                <div className="p-2 rounded bg-muted/40">
+                  <div className="text-[10px] text-muted-foreground">6개월차</div>
+                  <div className="text-xs font-bold text-foreground">{krw(months[5].revenue)}</div>
+                </div>
+                <div className="p-2 rounded bg-primary/15 border border-primary/30">
+                  <div className="text-[10px] text-primary font-bold">12개월차</div>
+                  <div className="text-xs font-extrabold text-primary">{krw(month12.revenue)}</div>
+                </div>
+              </div>
+            </div>
+
             <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
               ⚠️ 시연용 추정치입니다. 실제 성과는 카테고리·경쟁도·내부 링크 구조에 따라 달라집니다.
               핵심은 <span className="font-semibold text-foreground">광고비 없이 매월 누적되는 자산형 트래픽</span>이라는 점입니다 —
