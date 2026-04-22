@@ -343,9 +343,23 @@ export default function Demo() {
             {running ? "데모 진행 중…" : "라이브 데모 시작"}
           </Button>
         </div>
-        <p className="mt-2 text-[11px] text-muted-foreground">
-          💡 주제를 비우면 AI가 사이트를 분석해 자동 추천합니다. 입력하면 그 주제로 바로 SEO 기획 패키지를 만들어요.
-        </p>
+        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
+          <p className="text-[11px] text-muted-foreground">
+            💡 주제를 비우면 AI가 사이트를 분석해 자동 추천합니다. 입력하면 그 주제로 바로 SEO 기획 패키지를 만들어요.
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="rounded-full h-8 text-[11px] shrink-0"
+            onClick={loadSampleSeed}
+            disabled={running}
+            title="AI 호출 없이 사전 제작된 PURELEAF 브랜드 결과를 즉시 표시합니다"
+          >
+            <FlaskConical className="w-3.5 h-3.5" />
+            샘플 데이터로 미리보기 (PURELEAF · 비건 스킨케어)
+          </Button>
+        </div>
       </Card>
 
       {/* 5분 시연 가이드 (접이식) */}
