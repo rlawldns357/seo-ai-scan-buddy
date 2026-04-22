@@ -416,42 +416,24 @@ export default function Demo() {
         </div>
       </div>
 
-      {/* Control */}
-      <Card className="p-5 mb-4">
-        <div className="grid md:grid-cols-[1fr_1fr_auto] gap-3 items-end">
-          <div>
-            <Label htmlFor="demo-url">쇼핑몰 / 브랜드 사이트 URL</Label>
-            <Input id="demo-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)}
-              placeholder="https://my-brand-shop.com" disabled={running} />
-          </div>
-          <div>
-            <Label htmlFor="demo-topic" className="flex items-center gap-1">
-              브랜드/상품 주제
-              <span className="text-[10px] font-normal text-muted-foreground">(선택)</span>
-            </Label>
-            <Input id="demo-topic" value={seedTopic} onChange={(e) => setSeedTopic(e.target.value)}
-              placeholder="예: 여성 린넨 셔츠, 비건 단백질 파우더" disabled={running} />
-          </div>
-          <Button onClick={runFullDemo} disabled={running} className="rounded-full h-10">
-            {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-            {running ? "데모 진행 중…" : "라이브 데모 시작"}
-          </Button>
-        </div>
-        <div className="mt-3 flex items-center justify-between gap-3 flex-wrap">
-          <p className="text-[11px] text-muted-foreground">
-            💡 주제를 비우면 AI가 사이트를 분석해 자동 추천합니다. 입력하면 그 주제로 바로 SEO 기획 패키지를 만들어요.
-          </p>
+      {/* Control — 컴팩트 한 줄 */}
+      <Card className="p-3 mb-3">
+        <div className="grid md:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center">
+          <Input id="demo-url" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)}
+            placeholder="사이트 URL (예: https://my-brand-shop.com)" disabled={running} className="h-10" />
+          <Input id="demo-topic" value={seedTopic} onChange={(e) => setSeedTopic(e.target.value)}
+            placeholder="주제 (선택) — 비우면 AI가 자동 추천" disabled={running} className="h-10" />
           <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="rounded-full h-8 text-[11px] shrink-0"
-            onClick={loadSampleSeed}
-            disabled={running}
-            title="AI 호출 없이 사전 제작된 PURELEAF 브랜드 결과를 즉시 표시합니다"
+            type="button" variant="outline" size="sm"
+            className="rounded-full h-10 text-[11px] whitespace-nowrap"
+            onClick={loadSampleSeed} disabled={running}
+            title="AI 호출 없이 사전 제작된 PURELEAF 결과를 즉시 표시"
           >
-            <FlaskConical className="w-3.5 h-3.5" />
-            샘플 데이터로 미리보기 (PURELEAF · 비건 스킨케어)
+            <FlaskConical className="w-3.5 h-3.5" /> 샘플
+          </Button>
+          <Button onClick={runFullDemo} disabled={running} className="rounded-full h-10 whitespace-nowrap">
+            {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
+            {running ? "진행 중…" : "라이브 데모 시작"}
           </Button>
         </div>
       </Card>
