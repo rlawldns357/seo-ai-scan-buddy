@@ -414,15 +414,22 @@ export type Database = {
       }
       site_posts: {
         Row: {
+          aeo_score: number | null
           content: string
           created_at: string
           excerpt: string | null
+          faq: Json | null
+          geo_score: number | null
           id: string
+          internal_links: Json | null
           is_auto_generated: boolean
+          keywords: string[] | null
           last_viewed_at: string | null
           og_image: string | null
           published_at: string | null
           queue_position: number | null
+          scored_at: string | null
+          seo_score: number | null
           site_id: string
           slug: string
           source_axis: string | null
@@ -432,15 +439,22 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          aeo_score?: number | null
           content: string
           created_at?: string
           excerpt?: string | null
+          faq?: Json | null
+          geo_score?: number | null
           id?: string
+          internal_links?: Json | null
           is_auto_generated?: boolean
+          keywords?: string[] | null
           last_viewed_at?: string | null
           og_image?: string | null
           published_at?: string | null
           queue_position?: number | null
+          scored_at?: string | null
+          seo_score?: number | null
           site_id: string
           slug: string
           source_axis?: string | null
@@ -450,15 +464,22 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          aeo_score?: number | null
           content?: string
           created_at?: string
           excerpt?: string | null
+          faq?: Json | null
+          geo_score?: number | null
           id?: string
+          internal_links?: Json | null
           is_auto_generated?: boolean
+          keywords?: string[] | null
           last_viewed_at?: string | null
           og_image?: string | null
           published_at?: string | null
           queue_position?: number | null
+          scored_at?: string | null
+          seo_score?: number | null
           site_id?: string
           slug?: string
           source_axis?: string | null
