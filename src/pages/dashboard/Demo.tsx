@@ -8,9 +8,21 @@ import { toast } from "@/hooks/use-toast";
 import { Sparkles, Play, RotateCcw, Check, Loader2, Send, Zap, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type Phase = "idle" | "recommend" | "draft" | "score" | "publish" | "done";
+type Phase = "idle" | "recommend" | "brief" | "draft" | "score" | "publish" | "done";
 type Topic = { axis: "SEO" | "AEO" | "GEO"; title: string; reason: string };
 type Scores = { seo: { score: number; comment: string }; aeo: { score: number; comment: string }; geo: { score: number; comment: string } };
+type SeoBrief = {
+  topic: string;
+  intent: "informational" | "commercial" | "transactional";
+  title: string;
+  metaDescription: string;
+  primaryKeyword: string;
+  secondaryKeywords: string[];
+  outline: { h2: string; points: string[] }[];
+  faq: { q: string; a: string }[];
+  structuredData: string[];
+  internalLinkHints: string[];
+};
 
 const STREAM_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/demo-stream-content`;
 const ANON_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
