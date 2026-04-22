@@ -47,9 +47,9 @@ const PHASE_GROUPS: {
   icon: typeof Lightbulb;
   includes: Phase[];
 }[] = [
-  { key: "diagnose", label: "진단 · 기획", sub: "구매 의도 토픽 + SEO 패키지", icon: Lightbulb, includes: ["recommend", "brief"] },
-  { key: "generate", label: "자동 생성", sub: "기획 그대로 본문 작성", icon: FileText, includes: ["draft"] },
-  { key: "ship", label: "발행 검수", sub: "3축 채점 후 큐 등록", icon: Send, includes: ["score", "publish"] },
+  { key: "diagnose", label: "1 · 진단 & 기획", sub: "구매 키워드 + 발행 패키지", icon: Lightbulb, includes: ["recommend", "brief"] },
+  { key: "generate", label: "2 · 자동 생성", sub: "1시간짜리 글을 30초에", icon: FileText, includes: ["draft"] },
+  { key: "ship", label: "3 · 발행 검수", sub: "3축 채점 → 자동 발행 큐", icon: Send, includes: ["score", "publish"] },
 ];
 
 
@@ -357,9 +357,17 @@ export default function Demo() {
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-foreground/5 text-foreground text-[10px] font-bold">
               <ShoppingBag className="w-3 h-3" /> 이커머스 / 브랜드
             </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
+              ⏱ 5분 풀 시연
+            </span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">검색 노출로 광고비 없이 매출 만드는 AutoBlog</h1>
-          <p className="text-sm text-muted-foreground">사이트 URL 1개만 넣으면 구매 의도 키워드 발굴 → SEO 친화 본문 → 발행 큐까지 전 과정이 라이브로 진행됩니다. 끝나면 월 예상 SEO 기대효과까지 같이 보여드립니다.</p>
+          <h1 className="text-2xl font-bold text-foreground mb-1 leading-tight">
+            광고 끄면 0원, <span className="text-primary">검색은 자산</span>이 됩니다
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            URL 1개 → <b className="text-foreground">진단·기획 → 자동 생성 → 발행 검수</b> 3단계로 5분 안에 끝.
+            데모 마지막에 <b className="text-foreground">월 SEO 기대 매출</b>까지 함께 나옵니다.
+          </p>
         </div>
         <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={reset} disabled={running}>
           <RotateCcw className="w-3.5 h-3.5" /> 초기화
