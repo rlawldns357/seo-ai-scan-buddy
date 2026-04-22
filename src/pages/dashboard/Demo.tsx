@@ -196,7 +196,7 @@ export default function Demo() {
     reset();
     setRunning(true);
     try {
-      // 1) Recommend
+      // 1) Recommend topics (skipped only visually if seedTopic provided — we still recommend for variety)
       setPhase("recommend");
       let buf = "";
       await streamEndpoint({ mode: "recommend", siteUrl }, (chunk) => {
@@ -207,15 +207,33 @@ export default function Demo() {
       const finalTopics = parseTopicsFromBuffer(buf);
       if (finalTopics.length === 0) throw new Error("토픽 추천 실패");
       setTopics(finalTopics);
-      // Pick first non-SEO axis with lowest implied priority — just pick first
-      const chosen = finalTopics[0];
+      // If user provided a seed topic, build a virtual chosen topic with SEO axis;
+      // otherwise pick the first recommended topic.
+      const chosen: Topic = seedTopic.trim()
+        ? { axis: "SEO", title: seedTopic.trim(), reason: "사용자가 직접 지정" }
+        : finalTopics[0];
       setPicked(chosen);
-      await new Promise(r => setTimeout(r, 600));
+      await new Promise(r => setTimeout(r, 500));
 
-      // 2) Draft streaming
+      // 2) SEO Brief (제목·메타·키워드·FAQ·구조화)
+      setPhase("brief");
+      const briefResp = await fetch(STREAM_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${ANON_KEY}` },
+        body: JSON.stringify({ mode: "seo-brief", siteUrl, topic: chosen.title }),
+      });
+      if (!briefResp.ok) {
+        const errBody = await briefResp.json().catch(() => ({}));
+        throw new Error(errBody.error || "SEO 기획 패키지 생성 실패");
+      }
+      const briefData = (await briefResp.json()) as SeoBrief;
+      setBrief(briefData);
+      await new Promise(r => setTimeout(r, 700));
+
+      // 3) Draft streaming (uses brief.title as the topic for tighter alignment)
       setPhase("draft");
       let bodyBuf = "";
-      await streamEndpoint({ mode: "draft", siteUrl, topic: chosen.title, axis: chosen.axis }, (chunk) => {
+      await streamEndpoint({ mode: "draft", siteUrl, topic: briefData.title || chosen.title, axis: chosen.axis }, (chunk) => {
         bodyBuf += chunk;
         setDraft(bodyBuf);
         if (draftRef.current) draftRef.current.scrollTop = draftRef.current.scrollHeight;
