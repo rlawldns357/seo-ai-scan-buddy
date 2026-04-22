@@ -935,30 +935,30 @@ export default function Demo() {
               </div>
             </div>
 
-            {/* 12개월 누적 자산화 차트 */}
+            {/* 12개월 누적 절감 광고비 차트 */}
             <div className="mt-5 p-4 rounded-xl bg-card border">
               <div className="flex items-baseline justify-between gap-3 flex-wrap mb-3">
                 <div>
                   <div className="text-xs font-bold text-foreground flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    1편이 365편 자산이 되는 순간
+                    매일 1편 발행 시 12개월 절감 광고비 누적
                   </div>
-                  <div className="text-[11px] text-muted-foreground">매일 1편 자동 발행 · 12개월 누적 시뮬레이션</div>
+                  <div className="text-[11px] text-muted-foreground">절감액을 다른 캠페인에 재투자할 수 있는 여력 시뮬레이션</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] text-muted-foreground">12개월차 월 매출</div>
-                  <div className="text-2xl font-extrabold text-primary leading-none tabular-nums">{krw(month12.revenue)}</div>
+                  <div className="text-[10px] text-muted-foreground">12개월차 월 절감 광고비</div>
+                  <div className="text-2xl font-extrabold text-primary leading-none tabular-nums">{krw(month12.adSavings)}</div>
                   <div className="text-[10px] text-muted-foreground mt-0.5">누적 자산 글 {month12.articles}편</div>
                 </div>
               </div>
               <div className="flex items-end gap-1 h-32 mt-2">
                 {months.map((mo, i) => {
-                  const h = maxRev > 0 ? (mo.revenue / maxRev) * 100 : 0;
+                  const h = maxAdSavings > 0 ? (mo.adSavings / maxAdSavings) * 100 : 0;
                   const isLast = i === months.length - 1;
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
                       <div className="text-[9px] font-mono text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                        {Math.round(mo.revenue / 10000).toLocaleString()}만
+                        {Math.round(mo.adSavings / 10000).toLocaleString()}만
                       </div>
                       <div
                         className={cn(
@@ -977,23 +977,25 @@ export default function Demo() {
               <div className="mt-3 grid grid-cols-3 gap-2 text-center">
                 <div className="p-2 rounded bg-muted/40">
                   <div className="text-[10px] text-muted-foreground">3개월차</div>
-                  <div className="text-xs font-bold text-foreground">{krw(months[2].revenue)}</div>
+                  <div className="text-xs font-bold text-foreground">{krw(months[2].adSavings)}</div>
                 </div>
                 <div className="p-2 rounded bg-muted/40">
                   <div className="text-[10px] text-muted-foreground">6개월차</div>
-                  <div className="text-xs font-bold text-foreground">{krw(months[5].revenue)}</div>
+                  <div className="text-xs font-bold text-foreground">{krw(months[5].adSavings)}</div>
                 </div>
                 <div className="p-2 rounded bg-primary/15 border border-primary/30">
                   <div className="text-[10px] text-primary font-bold">12개월차</div>
-                  <div className="text-xs font-extrabold text-primary">{krw(month12.revenue)}</div>
+                  <div className="text-xs font-extrabold text-primary">{krw(month12.adSavings)}</div>
                 </div>
               </div>
             </div>
 
             <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
-              💡 <span className="font-bold text-foreground">광고는 끄면 매출이 0</span>이지만, SEO 콘텐츠는
-              <span className="font-bold text-foreground"> 한 번 발행하면 24시간 일하는 자산</span>이 됩니다.
-              발행 글이 늘어날수록 위 수치는 곱해집니다. (시연용 추정치 · 카테고리·경쟁도에 따라 변동)
+              💡 <span className="font-bold text-foreground">광고는 끄는 순간 노출이 멈추지만</span>, SEO 콘텐츠는
+              <span className="font-bold text-foreground"> 발행 후에도 24시간 검색 노출을 만드는 자산</span>입니다.
+              절감된 광고비는 <span className="font-bold text-foreground">핵심 캠페인 강화·신규 채널 테스트</span>에 재투자할 수 있는 여력으로 환원됩니다.
+              <br/>
+              <span className="text-muted-foreground/80">※ 추정치 · 카테고리·경쟁도·CPC 변동에 따라 실제 수치는 달라질 수 있습니다.</span>
             </p>
           </Card>
         );
