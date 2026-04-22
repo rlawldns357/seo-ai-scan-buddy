@@ -127,7 +127,24 @@ export default function Demo() {
   const [queueId, setQueueId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [guideOpen, setGuideOpen] = useState(true);
+  const [phaseTimings, setPhaseTimings] = useState<Partial<Record<Phase, number>>>({});
+  const [phaseStart, setPhaseStart] = useState<number | null>(null);
   const draftRef = useRef<HTMLDivElement>(null);
+
+  // Track elapsed time per phase
+  useEffect(() => {
+    if (phase === "idle") {
+      setPhaseTimings({});
+      setPhaseStart(null);
+      return;
+    }
+    const now = performance.now();
+    if (phaseStart !== null) {
+      // Record previous phase duration when transitioning
+    }
+    setPhaseStart(now);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   const SAMPLE_URLS = [
     { url: "https://www.musinsa.com", label: "무신사 (패션 카테고리)" },
