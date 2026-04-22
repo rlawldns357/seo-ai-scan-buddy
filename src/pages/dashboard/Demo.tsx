@@ -390,7 +390,7 @@ export default function Demo() {
               <ShoppingBag className="w-3 h-3" /> 이커머스 / 브랜드
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
-              ⏱ 5분 풀 시연
+              ⚡ 10초 라이브 — URL → 30편 플랜 → 기대 매출
             </span>
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-1 leading-tight tracking-tight">
@@ -449,7 +449,7 @@ export default function Demo() {
         </div>
       </Card>
 
-      {/* 5분 시연 가이드 (접이식) */}
+      {/* 10초 라이브 가이드 (접이식) */}
       <Card className="p-0 mb-4 overflow-hidden border-primary/30">
         <button
           onClick={() => setGuideOpen(o => !o)}
@@ -457,7 +457,7 @@ export default function Demo() {
         >
           <div className="flex items-center gap-2 min-w-0">
             <ClipboardList className="w-4 h-4 text-primary shrink-0" />
-            <span className="text-sm font-bold text-foreground">5분 시연 시나리오 가이드</span>
+            <span className="text-sm font-bold text-foreground">10초 라이브 시연 가이드</span>
             <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary text-primary-foreground font-bold">진행자용</span>
           </div>
           {guideOpen ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
@@ -467,11 +467,11 @@ export default function Demo() {
             {/* 시작 멘트 */}
             <div>
               <div className="text-[11px] font-bold text-muted-foreground mb-1.5 flex items-center gap-1">
-                <Mic className="w-3 h-3" /> 시작 멘트 (0:00–0:30)
+                <Mic className="w-3 h-3" /> 시작 멘트 (클릭 직전)
               </div>
               <blockquote className="text-sm text-foreground leading-relaxed border-l-2 border-primary pl-3 py-1">
-                "오늘 5분 안에, <span className="font-bold">광고비 0원으로 검색에서 매출이 들어오는 과정</span>을 직접 보여드릴게요.
-                URL 하나만 있으면 됩니다. AI가 토픽을 뽑고, 글을 쓰고, 채점하고, 발행 큐까지 자동으로 올립니다.
+                "지금부터 <span className="font-bold">10초 안에</span>, 광고비 0원으로 검색에서 매출이 들어오는 과정을 보여드릴게요.
+                URL 하나면 됩니다. AI가 토픽을 뽑고, 글을 쓰고, 채점하고, 발행 큐까지 자동으로 올립니다.
                 마지막엔 이 글 1편이 매달 얼마를 벌어줄지 숫자로 보여드릴게요."
               </blockquote>
             </div>
@@ -496,15 +496,15 @@ export default function Demo() {
 
             {/* 클릭 흐름 + 결과 노출 순서 */}
             <div>
-              <div className="text-[11px] font-bold text-muted-foreground mb-1.5">클릭 흐름 & 결과 노출 순서</div>
+              <div className="text-[11px] font-bold text-muted-foreground mb-1.5">클릭 흐름 & 결과 노출 순서 (총 ~10초)</div>
               <ol className="text-xs text-foreground space-y-1.5">
                 {[
-                  ["0:30", "「라이브 데모 시작」 클릭", "한 번의 클릭으로 전 과정이 자동 진행됨을 강조"],
-                  ["0:35", "추천 토픽 3개 카드 등장", "축별 색상(SEO/AEO/GEO)으로 다양성 어필"],
-                  ["0:50", "본문이 타이핑되며 차오름", "‘이게 바로 사람이 1시간 걸릴 일’이라고 멘트"],
-                  ["2:30", "3축 게이지가 0→점수까지 애니메이션", "발행 전 자동 검수가 된다는 신뢰 포인트"],
-                  ["3:00", "월 예상 SEO 매출 카드 (가장 강조)", "여기서 한 박자 쉬며 숫자 짚어주기"],
-                  ["4:30", "발행 큐 등록 완료 카드", "매일 자동 발행 → 자산이 누적됨을 마무리 멘트"],
+                  ["①", "「라이브 데모 시작」 클릭", "한 번의 클릭으로 전 과정이 자동 진행됨을 강조"],
+                  ["②", "추천 토픽 3개 카드 등장", "축별 색상(SEO/AEO/GEO)으로 다양성 어필"],
+                  ["③", "본문이 타이핑되며 차오름", "‘사람이 1시간 걸릴 일이 몇 초 만에’ 라고 멘트"],
+                  ["④", "3축 게이지가 0→점수까지 애니메이션", "발행 전 자동 검수가 된다는 신뢰 포인트"],
+                  ["⑤", "월 예상 SEO 매출 카드 (가장 강조)", "여기서 한 박자 쉬며 숫자 짚어주기"],
+                  ["⑥", "발행 큐 등록 완료 카드", "매일 자동 발행 → 자산이 누적됨을 마무리 멘트"],
                 ].map(([t, action, tip]) => (
                   <li key={t as string} className="flex gap-2">
                     <span className="font-mono text-[10px] text-primary font-bold shrink-0 w-9 pt-0.5">{t}</span>
@@ -520,7 +520,7 @@ export default function Demo() {
             {/* 마무리 멘트 */}
             <div>
               <div className="text-[11px] font-bold text-muted-foreground mb-1.5 flex items-center gap-1">
-                <Mic className="w-3 h-3" /> 마무리 멘트 (4:30–5:00)
+                <Mic className="w-3 h-3" /> 마무리 멘트 (결과 카드 등장 직후)
               </div>
               <blockquote className="text-sm text-foreground leading-relaxed border-l-2 border-primary pl-3 py-1">
                 "지금 보신 게 글 <span className="font-bold">딱 1편</span>이에요. 이걸 매일 자동으로 1편씩 발행하면
