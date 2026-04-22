@@ -1009,11 +1009,17 @@ export default function Demo() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
-              <ScoreGauge label="SEO" value={scores.seo.score} comment={scores.seo.comment} color={axisColor("SEO")} />
-              <ScoreGauge label="AEO" value={scores.aeo.score} comment={scores.aeo.comment} color={axisColor("AEO")} />
-              <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} />
-            </div>
+            {(() => {
+              // 자동으로 가장 낮은 축을 약점으로 선정
+              const minScore = Math.min(scores.seo.score, scores.aeo.score, scores.geo.score);
+              return (
+                <div className="grid grid-cols-3 gap-3 pt-2">
+                  <ScoreGauge label="SEO" value={scores.seo.score} comment={scores.seo.comment} color={axisColor("SEO")} weakest={scores.seo.score === minScore} />
+                  <ScoreGauge label="AEO" value={scores.aeo.score} comment={scores.aeo.comment} color={axisColor("AEO")} weakest={scores.aeo.score === minScore} />
+                  <ScoreGauge label="GEO" value={scores.geo.score} comment={scores.geo.comment} color={axisColor("GEO")} weakest={scores.geo.score === minScore} />
+                </div>
+              );
+            })()}
 
             {/* 내부 팀용 — 발행 전 신호 점검 (관찰된 근거 함께 노출) */}
             {(() => {
