@@ -442,6 +442,30 @@ export default function Demo() {
         </Card>
       )}
 
+      {/* Overall progress summary */}
+      {(running || phase === "done") && (() => {
+        const order: Phase[] = ["recommend", "brief", "draft", "score", "publish"];
+        const doneCount = phase === "done" ? order.length : completed.length;
+        const pct = Math.round((doneCount / order.length) * 100);
+        const totalElapsed = Object.values(phaseTimings).reduce((a, b) => a + (b || 0), 0);
+        return (
+          <div className="mb-3 flex items-center justify-between gap-3 px-1">
+            <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+              <span className="font-bold text-foreground">{doneCount}/{order.length}</span>
+              <span>단계 완료</span>
+              <span className="text-muted-foreground/50">·</span>
+              <span>총 경과 <span className="font-mono font-semibold text-foreground">{totalElapsed.toFixed(1)}초</span></span>
+            </div>
+            <div className="flex items-center gap-2 min-w-0 flex-1 max-w-[260px]">
+              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
+              </div>
+              <span className="text-[11px] font-bold text-primary tabular-nums shrink-0">{pct}%</span>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Stepper */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-5">
         {PHASES.map((p) => {
