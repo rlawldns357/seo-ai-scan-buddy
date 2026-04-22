@@ -34,6 +34,12 @@
 | 출력 | `{ seo, aeo, geo, summary, tips[≤3] }` |
 | 캡 규칙 | 기존 score-caps 재사용 (직접답변 부재 → AEO 캡, 출처 부재 → GEO 캡) |
 
+### 점수 2종 구분
+| 종류 | 시점 | 용도 | 저장 필드 |
+|---|---|---|---|
+| **초안 품질 점수** (Draft Score) | 초안 생성 직후 | 발행 전 개선 방향 제시 | `draft_score` |
+| **발행 품질 점수** (Published Score) | 발행 직후 (재채점) | 최종본 품질 추적, 개선 효과 측정 | `published_score` |
+
 ## 5. Lifecycle
 1. **Draft scored** — `generate-content-draft` 응답에 `score` 포함 → `site_posts.draft_score`에 저장(저장 시점은 큐 추가 시).
 2. **Published rescored** — `status: published` 전이 시 `publish-site-post`가 백그라운드로 재채점 → `published_score`, `score_updated_at` 갱신.
