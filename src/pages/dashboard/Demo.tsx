@@ -390,7 +390,7 @@ export default function Demo() {
               <ShoppingBag className="w-3 h-3" /> 이커머스 / 브랜드
             </span>
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold">
-              ⏱ 5분 풀 시연
+              ⚡ 10초 라이브 — URL → 30편 플랜 → 기대 매출
             </span>
           </div>
           <h1 className="text-2xl font-bold text-foreground mb-1 leading-tight tracking-tight">
