@@ -128,22 +128,23 @@ export default function Demo() {
   const [running, setRunning] = useState(false);
   const [guideOpen, setGuideOpen] = useState(true);
   const [phaseTimings, setPhaseTimings] = useState<Partial<Record<Phase, number>>>({});
-  const [phaseStart, setPhaseStart] = useState<number | null>(null);
+  const phaseStartRef = useRef<{ phase: Phase; t: number } | null>(null);
   const draftRef = useRef<HTMLDivElement>(null);
 
-  // Track elapsed time per phase
+  // Track elapsed time per phase (records previous phase duration on transition)
   useEffect(() => {
+    const now = performance.now();
     if (phase === "idle") {
       setPhaseTimings({});
-      setPhaseStart(null);
+      phaseStartRef.current = null;
       return;
     }
-    const now = performance.now();
-    if (phaseStart !== null) {
-      // Record previous phase duration when transitioning
+    const prev = phaseStartRef.current;
+    if (prev && prev.phase !== phase) {
+      const dur = (now - prev.t) / 1000;
+      setPhaseTimings((m) => ({ ...m, [prev.phase]: dur }));
     }
-    setPhaseStart(now);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    phaseStartRef.current = { phase, t: now };
   }, [phase]);
 
   const SAMPLE_URLS = [
