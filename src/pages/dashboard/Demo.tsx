@@ -127,7 +127,25 @@ export default function Demo() {
   const [queueId, setQueueId] = useState<string | null>(null);
   const [running, setRunning] = useState(false);
   const [guideOpen, setGuideOpen] = useState(true);
+  const [phaseTimings, setPhaseTimings] = useState<Partial<Record<Phase, number>>>({});
+  const phaseStartRef = useRef<{ phase: Phase; t: number } | null>(null);
   const draftRef = useRef<HTMLDivElement>(null);
+
+  // Track elapsed time per phase (records previous phase duration on transition)
+  useEffect(() => {
+    const now = performance.now();
+    if (phase === "idle") {
+      setPhaseTimings({});
+      phaseStartRef.current = null;
+      return;
+    }
+    const prev = phaseStartRef.current;
+    if (prev && prev.phase !== phase) {
+      const dur = (now - prev.t) / 1000;
+      setPhaseTimings((m) => ({ ...m, [prev.phase]: dur }));
+    }
+    phaseStartRef.current = { phase, t: now };
+  }, [phase]);
 
   const SAMPLE_URLS = [
     { url: "https://www.musinsa.com", label: "무신사 (패션 카테고리)" },
@@ -250,7 +268,11 @@ export default function Demo() {
             {running ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
             {running ? "데모 진행 중…" : "라이브 데모 시작"}
           </Button>
-      </div>
+        </div>
+        <p className="mt-2 text-[11px] text-muted-foreground">
+          💡 시연 팁: 실제 브랜드 URL을 넣으면 추천 키워드가 더 사실감 있게 나옵니다. (예: <code className="font-mono">musinsa.com</code>, <code className="font-mono">kream.co.kr</code>)
+        </p>
+      </Card>
 
       {/* 5분 시연 가이드 (접이식) */}
       <Card className="p-0 mb-4 overflow-hidden border-primary/30">
@@ -320,9 +342,23 @@ export default function Demo() {
               </ol>
             </div>
 
+            {/* 마무리 멘트 */}
+            <div>
+              <div className="text-[11px] font-bold text-muted-foreground mb-1.5 flex items-center gap-1">
+                <Mic className="w-3 h-3" /> 마무리 멘트 (4:30–5:00)
+              </div>
+              <blockquote className="text-sm text-foreground leading-relaxed border-l-2 border-primary pl-3 py-1">
+                "지금 보신 게 글 <span className="font-bold">딱 1편</span>이에요. 이걸 매일 자동으로 1편씩 발행하면
+                한 달 뒤엔 <span className="font-bold">30편</span>, 1년 뒤엔 <span className="font-bold">365편</span>이
+                자산처럼 쌓입니다. <span className="font-bold">광고는 끄면 매출이 0</span>이지만,
+                SEO 콘텐츠는 끄지 않는 한 계속 매출을 만들어요.
+                다음 단계는 실제 사이트 URL 한 번 직접 넣어보시는 거예요."
+              </blockquote>
+            </div>
+
             {/* 실시간 멘트 헬퍼 */}
             {running && (
-              <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20">
+              <div className="flex items-start gap-2 p-3 rounded-lg bg-primary/5 border border-primary/20 animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <Mic className="w-3.5 h-3.5 text-primary mt-0.5 shrink-0" />
                 <div className="text-xs text-foreground leading-relaxed">
                   <span className="font-bold text-primary">[지금 말할 멘트]</span> {currentLine}
@@ -332,10 +368,36 @@ export default function Demo() {
           </div>
         )}
       </Card>
-        <p className="mt-2 text-[11px] text-muted-foreground">
-          💡 시연 팁: 실제 브랜드 URL을 넣으면 추천 키워드가 더 사실감 있게 나옵니다. (예: <code className="font-mono">musinsa.com</code>, <code className="font-mono">kream.co.kr</code>)
-        </p>
-      </Card>
+
+      {/* Live Generation Bar — 실시간 생성 중 강조 */}
+      {running && (
+        <Card className="p-4 mb-4 border-primary/40 bg-gradient-to-r from-primary/5 via-background to-primary/5 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-center gap-3">
+            <div className="relative flex h-3 w-3 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-destructive" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-destructive">LIVE</span>
+                <span className="text-sm font-bold text-foreground truncate">
+                  {phase === "recommend" && "AI가 구매 의도 키워드를 발굴하고 있어요…"}
+                  {phase === "draft" && "AI가 SEO 친화 본문을 한 글자씩 작성 중이에요…"}
+                  {phase === "score" && "AI가 발행 전 3축 콘텐츠 품질을 채점 중이에요…"}
+                  {phase === "publish" && "발행 큐에 자동으로 등록 중이에요…"}
+                </span>
+              </div>
+              <div className="mt-2 h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-primary via-primary/70 to-primary animate-pulse"
+                  style={{
+                    width: phase === "recommend" ? "20%" : phase === "draft" ? "55%" : phase === "score" ? "80%" : phase === "publish" ? "95%" : "100%",
+                    transition: "width 0.6s ease-out",
+                  }} />
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Stepper */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-5">
@@ -343,11 +405,12 @@ export default function Demo() {
           const isDone = completed.includes(p.key) || phase === "done";
           const isActive = phase === p.key;
           const Icon = p.icon;
+          const dur = phaseTimings[p.key];
           return (
             <div key={p.key}
               className={cn(
                 "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all",
-                isActive && "border-primary bg-primary/5 shadow-sm",
+                isActive && "border-primary bg-primary/5 shadow-sm scale-[1.02]",
                 isDone && "border-primary/30 bg-primary/5",
                 !isActive && !isDone && "border-border bg-card opacity-60",
               )}>
@@ -357,9 +420,11 @@ export default function Demo() {
               )}>
                 {isDone ? <Check className="w-4 h-4" /> : isActive ? <Loader2 className="w-4 h-4 animate-spin" /> : <Icon className="w-4 h-4" />}
               </div>
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <div className="text-xs font-semibold text-foreground truncate">{p.label}</div>
-                <div className="text-[10px] text-muted-foreground truncate">{p.sub}</div>
+                <div className="text-[10px] text-muted-foreground truncate">
+                  {isDone && dur ? `✓ ${dur.toFixed(1)}초 만에 완료` : isActive ? "진행 중…" : p.sub}
+                </div>
               </div>
             </div>
           );
