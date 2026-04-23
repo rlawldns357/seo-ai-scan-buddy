@@ -590,7 +590,7 @@ export default function BlogPost() {
 
           {post.content ? (
             <div
-              className="mt-10 text-base leading-relaxed"
+              className="mt-8 text-base leading-[1.8] text-foreground/90 [&>*:first-child]:mt-0 [&_p]:!text-foreground/85 [&_li]:!text-foreground/85"
               dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}
             />
           ) : (
