@@ -589,10 +589,18 @@ export default function BlogPost() {
           </div>
 
           {post.content ? (
-            <div
-              className="mt-10 text-base leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: renderMarkdown(post.content) }}
-            />
+            (() => {
+              const html = renderMarkdown(post.content);
+              if (typeof window !== "undefined") {
+                console.log("[BlogPost] content length:", post.content.length, "html length:", html.length, "html preview:", html.slice(0, 300));
+              }
+              return (
+                <div
+                  className="mt-10 text-base leading-relaxed text-foreground"
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
+              );
+            })()
           ) : (
             <p className="mt-10 text-muted-foreground">{post.excerpt}</p>
           )}
