@@ -216,19 +216,7 @@ export default function Recommendations() {
                 <div className="flex items-center gap-1 shrink-0">
                   <Button
                     size="sm"
-                    variant="ghost"
                     className="rounded-full h-8 text-xs gap-1"
-                    disabled={idea.rolling}
-                    onClick={() => rollIdea(idea)}
-                    title="주사위 굴려 다른 주제 받기 (1 크레딧)"
-                  >
-                    {idea.rolling ? <Loader2 className="w-3 h-3 animate-spin" /> : <Dice5 className="w-3 h-3" />}
-                    {idea.rolling ? "굴리는 중" : "다시 굴리기"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="rounded-full h-8 text-xs gap-1"
-                    disabled={idea.rolling}
                     onClick={() => sendToWorkflow(idea)}
                   >
                     <Send className="w-3 h-3" /> 워크플로우로
