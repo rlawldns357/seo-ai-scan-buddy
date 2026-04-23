@@ -96,6 +96,23 @@ export default function KanbanBoard() {
   const performTransition = useCallback(
     async (post: KanbanPost, to: KanbanStatus) => {
       if (post.status === to) return;
+
+      // Enforce one-step-at-a-time flow: idea → draft → scheduled → published.
+      // Allow: backwards moves, archive ↔ published, and published → draft (unpublish).
+      const FLOW: KanbanStatus[] = ["idea", "draft", "scheduled", "published"];
+      const fromIdx = FLOW.indexOf(post.status);
+      const toIdx = FLOW.indexOf(to);
+      const isForward = fromIdx >= 0 && toIdx >= 0 && toIdx > fromIdx;
+      if (isForward && toIdx - fromIdx > 1) {
+        const need = FLOW[fromIdx + 1];
+        toast({
+          title: "한 단계씩 진행해주세요",
+          description: `먼저 "${COLUMN_META[need].label}" 단계를 거쳐야 해요.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Hard auth check — publishing/AI calls require a logged-in owner.
       if (!user) {
         toast({
