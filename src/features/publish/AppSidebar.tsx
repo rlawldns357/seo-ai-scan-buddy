@@ -1,4 +1,4 @@
-import { LayoutDashboard, Lightbulb, FileText, Send, BarChart3, ExternalLink, LogOut, Home, Clapperboard } from "lucide-react";
+import { LayoutDashboard, Lightbulb, FileText, Send, BarChart3, ExternalLink, LogOut, Home, Clapperboard, BookOpen } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -18,6 +18,7 @@ const workflowItems: NavItem[] = [
   { title: "콘텐츠 추천", url: "/dashboard/recommendations", icon: Lightbulb },
   { title: "글 작성", url: "/dashboard/content", icon: FileText },
   { title: "자동 발행 큐", url: "/dashboard/auto-publish", icon: Send },
+  { title: "발행된 글", url: "/dashboard/posts", icon: BookOpen },
 ];
 
 const analyticsItems: NavItem[] = [
