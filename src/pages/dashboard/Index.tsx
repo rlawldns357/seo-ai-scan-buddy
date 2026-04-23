@@ -347,13 +347,20 @@ export default function DashboardIndex() {
             </a>
           </div>
 
-          {/* KPI 4개 — 한눈에 운영 현황 */}
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">발행 대기</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.queued.length}</p></Card>
-            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">발행 완료</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.published.length}</p></Card>
-            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">총 조회수</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.totalViews}</p></Card>
-            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">이번 주 방문</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.weeklyVisitors}</p></Card>
-          </div>
+          {/* KPI — 한 줄 컴팩트 바 */}
+          <Card className="rounded-2xl border-border/50 shadow-card divide-x divide-border/50 grid grid-cols-2 sm:grid-cols-4 overflow-hidden">
+            {[
+              { label: "발행 대기", value: queueCounts.queued.length },
+              { label: "발행 완료", value: queueCounts.published.length },
+              { label: "총 조회수", value: queueCounts.totalViews },
+              { label: "이번 주 방문", value: queueCounts.weeklyVisitors },
+            ].map((k) => (
+              <div key={k.label} className="px-4 py-2.5 flex items-center justify-between sm:flex-col sm:items-start sm:justify-center sm:gap-0.5">
+                <p className="text-[11px] text-muted-foreground">{k.label}</p>
+                <p className="text-lg font-bold text-foreground tabular-nums">{k.value}</p>
+              </div>
+            ))}
+          </Card>
 
           {/* 다음 할 일 — 단일 CTA */}
           <Card className="p-5 rounded-2xl border-border/50 shadow-card bg-primary/5">
