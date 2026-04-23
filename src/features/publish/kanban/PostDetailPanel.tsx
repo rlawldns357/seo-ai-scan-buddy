@@ -85,11 +85,32 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
             >
               <Save className="w-3.5 h-3.5" /> {saving ? "저장 중..." : "저장"}
             </Button>
-            {post.status === "published" && siteSlug && (
+            {(post.status === "published" || post.status === "archived") && siteSlug && (
               <Button asChild size="sm" variant="outline" className="rounded-full">
                 <Link to={`/sites/${siteSlug}/${post.slug}`} target="_blank">
                   <ExternalLink className="w-3.5 h-3.5" /> 라이브
                 </Link>
+              </Button>
+            )}
+            {post.status === "published" && onArchive && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => onArchive(true)}
+                title="칸반에서 숨겨요. 라이브 사이트에는 그대로 노출됩니다."
+              >
+                <Archive className="w-3.5 h-3.5" /> 보관
+              </Button>
+            )}
+            {post.status === "archived" && onArchive && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => onArchive(false)}
+              >
+                <ArchiveRestore className="w-3.5 h-3.5" /> 발행됨으로 복원
               </Button>
             )}
             <Button
