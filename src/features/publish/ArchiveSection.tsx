@@ -84,42 +84,45 @@ export default function ArchiveSection() {
   if (!site) return null;
 
   return (
-    <section id="archive" className="space-y-3 scroll-mt-20">
-      <header className="flex items-center justify-between gap-2">
-        <div>
-          <h2 className="text-base font-bold text-foreground inline-flex items-center gap-2">
-            <Archive className="w-4 h-4 text-muted-foreground" /> 발행 아카이브
-          </h2>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            발행된 모든 글을 한곳에서 검색 · 보관 · 복원할 수 있어요. 보관해도 라이브 사이트에는 그대로 노출됩니다.
-          </p>
+    <Card id="archive" className="rounded-2xl border-border/60 overflow-hidden scroll-mt-20">
+      <SectionCardHeader
+        tone="neutral"
+        title={
+          <span className="inline-flex items-center gap-2">
+            <Archive className="w-3.5 h-3.5 text-muted-foreground" /> 발행 아카이브
+          </span>
+        }
+        meta={
+          <>
+            <span><span className="text-foreground font-semibold">{total}</span> 편</span>
+          </>
+        }
+      />
+      <div className="p-5 space-y-3">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-full border border-border/60 p-0.5 text-xs">
+            {(["all", "published", "archived"] as const).map((k) => (
+              <button
+                key={k}
+                onClick={() => setTab(k)}
+                className={`px-3 py-1 rounded-full transition-colors ${
+                  tab === k ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {k === "all" ? "전체" : k === "published" ? "발행됨" : "보관"}
+              </button>
+            ))}
+          </div>
+          <div className="relative ml-auto w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="제목 검색"
+              className="h-8 pl-8 rounded-full text-xs"
+            />
+          </div>
         </div>
-      </header>
-
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="inline-flex rounded-full border border-border/60 p-0.5 text-xs">
-          {(["all", "published", "archived"] as const).map((k) => (
-            <button
-              key={k}
-              onClick={() => setTab(k)}
-              className={`px-3 py-1 rounded-full transition-colors ${
-                tab === k ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              {k === "all" ? "전체" : k === "published" ? "발행됨" : "보관"}
-            </button>
-          ))}
-        </div>
-        <div className="relative ml-auto w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="제목 검색"
-            className="h-8 pl-8 rounded-full text-xs"
-          />
-        </div>
-      </div>
 
       {loading ? (
         <div className="text-sm text-muted-foreground text-center py-10">불러오는 중…</div>
