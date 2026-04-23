@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Sparkles } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import DiceRoller from "@/components/DiceRoller";
+
 import KanbanColumn from "./KanbanColumn";
 import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
@@ -44,7 +44,7 @@ export default function KanbanBoard() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [openPost, setOpenPost] = useState<KanbanPost | null>(null);
-  const [dicePost, setDicePost] = useState<KanbanPost | null>(null);
+  
   const [activeTab, setActiveTab] = useState<KanbanStatus>("idea");
 
   const sensors = useSensors(
@@ -246,7 +246,6 @@ export default function KanbanBoard() {
         const next = NEXT_STATUS[post.status];
         if (next) performTransition(post, next);
       }}
-      onRollDice={(post) => setDicePost(post)}
       nextStatus={NEXT_STATUS[p.status]}
     />
   );
@@ -339,18 +338,6 @@ export default function KanbanBoard() {
         onDelete={() => openPost ? handleDelete(openPost.id) : Promise.resolve()}
       />
 
-      {dicePost && (
-        <DiceRoller
-          open={!!dicePost}
-          onOpenChange={(o) => !o && setDicePost(null)}
-          postId={dicePost.id}
-          postTitle={dicePost.title}
-          onSuccess={() => {
-            setDicePost(null);
-            load();
-          }}
-        />
-      )}
     </>
   );
 }
