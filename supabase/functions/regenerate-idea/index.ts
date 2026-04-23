@@ -10,6 +10,37 @@ const COST_PER_ROLL = 1;
 
 type Axis = "SEO" | "AEO" | "GEO";
 
+/** Firecrawl로 사이트 컨텍스트 스크랩 (실패 시 빈 문자열) */
+async function scrapeBrandContext(siteUrl: string): Promise<string> {
+  const fcKey = Deno.env.get("FIRECRAWL_API_KEY");
+  if (!fcKey || !siteUrl) return "";
+  try {
+    const resp = await fetch("https://api.firecrawl.dev/v2/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${fcKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ url: siteUrl, formats: ["markdown", "summary"], onlyMainContent: true }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return "";
+    const data = await resp.json();
+    const md: string = data?.data?.markdown ?? data?.markdown ?? "";
+    const summary: string = data?.data?.summary ?? data?.summary ?? "";
+    const title: string = data?.data?.metadata?.title ?? data?.metadata?.title ?? "";
+    const desc: string = data?.data?.metadata?.description ?? data?.metadata?.description ?? "";
+    const trimmed = md.replace(/\s+/g, " ").slice(0, 2000);
+    return [
+      title && `제목: ${title}`,
+      desc && `설명: ${desc}`,
+      summary && `요약: ${summary}`,
+      trimmed && `본문 일부: ${trimmed}`,
+    ].filter(Boolean).join("\n");
+  } catch (e) {
+    console.warn("scrapeBrandContext failed", e);
+    return "";
+  }
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
