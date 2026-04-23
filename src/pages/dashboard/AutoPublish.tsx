@@ -79,7 +79,7 @@ export default function AutoPublish() {
     );
   }
 
-  const queued = posts.filter((p) => p.status === "queued");
+  const queued = posts.filter((p) => p.status === "scheduled");
   const published = posts.filter((p) => p.status === "published");
 
   return (

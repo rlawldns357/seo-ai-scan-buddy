@@ -77,11 +77,11 @@ export default function DashboardIndex() {
       .order("created_at", { ascending: false });
 
     const loadedPosts = ((postsQuery.data ?? []) as SitePost[]).sort((a, b) => {
-      if (a.status === "queued" && b.status === "queued") {
+      if (a.status === "scheduled" && b.status === "scheduled") {
         return (a.queue_position ?? 9999) - (b.queue_position ?? 9999);
       }
-      if (a.status === "queued") return -1;
-      if (b.status === "queued") return 1;
+      if (a.status === "scheduled") return -1;
+      if (b.status === "scheduled") return 1;
       return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     });
 
@@ -113,7 +113,7 @@ export default function DashboardIndex() {
   }, [site]);
 
   const queueCounts = useMemo(() => {
-    const queued = posts.filter((post) => post.status === "queued");
+    const queued = posts.filter((post) => post.status === "scheduled");
     const published = posts.filter((post) => post.status === "published");
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
@@ -161,7 +161,7 @@ export default function DashboardIndex() {
       title: data?.title || seedTopic,
       excerpt: data?.excerpt || `${siteRecord.title}용 자동 생성 콘텐츠입니다.`,
       content: data?.content || "생성된 초안이 여기에 들어갑니다.",
-      status: "queued",
+      status: "scheduled",
       source_axis: axis,
       queue_position: index + 1,
       is_auto_generated: true,

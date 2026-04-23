@@ -26,7 +26,7 @@ export default function Reports() {
         supabase.from("site_posts").select("id", { count: "exact", head: true })
           .eq("site_id", site.id).eq("status", "published"),
         supabase.from("site_posts").select("id", { count: "exact", head: true })
-          .eq("site_id", site.id).eq("status", "queued"),
+          .eq("site_id", site.id).eq("status", "scheduled"),
       ]);
       setHistory((h.data as HistoryRow[]) || []);
       setPublishedCount(pubC.count || 0);

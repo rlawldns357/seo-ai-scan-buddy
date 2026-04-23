@@ -58,7 +58,7 @@ export default function Content() {
         title: draft.title,
         excerpt: draft.excerpt,
         content: draft.content,
-        status: "queued",
+        status: "scheduled",
         source_axis: axis,
         keywords: Array.isArray((draft as any).keywords) ? (draft as any).keywords : [],
         faq: Array.isArray((draft as any).faq) ? (draft as any).faq : [],
