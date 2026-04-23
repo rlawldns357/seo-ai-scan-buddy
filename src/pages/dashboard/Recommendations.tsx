@@ -88,42 +88,33 @@ export default function Recommendations() {
     })();
   }, [site]);
 
-  const rollIdea = guard(async (idea: Idea) => {
+  const rollSeed = guard(async () => {
     if (!site) return;
-    if (creditTotal !== null && creditTotal < 1) {
-      toast({ title: "🎲 크레딧이 부족해요", description: "이번 달 재생성 크레딧을 모두 사용했어요.", variant: "destructive" });
-      return;
-    }
-    setIdeas((cur) => cur.map((i) => (i.id === idea.id ? { ...i, rolling: true } : i)));
+    setSeedRolling(true);
     try {
       const { data, error } = await supabase.functions.invoke("regenerate-idea", {
         body: {
+          mode: "seed",
           siteUrl: site.site_url,
           siteTitle: site.title,
-          axis: idea.axis,
-          seed,
-          currentTopic: idea.topic,
-          avoidTopics: ideas.map((i) => i.topic),
+          avoidSeeds: seedHistory,
         },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setIdeas((cur) =>
-        cur.map((i) =>
-          i.id === idea.id
-            ? { ...i, topic: data.topic, reason: data.reason || `${i.axis} 보강 추천`, rolling: false }
-            : i,
-        ),
-      );
-      setCreditTotal((data.newBalance ?? 0) + (data.newAddon ?? 0));
-      toast({ title: "🎲 새 주제 나왔어요!" });
+      const next: string = data.seed ?? "";
+      if (!next) throw new Error("빈 응답");
+      setSeed(next);
+      setSeedHistory((h) => [next, ...h.filter((s) => s !== next)].slice(0, MAX_SEED_HISTORY));
+      toast({ title: "🎲 관심 주제 추천 완료", description: next });
     } catch (e) {
-      setIdeas((cur) => cur.map((i) => (i.id === idea.id ? { ...i, rolling: false } : i)));
       toast({
-        title: "재생성 실패",
+        title: "추천 실패",
         description: e instanceof Error ? e.message : "다시 시도해주세요",
         variant: "destructive",
       });
+    } finally {
+      setSeedRolling(false);
     }
   });
 
