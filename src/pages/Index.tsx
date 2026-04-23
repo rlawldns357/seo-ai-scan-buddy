@@ -200,6 +200,8 @@ const Index = () => {
           saveAnalysisHistory(finalUrl, analyzeRes.data!);
         });
       } else {
+        // Preserve raw debugging info in console while showing a friendly message to the user.
+        console.warn("[runAnalysis] analyze failed:", analyzeRes.error);
         setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
         trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
       }
