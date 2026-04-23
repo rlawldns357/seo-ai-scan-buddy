@@ -10,6 +10,7 @@ import { useAuth } from "@/features/auth/useAuth";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import OnboardingSteps from "@/features/publish/OnboardingSteps";
 import FlowStepper from "@/features/publish/FlowStepper";
+import DashboardHero from "@/features/publish/DashboardHero";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -116,10 +117,16 @@ export default function DashboardIndex() {
     const queued = posts.filter((post) => post.status === "scheduled");
     const published = posts.filter((post) => post.status === "published");
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
 
     const weeklyVisitors = new Set(
       views.filter((view) => new Date(view.created_at).getTime() >= weekAgo).map((view) => view.session_id),
     ).size;
+
+    const publishedToday = published.filter(
+      (post) => post.published_at && new Date(post.published_at).getTime() >= todayStart.getTime(),
+    ).length;
 
     const byPost = new Map(
       published.map((post) => {
@@ -138,6 +145,7 @@ export default function DashboardIndex() {
     return {
       queued,
       published,
+      publishedToday,
       totalViews: published.reduce((sum, post) => sum + (post.view_count ?? 0), 0),
       weeklyVisitors,
       byPost,
@@ -286,6 +294,10 @@ export default function DashboardIndex() {
     <>
       {!user ? (
         <div>
+          <DashboardHero
+            stage="guest"
+            onLogin={() => navigate(`/auth?next=${encodeURIComponent("/dashboard")}`)}
+          />
           <OnboardingSteps
             state="guest"
             primaryLabel="로그인하고 시작하기"
@@ -296,6 +308,15 @@ export default function DashboardIndex() {
         </div>
       ) : !site ? (
         <div className="space-y-6">
+          <DashboardHero
+            stage="no-site"
+            siteUrl={siteUrl}
+            setSiteUrl={setSiteUrl}
+            title={title}
+            setTitle={setTitle}
+            submitting={submitting}
+            onSubmit={handleCreate}
+          />
           <OnboardingSteps
             state="no-site"
             primaryLabel="페이지 만들러 가기"
@@ -330,6 +351,20 @@ export default function DashboardIndex() {
         </div>
       ) : (
         <div className="space-y-5">
+          <DashboardHero
+            stage="ready"
+            siteTitle={site.title}
+            siteHref={`/sites/${site.site_slug}`}
+            queued={queueCounts.queued.length}
+            publishedToday={queueCounts.publishedToday}
+            weeklyVisitors={queueCounts.weeklyVisitors}
+            primaryLabel={queueCounts.queued.length > 0 ? "큐로 이동" : "추천 보기"}
+            onPrimary={() => {
+              const target = queueCounts.queued.length > 0 ? "queue" : "recommendations";
+              document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          />
+
           {/* 사이트 요약 — 한 줄 */}
           <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-border/50 bg-card px-5 py-4">
             <div className="min-w-0">
