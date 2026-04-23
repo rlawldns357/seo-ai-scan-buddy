@@ -17,19 +17,20 @@ import LockedFeature from "@/features/publish/LockedFeature";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Sparkles } from "lucide-react";
+import { Plus, Sparkles, Archive } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 import KanbanColumn from "./KanbanColumn";
 import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
-import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus } from "./types";
+import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_LIMIT } from "./types";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
   idea: "draft",
   draft: "scheduled",
   scheduled: "published",
   published: null,
+  archived: null,
 };
 
 export default function KanbanBoard() {
@@ -75,12 +76,15 @@ export default function KanbanBoard() {
   }, [siteLoading, load]);
 
   const grouped = useMemo(() => {
-    const out: Record<KanbanStatus, KanbanPost[]> = { idea: [], draft: [], scheduled: [], published: [] };
+    const out: Record<KanbanStatus, KanbanPost[]> = { idea: [], draft: [], scheduled: [], published: [], archived: [] };
     for (const p of posts) {
       if (out[p.status]) out[p.status].push(p);
     }
     return out;
   }, [posts]);
+
+  const archivedCount = grouped.archived.length;
+  const totalPublishedHistory = grouped.published.length + archivedCount;
 
   /** Apply optimistic status change, returning a rollback function. */
   const optimisticMove = (id: string, to: KanbanStatus) => {
@@ -188,6 +192,20 @@ export default function KanbanBoard() {
     setPosts((cur) => cur.filter((p) => p.id !== id));
   };
 
+  const handleArchive = async (id: string, archive: boolean) => {
+    const { error } = await supabase
+      .from("site_posts")
+      .update({ status: archive ? "archived" : "published" } as any)
+      .eq("id", id);
+    if (error) {
+      toast({ title: archive ? "보관 실패" : "복원 실패", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: archive ? "보관됨 — 칸반에서 숨겨졌어요" : "복원됨 — 발행됨으로 이동" });
+    setOpenPost(null);
+    await load();
+  };
+
   const createIdea = requireAuth(async () => {
     if (!site) return;
     const title = window.prompt("새 아이디어 제목을 입력하세요");
@@ -250,21 +268,60 @@ export default function KanbanBoard() {
     />
   );
 
+  /** For published column we cap the visible items and show a "전체 보기" link. */
+  const renderColumnContent = (s: KanbanStatus) => {
+    if (grouped[s].length === 0) {
+      return (
+        <div className="text-[11px] text-muted-foreground text-center py-8 border border-dashed border-border/40 rounded-xl">
+          여기로 드롭
+        </div>
+      );
+    }
+    if (s === "published" && grouped.published.length > PUBLISHED_VISIBLE_LIMIT) {
+      const visible = grouped.published.slice(0, PUBLISHED_VISIBLE_LIMIT);
+      const hidden = grouped.published.length - visible.length;
+      return (
+        <>
+          {visible.map(renderCard)}
+          <button
+            onClick={() => document.getElementById("archive")?.scrollIntoView({ behavior: "smooth" })}
+            className="w-full text-[11px] text-muted-foreground hover:text-foreground border border-dashed border-border/40 rounded-xl py-2.5 transition-colors"
+          >
+            +{hidden}편 더보기 → 보관함으로 정리하기
+          </button>
+        </>
+      );
+    }
+    return grouped[s].map(renderCard);
+  };
   return (
     <>
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 mb-4">
         <div className="text-[11px] text-muted-foreground">
-          총 <span className="text-foreground font-semibold tabular-nums">{posts.length}</span>편
-          {COLUMN_ORDER.map((s, i) => (
+          작업 큐 <span className="text-foreground font-semibold tabular-nums">{posts.length - archivedCount}</span>편
+          {COLUMN_ORDER.map((s) => (
             <span key={s}>
-              {i === 0 ? " · " : " · "}
+              {" · "}
               {COLUMN_META[s].label}{" "}
               <span className="font-semibold text-foreground tabular-nums">{grouped[s].length}</span>
             </span>
           ))}
+          {archivedCount > 0 && (
+            <span> · 보관 <span className="font-semibold text-foreground tabular-nums">{archivedCount}</span></span>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
+          {archivedCount > 0 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="rounded-full h-8 text-xs"
+              onClick={() => document.getElementById("archive")?.scrollIntoView({ behavior: "smooth" })}
+            >
+              <Archive className="h-3 w-3" /> 보관함 {archivedCount}
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="rounded-full h-8 text-xs" onClick={createIdea}>
             <Plus className="h-3 w-3" /> 아이디어
           </Button>
@@ -291,13 +348,7 @@ export default function KanbanBoard() {
           {COLUMN_ORDER.map((s) => (
             <TabsContent key={s} value={s} className="mt-3 space-y-2">
               <p className="text-[11px] text-muted-foreground px-1">{COLUMN_META[s].description}</p>
-              {grouped[s].length === 0 ? (
-                <div className="text-xs text-muted-foreground text-center py-10 border border-dashed rounded-2xl">
-                  비어 있음
-                </div>
-              ) : (
-                grouped[s].map(renderCard)
-              )}
+              {renderColumnContent(s)}
             </TabsContent>
           ))}
         </Tabs>
@@ -305,14 +356,12 @@ export default function KanbanBoard() {
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
           <div className="grid grid-cols-4 gap-3">
             {COLUMN_ORDER.map((s) => (
-              <KanbanColumn key={s} status={s} count={grouped[s].length}>
-                {grouped[s].length === 0 ? (
-                  <div className="text-[11px] text-muted-foreground text-center py-8 border border-dashed border-border/40 rounded-xl">
-                    여기로 드롭
-                  </div>
-                ) : (
-                  grouped[s].map(renderCard)
-                )}
+              <KanbanColumn
+                key={s}
+                status={s}
+                count={s === "published" ? totalPublishedHistory : grouped[s].length}
+              >
+                {renderColumnContent(s)}
               </KanbanColumn>
             ))}
           </div>
@@ -336,6 +385,7 @@ export default function KanbanBoard() {
         onClose={() => setOpenPost(null)}
         onSave={(patch) => openPost ? handleSave(openPost.id, patch) : Promise.resolve()}
         onDelete={() => openPost ? handleDelete(openPost.id) : Promise.resolve()}
+        onArchive={(archive) => openPost ? handleArchive(openPost.id, archive) : Promise.resolve()}
       />
 
     </>

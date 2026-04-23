@@ -1,4 +1,6 @@
-export type KanbanStatus = "idea" | "draft" | "scheduled" | "published";
+export type KanbanStatus = "idea" | "draft" | "scheduled" | "published" | "archived";
+
+export const PUBLISHED_VISIBLE_LIMIT = 20;
 
 export type KanbanPost = {
   id: string;
@@ -48,5 +50,11 @@ export const COLUMN_META: Record<
     emoji: "✅",
     description: "라이브 사이트에 노출 중",
     accent: "border-l-emerald-400/60",
+  },
+  archived: {
+    label: "보관",
+    emoji: "📦",
+    description: "칸반에서 숨김 (라이브에는 그대로 노출)",
+    accent: "border-l-muted",
   },
 };
