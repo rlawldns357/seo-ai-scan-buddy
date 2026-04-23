@@ -23,6 +23,7 @@ const DashboardIndex = lazy(() => import("./pages/dashboard/Index.tsx"));
 const DashboardRecommendations = lazy(() => import("./pages/dashboard/Recommendations.tsx"));
 const DashboardContent = lazy(() => import("./pages/dashboard/Content.tsx"));
 const DashboardAutoPublish = lazy(() => import("./pages/dashboard/AutoPublish.tsx"));
+const DashboardPosts = lazy(() => import("./pages/dashboard/Posts.tsx"));
 const DashboardReports = lazy(() => import("./pages/dashboard/Reports.tsx"));
 const DashboardDemo = lazy(() => import("./pages/dashboard/Demo.tsx"));
 const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
@@ -71,6 +72,7 @@ const App = () => (
               <Route path="recommendations" element={<DashboardRecommendations />} />
               <Route path="content" element={<DashboardContent />} />
               <Route path="auto-publish" element={<DashboardAutoPublish />} />
+              <Route path="posts" element={<DashboardPosts />} />
               <Route path="reports" element={<DashboardReports />} />
               <Route path="demo" element={<DashboardDemo />} />
             </Route>
