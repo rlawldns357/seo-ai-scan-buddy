@@ -117,10 +117,16 @@ export default function DashboardIndex() {
     const queued = posts.filter((post) => post.status === "scheduled");
     const published = posts.filter((post) => post.status === "published");
     const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
 
     const weeklyVisitors = new Set(
       views.filter((view) => new Date(view.created_at).getTime() >= weekAgo).map((view) => view.session_id),
     ).size;
+
+    const publishedToday = published.filter(
+      (post) => post.published_at && new Date(post.published_at).getTime() >= todayStart.getTime(),
+    ).length;
 
     const byPost = new Map(
       published.map((post) => {
@@ -139,6 +145,7 @@ export default function DashboardIndex() {
     return {
       queued,
       published,
+      publishedToday,
       totalViews: published.reduce((sum, post) => sum + (post.view_count ?? 0), 0),
       weeklyVisitors,
       byPost,
