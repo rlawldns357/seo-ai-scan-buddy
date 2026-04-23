@@ -3,7 +3,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/features/auth/useAuth";
-import { useUserSite } from "@/features/publish/useUserSite";
 import { LogOut } from "lucide-react";
 
 /**
@@ -16,7 +15,6 @@ import { LogOut } from "lucide-react";
  */
 export default function DashboardLayout() {
   const { user, signOut } = useAuth();
-  const { site } = useUserSite();
   const navigate = useNavigate();
   const location = useLocation();
 
