@@ -1,4 +1,6 @@
-export type KanbanStatus = "idea" | "draft" | "scheduled" | "published";
+export type KanbanStatus = "idea" | "draft" | "scheduled" | "published" | "archived";
+
+export const PUBLISHED_VISIBLE_LIMIT = 20;
 
 export type KanbanPost = {
   id: string;
