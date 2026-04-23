@@ -145,9 +145,9 @@ export default function Recommendations() {
   if (!site) {
     return (
       <LockedFeature
-        title="먼저 내 콘텐츠 페이지를 만들어주세요"
-        description="콘텐츠 페이지를 만들면 분석 결과를 바탕으로 글 아이디어를 추천해드려요."
-        ctaLabel="페이지 만들러 가기"
+        title="먼저 브랜드 페이지를 만들어주세요"
+        description="브랜드 페이지를 만들면 분석 결과를 바탕으로 글 아이디어를 추천해드려요."
+        ctaLabel="브랜드 페이지 만들기"
         onCta={() => navigate("/dashboard#overview")}
       />
     );

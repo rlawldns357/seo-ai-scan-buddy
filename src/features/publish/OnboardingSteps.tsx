@@ -71,7 +71,7 @@ export default function OnboardingSteps({
     state === "guest"
       ? "검색엔진과 AI 답변에 인용되는 콘텐츠를 발행하세요"
       : state === "no-site"
-      ? "내 콘텐츠 페이지를 만들고 검색·AI 인용을 시작하세요"
+      ? "브랜드 페이지를 만들고 검색·AI 인용을 시작하세요"
       : queuedCount > 0
       ? `검색·AI 인용을 위한 대기 콘텐츠 ${queuedCount}건`
       : publishedCount === 0
@@ -82,7 +82,7 @@ export default function OnboardingSteps({
     state === "guest"
       ? "Google·Naver 검색은 물론, ChatGPT·Perplexity 같은 AI 답변 엔진이 더 잘 이해하고 인용할 수 있도록 SEO·AEO·GEO 3개 축으로 콘텐츠를 자동 설계합니다."
       : state === "no-site"
-      ? "페이지를 만들면 SEO·AEO·GEO 축으로 시작용 콘텐츠 3개가 자동으로 준비됩니다. 검색엔진과 AI 답변 엔진이 우리 브랜드를 더 정확히 인용하도록 돕는 첫 단계예요."
+      ? "브랜드 페이지를 만들면 SEO·AEO·GEO 축으로 시작용 콘텐츠 3개가 자동으로 준비됩니다. 검색엔진과 AI 답변 엔진이 우리 브랜드를 더 정확히 인용하도록 돕는 첫 단계예요."
       : queuedCount > 0
       ? "검색·답변 인용 가능성이 높은 후보들이 대기 중입니다. 검토하고 발행하세요."
       : "큐가 비었어요. 검색엔진과 AI 답변 엔진이 인용할 다음 콘텐츠를 추가하세요.";
