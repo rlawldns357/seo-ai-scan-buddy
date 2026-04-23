@@ -96,11 +96,20 @@ export default function KanbanBoard() {
   const performTransition = useCallback(
     async (post: KanbanPost, to: KanbanStatus) => {
       if (post.status === to) return;
+      // Hard auth check — publishing/AI calls require a logged-in owner.
+      if (!user) {
+        toast({
+          title: "로그인이 필요해요",
+          description: "다시 로그인 후 시도해주세요.",
+          variant: "destructive",
+        });
+        navigate(`/auth?next=${encodeURIComponent("/dashboard#workflow")}`);
+        return;
+      }
       setBusyId(post.id);
       const rollback = optimisticMove(post.id, to);
       try {
         if (to === "draft" && post.status === "idea") {
-          // Generate body via AI, then update row
           const { data, error } = await supabase.functions.invoke("generate-content-draft", {
             body: { topic: post.title, targetAxis: post.source_axis || "SEO", siteUrl: site?.site_url },
           });
@@ -120,12 +129,18 @@ export default function KanbanBoard() {
           if (upErr) throw upErr;
           toast({ title: "AI가 초안을 생성했어요" });
         } else if (to === "published") {
+          if (!post.content || post.content.trim().length < 30) {
+            throw new Error("본문이 비어 있어 발행할 수 없어요. 카드를 열어 초안부터 작성해주세요.");
+          }
           const { data, error } = await supabase.functions.invoke("publish-site-post", {
             body: { postId: post.id },
           });
           if (error) throw error;
           if (data?.error) throw new Error(data.error);
-          toast({ title: "발행되었습니다" });
+          toast({
+            title: "✅ 발행되었습니다",
+            description: site?.site_slug ? `/sites/${site.site_slug}/${post.slug} 에서 확인하세요` : undefined,
+          });
         } else if (to === "draft" && post.status === "published") {
           const { error } = await supabase
             .from("site_posts")
@@ -134,7 +149,6 @@ export default function KanbanBoard() {
           if (error) throw error;
           toast({ title: "발행 취소 — 초안으로 이동" });
         } else {
-          // Generic status update (draft <-> scheduled, etc.)
           const patch: { status: KanbanStatus; published_at?: string | null } = { status: to };
           if (to === "scheduled" || to === "idea") patch.published_at = null;
           const { error } = await supabase.from("site_posts").update(patch).eq("id", post.id);
@@ -145,7 +159,7 @@ export default function KanbanBoard() {
       } catch (e: any) {
         rollback();
         toast({
-          title: "이동 실패",
+          title: "실행 실패",
           description: e?.message || "다시 시도해주세요",
           variant: "destructive",
         });
@@ -153,7 +167,7 @@ export default function KanbanBoard() {
         setBusyId(null);
       }
     },
-    [load, posts, site?.site_url],
+    [load, posts, site?.site_url, site?.site_slug, user, navigate],
   );
 
   const onDragStart = (e: DragStartEvent) => setActiveDragId(String(e.active.id));

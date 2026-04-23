@@ -42,6 +42,25 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   try {
+    // Auth gate — only logged-in users may spend AI credits.
+    const authHeader = req.headers.get("Authorization") || "";
+    const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const isServiceCall = bearer.length > 0 && bearer === SERVICE_KEY;
+    if (!isServiceCall) {
+      const userClient = createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+        { global: { headers: { Authorization: authHeader } } },
+      );
+      const { data: authData } = await userClient.auth.getUser();
+      if (!authData?.user) {
+        return new Response(JSON.stringify({ error: "로그인이 필요해요. 다시 로그인 후 시도해주세요." }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const { topic, targetAxis, siteUrl, analysisSummary } = await req.json();
     if (!topic || typeof topic !== "string") {
       return new Response(JSON.stringify({ error: "topic required" }), {
