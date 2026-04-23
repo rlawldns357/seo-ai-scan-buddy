@@ -76,12 +76,15 @@ export default function KanbanBoard() {
   }, [siteLoading, load]);
 
   const grouped = useMemo(() => {
-    const out: Record<KanbanStatus, KanbanPost[]> = { idea: [], draft: [], scheduled: [], published: [] };
+    const out: Record<KanbanStatus, KanbanPost[]> = { idea: [], draft: [], scheduled: [], published: [], archived: [] };
     for (const p of posts) {
       if (out[p.status]) out[p.status].push(p);
     }
     return out;
   }, [posts]);
+
+  const archivedCount = grouped.archived.length;
+  const totalPublishedHistory = grouped.published.length + archivedCount;
 
   /** Apply optimistic status change, returning a rollback function. */
   const optimisticMove = (id: string, to: KanbanStatus) => {
