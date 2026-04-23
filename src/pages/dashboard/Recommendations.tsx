@@ -8,7 +8,7 @@ import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, ExternalLink, Dice5, Loader2, Send } from "lucide-react";
+import { ExternalLink, Dice5, Loader2, Send } from "lucide-react";
 
 const MAX_SEED_HISTORY = 12;
 
