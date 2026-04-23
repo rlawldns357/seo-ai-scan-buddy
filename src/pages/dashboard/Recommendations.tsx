@@ -56,6 +56,7 @@ export default function Recommendations() {
   const [queueingIdeaId, setQueueingIdeaId] = useState<string | null>(null);
   const [seedHistory, setSeedHistory] = useState<string[]>([]);
   const [orderedAxes, setOrderedAxes] = useState<Axis[]>(AXES);
+  const [queuedIdeaIds, setQueuedIdeaIds] = useState<Set<string>>(new Set());
 
   const loadCredits = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -74,6 +75,7 @@ export default function Recommendations() {
 
   useEffect(() => {
     setIdeas(buildIdeasFromSeed(seed, orderedAxes));
+    setQueuedIdeaIds(new Set());
   }, [seed, orderedAxes]);
 
   // Load score order only; don't show generic recommendations without a real topic
@@ -167,9 +169,15 @@ export default function Recommendations() {
       return;
     }
 
+    if (queueingIdeaId || queuedIdeaIds.has(idea.id)) {
+      // Prevent rapid double-clicks and re-adding the same idea
+      return;
+    }
+
     setQueueingIdeaId(idea.id);
     try {
-      const slug = `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}`;
+      const rand = Math.random().toString(36).slice(2, 6);
+      const slug = `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}-${rand}`;
       const { data, error } = await (supabase as any)
         .from("site_posts")
         .insert({
@@ -187,9 +195,13 @@ export default function Recommendations() {
 
       if (error) throw error;
 
+      setQueuedIdeaIds((prev) => {
+        const next = new Set(prev);
+        next.add(idea.id);
+        return next;
+      });
       emitWorkflowChanged({ siteId: site.id, postId: data?.id, source: "recommendations" });
       toast({ title: "워크플로우에 추가됐어요", description: "아이디어 칸으로 이동합니다." });
-      document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       toast({
         title: "추가 실패",
@@ -276,29 +288,35 @@ export default function Recommendations() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {ideas.map((idea) => (
-            <Card key={idea.id} className={`px-3 py-3 transition-colors ${idea.rolling ? "opacity-60" : "hover:border-primary/50"}`}>
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${axisColor[idea.axis]}`}>{idea.axis}</span>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-medium text-foreground line-clamp-1 break-keep">{idea.topic}</h3>
-                    <p className="text-[11px] text-muted-foreground line-clamp-1 break-keep">{idea.reason}</p>
+          {ideas.map((idea) => {
+            const isQueued = queuedIdeaIds.has(idea.id);
+            const isQueueing = queueingIdeaId === idea.id;
+            return (
+              <Card key={idea.id} className={`px-3 py-3 transition-colors ${idea.rolling || isQueued ? "opacity-60" : "hover:border-primary/50"}`}>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${axisColor[idea.axis]}`}>{idea.axis}</span>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-medium text-foreground line-clamp-1 break-keep">{idea.topic}</h3>
+                      <p className="text-[11px] text-muted-foreground line-clamp-1 break-keep">{idea.reason}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      size="sm"
+                      variant={isQueued ? "outline" : "default"}
+                      className="rounded-full h-8 text-xs gap-1"
+                      disabled={isQueueing || isQueued || !!queueingIdeaId}
+                      onClick={() => sendToWorkflow(idea)}
+                    >
+                      {isQueueing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                      {isQueued ? "추가됨" : "워크플로우로"}
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    size="sm"
-                    className="rounded-full h-8 text-xs gap-1"
-                    disabled={queueingIdeaId === idea.id}
-                    onClick={() => sendToWorkflow(idea)}
-                  >
-                    {queueingIdeaId === idea.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />} 워크플로우로
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
