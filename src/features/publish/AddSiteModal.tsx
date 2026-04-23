@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/useAuth";
 import { slugify, useUserSites } from "./useUserSite";
+import { useUserTier } from "@/features/auth/useUserTier";
 import { toast } from "@/hooks/use-toast";
-
-const FREE_SITE_LIMIT = 1;
 
 export default function AddSiteModal({
   open,
@@ -22,11 +21,12 @@ export default function AddSiteModal({
 }) {
   const { user } = useAuth();
   const { sites, refresh, setActiveSiteId } = useUserSites();
+  const { tier, siteLimit } = useUserTier();
   const [siteUrl, setSiteUrl] = useState("");
   const [title, setTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const isLocked = sites.length >= FREE_SITE_LIMIT;
+  const isLocked = sites.length >= siteLimit;
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
