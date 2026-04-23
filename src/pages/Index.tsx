@@ -126,6 +126,7 @@ const Index = () => {
 
       setNormalizedUrl(finalUrl);
       setScreen("loading");
+      setResult(null);
       setPsiMobile(null);
       setPsiDesktop(null);
       setPsiError(null);
