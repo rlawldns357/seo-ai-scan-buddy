@@ -63,14 +63,69 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
 
     const body = await req.json().catch(() => ({}));
+    const mode: "topic" | "seed" = body.mode === "seed" ? "seed" : "topic";
     const siteUrl: string = body.siteUrl ?? "";
     const siteTitle: string = body.siteTitle ?? "";
     const axis: Axis = (body.axis as Axis) || "SEO";
     const seed: string = (body.seed ?? "").toString().slice(0, 200);
     const currentTopic: string | undefined = body.currentTopic;
     const avoidTopics: string[] = Array.isArray(body.avoidTopics) ? body.avoidTopics.slice(0, 20) : [];
+    const avoidSeeds: string[] = Array.isArray(body.avoidSeeds) ? body.avoidSeeds.slice(0, 20) : [];
 
     const admin = createClient(supabaseUrl, serviceKey);
+
+    // Seed mode: 무료(크레딧 미차감) — 사이트 컨텍스트 기반 관심 주제 키워드 1개 제안
+    if (mode === "seed") {
+      const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+      if (!lovableKey) return json({ error: "AI 키가 설정되지 않았습니다." }, 500);
+      const brandContext = await scrapeBrandContext(siteUrl);
+      const seedPrompt = `당신은 한국어 SEO/콘텐츠 전략가입니다. 아래 사이트에 어울릴 "관심 주제 키워드" 1개를 제안하세요.
+
+[사이트] ${siteTitle || "(제목 없음)"} — ${siteUrl || "N/A"}
+${brandContext ? `[사이트 컨텍스트]\n${brandContext}\n` : ""}
+${avoidSeeds.length ? `[이미 제안한 키워드(중복 금지)] ${avoidSeeds.join(" / ")}` : ""}
+
+요구사항:
+- 4~20자 한국어, 명사구 위주 (예: "친환경 패키징", "신규 방문자 유입", "26SS 컬렉션 기획")
+- 사이트의 실제 제품/카테고리/고객 관심사를 반영
+- 광고 문구·동사·물음표 금지`;
+      const seedRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "user", content: seedPrompt }],
+          temperature: 1.0,
+          tools: [{
+            type: "function",
+            function: {
+              name: "suggest_seed",
+              description: "관심 주제 키워드 1개",
+              parameters: {
+                type: "object",
+                properties: { seed: { type: "string", description: "4~20자 한국어 명사구" } },
+                required: ["seed"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "suggest_seed" } },
+        }),
+      });
+      if (!seedRes.ok) {
+        if (seedRes.status === 429) return json({ error: "AI 호출량이 초과됐어요. 잠시 후 다시 시도해주세요." }, 429);
+        return json({ error: "AI 시드 생성 실패" }, 500);
+      }
+      const seedJson = await seedRes.json();
+      const tc = seedJson.choices?.[0]?.message?.tool_calls?.[0];
+      let seedParsed: { seed: string } | null = null;
+      if (tc?.function?.arguments) {
+        try { seedParsed = JSON.parse(tc.function.arguments); } catch { /* ignore */ }
+      }
+      const seedOut = (seedParsed?.seed ?? "").trim().slice(0, 40);
+      if (!seedOut) return json({ error: "시드 응답을 해석할 수 없어요." }, 500);
+      return json({ ok: true, seed: seedOut });
+    }
 
     // 1. Ensure credits row & charge
     const { data: existing } = await admin

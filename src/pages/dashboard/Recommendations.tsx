@@ -8,7 +8,9 @@ import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import LockedFeature from "@/features/publish/LockedFeature";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { toast } from "@/hooks/use-toast";
-import { Sparkles, ExternalLink, Dice5, Loader2, Send } from "lucide-react";
+import { ExternalLink, Dice5, Loader2, Send } from "lucide-react";
+
+const MAX_SEED_HISTORY = 12;
 
 type Axis = "SEO" | "AEO" | "GEO";
 type Idea = { id: string; topic: string; axis: Axis; reason: string; rolling?: boolean };
@@ -36,6 +38,8 @@ export default function Recommendations() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(false);
   const [creditTotal, setCreditTotal] = useState<number | null>(null);
+  const [seedRolling, setSeedRolling] = useState(false);
+  const [seedHistory, setSeedHistory] = useState<string[]>([]);
 
   const loadCredits = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -84,42 +88,33 @@ export default function Recommendations() {
     })();
   }, [site]);
 
-  const rollIdea = guard(async (idea: Idea) => {
+  const rollSeed = guard(async () => {
     if (!site) return;
-    if (creditTotal !== null && creditTotal < 1) {
-      toast({ title: "🎲 크레딧이 부족해요", description: "이번 달 재생성 크레딧을 모두 사용했어요.", variant: "destructive" });
-      return;
-    }
-    setIdeas((cur) => cur.map((i) => (i.id === idea.id ? { ...i, rolling: true } : i)));
+    setSeedRolling(true);
     try {
       const { data, error } = await supabase.functions.invoke("regenerate-idea", {
         body: {
+          mode: "seed",
           siteUrl: site.site_url,
           siteTitle: site.title,
-          axis: idea.axis,
-          seed,
-          currentTopic: idea.topic,
-          avoidTopics: ideas.map((i) => i.topic),
+          avoidSeeds: seedHistory,
         },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      setIdeas((cur) =>
-        cur.map((i) =>
-          i.id === idea.id
-            ? { ...i, topic: data.topic, reason: data.reason || `${i.axis} 보강 추천`, rolling: false }
-            : i,
-        ),
-      );
-      setCreditTotal((data.newBalance ?? 0) + (data.newAddon ?? 0));
-      toast({ title: "🎲 새 주제 나왔어요!" });
+      const next: string = data.seed ?? "";
+      if (!next) throw new Error("빈 응답");
+      setSeed(next);
+      setSeedHistory((h) => [next, ...h.filter((s) => s !== next)].slice(0, MAX_SEED_HISTORY));
+      toast({ title: "🎲 관심 주제 추천 완료", description: next });
     } catch (e) {
-      setIdeas((cur) => cur.map((i) => (i.id === idea.id ? { ...i, rolling: false } : i)));
       toast({
-        title: "재생성 실패",
+        title: "추천 실패",
         description: e instanceof Error ? e.message : "다시 시도해주세요",
         variant: "destructive",
       });
+    } finally {
+      setSeedRolling(false);
     }
   });
 
@@ -169,14 +164,29 @@ export default function Recommendations() {
           </div>
           <div>
             <label htmlFor="seed-topic" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">관심 주제 (선택)</label>
-            <Input
-              id="seed-topic"
-              placeholder="예: 친환경 패키징, 신규 방문자 유입"
-              value={seed}
-              onChange={(e) => setSeed(e.target.value)}
-              className="mt-1 h-10 rounded-full"
-              maxLength={120}
-            />
+            <div className="mt-1 flex items-center gap-1.5">
+              <Input
+                id="seed-topic"
+                placeholder="예: 친환경 패키징, 신규 방문자 유입"
+                value={seed}
+                onChange={(e) => setSeed(e.target.value)}
+                className="h-10 rounded-full flex-1"
+                maxLength={120}
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="rounded-full h-10 px-3 gap-1 shrink-0"
+                disabled={seedRolling}
+                onClick={() => rollSeed()}
+                title="사이트 컨텍스트로 관심 주제 추천 (무료)"
+                aria-label="관심 주제 추천"
+              >
+                {seedRolling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Dice5 className="w-4 h-4" />}
+                <span className="hidden sm:inline text-xs">추천</span>
+              </Button>
+            </div>
           </div>
           <div className="text-[11px] text-muted-foreground inline-flex items-center gap-1 shrink-0 pb-2 md:pb-3">
             <span>🎲</span>
@@ -185,7 +195,7 @@ export default function Recommendations() {
           </div>
         </div>
         <p className="text-[11px] text-muted-foreground mt-2">
-          마음에 들지 않는 추천은 <span className="font-semibold text-foreground">🎲 주사위</span>로 다시 굴려보세요. (1회 = 1크레딧)
+          <span className="font-semibold text-foreground">🎲 주사위</span>를 굴려 사이트에 어울리는 관심 주제를 받아보세요. 추천 카드는 자동으로 갱신됩니다.
         </p>
       </Card>
 
@@ -206,19 +216,7 @@ export default function Recommendations() {
                 <div className="flex items-center gap-1 shrink-0">
                   <Button
                     size="sm"
-                    variant="ghost"
                     className="rounded-full h-8 text-xs gap-1"
-                    disabled={idea.rolling}
-                    onClick={() => rollIdea(idea)}
-                    title="주사위 굴려 다른 주제 받기 (1 크레딧)"
-                  >
-                    {idea.rolling ? <Loader2 className="w-3 h-3 animate-spin" /> : <Dice5 className="w-3 h-3" />}
-                    {idea.rolling ? "굴리는 중" : "다시 굴리기"}
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="rounded-full h-8 text-xs gap-1"
-                    disabled={idea.rolling}
                     onClick={() => sendToWorkflow(idea)}
                   >
                     <Send className="w-3 h-3" /> 워크플로우로
