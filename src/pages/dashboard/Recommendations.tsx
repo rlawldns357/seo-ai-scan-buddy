@@ -176,7 +176,9 @@ export default function Recommendations() {
           site_id: site.id,
           slug,
           title: idea.topic,
-          content: "",
+          // RLS는 content 길이 ≥ 1을 요구함. 아이디어 단계에서는 placeholder를 채워두고
+          // draft로 옮길 때 AI가 본문을 덮어씁니다.
+          content: `# ${idea.topic}\n\n(아이디어 단계 — 초안으로 옮기면 AI가 본문을 생성합니다)`,
           status: "idea",
           source_axis: idea.axis,
         })
