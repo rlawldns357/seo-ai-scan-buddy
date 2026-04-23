@@ -348,13 +348,7 @@ export default function KanbanBoard() {
           {COLUMN_ORDER.map((s) => (
             <TabsContent key={s} value={s} className="mt-3 space-y-2">
               <p className="text-[11px] text-muted-foreground px-1">{COLUMN_META[s].description}</p>
-              {grouped[s].length === 0 ? (
-                <div className="text-xs text-muted-foreground text-center py-10 border border-dashed rounded-2xl">
-                  비어 있음
-                </div>
-              ) : (
-                grouped[s].map(renderCard)
-              )}
+              {renderColumnContent(s)}
             </TabsContent>
           ))}
         </Tabs>
@@ -362,14 +356,12 @@ export default function KanbanBoard() {
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
           <div className="grid grid-cols-4 gap-3">
             {COLUMN_ORDER.map((s) => (
-              <KanbanColumn key={s} status={s} count={grouped[s].length}>
-                {grouped[s].length === 0 ? (
-                  <div className="text-[11px] text-muted-foreground text-center py-8 border border-dashed border-border/40 rounded-xl">
-                    여기로 드롭
-                  </div>
-                ) : (
-                  grouped[s].map(renderCard)
-                )}
+              <KanbanColumn
+                key={s}
+                status={s}
+                count={s === "published" ? totalPublishedHistory : grouped[s].length}
+              >
+                {renderColumnContent(s)}
               </KanbanColumn>
             ))}
           </div>
