@@ -99,7 +99,7 @@ export default function AddSiteModal({
                 준비 중인 PRO 플랜
               </div>
               <ul className="list-disc list-inside space-y-0.5 ml-1">
-                <li>추가 콘텐츠 허브 운영</li>
+                <li>추가 브랜드 페이지 운영</li>
                 <li>사이트별 자동 발행 큐 분리</li>
                 <li>통합 리포트 / 도메인 연결</li>
               </ul>
@@ -113,9 +113,9 @@ export default function AddSiteModal({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>내 콘텐츠 페이지 만들기</DialogTitle>
+              <DialogTitle>브랜드 페이지 만들기</DialogTitle>
               <DialogDescription>
-                자동 발행할 사이트의 URL과 표시 제목을 입력하면 전용 페이지가 만들어집니다.
+                자동 발행할 사이트의 URL과 표시 제목을 입력하면 전용 브랜드 페이지가 만들어집니다.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 py-2">
@@ -130,12 +130,12 @@ export default function AddSiteModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="add-site-title" className="text-xs">사이트 제목</Label>
+                <Label htmlFor="add-site-title" className="text-xs">브랜드 페이지 제목</Label>
                 <Input
                   id="add-site-title"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="내 콘텐츠 허브"
+                  placeholder="우리 브랜드 인사이트"
                   required
                 />
               </div>
@@ -144,7 +144,7 @@ export default function AddSiteModal({
                   취소
                 </Button>
                 <Button type="submit" disabled={submitting} className="rounded-full">
-                  {submitting ? "만드는 중..." : "페이지 만들기"}
+                  {submitting ? "만드는 중..." : "브랜드 페이지 만들기"}
                 </Button>
               </DialogFooter>
             </form>
