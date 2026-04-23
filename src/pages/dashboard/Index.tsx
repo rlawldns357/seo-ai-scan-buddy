@@ -217,11 +217,11 @@ export default function DashboardIndex() {
   const publishPost = guard(async (postId: string) => {
     setBusyId(postId);
     try {
-      const { error } = await (supabase as any)
-        .from("site_posts")
-        .update({ status: "published", published_at: new Date().toISOString() })
-        .eq("id", postId);
+      const { data, error } = await supabase.functions.invoke("publish-site-post", {
+        body: { postId },
+      });
       if (error) throw error;
+      if (data?.error) throw new Error(data.error);
       toast({ title: "발행되었습니다" });
       if (site) await loadDashboard(site.id);
     } catch (error) {
