@@ -200,6 +200,8 @@ const Index = () => {
           saveAnalysisHistory(finalUrl, analyzeRes.data!);
         });
       } else {
+        // Preserve raw debugging info in console while showing a friendly message to the user.
+        console.warn("[runAnalysis] analyze failed:", analyzeRes.error);
         setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
         trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
       }
@@ -265,6 +267,13 @@ const Index = () => {
   const handleRetryPsi = async () => {
     if (!normalizedUrl || psiLazyLoading) return;
 
+    // Capture the URL + requestId at click time so a concurrent new analysis
+    // (different URL or new run) can't be overwritten by this retry's response.
+    const retryUrl = normalizedUrl;
+    const myRequestId = requestIdRef.current;
+    const isStillRelevant = () =>
+      requestIdRef.current === myRequestId && normalizedUrl === retryUrl;
+
     setPsiError(null);
     setPsiRetryError(null);
     setPsiLazyLoading(true);
@@ -272,9 +281,11 @@ const Index = () => {
     try {
       const { fetchPsi } = await import("@/lib/psi");
       const [mobileRes, desktopRes] = await Promise.all([
-        fetchPsi(normalizedUrl, "mobile"),
-        fetchPsi(normalizedUrl, "desktop"),
+        fetchPsi(retryUrl, "mobile"),
+        fetchPsi(retryUrl, "desktop"),
       ]);
+
+      if (!isStillRelevant()) return;
 
       const gotData = Boolean(mobileRes.data || desktopRes.data);
 
@@ -292,9 +303,11 @@ const Index = () => {
       }
     } catch (err) {
       console.error("[handleRetryPsi] error:", err);
-      setPsiRetryError("Lighthouse 측정 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+      if (isStillRelevant()) {
+        setPsiRetryError("Lighthouse 측정 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+      }
     } finally {
-      setPsiLazyLoading(false);
+      if (isStillRelevant()) setPsiLazyLoading(false);
     }
   };
 
