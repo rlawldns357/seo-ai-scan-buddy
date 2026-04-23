@@ -67,27 +67,40 @@ function injectInternalLinks(
     .filter((x) => x.kw.length >= 2 && x.kw.length <= 30)
     .sort((a, b) => b.kw.length - a.kw.length);
 
+  // 한국어 조사 허용 (kw 뒤에 은/는/이/가/을/를/의/에/로/와/과 같은 조사가 와도 매칭)
+  const KOREAN_PARTICLES = "(?:은|는|이|가|을|를|의|에|에서|로|으로|와|과|도|만|까지|부터|보다|처럼|이나|나|이라|라|이라는|라는)?";
+
   for (const { kw, c } of ranked) {
     if (injected.length >= 3) break;
     if (usedAnchors.has(kw)) continue;
 
-    // 이미 링크된 텍스트는 회피: [..](..) 매칭 영역 제외
-    // 가장 단순한 방식 — 첫 등장 위치 찾고, 주변에 ]( 가 없는지 확인
-    const idx = body.indexOf(kw);
-    if (idx === -1) continue;
-
-    // 이미 링크 안인지 검사
-    const before = body.slice(Math.max(0, idx - 80), idx);
-    const after = body.slice(idx + kw.length, idx + kw.length + 30);
-    if (/\[[^\]]*$/.test(before) && /^[^\]]*\]\(/.test(after)) continue;
-
-    // 코드블록(```...```) 안인지
-    const opens = (body.slice(0, idx).match(/```/g) || []).length;
-    if (opens % 2 === 1) continue;
+    // 정규식 안전 이스케이프
+    const safe = kw.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+    const re = new RegExp(safe + KOREAN_PARTICLES, "g");
+    let m: RegExpExecArray | null = null;
+    let chosenIdx = -1;
+    while ((m = re.exec(body)) !== null) {
+      const idx = m.index;
+      // 이미 링크 안인지
+      const before = body.slice(Math.max(0, idx - 80), idx);
+      const after = body.slice(idx + kw.length, idx + kw.length + 30);
+      if (/\[[^\]]*$/.test(before) && /^[^\]]*\]\(/.test(after)) continue;
+      // 코드블록 안인지
+      const opens = (body.slice(0, idx).match(/```/g) || []).length;
+      if (opens % 2 === 1) continue;
+      // H2 줄에는 링크 넣지 않음 (가독성)
+      const lineStart = body.lastIndexOf("\n", idx) + 1;
+      const lineEnd = body.indexOf("\n", idx);
+      const line = body.slice(lineStart, lineEnd === -1 ? body.length : lineEnd);
+      if (/^#{1,3}\s/.test(line)) continue;
+      chosenIdx = idx;
+      break;
+    }
+    if (chosenIdx === -1) continue;
 
     const url = `/sites/${siteSlug}/${c.slug}`;
     const link = `[${kw}](${url})`;
-    body = body.slice(0, idx) + link + body.slice(idx + kw.length);
+    body = body.slice(0, chosenIdx) + link + body.slice(chosenIdx + kw.length);
     usedAnchors.add(kw);
     injected.push({ title: c.title, slug: c.slug, anchor: kw });
   }
