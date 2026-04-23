@@ -4,6 +4,7 @@ import ValueProp from "./ValueProp";
 import HowItWorks from "./HowItWorks";
 import AudienceFit from "./AudienceFit";
 import ValueCards from "./ValueCards";
+import Pricing from "./Pricing";
 import LandingFaq from "./LandingFaq";
 import FinalCta from "./FinalCta";
 
@@ -23,6 +24,7 @@ export default function MarketingLanding() {
         <HowItWorks />
         <AudienceFit />
         <ValueCards />
+        <Pricing />
         <LandingFaq />
         <FinalCta />
       </div>
