@@ -21,14 +21,26 @@ const axisColor: Record<Axis, string> = {
   GEO: "bg-score-warning/10 text-score-warning",
 };
 
-const STARTER_TEMPLATES: Record<Axis, string[]> = {
-  SEO: ["검색 노출을 끌어올리는 핵심 키워드 가이드", "메타 태그 최적화 실전 체크리스트"],
-  AEO: ["AI 검색에 인용되는 답변형 콘텐츠 작성법", "FAQ 스키마로 답변 채택률 높이기"],
-  GEO: ["ChatGPT·Perplexity가 우리 브랜드를 인용하게 만드는 법", "엔티티 강화로 AI 가시성 확보하기"],
-};
-
 const AXES: Axis[] = ["SEO", "AEO", "GEO"];
 const newId = () => Math.random().toString(36).slice(2, 9);
+
+const IDEA_BUILDERS: Record<Axis, (seed: string) => string> = {
+  SEO: (seed) => `${seed} 검색 유입을 위한 핵심 가이드`,
+  AEO: (seed) => `${seed} 관련 자주 묻는 질문 정리`,
+  GEO: (seed) => `${seed} 선택 기준과 비교 포인트 정리`,
+};
+
+function buildIdeasFromSeed(seed: string, orderedAxes: Axis[]): Idea[] {
+  const cleanSeed = seed.trim();
+  if (!cleanSeed) return [];
+
+  return orderedAxes.map((axis) => ({
+    id: `${axis}-${cleanSeed}`,
+    topic: IDEA_BUILDERS[axis](cleanSeed),
+    axis,
+    reason: `${cleanSeed} 중심 ${axis} 아이디어`,
+  }));
+}
 
 export default function Recommendations() {
   const { site } = useUserSite();
@@ -40,6 +52,7 @@ export default function Recommendations() {
   const [creditTotal, setCreditTotal] = useState<number | null>(null);
   const [seedRolling, setSeedRolling] = useState(false);
   const [seedHistory, setSeedHistory] = useState<string[]>([]);
+  const [orderedAxes, setOrderedAxes] = useState<Axis[]>(AXES);
 
   const loadCredits = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -56,7 +69,11 @@ export default function Recommendations() {
     void loadCredits();
   }, [loadCredits]);
 
-  // Seed initial recommendations from latest analysis (no AI cost)
+  useEffect(() => {
+    setIdeas(buildIdeasFromSeed(seed, orderedAxes));
+  }, [seed, orderedAxes]);
+
+  // Load score order only; don't show generic recommendations without a real topic
   useEffect(() => {
     if (!site) return;
     setLoading(true);
@@ -76,14 +93,7 @@ export default function Recommendations() {
         };
         orderedAxes.sort((a, b) => map[a] - map[b]); // worst first
       }
-      // Pick one topic per axis (3 cards) — round-robin order from axes
-      const seeds: Idea[] = orderedAxes.map((ax) => ({
-        id: newId(),
-        topic: STARTER_TEMPLATES[ax][0],
-        axis: ax,
-        reason: history ? `${ax} 점수 보강` : "기본 추천",
-      }));
-      setIdeas(seeds);
+      setOrderedAxes(orderedAxes);
       setLoading(false);
     })();
   }, [site]);
@@ -204,13 +214,22 @@ export default function Recommendations() {
             <span>크레딧</span>
           </div>
         </div>
-        <p className="text-[11px] text-muted-foreground mt-2">
-          <span className="font-semibold text-foreground">🎲 주사위</span>를 굴려 사이트에 어울리는 관심 주제를 받아보세요. 추천 카드는 자동으로 갱신됩니다.
+         <p className="text-[11px] text-muted-foreground mt-2">
+           <span className="font-semibold text-foreground">🎲 주사위</span>로 사이트에 맞는 관심 주제를 먼저 받고, 직접 입력해도 아래 아이디어가 갱신됩니다.
         </p>
       </Card>
 
       {loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
+      ) : ideas.length === 0 ? (
+        <Card className="px-4 py-6 border-dashed border-border/60 bg-muted/20">
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">아직 추천 아이디어가 없어요</p>
+            <p className="text-sm text-muted-foreground break-keep">
+              관심 주제를 직접 적거나 주사위로 추천받으면, 그 주제 기준으로만 아이디어를 보여드릴게요.
+            </p>
+          </div>
+        </Card>
       ) : (
         <div className="space-y-2">
           {ideas.map((idea) => (
