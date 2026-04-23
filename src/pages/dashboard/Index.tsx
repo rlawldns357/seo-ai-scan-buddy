@@ -284,17 +284,8 @@ export default function DashboardIndex() {
 
   return (
     <>
-      <Helmet>
-        <title>AutoBlog 작업 공간 | SearchTune OS</title>
-        <meta name="description" content="로그인 사용자의 AutoBlog 내부 작업 공간. 발행 큐와 콘텐츠 운영 흐름을 관리합니다." />
-      </Helmet>
-
-      <FlowStepper
-        current={!user ? "auth" : !site ? "site" : queueCounts.queued.length > 0 ? "publish" : "draft"}
-      />
-
       {!user ? (
-        <div className="space-y-6">
+        <div>
           <OnboardingSteps
             state="guest"
             primaryLabel="로그인하고 시작하기"
@@ -316,8 +307,8 @@ export default function DashboardIndex() {
             secondaryLabel="먼저 무료 사이트 진단부터 보기"
             onSecondary={() => navigate("/")}
           />
-          <Card className="p-6">
-            <h1 className="text-lg font-semibold text-foreground mb-1">내 콘텐츠 페이지 만들기</h1>
+          <Card className="p-6 rounded-2xl border-border/50 shadow-card">
+            <h2 className="text-lg font-semibold text-foreground mb-1">내 콘텐츠 페이지 만들기</h2>
             <p className="text-sm text-muted-foreground mb-4">전용 콘텐츠 페이지를 만들고 자동 발행을 시작하세요. 생성 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
@@ -338,147 +329,63 @@ export default function DashboardIndex() {
           </Card>
         </div>
       ) : (
-        <div className="space-y-6">
-          <OnboardingSteps
-            state="has-site"
-            queuedCount={queueCounts.queued.length}
-            publishedCount={queueCounts.published.length}
-            primaryLabel={
-              queueCounts.queued.length > 0
-                ? `대기 ${queueCounts.queued.length}건 검토하기`
-                : queueing
-                ? "생성 중..."
-                : "콘텐츠 큐에 추가하기"
-            }
-            onPrimary={() => {
-              if (queueCounts.queued.length > 0) {
-                document.getElementById("queue-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-              } else {
-                generateQueuedDraft();
-              }
-            }}
-            secondaryLabel={
-              queueCounts.queued.length > 0
-                ? "또는 새 후보 추가하기"
-                : "또는 추천 주제에서 고르기"
-            }
-            onSecondary={() => {
-              if (queueCounts.queued.length > 0) {
-                generateQueuedDraft();
-              } else {
-                navigate("/dashboard/recommendations");
-              }
-            }}
-          />
-          <section className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-border/50 bg-card px-5 py-4">
+        <div className="space-y-5">
+          {/* 사이트 요약 — 한 줄 */}
+          <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-border/50 bg-card px-5 py-4">
             <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">검색·AI 인용 허브</p>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">콘텐츠 허브</p>
               <h2 className="text-base font-semibold text-foreground mt-0.5 truncate">{site.title}</h2>
               <p className="text-xs text-muted-foreground mt-0.5 truncate">{site.site_url}</p>
             </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <a
-                href={`/sites/${site.site_slug}`}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+            <a
+              href={`/sites/${site.site_slug}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0"
+            >
+              라이브 보기 <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+
+          {/* KPI 4개 — 한눈에 운영 현황 */}
+          <div className="grid grid-cols-2 xl:grid-cols-4 gap-3">
+            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">발행 대기</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.queued.length}</p></Card>
+            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">발행 완료</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.published.length}</p></Card>
+            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">총 조회수</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.totalViews}</p></Card>
+            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">이번 주 방문</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.weeklyVisitors}</p></Card>
+          </div>
+
+          {/* 다음 할 일 — 단일 CTA */}
+          <Card className="p-5 rounded-2xl border-border/50 shadow-card bg-primary/5">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-primary">다음 할 일</p>
+                <h3 className="text-base font-semibold text-foreground mt-1">
+                  {queueCounts.queued.length > 0
+                    ? `대기 중인 ${queueCounts.queued.length}건 검토하고 발행하기`
+                    : "콘텐츠 큐에 새 글 추가하기"}
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {queueCounts.queued.length > 0
+                    ? "발행 큐 섹션에서 바로 검토할 수 있습니다."
+                    : "추천 주제에서 고르거나 직접 주제를 입력해 시작하세요."}
+                </p>
+              </div>
+              <Button
+                className="rounded-full shrink-0"
+                onClick={() => {
+                  const target = queueCounts.queued.length > 0 ? "queue" : "recommendations";
+                  document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
               >
-                라이브 보기 <ExternalLink className="w-3 h-3" />
-              </a>
+                {queueCounts.queued.length > 0 ? (
+                  <><Send className="w-4 h-4" /> 큐로 이동</>
+                ) : (
+                  <><Plus className="w-4 h-4" /> 추천 보기</>
+                )}
+              </Button>
             </div>
-          </section>
-
-          <section className="grid grid-cols-2 xl:grid-cols-4 gap-3">
-            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">발행 대기 중</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.queued.length}</p><p className="text-[11px] text-muted-foreground mt-1">선택 후 바로 발행 가능</p></Card>
-            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">발행 완료</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.published.length}</p><p className="text-[11px] text-muted-foreground mt-1">현재 허브에 공개 중인 글</p></Card>
-            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">총 조회수</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.totalViews}</p><p className="text-[11px] text-muted-foreground mt-1">발행된 글 전체 페이지뷰</p></Card>
-            <Card className="p-4 rounded-2xl border-border/50 shadow-card"><p className="text-xs text-muted-foreground">이번 주 방문 세션</p><p className="text-2xl font-bold text-foreground mt-2">{queueCounts.weeklyVisitors}</p><p className="text-[11px] text-muted-foreground mt-1">최근 7일 기준</p></Card>
-          </section>
-
-          <section className="grid xl:grid-cols-[1.35fr_0.9fr] gap-6 items-start">
-            <Card id="queue-section" className="p-5 md:p-6 rounded-3xl border-border/50 shadow-card scroll-mt-20">
-              <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-5">
-                <div className="min-w-0">
-                  <h2 className="text-lg md:text-xl font-semibold text-foreground break-keep">🪄 발행 대기 중인 콘텐츠</h2>
-                  <p className="text-sm text-muted-foreground mt-1 break-keep">가입 직후 자동으로 준비된 후보 포함, 원하는 글만 선택해 발행합니다.</p>
-                </div>
-                <Button variant="outline" className="rounded-full shrink-0 w-full md:w-auto justify-center" onClick={() => navigate("/dashboard/content")}>
-                  <FileText className="w-4 h-4" /> 콘텐츠 직접 작성하기
-                </Button>
-              </div>
-
-              {queueCounts.queued.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-                  <p className="text-sm font-medium text-foreground">아직 발행 대기 중인 콘텐츠가 없습니다</p>
-                  <p className="text-xs text-muted-foreground mt-2">새 콘텐츠를 생성해 먼저 후보를 채워보세요.</p>
-                  <Button className="rounded-full mt-4" onClick={generateQueuedDraft} disabled={queueing}><Plus className="w-4 h-4" /> {queueing ? "생성 중..." : "콘텐츠 큐에 추가하기"}</Button>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {queueCounts.queued.map((post) => (
-                    <div key={post.id} className="rounded-2xl border border-border/50 bg-muted/20 p-4">
-                      <div className="flex flex-col gap-4">
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-2">
-                            {post.source_axis && <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${axisBadgeClass[post.source_axis] ?? "bg-secondary text-secondary-foreground"}`}>{post.source_axis}</span>}
-                            {post.is_auto_generated && <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-secondary text-secondary-foreground inline-flex items-center gap-1"><CheckCircle2 className="w-3 h-3" /> 자동 준비</span>}
-                            <span className="text-[11px] text-muted-foreground inline-flex items-center gap-1"><Clock3 className="w-3 h-3" /> {Math.max(1, Math.round(post.content.length / 700))}분 읽기</span>
-                          </div>
-                          <h3 className="text-base font-semibold text-foreground break-keep">{post.title}</h3>
-                          <p className="text-sm text-muted-foreground mt-2 line-clamp-2 break-keep">{post.excerpt || "발행 전 검토가 필요한 자동 생성 콘텐츠입니다."}</p>
-                        </div>
-                        <div className="flex flex-wrap gap-2 sm:justify-end">
-                          <Button className="rounded-full" size="sm" onClick={() => publishPost(post.id)} disabled={busyId === post.id}><Send className="w-3.5 h-3.5" /> {busyId === post.id ? "발행 중..." : "콘텐츠 발행하기"}</Button>
-                          <Button variant="outline" size="sm" className="rounded-full" onClick={() => goEdit(post)}>콘텐츠 편집하기</Button>
-                          <Button variant="ghost" size="sm" className="rounded-full" onClick={() => archivePost(post.id)}>큐에서 제외하기</Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-
-            <Card className="p-6 rounded-3xl border-border/50 shadow-card">
-              <div className="flex items-center justify-between gap-3 mb-5">
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">발행된 콘텐츠 성과</h2>
-                  <p className="text-sm text-muted-foreground mt-1">공개된 글의 실제 조회와 방문 세션을 확인하세요.</p>
-                </div>
-                <BarChart3 className="w-5 h-5 text-primary" />
-              </div>
-
-              {queueCounts.published.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-10 text-center">아직 발행된 글이 없습니다.</p>
-              ) : (
-                <div className="space-y-3">
-                  {queueCounts.published.slice(0, 6).map((post) => {
-                    const stats = queueCounts.byPost.get(post.id) ?? { views: post.view_count ?? 0, unique: 0, lastViewedAt: post.last_viewed_at ?? null };
-                    const maxViews = Math.max(1, ...queueCounts.published.map((item) => item.view_count ?? 0));
-                    const width = `${Math.max(8, Math.round(((stats.views || 0) / maxViews) * 100))}%`;
-
-                    return (
-                      <div key={post.id} className="rounded-2xl border border-border/50 p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-foreground truncate">{post.title}</p>
-                            <p className="text-[11px] text-muted-foreground mt-1">{post.published_at ? new Date(post.published_at).toLocaleDateString("ko-KR") : "미발행"}</p>
-                          </div>
-                          <Link to={`/sites/${site.site_slug}/${post.slug}`} target="_blank" className="text-xs text-primary hover:underline shrink-0">보기</Link>
-                        </div>
-                        <div className="grid grid-cols-3 gap-2 mt-4 text-[11px]">
-                          <div className="rounded-xl bg-muted/50 px-3 py-2"><span className="text-muted-foreground inline-flex items-center gap-1"><Eye className="w-3 h-3" /> 조회</span><p className="text-sm font-semibold text-foreground mt-1">{stats.views}</p></div>
-                          <div className="rounded-xl bg-muted/50 px-3 py-2"><span className="text-muted-foreground inline-flex items-center gap-1"><Users className="w-3 h-3" /> 방문</span><p className="text-sm font-semibold text-foreground mt-1">{stats.unique}</p></div>
-                          <div className="rounded-xl bg-muted/50 px-3 py-2"><span className="text-muted-foreground inline-flex items-center gap-1"><Clock3 className="w-3 h-3" /> 최근</span><p className="text-sm font-semibold text-foreground mt-1">{stats.lastViewedAt ? new Date(stats.lastViewedAt).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" }) : "-"}</p></div>
-                        </div>
-                        <div className="mt-4"><div className="h-2 rounded-full bg-muted overflow-hidden"><div className="h-full rounded-full bg-primary" style={{ width }} /></div></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </Card>
-          </section>
+          </Card>
         </div>
       )}
     </>
