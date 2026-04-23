@@ -134,7 +134,7 @@ export default function DashboardHero(props: Props) {
       </div>
 
       <p className="relative mt-4 text-[11px] text-muted-foreground">
-        🔒 내부 데모 시연 전용 — 모든 결과는 메일로 발송되며, 운영 데이터에 영향이 없어요.
+        {"\n"}
       </p>
     </section>
   );
