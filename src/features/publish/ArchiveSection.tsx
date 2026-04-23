@@ -220,6 +220,7 @@ export default function ArchiveSection() {
           </div>
         </div>
       )}
-    </section>
+      </div>
+    </Card>
   );
 }
