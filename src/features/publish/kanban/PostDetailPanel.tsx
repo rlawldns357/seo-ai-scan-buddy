@@ -1,26 +1,50 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { ExternalLink, Save, Trash2, Archive, ArchiveRestore } from "lucide-react";
+import { ExternalLink, Save, Trash2, Archive, ArchiveRestore, CalendarClock } from "lucide-react";
 import type { KanbanPost } from "./types";
 import { COLUMN_META } from "./types";
+
+type SavePatch = {
+  title: string;
+  excerpt: string;
+  content: string;
+  published_at?: string | null;
+};
 
 type Props = {
   post: KanbanPost | null;
   siteSlug?: string | null;
   onClose: () => void;
-  onSave: (patch: { title: string; excerpt: string; content: string }) => Promise<void>;
+  onSave: (patch: SavePatch) => Promise<void>;
   onDelete: () => Promise<void>;
   onArchive?: (archive: boolean) => Promise<void>;
 };
+
+/** ISO → "YYYY-MM-DDTHH:mm" (browser local) for <input type="datetime-local">. */
+function isoToLocalInput(iso: string | null): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function localInputToIso(local: string): string | null {
+  if (!local) return null;
+  const d = new Date(local);
+  if (Number.isNaN(d.getTime())) return null;
+  return d.toISOString();
+}
 
 export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDelete, onArchive }: Props) {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
+  const [scheduledLocal, setScheduledLocal] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -28,8 +52,16 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
       setTitle(post.title);
       setExcerpt(post.excerpt ?? "");
       setContent(post.content ?? "");
+      setScheduledLocal(isoToLocalInput(post.published_at));
     }
   }, [post]);
+
+  const showScheduler = post && (post.status === "draft" || post.status === "scheduled");
+  const isPastDue = useMemo(() => {
+    if (!scheduledLocal) return false;
+    const t = new Date(scheduledLocal).getTime();
+    return Number.isFinite(t) && t < Date.now();
+  }, [scheduledLocal]);
 
   if (!post) return null;
   const meta = COLUMN_META[post.status];
@@ -69,6 +101,32 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
             />
           </div>
 
+          {showScheduler && (
+            <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
+              <Label htmlFor="post-scheduled" className="text-xs flex items-center gap-1.5">
+                <CalendarClock className="w-3.5 h-3.5" /> 예약 발행 시각
+              </Label>
+              <Input
+                id="post-scheduled"
+                type="datetime-local"
+                value={scheduledLocal}
+                onChange={(e) => setScheduledLocal(e.target.value)}
+                className="mt-1.5 h-9 text-sm"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                {scheduledLocal ? (
+                  isPastDue ? (
+                    <>지정 시각이 이미 지났어요. <span className="text-foreground font-semibold">저장 시 1분 안에 자동 발행</span>됩니다.</>
+                  ) : (
+                    <><span className="text-foreground font-semibold">{new Date(scheduledLocal).toLocaleString("ko-KR")}</span>에 자동 발행됩니다. (저장 후 ‘발행 대기’로 이동)</>
+                  )
+                ) : (
+                  "비워두면 수동 발행. 시각을 지정하면 저장 시 ‘발행 대기’로 이동하고, 시각이 되면 자동 발행됩니다."
+                )}
+              </p>
+            </div>
+          )}
+
           <div className="flex flex-wrap items-center gap-2 pt-2">
             <Button
               size="sm"
@@ -77,7 +135,12 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
               onClick={async () => {
                 setSaving(true);
                 try {
-                  await onSave({ title, excerpt, content });
+                  await onSave({
+                    title,
+                    excerpt,
+                    content,
+                    ...(showScheduler ? { published_at: localInputToIso(scheduledLocal) } : {}),
+                  });
                 } finally {
                   setSaving(false);
                 }
