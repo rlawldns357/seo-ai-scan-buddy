@@ -56,6 +56,9 @@ export default function Admin() {
   const [engineConfig, setEngineConfig] = useState<{ version: number; updated_at: string } | null>(null);
   const [engineLogs, setEngineLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
   const [engineUpdating, setEngineUpdating] = useState(false);
+  const [autoblogConfig, setAutoblogConfig] = useState<{ version: number; updated_at: string } | null>(null);
+  const [autoblogLogs, setAutoblogLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
+  const [autoblogUpdating, setAutoblogUpdating] = useState(false);
   const [failedPosts, setFailedPosts] = useState<{ id: string; title: string; slug: string; category: string; author: string; failure_reason: string; failure_attempts: number; created_at: string; contentLength: number }[]>([]);
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
@@ -177,6 +180,30 @@ export default function Admin() {
       }
     } catch {}
     setEngineUpdating(false);
+  };
+
+  const fetchAutoblogStatus = async () => {
+    const { data: cfg } = await (supabase as any)
+      .from("autoblog_engine_config")
+      .select("version, updated_at")
+      .eq("config_key", "content_system_prompt")
+      .maybeSingle();
+    if (cfg) setAutoblogConfig(cfg);
+    const { data: logs } = await (supabase as any)
+      .from("autoblog_engine_log")
+      .select("version, changes_summary, trends_found, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10);
+    if (logs) setAutoblogLogs(logs);
+  };
+
+  const triggerAutoblogUpdate = async () => {
+    setAutoblogUpdating(true);
+    try {
+      const { data: res } = await supabase.functions.invoke("update-autoblog-engine", {});
+      if (res?.success) await fetchAutoblogStatus();
+    } catch {}
+    setAutoblogUpdating(false);
   };
 
   const fetchFailedPosts = async () => {
