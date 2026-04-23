@@ -24,6 +24,8 @@ import {
   Plus,
   BarChart3,
   CheckCircle2,
+  Gauge,
+  ArrowRight,
 } from "lucide-react";
 
 type SitePost = {
