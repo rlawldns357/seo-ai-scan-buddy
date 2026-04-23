@@ -385,6 +385,7 @@ export default function KanbanBoard() {
         onClose={() => setOpenPost(null)}
         onSave={(patch) => openPost ? handleSave(openPost.id, patch) : Promise.resolve()}
         onDelete={() => openPost ? handleDelete(openPost.id) : Promise.resolve()}
+        onArchive={(archive) => openPost ? handleArchive(openPost.id, archive) : Promise.resolve()}
       />
 
     </>
