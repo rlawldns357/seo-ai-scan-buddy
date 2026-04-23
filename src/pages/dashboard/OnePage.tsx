@@ -176,6 +176,7 @@ export default function DashboardOnePage() {
             <LazyMount>
               {meta.id === "recommendations" && <DashboardRecommendations />}
               {meta.id === "workflow" && <KanbanBoard />}
+              {meta.id === "archive" && <ArchiveSection />}
               {meta.id === "reports" && <DashboardReports />}
             </LazyMount>
           </SectionShell>
