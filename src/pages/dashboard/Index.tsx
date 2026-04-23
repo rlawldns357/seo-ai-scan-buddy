@@ -9,7 +9,6 @@ import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import OnboardingSteps from "@/features/publish/OnboardingSteps";
-import FlowStepper from "@/features/publish/FlowStepper";
 import DashboardHero from "@/features/publish/DashboardHero";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -352,93 +351,58 @@ export default function DashboardIndex() {
           </Card>
         </div>
       ) : (
-        <div className="space-y-5">
-          {/* Workspace 헤더는 OnePage 최상단에서 렌더됩니다. */}
-          <DashboardHero
-            stage="ready"
-            siteTitle={site.title}
-            siteHref={`/sites/${site.site_slug}`}
-            queued={queueCounts.queued.length}
-            publishedToday={queueCounts.publishedToday}
-            weeklyVisitors={queueCounts.weeklyVisitors}
-            primaryLabel={queueCounts.queued.length > 0 ? "큐로 이동" : "추천 보기"}
-            onPrimary={() => {
-              const target = queueCounts.queued.length > 0 ? "queue" : "recommendations";
-              document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
-          />
+        <div className="space-y-4">
+          {/* Workspace 헤더 + KPI는 OnePage 최상단에서 렌더됩니다.
+              여기서는 Overview 섹션 본문(다음 할 일 + 진단 추천)만 담당. */}
 
-          {/* SearchTune OS 무료 진단 추천 — 자동 발행 콘텐츠가 잘 먹히는지 확인 */}
+          {/* 다음 할 일 — 단일 CTA, 플랫 */}
+          <div className="flex items-start justify-between gap-4 flex-wrap rounded-2xl border border-border/60 bg-card px-5 py-4">
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Next</p>
+              <h3 className="text-base font-semibold text-foreground mt-0.5">
+                {queueCounts.queued.length > 0
+                  ? `대기 중인 ${queueCounts.queued.length}건 검토하고 발행하기`
+                  : "콘텐츠 큐에 새 글 추가하기"}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {queueCounts.queued.length > 0
+                  ? "워크플로우 섹션에서 카드를 드래그해 발행할 수 있어요."
+                  : "추천 주제에서 고르거나 직접 주제를 입력해 시작하세요."}
+              </p>
+            </div>
+            <Button
+              className="rounded-full shrink-0"
+              onClick={() => {
+                const target = queueCounts.queued.length > 0 ? "workflow" : "recommendations";
+                document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              {queueCounts.queued.length > 0 ? (
+                <><Send className="w-4 h-4" /> 워크플로우 열기</>
+              ) : (
+                <><Plus className="w-4 h-4" /> 추천 보기</>
+              )}
+            </Button>
+          </div>
+
+          {/* SearchTune OS 무료 진단 — 슬림 라인 */}
           <a
             href={`/?ref=dashboard`}
             target="_blank"
             rel="noreferrer"
-            className="group flex items-center justify-between gap-3 rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/5 to-accent/5 px-4 py-3 hover:border-primary/40 transition"
+            className="group flex items-center justify-between gap-3 rounded-xl border border-border/60 bg-background px-4 py-2.5 hover:border-primary/40 hover:bg-primary/5 transition"
           >
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                <Gauge className="w-[18px] h-[18px] text-primary" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">
-                  내 사이트 SEO·AEO·GEO 무료 진단
-                </p>
-                <p className="text-[11px] text-muted-foreground truncate">
-                  자동 발행한 콘텐츠가 검색·AI 답변에서 잘 잡히는지 SearchTune OS로 점검해보세요.
-                </p>
-              </div>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Gauge className="w-4 h-4 text-primary shrink-0" />
+              <p className="text-sm text-foreground truncate">
+                <span className="font-medium">SEO·AEO·GEO 무료 진단</span>
+                <span className="text-muted-foreground"> · 자동 발행 콘텐츠가 잘 잡히는지 점검</span>
+              </p>
             </div>
             <span className="shrink-0 inline-flex items-center gap-1 text-xs font-semibold text-primary group-hover:translate-x-0.5 transition">
-              진단 시작 <ArrowRight className="w-3.5 h-3.5" />
+              열기 <ArrowRight className="w-3.5 h-3.5" />
             </span>
           </a>
-
-          {/* KPI — 한 줄 컴팩트 바 */}
-          <Card className="rounded-2xl border-border/50 shadow-card divide-x divide-border/50 grid grid-cols-2 sm:grid-cols-4 overflow-hidden">
-            {[
-              { label: "발행 대기", value: queueCounts.queued.length },
-              { label: "발행 완료", value: queueCounts.published.length },
-              { label: "총 조회수", value: queueCounts.totalViews },
-              { label: "이번 주 방문", value: queueCounts.weeklyVisitors },
-            ].map((k) => (
-              <div key={k.label} className="px-4 py-2.5 flex items-center justify-between sm:flex-col sm:items-start sm:justify-center sm:gap-0.5">
-                <p className="text-[11px] text-muted-foreground">{k.label}</p>
-                <p className="text-lg font-bold text-foreground tabular-nums">{k.value}</p>
-              </div>
-            ))}
-          </Card>
-
-          {/* 다음 할 일 — 단일 CTA */}
-          <Card className="p-5 rounded-2xl border-border/50 shadow-card bg-primary/5">
-            <div className="flex items-start justify-between gap-4 flex-wrap">
-              <div className="min-w-0">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-primary">다음 할 일</p>
-                <h3 className="text-base font-semibold text-foreground mt-1">
-                  {queueCounts.queued.length > 0
-                    ? `대기 중인 ${queueCounts.queued.length}건 검토하고 발행하기`
-                    : "콘텐츠 큐에 새 글 추가하기"}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {queueCounts.queued.length > 0
-                    ? "발행 큐 섹션에서 바로 검토할 수 있습니다."
-                    : "추천 주제에서 고르거나 직접 주제를 입력해 시작하세요."}
-                </p>
-              </div>
-              <Button
-                className="rounded-full shrink-0"
-                onClick={() => {
-                  const target = queueCounts.queued.length > 0 ? "queue" : "recommendations";
-                  document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-              >
-                {queueCounts.queued.length > 0 ? (
-                  <><Send className="w-4 h-4" /> 큐로 이동</>
-                ) : (
-                  <><Plus className="w-4 h-4" /> 추천 보기</>
-                )}
-              </Button>
-            </div>
-          </Card>
         </div>
       )}
     </>
