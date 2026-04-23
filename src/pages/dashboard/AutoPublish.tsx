@@ -106,19 +106,18 @@ export default function AutoPublish() {
             }}>새 글 작성하기</button>
           </Card>
         ) : (
-          <div className="grid gap-3">
+          <div className="space-y-2">
             {queued.map((p) => (
-              <Card key={p.id} className="p-4 flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  {p.source_axis && <span className="text-[10px] font-bold text-muted-foreground">{p.source_axis}</span>}
-                  <h3 className="font-semibold text-foreground">{p.title}</h3>
-                  {p.excerpt && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.excerpt}</p>}
+              <Card key={p.id} className="px-3 py-2.5 flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1 flex items-center gap-2">
+                  {p.source_axis && <span className="text-[10px] font-bold text-muted-foreground shrink-0">{p.source_axis}</span>}
+                  <h3 className="text-sm font-medium text-foreground truncate">{p.title}</h3>
                 </div>
-                <div className="flex gap-2 shrink-0">
-                  <Button size="sm" onClick={() => publishNow(p.id)} disabled={busyId === p.id} className="rounded-full">
-                    <Send className="w-3.5 h-3.5" /> {busyId === p.id ? "발행 중..." : "콘텐츠 발행하기"}
+                <div className="flex gap-1 shrink-0">
+                  <Button size="sm" onClick={() => publishNow(p.id)} disabled={busyId === p.id} className="rounded-full h-8 text-xs">
+                    <Send className="w-3 h-3" /> {busyId === p.id ? "발행 중..." : "발행"}
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => removePost(p.id)}>
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0" onClick={() => removePost(p.id)}>
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>

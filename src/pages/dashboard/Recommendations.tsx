@@ -91,24 +91,20 @@ export default function Recommendations() {
       {loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
       ) : (
-        <div className="grid gap-3">
+        <div className="space-y-2">
           {ideas.map((idea, i) => (
-            <Card key={i} className="p-4 flex items-start justify-between gap-4 hover:border-primary/50 transition-colors">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${axisColor[idea.axis]}`}>{idea.axis}</span>
-                  <span className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                    <TrendingDown className="w-3 h-3" /> {idea.reason}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-foreground">{idea.topic}</h3>
+            <Card key={i} className="px-3 py-2.5 flex items-center justify-between gap-3 hover:border-primary/50 transition-colors">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${axisColor[idea.axis]}`}>{idea.axis}</span>
+                <h3 className="text-sm font-medium text-foreground truncate">{idea.topic}</h3>
               </div>
               <Button
                 size="sm"
-                className="rounded-full shrink-0"
+                variant="ghost"
+                className="rounded-full shrink-0 h-8 text-xs"
                 onClick={() => goCreate(idea)}
               >
-                <Sparkles className="w-3.5 h-3.5" /> 글로 만들기 <ArrowRight className="w-3.5 h-3.5" />
+                <Sparkles className="w-3 h-3" /> 글로 만들기
               </Button>
             </Card>
           ))}
