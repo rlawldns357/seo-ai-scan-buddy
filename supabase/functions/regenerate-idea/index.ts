@@ -79,16 +79,29 @@ Deno.serve(async (req) => {
       const lovableKey = Deno.env.get("LOVABLE_API_KEY");
       if (!lovableKey) return json({ error: "AI 키가 설정되지 않았습니다." }, 500);
       const brandContext = await scrapeBrandContext(siteUrl);
-      const seedPrompt = `당신은 한국어 SEO/콘텐츠 전략가입니다. 아래 사이트에 어울릴 "관심 주제 키워드" 1개를 제안하세요.
+      // 컨텍스트 부족 시 일반론 추천 거부 — 사용자가 직접 입력하도록 유도
+      const MIN_CTX_LEN = 200;
+      if (brandContext.length < MIN_CTX_LEN) {
+        console.log("seed mode: insufficient context", { url: siteUrl, len: brandContext.length });
+        return json({
+          error: "사이트 내용이 부족해 추천할 수 없어요. 사이트에 제품/서비스 설명을 더 추가하거나, 관심 주제를 직접 입력해주세요.",
+          insufficient_context: true,
+        }, 422);
+      }
+      const seedPrompt = `당신은 한국어 SEO/콘텐츠 전략가입니다. 아래 사이트의 실제 제품·서비스·카테고리에 직접 연결되는 "관심 주제 키워드" 1개를 제안하세요.
 
 [사이트] ${siteTitle || "(제목 없음)"} — ${siteUrl || "N/A"}
-${brandContext ? `[사이트 컨텍스트]\n${brandContext}\n` : ""}
+[사이트 컨텍스트]
+${brandContext}
+
 ${avoidSeeds.length ? `[이미 제안한 키워드(중복 금지)] ${avoidSeeds.join(" / ")}` : ""}
 
 요구사항:
 - 4~20자 한국어, 명사구 위주 (예: "친환경 패키징", "신규 방문자 유입", "26SS 컬렉션 기획")
-- 사이트의 실제 제품/카테고리/고객 관심사를 반영
-- 광고 문구·동사·물음표 금지`;
+- **반드시** 위 사이트 컨텍스트에 등장한 브랜드명·제품명·카테고리 단어를 1개 이상 포함
+- "AI 인용", "ChatGPT", "검색 노출", "SEO", "AEO", "GEO" 같은 메타·일반론 키워드 금지
+- 광고 문구·동사·물음표 금지
+- 컨텍스트로 구체적 키워드를 만들 수 없으면 빈 문자열("")을 반환`;
       const seedRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
@@ -123,7 +136,12 @@ ${avoidSeeds.length ? `[이미 제안한 키워드(중복 금지)] ${avoidSeeds.
         try { seedParsed = JSON.parse(tc.function.arguments); } catch { /* ignore */ }
       }
       const seedOut = (seedParsed?.seed ?? "").trim().slice(0, 40);
-      if (!seedOut) return json({ error: "시드 응답을 해석할 수 없어요." }, 500);
+      if (!seedOut) {
+        return json({
+          error: "사이트 컨텍스트에서 적절한 키워드를 찾지 못했어요. 관심 주제를 직접 입력해주세요.",
+          insufficient_context: true,
+        }, 422);
+      }
       return json({ ok: true, seed: seedOut });
     }
 
