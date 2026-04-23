@@ -68,7 +68,13 @@ function SectionShell({
   const tone = TONE_CLASSES[meta.tone];
   return (
     <section id={meta.id} className="scroll-mt-32">
-      <div className={isFirst ? "mb-6" : "mt-12 mb-6 pt-8 border-t border-border/60"}>
+      <div
+        className={
+          isFirst
+            ? "mb-5"
+            : "mt-10 mb-5 pt-10 border-t border-border/60"
+        }
+      >
         <div className="flex items-center gap-2.5">
           <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-mono font-bold tabular-nums ${tone.badge}`}>
             {String(meta.index).padStart(2, "0")}
@@ -86,7 +92,7 @@ function SectionShell({
       </div>
       {/* 본문 영역: 좌측 얇은 액센트 레일로 섹션 헤더와 시각적으로 묶음 */}
       <div className="relative pl-4 sm:pl-5">
-        <span className={`pointer-events-none absolute left-0 top-0 bottom-2 w-[2px] rounded-full ${tone.rail}`} aria-hidden />
+        <span className={`pointer-events-none absolute left-0 top-0 bottom-0 w-[2px] rounded-full ${tone.rail}`} aria-hidden />
         {children}
       </div>
     </section>
