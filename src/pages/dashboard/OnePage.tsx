@@ -31,18 +31,20 @@ function SectionShell({
   const Icon = meta.icon;
   return (
     <section id={meta.id} className="scroll-mt-32">
-      {/* 플랫 섹션 헤더: 번호·아이콘·타이틀 한 줄 + 보조 설명 */}
-      <div className={isFirst ? "mb-5" : "mt-10 mb-5"}>
-        <div className="flex items-center gap-2.5">
-          <span className="text-[11px] font-mono font-semibold text-muted-foreground tabular-nums">
+      {/* 섹션 헤더: 번호 배지 + 타이틀 + 가는 구분선으로 명확히 구획 */}
+      <div className={isFirst ? "mb-6" : "mt-14 mb-6 pt-8 border-t border-border/60"}>
+        <div className="flex items-center gap-3">
+          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-muted text-[11px] font-mono font-bold text-muted-foreground tabular-nums">
             {String(meta.index).padStart(2, "0")}
           </span>
-          <Icon className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground break-keep">
-            {meta.title}
-          </h2>
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+            <Icon className="h-3.5 w-3.5" /> {meta.chip}
+          </span>
         </div>
-        <p className="text-xs text-muted-foreground mt-1 ml-[1.6rem] break-keep">
+        <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground break-keep mt-2.5">
+          {meta.title}
+        </h2>
+        <p className="text-sm text-muted-foreground mt-1 break-keep">
           {meta.subtitle}
         </p>
       </div>
