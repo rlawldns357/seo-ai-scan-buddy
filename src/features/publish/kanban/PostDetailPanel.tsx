@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { ExternalLink, Save, Trash2 } from "lucide-react";
+import { ExternalLink, Save, Trash2, Archive, ArchiveRestore } from "lucide-react";
 import type { KanbanPost } from "./types";
 import { COLUMN_META } from "./types";
 
@@ -14,6 +14,7 @@ type Props = {
   onClose: () => void;
   onSave: (patch: { title: string; excerpt: string; content: string }) => Promise<void>;
   onDelete: () => Promise<void>;
+  onArchive?: (archive: boolean) => Promise<void>;
 };
 
 export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDelete }: Props) {
