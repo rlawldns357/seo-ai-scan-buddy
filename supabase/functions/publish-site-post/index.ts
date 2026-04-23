@@ -189,10 +189,42 @@ serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+    const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
+
+    // Admin client — bypasses RLS for the actual mutation.
+    const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
+
+    // Authorization gate: either the request is signed by the service role
+    // (scheduler) or the caller must own the post via RLS.
+    const authHeader = req.headers.get("Authorization") || "";
+    const bearer = authHeader.replace(/^Bearer\s+/i, "").trim();
+    const isServiceCall = bearer.length > 0 && bearer === SERVICE_KEY;
+
+    if (!isServiceCall) {
+      // Validate ownership through user-context RLS. If the user is not the
+      // owner of the parent site, this select returns no row.
+      const userClient = createClient(SUPABASE_URL, ANON_KEY, {
+        global: { headers: { Authorization: authHeader } },
+      });
+      const { data: authData } = await userClient.auth.getUser();
+      if (!authData?.user) {
+        return new Response(JSON.stringify({ error: "로그인이 필요해요. 다시 로그인 후 시도해주세요." }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: ownedPost, error: ownedErr } = await userClient
+        .from("site_posts")
+        .select("id")
+        .eq("id", postId)
+        .maybeSingle();
+      if (ownedErr || !ownedPost) {
+        return new Response(JSON.stringify({ error: "이 글에 대한 권한이 없습니다." }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     const { data: post, error: postErr } = await supabase
       .from("site_posts")
