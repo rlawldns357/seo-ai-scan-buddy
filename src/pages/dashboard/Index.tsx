@@ -389,7 +389,7 @@ export default function DashboardIndex() {
                 rel="noreferrer"
                 className="inline-flex items-center gap-1.5 rounded-full bg-foreground text-background text-xs font-semibold px-4 py-2 hover:bg-foreground/90 transition shrink-0"
               >
-                라이브 페이지 보기 <ExternalLink className="w-3.5 h-3.5" />
+                내 콘텐츠 허브 열기 <ExternalLink className="w-3.5 h-3.5" />
               </a>
             </div>
           </div>
