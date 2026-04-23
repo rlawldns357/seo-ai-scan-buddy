@@ -134,8 +134,16 @@ const SECTIONS: SectionMeta[] = [
     icon: KanbanSquare,
   },
   {
-    id: "reports",
+    id: "archive",
     index: 4,
+    chip: "Archive",
+    title: "발행 아카이브",
+    subtitle: "발행된 모든 글을 검색하고, 오래된 글은 보관해 칸반을 가볍게 유지하세요.",
+    icon: Archive,
+  },
+  {
+    id: "reports",
+    index: 5,
     chip: "Reports",
     title: "성과 리포트",
     subtitle: "분석 점수 추이와 발행 현황을 시각화합니다.",
