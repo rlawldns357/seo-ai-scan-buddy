@@ -268,6 +268,32 @@ export default function KanbanBoard() {
     />
   );
 
+  /** For published column we cap the visible items and show a "전체 보기" link. */
+  const renderColumnContent = (s: KanbanStatus) => {
+    if (grouped[s].length === 0) {
+      return (
+        <div className="text-[11px] text-muted-foreground text-center py-8 border border-dashed border-border/40 rounded-xl">
+          여기로 드롭
+        </div>
+      );
+    }
+    if (s === "published" && grouped.published.length > PUBLISHED_VISIBLE_LIMIT) {
+      const visible = grouped.published.slice(0, PUBLISHED_VISIBLE_LIMIT);
+      const hidden = grouped.published.length - visible.length;
+      return (
+        <>
+          {visible.map(renderCard)}
+          <button
+            onClick={() => document.getElementById("archive")?.scrollIntoView({ behavior: "smooth" })}
+            className="w-full text-[11px] text-muted-foreground hover:text-foreground border border-dashed border-border/40 rounded-xl py-2.5 transition-colors"
+          >
+            +{hidden}편 더보기 → 보관함으로 정리하기
+          </button>
+        </>
+      );
+    }
+    return grouped[s].map(renderCard);
+  };
   return (
     <>
       {/* Toolbar */}
