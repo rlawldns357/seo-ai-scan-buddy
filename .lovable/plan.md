@@ -1,84 +1,98 @@
 
 
-# 대시보드를 라이브 데모처럼 "원페이지 스크롤" 구조로 재편
+# 노션-스타일 칸반 워크플로우: 드래그로 발행하기
 
-지금 대시보드의 카드/타이포/사이드바 디자인 자산은 그대로 유지하고, **정보 흐름만** 데모처럼 한 페이지에서 위→아래로 자연스럽게 스크롤되며 읽히는 구조로 바꿉니다. 사이드바 메뉴 클릭 = 같은 페이지 내 해당 섹션으로 스무스 스크롤.
+지금 대시보드는 위→아래 스크롤로 "추천 → 작성 → 큐 → 발행" 흐름이 분리돼 있어요. 이걸 **하나의 칸반 보드**로 합쳐서, 카드를 다음 칸으로 **드래그하면 상태가 바뀌는** 방식으로 재편합니다.
 
-## 핵심 변화
-
-**Before**: 사이드바 클릭 → 라우트 이동 → 새 페이지 로드 → 컨텍스트 단절 (현재 6~7개 분리 페이지)
-**After**: `/dashboard`가 하나의 긴 페이지. 섹션 6개가 위→아래 흐름으로 배치. 사이드바는 앵커 내비.
-
-## 페이지 구조 (`/dashboard` 단일 페이지, 위→아래)
+## 컨셉
 
 ```text
-[#overview]    오늘의 운영 현황 (KPI 4카드 + "다음 할 일" 카드)
-       ↓
-[#scores]      평균 SEO/AEO/GEO 게이지 + 약점 축 강조
-       ↓
-[#recommendations]  추천 액션 카드 (현재 Recommendations 페이지 내용)
-       ↓
-[#content]     새 글 작성 패널 (현재 Content 페이지)
-       ↓
-[#queue]       발행 큐 (현재 AutoPublish 큐 부분)
-       ↓
-[#posts]       발행된 글 목록 (현재 Posts 페이지)
-       ↓
-[#reports]     점수 추이 차트 (현재 Reports)
+┌─────────────┬─────────────┬─────────────┬─────────────┐
+│ 💡 아이디어  │ ✍️ 초안      │ ⏳ 발행 대기 │ ✅ 발행됨    │
+│ idea        │ draft       │ scheduled   │ published   │
+├─────────────┼─────────────┼─────────────┼─────────────┤
+│ [추천 키워드]│ [작성 중인]  │ [큐 카드 ⏰] │ [라이브 글] │
+│ [추천 키워드]│ [작성 중인]  │ [큐 카드 ⏰] │ [라이브 글] │
+│  + 새 아이디어│ + 빈 초안    │             │  🎲 재생성  │
+└─────────────┴─────────────┴─────────────┴─────────────┘
 ```
 
-각 섹션은 `id="…"` + `scroll-mt-20`(상단 헤더 오프셋) 적용, 섹션 사이 `<Separator />` + 섹션 헤더는 데모의 PageHero 톤.
+- **드래그 = 상태 변경**: `idea→draft` (AI 초안 생성) / `draft→scheduled` (큐 진입) / `scheduled→published` (즉시 발행) / 역방향(unpublish)도 지원
+- **카드 클릭 = 우측 패널** (Notion-style side drawer)에서 제목/본문/키워드 미리보기 + 편집
+- **칸별 카운트 배지** 상단에 표시 (예: `초안 3 · 큐 5 · 발행 12`)
 
-## 디자인 자산은 그대로 유지
+## 페이지 구조 변경
 
-- 현재 대시보드 카드 스타일(`rounded-2xl border-border/50 shadow-card`), 타이포, 사이드바 룩앤필 — **변경 없음**
-- 데모에서 가져오는 건 **레이아웃 흐름과 섹션 헤더 패턴**뿐 (게이지 컴포넌트는 옵션)
+`/dashboard`의 `#content`, `#queue`, `#posts` 3개 섹션 → **1개의 `<KanbanBoard />` 섹션**으로 통합. `#overview`, `#scores`, `#recommendations`, `#reports`는 유지.
 
-## 사이드바 동작 변경
+새 섹션 ID: `#workflow` (사이드바 메뉴도 "콘텐츠 작성/발행 큐/발행됨" 3개 → "워크플로우" 1개로 합침)
 
-- 메뉴 항목 클릭 시 `react-router` 라우팅 대신 `/dashboard#section-id`로 이동 + 스무스 스크롤
-- 현재 화면에 보이는 섹션을 `IntersectionObserver`로 감지해 사이드바 active 표시 자동 갱신
-- 기존 `ScrollToTop`은 hash 처리 로직이 이미 있어 그대로 호환
+## 데이터 모델 (기존 활용)
 
-## 라우트 정책
+`site_posts.status` 컬럼을 그대로 재사용. 칸 ↔ 상태 매핑:
 
-- `/dashboard` = 새로운 원페이지 (모든 섹션 포함)
-- `/dashboard/posts`, `/recommendations`, `/auto-publish`, `/reports`, `/content` = **유지하되 리디렉트**: 각 라우트는 `/dashboard#섹션id`로 자동 이동 (북마크/외부 링크 호환)
-- `/dashboard/demo` = 그대로 유지 (내부 시연용)
+| 칸 | status 값 | 비고 |
+|---|---|---|
+| 아이디어 | `idea` (신규) | Recommendations에서 "큐에 담기" 누른 키워드 |
+| 초안 | `draft` (기존) | 본문 있음, 미발행 |
+| 발행 대기 | `scheduled` (신규) | `published_at`이 미래 시각 |
+| 발행됨 | `published` (기존) | |
 
-## 성능/로드
+→ **마이그레이션 필요**: `status` CHECK 제약을 `idea/draft/scheduled/published`로 확장 (현재는 텍스트라 제약만 추가)
 
-- 전체 페이지가 한 번에 로드되면 무거우므로 각 섹션을 **`React.lazy` + `Suspense`**로 감싸고, 화면에 가까워지면 마운트 (IntersectionObserver 기반 lazy mount)
-- 초기 보이는 `#overview`, `#scores`만 즉시 렌더, 나머지는 스크롤 시 마운트
-- 데이터 페칭(예: 발행글 목록, 차트)은 섹션이 마운트될 때만 시작 → 초기 부하 최소화
+## 드래그 동작 명세
 
-## 모바일
+| From → To | 동작 |
+|---|---|
+| idea → draft | `generate-content-draft` 호출, AI가 본문 생성 후 `status='draft'` |
+| draft → scheduled | 모달로 발행 시각 선택 → `status='scheduled'`, `published_at` 세팅 |
+| scheduled → published | 즉시 발행 (`publish-site-post` 호출), `published_at=now()` |
+| published → draft | 발행 취소 (기존 unpublish 로직) |
+| 모든 칸 → 🗑️ | 카드를 하단 휴지통 영역에 드롭 시 삭제 확인 |
+| **🎲 published 카드** | 카드 우상단 주사위 버튼 (현재 그대로 유지) |
 
-- 동일한 원페이지, 사이드바는 기존 모바일 패턴(Sheet) 유지
-- 모바일에서는 우하단에 작은 "위로" 버튼 추가 (섹션 점프용 미니 메뉴 옵션)
+낙관적 업데이트 + 실패 시 롤백 + toast 알림.
+
+## UI/디자인
+
+- **dnd-kit** (`@dnd-kit/core` + `@dnd-kit/sortable`) 사용 — React 18 호환, 가볍고 접근성 좋음
+- 기존 Card 디자인 자산 그대로 (rounded-2xl, shadow-card). 카드 폭만 살짝 줄여서 4칸 그리드에 맞춤
+- 데스크톱: 4칸 가로 그리드 (`grid-cols-4`, 각 칸은 `min-h-[400px]`, 내부 스크롤)
+- 모바일 (≤768px): 칸반 대신 **탭 전환** (`Tabs` 컴포넌트로 칸 4개를 탭으로) — 모바일에서 가로 드래그는 UX가 나빠서. 카드 우측에 "다음 단계로 ▶" 버튼 제공
+- 우측 디테일 패널: 기존 `Sheet` 컴포넌트 재사용 (오른쪽에서 슬라이드)
 
 ## 구현 작업
 
-**신규 파일** (3):
-- `src/pages/dashboard/OnePage.tsx` — 모든 섹션을 묶는 컨테이너 (섹션별 lazy mount)
-- `src/features/publish/ui/SectionHeader.tsx` — 섹션마다 쓸 통일 헤더 (`chip`, `title`, `subtitle`)
-- `src/features/publish/useScrollSpy.ts` — IntersectionObserver 훅, 활성 섹션 ID 반환
+**신규 파일** (5):
+- `src/features/publish/kanban/KanbanBoard.tsx` — 보드 컨테이너, dnd-kit DndContext
+- `src/features/publish/kanban/KanbanColumn.tsx` — 칸 1개 (droppable)
+- `src/features/publish/kanban/KanbanCard.tsx` — 카드 1개 (draggable, 상태별 액션)
+- `src/features/publish/kanban/PostDetailPanel.tsx` — 우측 Sheet (편집/미리보기)
+- `src/features/publish/kanban/MobileKanbanTabs.tsx` — 모바일 탭 폴백
 
-**수정 파일** (4):
-- `src/App.tsx` — `/dashboard` → `OnePage` 매핑, 기존 서브 라우트는 hash 리디렉트로 변경
-- `src/features/publish/AppSidebar.tsx` — 메뉴 항목을 `Link to="/dashboard#xxx"` + scrollSpy active 상태 연동, 이모지 제거
-- `src/pages/dashboard/Layout.tsx` — outlet 그대로, 단 hash 변화 시 스크롤 보정
-- `src/components/ScrollToTop.tsx` — 이미 hash 지원하므로 검증만
+**수정 파일** (3):
+- `src/pages/dashboard/OnePage.tsx` — `#content`/`#queue`/`#posts` 3섹션을 `#workflow` 1섹션으로 교체
+- `src/features/publish/AppSidebar.tsx` — 메뉴 통합
+- `src/App.tsx` — 기존 라우트 리디렉트는 `#workflow`로
 
-**기존 페이지 컴포넌트** (Index/Posts/Recommendations/AutoPublish/Reports/Content): **삭제하지 않고 섹션 컴포넌트로 재사용**. `OnePage.tsx`에서 import해 각 `<section>` 안에 배치. 내용/스타일 변경 최소화.
+**삭제 (또는 deprecate)**: `src/pages/dashboard/Content.tsx`, `AutoPublish.tsx`, `Posts.tsx` — 로직은 KanbanCard/KanbanColumn 내부로 흡수
 
-## 범위 외 (이번 작업에서 제외)
+**DB 마이그레이션** (1):
+- `site_posts.status` 허용값에 `idea`, `scheduled` 추가 (CHECK 제약 또는 enum)
 
-- 데모의 ScoreGauge/AxisBadge 추출 — 이전 라운드 제안. 이번엔 **레이아웃 통합만** 집중
-- 기존 카드/버튼 디자인 토큰 변경 — 사용자 의견대로 "지금이 더 간지난다" → 그대로 유지
-- 리프레시/스크롤 위치 복원 같은 고급 UX는 v2
+**패키지 설치**: `@dnd-kit/core`, `@dnd-kit/sortable`
 
-## 진행 가능한 옵션
+## 트레이드오프
 
-승인 시 default mode로 전환해 신규 3 + 수정 4 파일을 한 번에 구현합니다. 구현 후 `/dashboard`에 접속하면 사이드바 클릭 = 같은 페이지 내 스크롤로 동작합니다.
+- **장점**: 한눈에 워크플로 파악, 드래그 = 직관적 발행, 추천→발행 한 화면 완결
+- **위험**: 글이 많아지면 칸이 길어짐 → 칸별 페이지네이션(20개 표시 + "더 보기")으로 해결
+- **모바일 UX**: 드래그 대신 탭+버튼 폴백 필수 (이미 계획에 포함)
+
+## 범위 외 (이번 작업 제외)
+
+- 다중 선택 후 일괄 드래그 (v2)
+- 칸 사이 자동 정렬/규칙 (v2)
+- `Recommendations` 카드를 `idea` 칸으로 직접 드래그 (이번엔 "큐에 담기" 버튼 클릭으로 idea 생성 — 칸 이동만 드래그)
+
+승인하시면 default mode로 전환해 마이그레이션 → 패키지 설치 → 신규 5 파일 구현 → 기존 3 페이지 흡수 순으로 진행합니다.
 
