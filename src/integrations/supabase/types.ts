@@ -101,6 +101,36 @@ export type Database = {
         }
         Relationships: []
       }
+      beta_waitlist: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          invited_at: string | null
+          reason: string | null
+          site_url: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          invited_at?: string | null
+          reason?: string | null
+          site_url?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          invited_at?: string | null
+          reason?: string | null
+          site_url?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           author: string
@@ -380,6 +410,77 @@ export type Database = {
         }
         Relationships: []
       }
+      regeneration_credits: {
+        Row: {
+          addon_balance: number
+          balance: number
+          created_at: string
+          id: string
+          monthly_quota: number
+          reset_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          addon_balance?: number
+          balance?: number
+          created_at?: string
+          id?: string
+          monthly_quota?: number
+          reset_at?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          addon_balance?: number
+          balance?: number
+          created_at?: string
+          id?: string
+          monthly_quota?: number
+          reset_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      regeneration_log: {
+        Row: {
+          cost_credits: number
+          created_at: string
+          id: string
+          model_used: string | null
+          post_id: string | null
+          tier: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          cost_credits?: number
+          created_at?: string
+          id?: string
+          model_used?: string | null
+          post_id?: string | null
+          tier: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          cost_credits?: number
+          created_at?: string
+          id?: string
+          model_used?: string | null
+          post_id?: string | null
+          tier?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "regeneration_log_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "site_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_post_views: {
         Row: {
           created_at: string
@@ -522,6 +623,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          expires_at: string | null
+          granted_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          expires_at?: string | null
+          granted_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_sites: {
         Row: {
           created_at: string
@@ -568,6 +693,17 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_user_tier: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       log_site_post_view: {
         Args: { _post_id: string; _referrer?: string; _session_id: string }
         Returns: undefined
@@ -591,7 +727,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "free" | "beta" | "lite" | "pro" | "studio" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -718,6 +854,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["free", "beta", "lite", "pro", "studio", "admin"],
+    },
   },
 } as const
