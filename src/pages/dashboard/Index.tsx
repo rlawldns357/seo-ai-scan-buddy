@@ -330,8 +330,8 @@ export default function DashboardIndex() {
             onSecondary={() => navigate("/")}
           />
           <Card className="p-6 rounded-2xl border-border/50 shadow-card">
-            <h2 className="text-lg font-semibold text-foreground mb-1">브랜드 페이지 만들기</h2>
-            <p className="text-sm text-muted-foreground mb-4">전용 브랜드 페이지를 만들고 자동 발행을 시작하세요. 생성 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
+            <h2 className="text-lg font-semibold text-foreground mb-1">블로그 허브 만들기</h2>
+            <p className="text-sm text-muted-foreground mb-4">전용 블로그 허브를 만들고 자동 발행을 시작하세요. 생성 직후 시작용 콘텐츠 3개가 자동으로 준비됩니다.</p>
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
@@ -339,13 +339,13 @@ export default function DashboardIndex() {
                   <Input id="siteUrl" placeholder="example.com" value={siteUrl} onChange={(e) => setSiteUrl(e.target.value)} required />
                 </div>
                 <div>
-                  <Label htmlFor="title">브랜드 페이지 제목</Label>
+                  <Label htmlFor="title">블로그 허브 제목</Label>
                   <Input id="title" placeholder="우리 브랜드 인사이트" value={title} onChange={(e) => setTitle(e.target.value)} required />
                 </div>
               </div>
               <p className="text-[11px] text-muted-foreground">로그인된 계정: <span className="font-medium">{user?.email}</span></p>
               <Button type="submit" disabled={submitting} className="rounded-full w-full md:w-auto">
-                {submitting ? "만드는 중..." : "브랜드 페이지 만들기"}
+                {submitting ? "만드는 중..." : "블로그 허브 만들기"}
               </Button>
             </form>
           </Card>

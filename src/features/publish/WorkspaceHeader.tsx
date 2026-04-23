@@ -116,7 +116,7 @@ export default function WorkspaceHeader() {
           rel="noreferrer"
           className="inline-flex items-center gap-1.5 rounded-full bg-foreground text-background text-xs font-semibold px-3.5 py-2 hover:bg-foreground/90 transition shadow-sm shrink-0"
         >
-          브랜드 페이지 열기 <ExternalLink className="w-3.5 h-3.5" />
+          블로그 허브 열기 <ExternalLink className="w-3.5 h-3.5" />
         </a>
       </div>
 

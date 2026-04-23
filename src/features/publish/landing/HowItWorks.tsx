@@ -1,7 +1,7 @@
 import { Link2, Sparkles, FileText, Quote, LineChart } from "lucide-react";
 
 const STEPS = [
-  { icon: Link2, title: "브랜드 페이지 만들기", desc: "사이트 URL과 다룰 주제만 입력하면 전용 브랜드 페이지가 만들어집니다." },
+  { icon: Link2, title: "블로그 허브 만들기", desc: "사이트 URL과 다룰 주제만 입력하면 전용 블로그 허브가 만들어집니다." },
   { icon: Sparkles, title: "검색·AI 관점 자동 반영", desc: "한 글에 검색 노출·답변 채택·AI 인용 관점이 같이 반영된 초안이 만들어집니다." },
   { icon: FileText, title: "구조까지 갖춰서 발행", desc: "FAQ·HowTo 스키마와 내부 링크가 포함된 형태로 자동 발행됩니다." },
   { icon: Quote, title: "검색·AI가 잘 이해", desc: "Google·Naver는 잘 노출하고, ChatGPT·Perplexity는 출처로 가져갑니다." },
@@ -14,7 +14,7 @@ export default function HowItWorks() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-10 md:mb-14 max-w-2xl mx-auto">
           <h2 className="text-[24px] leading-[1.3] md:text-4xl md:leading-tight font-bold tracking-tight text-foreground break-keep">
-            브랜드 페이지에서 <span className="text-primary">검색·AI가 이해하는 글</span>까지
+            블로그 허브에서 <span className="text-primary">검색·AI가 이해하는 글</span>까지
           </h2>
           <p className="text-[15px] leading-[1.7] md:text-base md:leading-relaxed text-muted-foreground mt-4 break-keep">
             5단계 흐름이 자동으로 이어집니다. 매번 직접 점검할 필요가 없습니다.
