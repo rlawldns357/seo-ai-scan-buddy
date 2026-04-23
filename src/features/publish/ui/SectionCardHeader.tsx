@@ -33,7 +33,7 @@ export default function SectionCardHeader({
   return (
     <div
       className={cn(
-        "flex items-center justify-between gap-3 px-5 pt-4 pb-3 border-b border-border/60",
+        "flex items-center justify-between gap-2 sm:gap-3 px-4 sm:px-5 pt-3 sm:pt-4 pb-2.5 sm:pb-3 border-b border-border/60",
         className,
       )}
     >
@@ -42,7 +42,7 @@ export default function SectionCardHeader({
         <h3 className="text-sm font-semibold text-foreground truncate">{title}</h3>
       </div>
       {meta && (
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground tabular-nums shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 text-[11px] text-muted-foreground tabular-nums shrink-0">
           {meta}
         </div>
       )}
