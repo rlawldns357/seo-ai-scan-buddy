@@ -75,18 +75,20 @@ function SectionShell({
             : "mt-10 mb-5 pt-10 border-t border-border/60"
         }
       >
+        {/* 전 섹션 공통 타이포 스케일 — 절대 변경 금지
+            chip 10/12 · index 11/none · title 18/26 · subtitle 13/20 */}
         <div className="flex items-center gap-2.5">
-          <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-mono font-bold tabular-nums ${tone.badge}`}>
+          <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] leading-none font-mono font-bold tabular-nums ${tone.badge}`}>
             {String(meta.index).padStart(2, "0")}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 text-[10px] leading-[12px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
             <Icon className={`h-3.5 w-3.5 ${tone.icon}`} /> {meta.chip}
           </span>
         </div>
-        <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground break-keep mt-2.5">
+        <h2 className="text-[18px] leading-[26px] font-bold tracking-tight text-foreground break-keep mt-2.5">
           {meta.title}
         </h2>
-        <p className="text-sm text-muted-foreground mt-1 break-keep">
+        <p className="text-[13px] leading-[20px] text-muted-foreground mt-1 break-keep">
           {meta.subtitle}
         </p>
       </div>
