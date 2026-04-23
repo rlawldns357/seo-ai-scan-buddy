@@ -57,10 +57,15 @@ export default function AutoPublish() {
   });
 
   const removePost = guard(async (id: string) => {
-    if (!confirm("이 글을 삭제할까요?")) return;
-    // RLS는 service_role만 delete 허용 → soft 처리 대신 서비스 함수 없이 SDK로는 불가능. 로컬 숨김으로 처리.
-    setPosts((prev) => prev.filter((p) => p.id !== id));
-    toast({ title: "목록에서 숨겼습니다" });
+    if (!confirm("이 글을 큐에서 삭제할까요?")) return;
+    try {
+      const { error } = await supabase.from("site_posts").delete().eq("id", id);
+      if (error) throw error;
+      setPosts((prev) => prev.filter((p) => p.id !== id));
+      toast({ title: "큐에서 삭제했습니다" });
+    } catch (e: any) {
+      toast({ title: "삭제 실패", description: e?.message || "오류", variant: "destructive" });
+    }
   });
 
   if (!site) {
