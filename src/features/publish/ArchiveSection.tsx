@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { Archive, ArchiveRestore, ExternalLink, Eye, Calendar, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import SectionCardHeader from "@/features/publish/ui/SectionCardHeader";
 
 type ArchivePost = {
   id: string;
