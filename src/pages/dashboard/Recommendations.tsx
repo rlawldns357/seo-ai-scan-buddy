@@ -100,9 +100,19 @@ export default function Recommendations() {
           avoidSeeds: seedHistory,
         },
       });
+      // 컨텍스트 부족(422) — 일반론 추천을 거부하고 사용자 입력 유도
+      const insufficient = (data?.insufficient_context === true) ||
+        (typeof error?.message === "string" && error.message.includes("422"));
+      if (insufficient) {
+        toast({
+          title: "추천할 만한 주제가 없어요",
+          description: data?.error ?? "사이트 내용이 부족합니다. 관심 주제를 직접 입력해주세요.",
+        });
+        return;
+      }
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      const next: string = data.seed ?? "";
+      const next: string = data?.seed ?? "";
       if (!next) throw new Error("빈 응답");
       setSeed(next);
       setSeedHistory((h) => [next, ...h.filter((s) => s !== next)].slice(0, MAX_SEED_HISTORY));
