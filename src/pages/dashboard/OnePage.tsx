@@ -73,29 +73,29 @@ function SectionShell({
       <div
         className={
           isFirst
-            ? "mb-5"
-            : "mt-10 mb-5 pt-10 border-t border-border/60"
+            ? "mb-4 sm:mb-5"
+            : "mt-7 sm:mt-10 mb-4 sm:mb-5 pt-7 sm:pt-10 border-t border-border/60"
         }
       >
         {/* 전 섹션 공통 타이포 스케일 — 절대 변경 금지
             chip 10/12 · index 11/none · title 18/26 · subtitle 13/20 */}
-        <div className="flex items-center gap-2.5">
-          <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] leading-none font-mono font-bold tabular-nums ${tone.badge}`}>
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+          <span className={`inline-flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-lg text-[11px] leading-none font-mono font-bold tabular-nums shrink-0 ${tone.badge}`}>
             {String(meta.index).padStart(2, "0")}
           </span>
-          <span className="inline-flex items-center gap-1.5 text-[10px] leading-[12px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
-            <Icon className={`h-3.5 w-3.5 ${tone.icon}`} /> {meta.chip}
+          <span className="inline-flex items-center gap-1.5 text-[10px] leading-[12px] font-bold uppercase tracking-[0.15em] text-muted-foreground min-w-0">
+            <Icon className={`h-3.5 w-3.5 shrink-0 ${tone.icon}`} /> {meta.chip}
           </span>
         </div>
-        <h2 className="text-[18px] leading-[26px] font-bold tracking-tight text-foreground break-keep mt-2.5">
+        <h2 className="text-[18px] leading-[26px] font-bold tracking-tight text-foreground break-keep mt-2 sm:mt-2.5">
           {meta.title}
         </h2>
         <p className="text-[13px] leading-[20px] text-muted-foreground mt-1 break-keep">
           {meta.subtitle}
         </p>
       </div>
-      {/* 본문 영역: 좌측 얇은 액센트 레일로 섹션 헤더와 시각적으로 묶음 */}
-      <div className="relative pl-4 sm:pl-5">
+      {/* 본문: 모바일은 들여쓰기를 줄여 카드 폭을 최대로 확보 (px-3 컨테이너에서 답답해지지 않게) */}
+      <div className="relative pl-3 sm:pl-5">
         <span className={`pointer-events-none absolute left-0 top-0 bottom-0 w-[2px] rounded-full ${tone.rail}`} aria-hidden />
         {children}
       </div>

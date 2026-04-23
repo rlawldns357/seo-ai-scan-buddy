@@ -78,7 +78,7 @@ export default function WorkspaceHeader() {
   ];
 
   return (
-    <div className="relative overflow-hidden mb-6 rounded-3xl border border-border/60 bg-gradient-to-br from-primary/[0.025] via-card to-accent/[0.025] px-5 py-5 sm:px-6 sm:py-6">
+    <div className="relative overflow-hidden mb-5 sm:mb-6 rounded-2xl sm:rounded-3xl border border-border/60 bg-gradient-to-br from-primary/[0.025] via-card to-accent/[0.025] px-4 py-4 sm:px-6 sm:py-6">
       {/* 5% 브랜딩 글로우 — 다른 섹션 톤 강도와 동일 수준으로 통일 */}
       <div className="pointer-events-none absolute -top-20 -right-16 h-56 w-56 rounded-full bg-primary/[0.04] blur-3xl" aria-hidden />
       <div className="pointer-events-none absolute -bottom-20 -left-16 h-56 w-56 rounded-full bg-accent/[0.04] blur-3xl" aria-hidden />

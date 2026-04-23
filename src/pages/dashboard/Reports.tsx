@@ -65,7 +65,7 @@ export default function Reports() {
           </>
         }
       />
-      <div className="p-5">
+      <div className="p-3 sm:p-5">
         {chartData.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-12">분석 기록이 없습니다. 메인에서 사이트를 분석해보세요.</p>
         ) : (
