@@ -7,9 +7,8 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/features/auth/useAuth";
 import { slugify, useUserSites } from "./useUserSite";
+import { useUserTier } from "@/features/auth/useUserTier";
 import { toast } from "@/hooks/use-toast";
-
-const FREE_SITE_LIMIT = 1;
 
 export default function AddSiteModal({
   open,
@@ -22,11 +21,12 @@ export default function AddSiteModal({
 }) {
   const { user } = useAuth();
   const { sites, refresh, setActiveSiteId } = useUserSites();
+  const { tier, siteLimit } = useUserTier();
   const [siteUrl, setSiteUrl] = useState("");
   const [title, setTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const isLocked = sites.length >= FREE_SITE_LIMIT;
+  const isLocked = sites.length >= siteLimit;
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,11 +86,11 @@ export default function AddSiteModal({
               <div className="mx-auto p-3 rounded-full bg-muted mb-2">
                 <Lock className="w-6 h-6 text-muted-foreground" />
               </div>
-              <DialogTitle className="text-center">유료 플랜이 필요해요</DialogTitle>
+              <DialogTitle className="text-center">사이트 한도에 도달했어요</DialogTitle>
               <DialogDescription className="text-center">
-                무료 플랜은 콘텐츠 허브 1개를 제공합니다.
+                현재 플랜({tier.toUpperCase()})은 브랜드 페이지 {siteLimit}개까지 운영할 수 있어요.
                 <br />
-                추가 사이트는 곧 출시될 유료 플랜에서 운영할 수 있어요.
+                추가 페이지는 상위 플랜에서 운영할 수 있어요.
               </DialogDescription>
             </DialogHeader>
             <div className="rounded-lg border border-dashed p-4 text-xs text-muted-foreground space-y-1.5">

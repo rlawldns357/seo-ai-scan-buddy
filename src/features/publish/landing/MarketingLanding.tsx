@@ -5,6 +5,7 @@ import HowItWorks from "./HowItWorks";
 import AudienceFit from "./AudienceFit";
 import ValueCards from "./ValueCards";
 import Pricing from "./Pricing";
+import BetaWaitlist from "./BetaWaitlist";
 import LandingFaq from "./LandingFaq";
 import FinalCta from "./FinalCta";
 
@@ -25,6 +26,7 @@ export default function MarketingLanding() {
         <AudienceFit />
         <ValueCards />
         <Pricing />
+        <BetaWaitlist />
         <LandingFaq />
         <FinalCta />
       </div>
