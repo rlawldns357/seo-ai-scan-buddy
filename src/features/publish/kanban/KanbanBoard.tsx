@@ -23,13 +23,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import KanbanColumn from "./KanbanColumn";
 import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
-import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus } from "./types";
+import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_LIMIT } from "./types";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
   idea: "draft",
   draft: "scheduled",
   scheduled: "published",
   published: null,
+  archived: null,
 };
 
 export default function KanbanBoard() {
