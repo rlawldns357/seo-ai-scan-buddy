@@ -65,9 +65,9 @@ const App = () => (
             <Route path="/dashboard" element={<DashboardLayout />}>
               <Route index element={<DashboardOnePage />} />
               <Route path="recommendations" element={<Navigate to="/dashboard#recommendations" replace />} />
-              <Route path="content" element={<Navigate to="/dashboard#content" replace />} />
-              <Route path="auto-publish" element={<Navigate to="/dashboard#queue" replace />} />
-              <Route path="posts" element={<Navigate to="/dashboard#posts" replace />} />
+              <Route path="content" element={<Navigate to="/dashboard#workflow" replace />} />
+              <Route path="auto-publish" element={<Navigate to="/dashboard#workflow" replace />} />
+              <Route path="posts" element={<Navigate to="/dashboard#workflow" replace />} />
               <Route path="reports" element={<Navigate to="/dashboard#reports" replace />} />
               <Route path="demo" element={<DashboardDemo />} />
             </Route>

@@ -1,13 +1,11 @@
 import { lazy, Suspense, useEffect, useState, useRef, ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
-import { ArrowUp, LayoutDashboard, Lightbulb, FileText, Send, BookOpen, BarChart3 } from "lucide-react";
+import { ArrowUp, LayoutDashboard, Lightbulb, KanbanSquare, BarChart3 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 import DashboardIndex from "./Index";
 const DashboardRecommendations = lazy(() => import("./Recommendations"));
-const DashboardContent = lazy(() => import("./Content"));
-const DashboardAutoPublish = lazy(() => import("./AutoPublish"));
-const DashboardPosts = lazy(() => import("./Posts"));
+const KanbanBoard = lazy(() => import("@/features/publish/kanban/KanbanBoard"));
 const DashboardReports = lazy(() => import("./Reports"));
 
 type SectionMeta = {
@@ -127,32 +125,16 @@ const SECTIONS: SectionMeta[] = [
     icon: Lightbulb,
   },
   {
-    id: "content",
+    id: "workflow",
     index: 3,
-    chip: "Draft",
-    title: "글 작성",
-    subtitle: "주제만 입력하면 AI가 검색·답변·인용에 최적화된 초안을 생성합니다.",
-    icon: FileText,
-  },
-  {
-    id: "queue",
-    index: 4,
-    chip: "Queue",
-    title: "발행 큐",
-    subtitle: "대기 중인 글을 검토하고 즉시 발행하거나 큐에서 제외할 수 있습니다.",
-    icon: Send,
-  },
-  {
-    id: "posts",
-    index: 5,
-    chip: "Live",
-    title: "발행된 글",
-    subtitle: "라이브 사이트에 노출 중인 글을 확인하고 관리합니다.",
-    icon: BookOpen,
+    chip: "Workflow",
+    title: "콘텐츠 워크플로우",
+    subtitle: "아이디어 → 초안 → 발행 대기 → 발행됨. 카드를 다음 칸으로 드래그하면 상태가 바뀝니다.",
+    icon: KanbanSquare,
   },
   {
     id: "reports",
-    index: 6,
+    index: 4,
     chip: "Reports",
     title: "성과 리포트",
     subtitle: "분석 점수 추이와 발행 현황을 시각화합니다.",
@@ -161,9 +143,8 @@ const SECTIONS: SectionMeta[] = [
 ];
 
 /**
- * AutoBlog 운영 콘솔 — 라이브 데모처럼 위→아래로 흐르는 원페이지.
- * 사이드바 메뉴 = 같은 페이지 내 섹션 앵커.
- * 각 섹션은 번호·아이콘·구분선으로 명확하게 분리.
+ * AutoBlog 운영 콘솔 — 위→아래로 흐르는 원페이지.
+ * 콘텐츠 운영은 한 화면 칸반 보드에서 드래그로 처리.
  */
 export default function DashboardOnePage() {
   return (
@@ -172,7 +153,7 @@ export default function DashboardOnePage() {
         <title>AutoBlog 작업 공간 | SearchTune OS</title>
         <meta
           name="description"
-          content="콘텐츠 추천부터 발행, 성과 분석까지 한 페이지에서 흐름대로 관리합니다."
+          content="추천부터 발행까지 한 화면 칸반에서 드래그로 관리합니다."
         />
       </Helmet>
 
@@ -185,9 +166,7 @@ export default function DashboardOnePage() {
           <SectionShell key={meta.id} meta={meta}>
             <LazyMount>
               {meta.id === "recommendations" && <DashboardRecommendations />}
-              {meta.id === "content" && <DashboardContent />}
-              {meta.id === "queue" && <DashboardAutoPublish />}
-              {meta.id === "posts" && <DashboardPosts />}
+              {meta.id === "workflow" && <KanbanBoard />}
               {meta.id === "reports" && <DashboardReports />}
             </LazyMount>
           </SectionShell>
