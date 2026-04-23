@@ -22,15 +22,17 @@ type SectionMeta = {
 function SectionShell({
   meta,
   children,
+  isFirst = false,
 }: {
   meta: SectionMeta;
   children: ReactNode;
+  isFirst?: boolean;
 }) {
   const Icon = meta.icon;
   return (
     <section id={meta.id} className="scroll-mt-32">
       {/* 큰 섹션 헤더: 번호 + 아이콘 + 제목, 미니멀하지만 명확한 구분선 */}
-      <div className="border-t border-border/60 pt-10 mb-8">
+      <div className={isFirst ? "mb-8" : "border-t border-border/60 pt-12 mt-12 mb-8"}>
         <div className="flex items-center gap-3 mb-2">
           <span className="text-xs font-mono font-bold text-muted-foreground tabular-nums">
             {String(meta.index).padStart(2, "0")}
@@ -175,7 +177,7 @@ export default function DashboardOnePage() {
       </Helmet>
 
       <div>
-        <SectionShell meta={OVERVIEW}>
+        <SectionShell meta={OVERVIEW} isFirst>
           <DashboardIndex />
         </SectionShell>
 
