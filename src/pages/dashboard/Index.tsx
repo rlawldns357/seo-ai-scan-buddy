@@ -378,8 +378,8 @@ export default function DashboardIndex() {
                     <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight truncate">
                       {site.title}
                     </h1>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold px-2.5 py-1 ring-1 ring-emerald-500/20">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> 운영중
+                    <span className="inline-flex items-center gap-1 rounded-full bg-score-excellent/10 text-score-excellent text-[11px] font-bold px-2.5 py-1 ring-1 ring-score-excellent/20">
+                      <span className="w-1.5 h-1.5 rounded-full bg-score-excellent animate-pulse" /> 운영중
                     </span>
                   </div>
                   <a
