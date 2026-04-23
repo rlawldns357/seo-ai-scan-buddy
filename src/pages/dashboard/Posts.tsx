@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
@@ -28,6 +28,7 @@ export default function DashboardPosts() {
   const { user, loading: authLoading } = useAuth();
   const { site, loading: siteLoading } = useUserSite();
   const requireAuth = useRequireAuthAction();
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -86,6 +87,8 @@ export default function DashboardPosts() {
         <LockedFeature
           title="발행된 글 관리"
           description="로그인하면 발행된 글 목록을 확인하고 관리할 수 있어요."
+          ctaLabel="로그인"
+          onCta={() => navigate(`/auth?next=${encodeURIComponent("/dashboard/posts")}`)}
         />
       </div>
     );
@@ -97,6 +100,8 @@ export default function DashboardPosts() {
         <LockedFeature
           title="사이트가 아직 없어요"
           description="대시보드에서 사이트를 먼저 등록하면 발행된 글이 여기 모입니다."
+          ctaLabel="대시보드로"
+          onCta={() => navigate("/dashboard")}
         />
       </div>
     );
