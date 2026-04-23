@@ -131,9 +131,8 @@ export default function KanbanBoard() {
           toast({ title: "발행 취소 — 초안으로 이동" });
         } else {
           // Generic status update (draft <-> scheduled, etc.)
-          const patch: Record<string, unknown> = { status: to };
-          if (to === "scheduled") patch.published_at = null;
-          if (to === "idea") patch.published_at = null;
+          const patch: { status: KanbanStatus; published_at?: string | null } = { status: to };
+          if (to === "scheduled" || to === "idea") patch.published_at = null;
           const { error } = await supabase.from("site_posts").update(patch).eq("id", post.id);
           if (error) throw error;
           toast({ title: `${COLUMN_META[to].label}(으)로 이동` });
