@@ -70,16 +70,12 @@ export default function AutoPublish() {
 
   if (!site) {
     return (
-      <>
-        <Helmet><title>자동 발행 | AutoBlog</title></Helmet>
-        <FlowStepper current="site" completed={["auth", "dashboard"]} />
-        <LockedFeature
-          title="먼저 내 콘텐츠 페이지를 만들어주세요"
-          description="발행할 전용 콘텐츠 페이지가 필요합니다."
-          ctaLabel="페이지 만들러 가기"
-          onCta={() => navigate("/dashboard")}
-        />
-      </>
+      <LockedFeature
+        title="먼저 내 콘텐츠 페이지를 만들어주세요"
+        description="발행할 전용 콘텐츠 페이지가 필요합니다."
+        ctaLabel="페이지 만들러 가기"
+        onCta={() => navigate("/dashboard#overview")}
+      />
     );
   }
 
@@ -88,21 +84,17 @@ export default function AutoPublish() {
 
   return (
     <>
-      <Helmet><title>자동 발행 큐 | AutoBlog</title></Helmet>
-      <FlowStepper current="publish" completed={["auth", "dashboard", "site", "draft", "edit"]} />
-      <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">검색·AI 인용 발행 큐</h1>
-          <p className="text-sm text-muted-foreground">검색엔진과 AI 답변 엔진이 더 잘 인용할 수 있도록 준비된 글을 즉시 발행하거나, 이미 발행된 글을 확인하세요. 월 5건 한도(베타).</p>
-        </div>
-        <div className="flex gap-2 shrink-0">
-          <Button variant="outline" size="sm" className="rounded-full" onClick={() => navigate("/dashboard/recommendations")}>
-            추천 더 보기
-          </Button>
-          <Button size="sm" className="rounded-full" onClick={() => navigate("/dashboard/content")}>
-            새 글 작성
-          </Button>
-        </div>
+      <div className="flex justify-end gap-2 mb-3">
+        <Button variant="outline" size="sm" className="rounded-full" onClick={() => {
+          document.getElementById("recommendations")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}>
+          추천 더 보기
+        </Button>
+        <Button size="sm" className="rounded-full" onClick={() => {
+          document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}>
+          새 글 작성
+        </Button>
       </div>
 
       <section className="mb-8">
