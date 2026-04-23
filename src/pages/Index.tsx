@@ -91,9 +91,14 @@ const Index = () => {
   // requestId guard — only the most recent runAnalysis call may write to state.
   // This prevents a stale (older) request from overwriting a newer result.
   const requestIdRef = useRef(0);
+  // Synchronous re-entry lock. setIsAnalyzing(true) is async (state update),
+  // so rapid clicks/Enter presses can slip past it. A ref flips immediately.
+  const analyzingRef = useRef(false);
 
   const runAnalysis = async (finalUrl: string) => {
-    if (isAnalyzing) return;
+    // Synchronous guard — blocks duplicate entry in the same tick.
+    if (analyzingRef.current) return;
+    analyzingRef.current = true;
     setIsAnalyzing(true);
 
     // Bump requestId for this run; capture locally for stale-check.
