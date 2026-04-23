@@ -22,7 +22,6 @@ const axisColor: Record<Axis, string> = {
 };
 
 const AXES: Axis[] = ["SEO", "AEO", "GEO"];
-const newId = () => Math.random().toString(36).slice(2, 9);
 
 const IDEA_BUILDERS: Record<Axis, (seed: string) => string> = {
   SEO: (seed) => `${seed} 검색 유입을 위한 핵심 가이드`,
