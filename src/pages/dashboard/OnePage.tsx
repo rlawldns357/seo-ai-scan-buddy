@@ -22,29 +22,31 @@ type SectionMeta = {
   tone: AccentTone;
 };
 
+// 모든 섹션이 동일한 alpha 강도를 사용하도록 통일
+// badge: bg /10, ring /20  ·  rail: from /35 → via /8 → to 0  ·  icon: full
 const TONE_CLASSES: Record<AccentTone, { badge: string; icon: string; rail: string; chipDot: string }> = {
   primary: {
     badge: "bg-primary/10 text-primary ring-1 ring-primary/20",
     icon: "text-primary",
-    rail: "bg-gradient-to-b from-primary/40 via-primary/10 to-transparent",
+    rail: "bg-gradient-to-b from-primary/35 via-primary/8 to-transparent",
     chipDot: "bg-primary",
   },
   accent: {
     badge: "bg-accent/10 text-accent ring-1 ring-accent/20",
     icon: "text-accent",
-    rail: "bg-gradient-to-b from-accent/40 via-accent/10 to-transparent",
+    rail: "bg-gradient-to-b from-accent/35 via-accent/8 to-transparent",
     chipDot: "bg-accent",
   },
   warning: {
     badge: "bg-score-warning/10 text-score-warning ring-1 ring-score-warning/20",
     icon: "text-score-warning",
-    rail: "bg-gradient-to-b from-score-warning/40 via-score-warning/10 to-transparent",
+    rail: "bg-gradient-to-b from-score-warning/35 via-score-warning/8 to-transparent",
     chipDot: "bg-score-warning",
   },
   success: {
     badge: "bg-score-excellent/10 text-score-excellent ring-1 ring-score-excellent/20",
     icon: "text-score-excellent",
-    rail: "bg-gradient-to-b from-score-excellent/40 via-score-excellent/10 to-transparent",
+    rail: "bg-gradient-to-b from-score-excellent/35 via-score-excellent/8 to-transparent",
     chipDot: "bg-score-excellent",
   },
   neutral: {
