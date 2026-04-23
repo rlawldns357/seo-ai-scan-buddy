@@ -167,16 +167,41 @@ export default function KanbanBoard() {
     performTransition(post, to);
   };
 
-  const handleSave = async (id: string, patch: { title: string; excerpt: string; content: string }) => {
-    const { error } = await supabase
-      .from("site_posts")
-      .update({ title: patch.title, excerpt: patch.excerpt, content: patch.content })
-      .eq("id", id);
+  const handleSave = async (
+    id: string,
+    patch: { title: string; excerpt: string; content: string; published_at?: string | null },
+  ) => {
+    const current = posts.find((p) => p.id === id);
+    const update: Record<string, unknown> = {
+      title: patch.title,
+      excerpt: patch.excerpt,
+      content: patch.content,
+    };
+
+    // Schedule handling: only meaningful for draft/scheduled rows.
+    if (current && (current.status === "draft" || current.status === "scheduled")) {
+      if (patch.published_at) {
+        // User picked a time → move into the scheduled column and store the timestamp.
+        update.status = "scheduled";
+        update.published_at = patch.published_at;
+      } else if (patch.published_at === null) {
+        // User cleared the time → back to draft, no published_at.
+        update.status = "draft";
+        update.published_at = null;
+      }
+    }
+
+    const { error } = await supabase.from("site_posts").update(update as any).eq("id", id);
     if (error) {
       toast({ title: "저장 실패", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "저장되었습니다" });
+    toast({
+      title:
+        update.status === "scheduled"
+          ? "예약되었습니다 — 시각이 되면 자동 발행됩니다"
+          : "저장되었습니다",
+    });
     await load();
     setOpenPost(null);
   };
