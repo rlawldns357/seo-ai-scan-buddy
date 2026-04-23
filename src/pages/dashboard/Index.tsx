@@ -353,6 +353,47 @@ export default function DashboardIndex() {
         </div>
       ) : (
         <div className="space-y-5">
+          {/* 👤 계정·사이트 정보 — 최상단 헤더 (가장 높은 위계) */}
+          <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-card via-card to-primary/5 px-6 py-5 sm:px-8 sm:py-6 shadow-card">
+            <div className="flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-4 min-w-0">
+                {/* 아바타 이니셜 */}
+                <div className="shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground text-lg sm:text-xl font-bold shadow-md">
+                  {(site.title?.[0] ?? user?.email?.[0] ?? "?").toUpperCase()}
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                      {site.title}
+                    </h1>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5">
+                      <CheckCircle2 className="w-3 h-3" /> 운영중
+                    </span>
+                  </div>
+                  <a
+                    href={site.site_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground mt-1 truncate"
+                  >
+                    {site.site_url} <ExternalLink className="w-3 h-3" />
+                  </a>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
+              <a
+                href={`/sites/${site.site_slug}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full bg-foreground text-background text-xs font-semibold px-4 py-2 hover:bg-foreground/90 transition shrink-0"
+              >
+                라이브 페이지 보기 <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            </div>
+          </div>
+
           <DashboardHero
             stage="ready"
             siteTitle={site.title}
@@ -391,23 +432,6 @@ export default function DashboardIndex() {
               진단 시작 <ArrowRight className="w-3.5 h-3.5" />
             </span>
           </a>
-
-          {/* 사이트 요약 — 한 줄 */}
-          <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-border/50 bg-card px-5 py-4">
-            <div className="min-w-0">
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">콘텐츠 허브</p>
-              <h2 className="text-base font-semibold text-foreground mt-0.5 truncate">{site.title}</h2>
-              <p className="text-xs text-muted-foreground mt-0.5 truncate">{site.site_url}</p>
-            </div>
-            <a
-              href={`/sites/${site.site_slug}`}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-primary hover:underline shrink-0"
-            >
-              라이브 보기 <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
 
           {/* KPI — 한 줄 컴팩트 바 */}
           <Card className="rounded-2xl border-border/50 shadow-card divide-x divide-border/50 grid grid-cols-2 sm:grid-cols-4 overflow-hidden">
