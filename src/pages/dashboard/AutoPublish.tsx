@@ -97,11 +97,13 @@ export default function AutoPublish() {
         </Button>
       </div>
 
-      <section className="mb-8">
+      <section>
         <h2 className="text-sm font-semibold text-foreground mb-2">발행 대기 ({queued.length})</h2>
         {queued.length === 0 ? (
           <Card className="p-6 text-center text-sm text-muted-foreground border-dashed">
-            대기 중인 글이 없습니다. <button className="text-primary underline" onClick={() => navigate("/dashboard/content")}>새 글 작성하기</button>
+            대기 중인 글이 없습니다. <button className="text-primary underline" onClick={() => {
+              document.getElementById("content")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}>새 글 작성하기</button>
           </Card>
         ) : (
           <div className="grid gap-3">
@@ -120,34 +122,6 @@ export default function AutoPublish() {
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>
-              </Card>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <section>
-        <h2 className="text-sm font-semibold text-foreground mb-2">발행됨 ({published.length})</h2>
-        {published.length === 0 ? (
-          <p className="text-xs text-muted-foreground">아직 발행된 글이 없습니다.</p>
-        ) : (
-          <div className="grid gap-2">
-            {published.map((p) => (
-              <Card key={p.id} className="p-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <h3 className="font-medium text-sm text-foreground truncate">{p.title}</h3>
-                  <p className="text-[11px] text-muted-foreground">
-                    {p.published_at && new Date(p.published_at).toLocaleString("ko-KR")}
-                  </p>
-                </div>
-                <a
-                  href={`/sites/${site.site_slug}/${p.slug}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-xs text-primary inline-flex items-center gap-1 hover:underline shrink-0"
-                >
-                  보기 <ExternalLink className="w-3 h-3" />
-                </a>
               </Card>
             ))}
           </div>
