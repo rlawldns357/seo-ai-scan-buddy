@@ -4,6 +4,7 @@ import { ArrowUp, LayoutDashboard, Lightbulb, KanbanSquare, BarChart3, Archive }
 import { LucideIcon } from "lucide-react";
 
 import DashboardIndex from "./Index";
+import WorkspaceHeader from "@/features/publish/WorkspaceHeader";
 const DashboardRecommendations = lazy(() => import("./Recommendations"));
 const KanbanBoard = lazy(() => import("@/features/publish/kanban/KanbanBoard"));
 const ArchiveSection = lazy(() => import("@/features/publish/ArchiveSection"));
@@ -167,6 +168,8 @@ export default function DashboardOnePage() {
       </Helmet>
 
       <div>
+        <WorkspaceHeader />
+
         <SectionShell meta={OVERVIEW} isFirst>
           <DashboardIndex />
         </SectionShell>
