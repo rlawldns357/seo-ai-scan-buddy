@@ -56,6 +56,7 @@ export default function Recommendations() {
   const [queueingIdeaId, setQueueingIdeaId] = useState<string | null>(null);
   const [seedHistory, setSeedHistory] = useState<string[]>([]);
   const [orderedAxes, setOrderedAxes] = useState<Axis[]>(AXES);
+  const [queuedIdeaIds, setQueuedIdeaIds] = useState<Set<string>>(new Set());
 
   const loadCredits = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
