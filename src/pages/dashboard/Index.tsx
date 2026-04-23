@@ -355,9 +355,10 @@ export default function DashboardIndex() {
           {/* Workspace 헤더 + KPI는 OnePage 최상단에서 렌더됩니다.
               여기서는 Overview 섹션 본문(다음 할 일 + 진단 추천)만 담당. */}
 
-          {/* 다음 할 일 — 단일 CTA, 플랫 */}
-          <div className="flex items-start justify-between gap-4 flex-wrap rounded-2xl border border-border/60 bg-card px-5 py-4">
-            <div className="min-w-0">
+          {/* 다음 할 일 — 5% 브랜딩 강조 (그라디언트 + primary border) */}
+          <div className="relative overflow-hidden flex items-start justify-between gap-4 flex-wrap rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/[0.06] via-card to-accent/[0.06] px-5 py-4">
+            <div className="pointer-events-none absolute -top-16 -right-10 h-40 w-40 rounded-full bg-primary/10 blur-2xl" aria-hidden />
+            <div className="relative min-w-0">
               <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Next</p>
               <h3 className="text-base font-semibold text-foreground mt-0.5">
                 {queueCounts.queued.length > 0
@@ -371,7 +372,7 @@ export default function DashboardIndex() {
               </p>
             </div>
             <Button
-              className="rounded-full shrink-0"
+              className="relative rounded-full shrink-0"
               onClick={() => {
                 const target = queueCounts.queued.length > 0 ? "workflow" : "recommendations";
                 document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
