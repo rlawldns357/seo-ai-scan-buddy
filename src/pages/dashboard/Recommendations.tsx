@@ -168,9 +168,15 @@ export default function Recommendations() {
       return;
     }
 
+    if (queueingIdeaId || queuedIdeaIds.has(idea.id)) {
+      // Prevent rapid double-clicks and re-adding the same idea
+      return;
+    }
+
     setQueueingIdeaId(idea.id);
     try {
-      const slug = `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}`;
+      const rand = Math.random().toString(36).slice(2, 6);
+      const slug = `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}-${rand}`;
       const { data, error } = await (supabase as any)
         .from("site_posts")
         .insert({
@@ -188,9 +194,13 @@ export default function Recommendations() {
 
       if (error) throw error;
 
+      setQueuedIdeaIds((prev) => {
+        const next = new Set(prev);
+        next.add(idea.id);
+        return next;
+      });
       emitWorkflowChanged({ siteId: site.id, postId: data?.id, source: "recommendations" });
       toast({ title: "워크플로우에 추가됐어요", description: "아이디어 칸으로 이동합니다." });
-      document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       toast({
         title: "추가 실패",
