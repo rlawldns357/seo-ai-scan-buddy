@@ -1,4 +1,4 @@
-import { useState, lazy, Suspense } from "react";
+import { useState, useRef, lazy, Suspense } from "react";
 import { Zap, Loader2 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
@@ -32,14 +32,38 @@ const IndexingStatus = lazy(() => import("@/components/IndexingStatus"));
 
 type Screen = "home" | "loading" | "result";
 
+/**
+ * Map an unknown error to a user-friendly Korean message.
+ * Keeps copy aligned with mem://ux/error-handling — explain cause + next step.
+ */
+const formatAnalyzeError = (err: unknown): string => {
+  const raw = err instanceof Error ? err.message : typeof err === "string" ? err : "";
+  const lower = raw.toLowerCase();
+
+  if (lower.includes("timeout") || lower.includes("timed out")) {
+    return "분석 시간이 초과됐어요. 사이트 응답이 느릴 수 있어요. 잠시 후 다시 시도해 주세요.";
+  }
+  if (lower.includes("robots") || lower.includes("blocked") || lower.includes("forbidden")) {
+    return "이 사이트가 크롤러 접근을 차단하고 있어요. robots.txt 설정을 확인해 주세요.";
+  }
+  if (lower.includes("network") || lower.includes("fetch") || lower.includes("failed to fetch")) {
+    return "네트워크 오류로 분석에 실패했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.";
+  }
+  if (lower.includes("not found") || lower.includes("404")) {
+    return "해당 URL을 찾을 수 없어요. 주소를 다시 확인해 주세요.";
+  }
+  if (raw) return `분석에 실패했어요: ${raw}`;
+  return "분석 중 알 수 없는 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
+};
+
 const Index = () => {
-  
+
   const [screen, setScreen] = useState<Screen>("home");
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
   const [normalizedUrl, setNormalizedUrl] = useState("");
   const [result, setResult] = useState<DemoResult | null>(null);
-  
+
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
@@ -48,6 +72,7 @@ const Index = () => {
   // Skip Lighthouse toggle
   const [skipLighthouse, setSkipLighthouse] = useState(false);
   const [psiLazyLoading, setPsiLazyLoading] = useState(false);
+  const [psiRetryError, setPsiRetryError] = useState<string | null>(null);
   const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
 
   // Subpage warning state
@@ -63,109 +88,149 @@ const Index = () => {
   const [indexingLoading, setIndexingLoading] = useState(false);
   const isAdmin = sessionStorage.getItem("admin_pw") !== null;
 
+  // requestId guard — only the most recent runAnalysis call may write to state.
+  // This prevents a stale (older) request from overwriting a newer result.
+  const requestIdRef = useRef(0);
+
   const runAnalysis = async (finalUrl: string) => {
     if (isAnalyzing) return;
     setIsAnalyzing(true);
 
-    // Dynamic imports for heavy analysis modules
-    const [{ incrementUsage }, { fetchPsi }, { analyzeSite }] = await Promise.all([
-      import("@/lib/rateLimit"),
-      import("@/lib/psi"),
-      import("@/lib/analyze"),
-    ]);
+    // Bump requestId for this run; capture locally for stale-check.
+    const myRequestId = ++requestIdRef.current;
+    const isLatest = () => requestIdRef.current === myRequestId;
 
-    if (!isAdmin) {
-      const usage = await incrementUsage();
-      if (!usage.allowed) {
-        setRateLimit(usage);
-        setIsAnalyzing(false);
-        return;
+    try {
+      // Dynamic imports for heavy analysis modules
+      const [{ incrementUsage }, { fetchPsi }, { analyzeSite }] = await Promise.all([
+        import("@/lib/rateLimit"),
+        import("@/lib/psi"),
+        import("@/lib/analyze"),
+      ]);
+
+      if (!isAdmin) {
+        const usage = await incrementUsage();
+        if (!usage.allowed) {
+          if (isLatest()) setRateLimit(usage);
+          return;
+        }
+        if (isLatest()) setRateLimit(usage);
       }
-      setRateLimit(usage);
-    }
 
-    setNormalizedUrl(finalUrl);
-    setScreen("loading");
-    setPsiMobile(null);
-    setPsiDesktop(null);
-    setPsiError(null);
-    setAnalyzeError(null);
-    setCompletedPhases(new Set());
-    setLighthouseSkipped(skipLighthouse);
-    setIndexingResult(null);
-    setIndexingLoading(true);
-    trackEvent("analysis_start", { skipLighthouse }, finalUrl);
+      if (!isLatest()) return;
 
-    const addPhase = (phase: AnalysisPhase) =>
-      setCompletedPhases((prev) => new Set([...prev, phase]));
+      setNormalizedUrl(finalUrl);
+      setScreen("loading");
+      setPsiMobile(null);
+      setPsiDesktop(null);
+      setPsiError(null);
+      setAnalyzeError(null);
+      setPsiRetryError(null);
+      setCompletedPhases(new Set());
+      setLighthouseSkipped(skipLighthouse);
+      setIndexingResult(null);
+      setIndexingLoading(true);
+      trackEvent("analysis_start", { skipLighthouse }, finalUrl);
 
-    // Run PSI and Firecrawl+AI analysis in parallel
-    const psiPromise = skipLighthouse
-      ? Promise.resolve([{ data: null, error: undefined }, { data: null, error: undefined }] as const)
-      : Promise.all([
-          fetchPsi(finalUrl, 'mobile'),
-          fetchPsi(finalUrl, 'desktop'),
-        ]).then((res) => {
-          addPhase("psi-measuring");
-          return res;
+      const addPhase = (phase: AnalysisPhase) => {
+        if (!isLatest()) return;
+        setCompletedPhases((prev) => new Set([...prev, phase]));
+      };
+
+      // Run PSI and Firecrawl+AI analysis in parallel
+      const psiPromise = skipLighthouse
+        ? Promise.resolve([{ data: null, error: undefined }, { data: null, error: undefined }] as const)
+        : Promise.all([
+            fetchPsi(finalUrl, "mobile"),
+            fetchPsi(finalUrl, "desktop"),
+          ]).then((res) => {
+            addPhase("psi-measuring");
+            return res;
+          });
+
+      const analyzePromise = analyzeSite(finalUrl).then((res) => {
+        addPhase("crawling");
+        addPhase("ai-analyzing");
+        return res;
+      });
+
+      // Check indexing status in parallel (fire-and-forget, but guarded by requestId).
+      import("@/lib/checkIndexing")
+        .then(({ checkIndexing }) =>
+          checkIndexing(finalUrl)
+            .then((r) => {
+              if (!isLatest()) return; // stale — newer request superseded us
+              setIndexingResult(r);
+              setIndexingLoading(false);
+            })
+            .catch(() => {
+              if (!isLatest()) return;
+              setIndexingLoading(false);
+            }),
+        )
+        .catch(() => {
+          if (!isLatest()) return;
+          setIndexingLoading(false);
         });
 
-    const analyzePromise = analyzeSite(finalUrl).then((res) => {
-      addPhase("crawling");
-      addPhase("ai-analyzing");
-      return res;
-    });
+      const [psiResults, analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
 
-    // Check indexing status in parallel (fire-and-forget style)
-    import("@/lib/checkIndexing").then(({ checkIndexing }) =>
-      checkIndexing(finalUrl).then((r) => {
-        setIndexingResult(r);
-        setIndexingLoading(false);
-      }).catch(() => setIndexingLoading(false))
-    );
+      // Stale check before applying any results.
+      if (!isLatest()) return;
 
-    const [psiResults, analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
-    const [mobileRes, desktopRes] = psiResults;
+      const [mobileRes, desktopRes] = psiResults;
 
-    if (mobileRes.data) setPsiMobile(mobileRes.data);
-    if (desktopRes.data) setPsiDesktop(desktopRes.data);
+      if (mobileRes.data) setPsiMobile(mobileRes.data);
+      if (desktopRes.data) setPsiDesktop(desktopRes.data);
 
-    if (mobileRes.data || desktopRes.data) {
-      trackEvent("analysis_complete", { url: finalUrl });
-    } else {
-      const err = mobileRes.error || desktopRes.error;
-      if (err) {
-        setPsiError(err);
-        trackEvent("analysis_fail", { url: finalUrl, error: err.type });
+      if (mobileRes.data || desktopRes.data) {
+        trackEvent("analysis_complete", { url: finalUrl });
+      } else {
+        const err = mobileRes.error || desktopRes.error;
+        if (err) {
+          setPsiError(err);
+          trackEvent("analysis_fail", { url: finalUrl, error: err.type });
+        }
       }
-    }
 
-    if (analyzeRes.data) {
-      setResult(analyzeRes.data);
-      // Save to history (fire-and-forget)
-      import("@/components/ScoreComparison").then(({ saveAnalysisHistory }) => {
-        saveAnalysisHistory(finalUrl, analyzeRes.data!);
-      });
-    } else {
-      setAnalyzeError(analyzeRes.error?.message || "분석에 실패했어요.");
-      trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
-    }
+      if (analyzeRes.data) {
+        setResult(analyzeRes.data);
+        // Save to history (fire-and-forget)
+        import("@/components/ScoreComparison").then(({ saveAnalysisHistory }) => {
+          saveAnalysisHistory(finalUrl, analyzeRes.data!);
+        });
+      } else {
+        setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
+        trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
+      }
 
-    setScreen("result");
+      setScreen("result");
 
-    if (analyzeRes.data) {
-      import("canvas-confetti").then(({ default: confetti }) => {
-        const end = Date.now() + 800;
-        const colors = ['#6366f1', '#8b5cf6', '#a78bfa', '#34d399', '#fbbf24'];
-        const frame = () => {
-          confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
-          confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
-          if (Date.now() < end) requestAnimationFrame(frame);
-        };
-        frame();
-      });
+      if (analyzeRes.data) {
+        import("canvas-confetti").then(({ default: confetti }) => {
+          const end = Date.now() + 800;
+          const colors = ["#6366f1", "#8b5cf6", "#a78bfa", "#34d399", "#fbbf24"];
+          const frame = () => {
+            confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
+            confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
+            if (Date.now() < end) requestAnimationFrame(frame);
+          };
+          frame();
+        });
+      }
+    } catch (err) {
+      // Catch any throw from dynamic imports / fetchPsi / analyzeSite / Promise.all.
+      // Make sure the user is never stranded on the loading screen.
+      console.error("[runAnalysis] unexpected error:", err);
+      if (isLatest()) {
+        setAnalyzeError(formatAnalyzeError(err));
+        setScreen("result");
+        trackEvent("analyze_fail", { url: finalUrl, error: (err as Error)?.message ?? "unknown" });
+      }
+    } finally {
+      // Always release the analyzing lock for the latest request.
+      if (isLatest()) setIsAnalyzing(false);
     }
-    setIsAnalyzing(false);
   };
 
   const handleAnalyze = async () => {
@@ -175,7 +240,7 @@ const Index = () => {
     const validation = validateUrl(url);
 
     if (!validation.isValid) {
-      setUrlError(validation.errorMessage || "URL을 확인해 주세요.");
+      setUrlError(validation.errorMessage || "URL 형식을 확인해 주세요. 예: https://example.com");
       return;
     }
 
@@ -198,21 +263,38 @@ const Index = () => {
   };
 
   const handleRetryPsi = async () => {
-    if (normalizedUrl) {
+    if (!normalizedUrl || psiLazyLoading) return;
+
+    setPsiError(null);
+    setPsiRetryError(null);
+    setPsiLazyLoading(true);
+
+    try {
       const { fetchPsi } = await import("@/lib/psi");
-      setPsiError(null);
-      setPsiLazyLoading(true);
-      Promise.all([
-        fetchPsi(normalizedUrl, 'mobile'),
-        fetchPsi(normalizedUrl, 'desktop'),
-      ]).then(([mobileRes, desktopRes]) => {
-        if (mobileRes.data) setPsiMobile(mobileRes.data);
-        if (desktopRes.data) setPsiDesktop(desktopRes.data);
-        const err = mobileRes.error || desktopRes.error;
-        if (err && !mobileRes.data && !desktopRes.data) setPsiError(err);
-        setPsiLazyLoading(false);
+      const [mobileRes, desktopRes] = await Promise.all([
+        fetchPsi(normalizedUrl, "mobile"),
+        fetchPsi(normalizedUrl, "desktop"),
+      ]);
+
+      const gotData = Boolean(mobileRes.data || desktopRes.data);
+
+      if (mobileRes.data) setPsiMobile(mobileRes.data);
+      if (desktopRes.data) setPsiDesktop(desktopRes.data);
+
+      if (gotData) {
+        // Only flip the "skipped" flag when we actually have fresh data,
+        // so the retry button stays available on failure.
         setLighthouseSkipped(false);
-      });
+      } else {
+        const err = mobileRes.error || desktopRes.error;
+        if (err) setPsiError(err);
+        setPsiRetryError("Lighthouse 측정에 실패했어요. 잠시 후 다시 시도해 주세요.");
+      }
+    } catch (err) {
+      console.error("[handleRetryPsi] error:", err);
+      setPsiRetryError("Lighthouse 측정 중 오류가 발생했어요. 잠시 후 다시 시도해 주세요.");
+    } finally {
+      setPsiLazyLoading(false);
     }
   };
 
@@ -231,7 +313,7 @@ const Index = () => {
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl text-foreground leading-snug sm:leading-[1.45] mb-6 tracking-tight">
               <span className="font-light">내 사이트,</span><br className="hidden sm:block" />
-              <span className="font-extrabold">검색엔진과 AI</span>가<br />
+              <span className="font-extrabold">검색엔진과 AI</span>가{" "}
               <span className="font-extrabold">제대로 이해</span><span className="font-light">하고 있을까?</span>
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg mb-10 leading-relaxed">
@@ -307,7 +389,7 @@ const Index = () => {
         </main>
       )}
 
-      
+
 
       <Suspense fallback={null}>
         {screen === "loading" && (
@@ -331,7 +413,7 @@ const Index = () => {
 
               {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
               {lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && (
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-2">
                   <button
                     onClick={handleRetryPsi}
                     disabled={psiLazyLoading}
@@ -349,12 +431,15 @@ const Index = () => {
                       </>
                     )}
                   </button>
+                  {psiRetryError && (
+                    <p className="text-xs text-destructive font-medium">{psiRetryError}</p>
+                  )}
                 </div>
               )}
 
               {analyzeError && (
-                <div className="rounded-2xl bg-score-poor/5 border border-score-poor/20 p-4 text-center">
-                  <p className="text-sm text-score-poor font-medium">{analyzeError}</p>
+                <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 text-center">
+                  <p className="text-sm text-destructive font-medium">{analyzeError}</p>
                   <button
                     onClick={() => normalizedUrl && runAnalysis(normalizedUrl)}
                     className="mt-2 text-xs text-primary font-semibold hover:underline"
@@ -368,7 +453,7 @@ const Index = () => {
 
               {result && <ScoreComparison url={normalizedUrl} currentResult={result} />}
 
-              
+
 
               <IndexingStatus result={indexingResult} loading={indexingLoading} url={normalizedUrl} />
 
