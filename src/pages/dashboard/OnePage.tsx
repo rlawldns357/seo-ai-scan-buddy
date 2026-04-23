@@ -10,6 +10,8 @@ const KanbanBoard = lazy(() => import("@/features/publish/kanban/KanbanBoard"));
 const ArchiveSection = lazy(() => import("@/features/publish/ArchiveSection"));
 const DashboardReports = lazy(() => import("./Reports"));
 
+type AccentTone = "primary" | "accent" | "warning" | "success" | "neutral";
+
 type SectionMeta = {
   id: string;
   index: number;
@@ -17,6 +19,40 @@ type SectionMeta = {
   title: string;
   subtitle: string;
   icon: LucideIcon;
+  tone: AccentTone;
+};
+
+const TONE_CLASSES: Record<AccentTone, { badge: string; icon: string; rail: string; chipDot: string }> = {
+  primary: {
+    badge: "bg-primary/10 text-primary ring-1 ring-primary/20",
+    icon: "text-primary",
+    rail: "bg-gradient-to-b from-primary/40 via-primary/10 to-transparent",
+    chipDot: "bg-primary",
+  },
+  accent: {
+    badge: "bg-accent/10 text-accent ring-1 ring-accent/20",
+    icon: "text-accent",
+    rail: "bg-gradient-to-b from-accent/40 via-accent/10 to-transparent",
+    chipDot: "bg-accent",
+  },
+  warning: {
+    badge: "bg-score-warning/10 text-score-warning ring-1 ring-score-warning/20",
+    icon: "text-score-warning",
+    rail: "bg-gradient-to-b from-score-warning/40 via-score-warning/10 to-transparent",
+    chipDot: "bg-score-warning",
+  },
+  success: {
+    badge: "bg-score-excellent/10 text-score-excellent ring-1 ring-score-excellent/20",
+    icon: "text-score-excellent",
+    rail: "bg-gradient-to-b from-score-excellent/40 via-score-excellent/10 to-transparent",
+    chipDot: "bg-score-excellent",
+  },
+  neutral: {
+    badge: "bg-muted text-muted-foreground ring-1 ring-border",
+    icon: "text-muted-foreground",
+    rail: "bg-gradient-to-b from-border via-border/40 to-transparent",
+    chipDot: "bg-muted-foreground",
+  },
 };
 
 function SectionShell({
@@ -29,16 +65,16 @@ function SectionShell({
   isFirst?: boolean;
 }) {
   const Icon = meta.icon;
+  const tone = TONE_CLASSES[meta.tone];
   return (
     <section id={meta.id} className="scroll-mt-32">
-      {/* 섹션 헤더: 번호 배지 + 타이틀 + 가는 구분선으로 명확히 구획 */}
-      <div className={isFirst ? "mb-6" : "mt-14 mb-6 pt-8 border-t border-border/60"}>
-        <div className="flex items-center gap-3">
-          <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-muted text-[11px] font-mono font-bold text-muted-foreground tabular-nums">
+      <div className={isFirst ? "mb-6" : "mt-12 mb-6 pt-8 border-t border-border/60"}>
+        <div className="flex items-center gap-2.5">
+          <span className={`inline-flex items-center justify-center w-7 h-7 rounded-lg text-[11px] font-mono font-bold tabular-nums ${tone.badge}`}>
             {String(meta.index).padStart(2, "0")}
           </span>
           <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
-            <Icon className="h-3.5 w-3.5" /> {meta.chip}
+            <Icon className={`h-3.5 w-3.5 ${tone.icon}`} /> {meta.chip}
           </span>
         </div>
         <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground break-keep mt-2.5">
@@ -48,7 +84,11 @@ function SectionShell({
           {meta.subtitle}
         </p>
       </div>
-      {children}
+      {/* 본문 영역: 좌측 얇은 액센트 레일로 섹션 헤더와 시각적으로 묶음 */}
+      <div className="relative pl-4 sm:pl-5">
+        <span className={`pointer-events-none absolute left-0 top-0 bottom-2 w-[2px] rounded-full ${tone.rail}`} aria-hidden />
+        {children}
+      </div>
     </section>
   );
 }
@@ -113,6 +153,7 @@ const OVERVIEW: SectionMeta = {
   title: "오늘의 운영 현황",
   subtitle: "발행 대기와 발행된 글 수, 누적 성과를 한눈에 확인하세요.",
   icon: LayoutDashboard,
+  tone: "primary",
 };
 
 const SECTIONS: SectionMeta[] = [
@@ -123,6 +164,7 @@ const SECTIONS: SectionMeta[] = [
     title: "URL · 주제 입력하고 추천 받기",
     subtitle: "사이트 URL은 자동으로 채워집니다. 관심 주제를 넣고, 마음에 안 드는 추천은 🎲 주사위로 다시 굴려보세요.",
     icon: Lightbulb,
+    tone: "warning",
   },
   {
     id: "workflow",
@@ -131,6 +173,7 @@ const SECTIONS: SectionMeta[] = [
     title: "콘텐츠 워크플로우",
     subtitle: "아이디어 → 초안 → 발행 대기 → 발행됨. 카드를 다음 칸으로 드래그하면 상태가 바뀝니다.",
     icon: KanbanSquare,
+    tone: "accent",
   },
   {
     id: "archive",
@@ -139,6 +182,7 @@ const SECTIONS: SectionMeta[] = [
     title: "발행 아카이브",
     subtitle: "발행된 모든 글을 검색하고, 오래된 글은 보관해 칸반을 가볍게 유지하세요.",
     icon: Archive,
+    tone: "neutral",
   },
   {
     id: "reports",
@@ -147,6 +191,7 @@ const SECTIONS: SectionMeta[] = [
     title: "성과 리포트",
     subtitle: "분석 점수 추이와 발행 현황을 시각화합니다.",
     icon: BarChart3,
+    tone: "success",
   },
 ];
 
