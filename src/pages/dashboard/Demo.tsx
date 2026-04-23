@@ -391,6 +391,18 @@ export default function Demo() {
   const axisColor = (a: string) =>
     a === "SEO" ? "hsl(var(--primary))" : a === "AEO" ? "hsl(217 91% 60%)" : "hsl(280 70% 60%)";
 
+  // Admin-only gate (라이브 데모는 내부 시연 전용)
+  if (tierLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-sm text-muted-foreground">
+        권한 확인 중…
+      </div>
+    );
+  }
+  if (tier !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
+
   return (
     <>
       <Helmet><title>AutoBlog 라이브 데모 | 내부 시연용</title></Helmet>
