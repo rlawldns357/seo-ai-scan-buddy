@@ -75,29 +75,21 @@ export default function Content() {
 
   if (!site) {
     return (
-      <>
-        <Helmet><title>글 작성 | Autoblog</title></Helmet>
-        <FlowStepper current="site" completed={["auth", "dashboard"]} />
-        <LockedFeature
-          title="먼저 내 콘텐츠 페이지를 만들어주세요"
-          description="페이지가 있어야 생성된 글을 발행 큐에 담을 수 있어요."
-          ctaLabel="페이지 만들러 가기"
-          onCta={() => navigate("/dashboard")}
-        />
-      </>
+      <LockedFeature
+        title="먼저 내 콘텐츠 페이지를 만들어주세요"
+        description="페이지가 있어야 생성된 글을 발행 큐에 담을 수 있어요."
+        ctaLabel="페이지 만들러 가기"
+        onCta={() => navigate("/dashboard#overview")}
+      />
     );
   }
 
   return (
     <>
-      <Helmet><title>글 작성 | Autoblog</title></Helmet>
-      <FlowStepper current={draft ? "edit" : "draft"} completed={["auth", "dashboard", "site"]} />
-      <div className="flex items-start justify-between gap-3 mb-6 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground mb-1">검색·AI 답변에 인용되는 글 작성</h1>
-          <p className="text-sm text-muted-foreground">주제만 입력하면 AI가 SEO(검색 노출)·AEO(답변 채택)·GEO(AI 인용) 3개 축에 맞춘 초안을 만듭니다. 편집 후 ‘발행 큐에 추가’로 다음 단계로 넘어가요.</p>
-        </div>
-        <Button variant="outline" size="sm" className="rounded-full shrink-0" onClick={() => navigate("/dashboard/recommendations")}>
+      <div className="flex justify-end mb-3">
+        <Button variant="outline" size="sm" className="rounded-full" onClick={() => {
+          document.getElementById("recommendations")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}>
           추천 주제에서 고르기
         </Button>
       </div>

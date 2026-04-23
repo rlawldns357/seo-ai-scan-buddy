@@ -82,35 +82,38 @@ export default function DashboardPosts() {
   // Guest / no-site state
   if (!authLoading && !user) {
     return (
-      <div className="space-y-4">
-        <Header />
-        <LockedFeature
-          title="발행된 글 관리"
-          description="로그인하면 발행된 글 목록을 확인하고 관리할 수 있어요."
-          ctaLabel="로그인"
-          onCta={() => navigate(`/auth?next=${encodeURIComponent("/dashboard/posts")}`)}
-        />
-      </div>
+      <LockedFeature
+        title="발행된 글 관리"
+        description="로그인하면 발행된 글 목록을 확인하고 관리할 수 있어요."
+        ctaLabel="로그인"
+        onCta={() => navigate(`/auth?next=${encodeURIComponent("/dashboard#posts")}`)}
+      />
     );
   }
   if (!siteLoading && !site) {
     return (
-      <div className="space-y-4">
-        <Header />
-        <LockedFeature
-          title="사이트가 아직 없어요"
-          description="대시보드에서 사이트를 먼저 등록하면 발행된 글이 여기 모입니다."
-          ctaLabel="대시보드로"
-          onCta={() => navigate("/dashboard")}
-        />
-      </div>
+      <LockedFeature
+        title="사이트가 아직 없어요"
+        description="대시보드에서 사이트를 먼저 등록하면 발행된 글이 여기 모입니다."
+        ctaLabel="사이트 등록으로"
+        onCta={() => {
+          document.getElementById("overview")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
+      />
     );
   }
 
   return (
-    <div className="space-y-4">
-      <Helmet><title>발행된 글 · AutoBlog</title></Helmet>
-      <Header siteSlug={site?.site_slug} />
+    <div className="space-y-3">
+      {site && (
+        <div className="flex justify-end">
+          <Button asChild variant="outline" size="sm" className="h-8 text-xs rounded-full">
+            <Link to={`/sites/${site.site_slug}`} target="_blank">
+              <ExternalLink className="h-3 w-3 mr-1" />라이브 보기
+            </Link>
+          </Button>
+        </div>
+      )}
 
       {loading ? (
         <div className="text-sm text-muted-foreground py-12 text-center">불러오는 중…</div>

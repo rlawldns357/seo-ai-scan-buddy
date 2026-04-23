@@ -36,14 +36,13 @@ export default function Reports() {
 
   if (!site) {
     return (
-      <>
-        <Helmet><title>리포트 | AutoBlog</title></Helmet>
-        <LockedFeature
-          title="먼저 내 콘텐츠 페이지를 만들어주세요"
-          description="페이지에 발행된 글의 성과를 추적합니다."
-          onCta={() => navigate("/dashboard")}
-        />
-      </>
+      <LockedFeature
+        title="먼저 내 콘텐츠 페이지를 만들어주세요"
+        description="페이지에 발행된 글의 성과를 추적합니다."
+        onCta={() => {
+          document.getElementById("overview")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
+      />
     );
   }
 
@@ -54,11 +53,7 @@ export default function Reports() {
 
   return (
     <>
-      <Helmet><title>리포트 | AutoBlog</title></Helmet>
-      <h1 className="text-2xl font-bold text-foreground mb-1">리포트</h1>
-      <p className="text-sm text-muted-foreground mb-6">{site.site_url} 의 분석 점수 추이와 발행 현황입니다.</p>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
         <Card className="p-4"><p className="text-xs text-muted-foreground">발행됨</p><p className="text-2xl font-bold text-foreground">{publishedCount}</p></Card>
         <Card className="p-4"><p className="text-xs text-muted-foreground">대기 중</p><p className="text-2xl font-bold text-foreground">{queuedCount}</p></Card>
         <Card className="p-4"><p className="text-xs text-muted-foreground">분석 횟수</p><p className="text-2xl font-bold text-foreground">{history.length}</p></Card>
