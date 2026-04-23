@@ -10,6 +10,37 @@ const COST_PER_ROLL = 1;
 
 type Axis = "SEO" | "AEO" | "GEO";
 
+/** Firecrawl로 사이트 컨텍스트 스크랩 (실패 시 빈 문자열) */
+async function scrapeBrandContext(siteUrl: string): Promise<string> {
+  const fcKey = Deno.env.get("FIRECRAWL_API_KEY");
+  if (!fcKey || !siteUrl) return "";
+  try {
+    const resp = await fetch("https://api.firecrawl.dev/v2/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${fcKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ url: siteUrl, formats: ["markdown", "summary"], onlyMainContent: true }),
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return "";
+    const data = await resp.json();
+    const md: string = data?.data?.markdown ?? data?.markdown ?? "";
+    const summary: string = data?.data?.summary ?? data?.summary ?? "";
+    const title: string = data?.data?.metadata?.title ?? data?.metadata?.title ?? "";
+    const desc: string = data?.data?.metadata?.description ?? data?.metadata?.description ?? "";
+    const trimmed = md.replace(/\s+/g, " ").slice(0, 2000);
+    return [
+      title && `제목: ${title}`,
+      desc && `설명: ${desc}`,
+      summary && `요약: ${summary}`,
+      trimmed && `본문 일부: ${trimmed}`,
+    ].filter(Boolean).join("\n");
+  } catch (e) {
+    console.warn("scrapeBrandContext failed", e);
+    return "";
+  }
+}
+
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -82,19 +113,22 @@ Deno.serve(async (req) => {
       GEO: "생성형 AI 검색에서 브랜드/엔티티 가시성",
     };
 
+    const brandContext = await scrapeBrandContext(siteUrl);
+
     const prompt = `당신은 한국어 SEO/AEO/GEO 콘텐츠 전략가입니다. 다음 사이트의 ${axis} 관점 콘텐츠 주제 1개를 추천하세요.
 
 [사이트] ${siteTitle || "(제목 없음)"} — ${siteUrl || "N/A"}
 [축] ${axis} (${axisDesc[axis]})
+${brandContext ? `[사이트 컨텍스트 — Firecrawl 스크랩]\n${brandContext}\n` : ""}
 ${seed ? `[사용자 시드 키워드/관심사] ${seed}` : ""}
 ${currentTopic ? `[방금 거절된 주제(피해야 함)] ${currentTopic}` : ""}
 ${avoidTopics.length ? `[기존 추천(중복 금지)] ${avoidTopics.join(" / ")}` : ""}
 
 요구사항:
 - 주제는 한국어, 30~50자, 검색되는 실제 단어로 시작
-- 반드시 위 사이트 도메인/주제와 직접적 연관
+- 반드시 위 사이트 컨텍스트(브랜드명·제품명·카테고리)와 직접 연관 — 일반론 금지
 - 광고성/과장 금지, 정보형 가이드 톤
-- "이유"는 왜 이 사이트에 효과적인지 1문장(60자 이내)`;
+- "이유"는 왜 이 사이트에 효과적인지 1문장(60자 이내), 사이트 컨텍스트 단어를 1개 이상 포함`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

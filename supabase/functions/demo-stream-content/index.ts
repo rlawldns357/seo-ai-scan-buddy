@@ -11,6 +11,46 @@ const corsHeaders = {
 
 type Mode = "recommend" | "draft" | "score" | "seo-brief";
 
+/**
+ * Firecrawl로 사이트 첫 페이지를 스크랩해서 brand 컨텍스트(타이틀/요약/주요 키워드)를 추출.
+ * 실패해도 데모는 계속 진행 (URL만으로 fallback).
+ */
+async function scrapeBrandContext(siteUrl: string): Promise<string> {
+  const fcKey = Deno.env.get("FIRECRAWL_API_KEY");
+  if (!fcKey || !siteUrl) return "";
+  try {
+    const resp = await fetch("https://api.firecrawl.dev/v2/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${fcKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        url: siteUrl,
+        formats: ["markdown", "summary"],
+        onlyMainContent: true,
+      }),
+      // 8초 안에 안 오면 포기하고 URL만으로 진행
+      signal: AbortSignal.timeout(8000),
+    });
+    if (!resp.ok) return "";
+    const data = await resp.json();
+    const md: string = data?.data?.markdown ?? data?.markdown ?? "";
+    const summary: string = data?.data?.summary ?? data?.summary ?? "";
+    const title: string = data?.data?.metadata?.title ?? data?.metadata?.title ?? "";
+    const desc: string = data?.data?.metadata?.description ?? data?.metadata?.description ?? "";
+    // 본문은 길면 잘라서 토큰 절약
+    const trimmed = md.replace(/\s+/g, " ").slice(0, 2500);
+    const parts = [
+      title && `제목: ${title}`,
+      desc && `설명: ${desc}`,
+      summary && `요약: ${summary}`,
+      trimmed && `본문 일부: ${trimmed}`,
+    ].filter(Boolean);
+    return parts.join("\n");
+  } catch (e) {
+    console.warn("scrapeBrandContext failed", e);
+    return "";
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -33,15 +73,20 @@ serve(async (req) => {
     let user = "";
 
     if (mode === "recommend") {
-      system = `당신은 이커머스/브랜드 사이트 전문 SEO 전략가입니다. 한국어로, 검색 노출(SEO)을 통해 광고비 없이 신규 매출을 만들 수 있는 콘텐츠 토픽 3개를 추천합니다.
+      // ⭐ URL 기반 사이트 스크랩 → 그 사이트 맞춤 토픽 3개
+      const brandContext = await scrapeBrandContext(siteUrl);
+      system = `당신은 이커머스/브랜드 사이트 전문 SEO 전략가입니다. 한국어로, **주어진 사이트의 실제 컨텍스트**를 바탕으로 검색 노출(SEO)을 통해 광고비 없이 신규 매출을 만들 수 있는 콘텐츠 토픽 3개를 추천합니다.
+
+[원칙]
+- 일반론 금지. 반드시 사이트 컨텍스트(제품/카테고리/브랜드 톤)에 직접 연결된 토픽만 추천
 - 구매 의도(commercial / transactional / informational) 키워드를 골고루 활용
-- 상품 카테고리, 브랜드 스토리, 비교/리뷰형 중 하나씩 포함 권장
-- 각 토픽은 정확히 다음 JSON 라인 형식으로만 출력 (설명 금지):
-{"axis":"SEO|AEO|GEO","title":"60자 이내 검색 친화 제목","reason":"40자 이내, 어떤 검색 의도/매출 기여인지"}
+- 3축(SEO 검색노출 / AEO AI답변채택 / GEO 생성형AI인용)에 각각 1개씩
+- 각 토픽은 정확히 다음 JSON 라인 형식으로만 출력 (설명·번호·코드펜스 금지):
+{"axis":"SEO|AEO|GEO","title":"60자 이내 검색 친화 제목","reason":"이 사이트에 왜 효과적인지 60자 이내, 사이트 컨텍스트 단어를 1개 이상 포함"}
 세 줄을 줄바꿈으로 구분하여 출력하세요.`;
-      user = `이커머스/브랜드 사이트: ${siteUrl || "데모 쇼핑몰"}
-3가지 축(SEO 검색노출 / AEO 답변채택 / GEO AI인용)에 각각 1개씩, 총 3개의 토픽을 추천하세요.
-모든 토픽은 검색 트래픽 → 상품 페이지 유입 → 매출 전환을 염두에 두어야 합니다.`;
+      user = `사이트 URL: ${siteUrl || "데모 쇼핑몰"}
+${brandContext ? `\n[사이트 컨텍스트 — Firecrawl 스크랩]\n${brandContext}\n` : "\n(사이트 컨텍스트를 가져오지 못했습니다. URL의 도메인/경로 단서로 추론하세요.)\n"}
+이 사이트에 가장 적합한 토픽 3개(SEO/AEO/GEO 각 1개)를 위 JSON 라인 형식으로 출력하세요. reason에는 사이트 컨텍스트의 실제 단어(브랜드명·제품명·카테고리)를 1개 이상 포함해야 합니다.`;
     } else if (mode === "draft") {
       system = `당신은 이커머스/브랜드 콘텐츠 SEO 전문가입니다. 2026년 기준 Google·Naver 검색과 AI 검색(ChatGPT, Perplexity, Gemini)에서 상위 노출되도록 작성합니다.
 - 마크다운 본문만 출력 (제목 H1 포함)
