@@ -294,6 +294,10 @@ export default function DashboardIndex() {
     <>
       {!user ? (
         <div>
+          <DashboardHero
+            stage="guest"
+            onLogin={() => navigate(`/auth?next=${encodeURIComponent("/dashboard")}`)}
+          />
           <OnboardingSteps
             state="guest"
             primaryLabel="로그인하고 시작하기"
@@ -304,6 +308,15 @@ export default function DashboardIndex() {
         </div>
       ) : !site ? (
         <div className="space-y-6">
+          <DashboardHero
+            stage="no-site"
+            siteUrl={siteUrl}
+            setSiteUrl={setSiteUrl}
+            title={title}
+            setTitle={setTitle}
+            submitting={submitting}
+            onSubmit={handleCreate}
+          />
           <OnboardingSteps
             state="no-site"
             primaryLabel="페이지 만들러 가기"
@@ -338,6 +351,20 @@ export default function DashboardIndex() {
         </div>
       ) : (
         <div className="space-y-5">
+          <DashboardHero
+            stage="ready"
+            siteTitle={site.title}
+            siteHref={`/sites/${site.site_slug}`}
+            queued={queueCounts.queued.length}
+            publishedToday={queueCounts.publishedToday}
+            weeklyVisitors={queueCounts.weeklyVisitors}
+            primaryLabel={queueCounts.queued.length > 0 ? "큐로 이동" : "추천 보기"}
+            onPrimary={() => {
+              const target = queueCounts.queued.length > 0 ? "queue" : "recommendations";
+              document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          />
+
           {/* 사이트 요약 — 한 줄 */}
           <div className="flex items-center justify-between gap-3 flex-wrap rounded-2xl border border-border/50 bg-card px-5 py-4">
             <div className="min-w-0">
