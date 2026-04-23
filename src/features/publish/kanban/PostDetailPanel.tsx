@@ -17,7 +17,7 @@ type Props = {
   onArchive?: (archive: boolean) => Promise<void>;
 };
 
-export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDelete }: Props) {
+export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDelete, onArchive }: Props) {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
