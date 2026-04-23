@@ -136,7 +136,12 @@ ${avoidSeeds.length ? `[이미 제안한 키워드(중복 금지)] ${avoidSeeds.
         try { seedParsed = JSON.parse(tc.function.arguments); } catch { /* ignore */ }
       }
       const seedOut = (seedParsed?.seed ?? "").trim().slice(0, 40);
-      if (!seedOut) return json({ error: "시드 응답을 해석할 수 없어요." }, 500);
+      if (!seedOut) {
+        return json({
+          error: "사이트 컨텍스트에서 적절한 키워드를 찾지 못했어요. 관심 주제를 직접 입력해주세요.",
+          insufficient_context: true,
+        }, 422);
+      }
       return json({ ok: true, seed: seedOut });
     }
 
