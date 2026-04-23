@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
+import { useAuth } from "@/features/auth/useAuth";
 import LockedFeature from "@/features/publish/LockedFeature";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
+import { emitWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
 import { ExternalLink, Dice5, Loader2, Send } from "lucide-react";
 
@@ -43,6 +45,7 @@ function buildIdeasFromSeed(seed: string, orderedAxes: Axis[]): Idea[] {
 
 export default function Recommendations() {
   const { site } = useUserSite();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const guard = useRequireAuthAction();
   const [seed, setSeed] = useState("");
@@ -50,6 +53,7 @@ export default function Recommendations() {
   const [loading, setLoading] = useState(false);
   const [creditTotal, setCreditTotal] = useState<number | null>(null);
   const [seedRolling, setSeedRolling] = useState(false);
+  const [queueingIdeaId, setQueueingIdeaId] = useState<string | null>(null);
   const [seedHistory, setSeedHistory] = useState<string[]>([]);
   const [orderedAxes, setOrderedAxes] = useState<Axis[]>(AXES);
 
@@ -137,24 +141,63 @@ export default function Recommendations() {
     }
   });
 
-  const sendToWorkflow = guard(async (idea: Idea) => {
-    if (!site) return;
-    const slug = `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}`;
-    const { error } = await (supabase as any).from("site_posts").insert({
-      site_id: site.id,
-      slug,
-      title: idea.topic,
-      content: "",
-      status: "idea",
-      source_axis: idea.axis,
-    });
-    if (error) {
-      toast({ title: "추가 실패", description: error.message, variant: "destructive" });
+  const sendToWorkflow = async (idea: Idea) => {
+    if (authLoading) {
+      toast({
+        title: "로그인 상태 확인 중입니다",
+        description: "잠시 후 다시 시도해주세요.",
+      });
       return;
     }
-    toast({ title: "워크플로우에 추가됐어요", description: "아이디어 칸으로 이동" });
-    document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+    if (!user) {
+      const next = encodeURIComponent("/dashboard#recommendations");
+      toast({
+        title: "로그인이 필요한 작업입니다",
+        description: "이 작업을 계속하려면 먼저 로그인하세요.",
+      });
+      navigate(`/auth?next=${next}`);
+      return;
+    }
+    if (!site) {
+      toast({
+        title: "사이트를 먼저 선택해주세요",
+        description: "블로그 허브가 준비되면 워크플로우로 보낼 수 있어요.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setQueueingIdeaId(idea.id);
+    try {
+      const slug = `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}`;
+      const { data, error } = await (supabase as any)
+        .from("site_posts")
+        .insert({
+          site_id: site.id,
+          slug,
+          title: idea.topic,
+          content: "",
+          status: "idea",
+          source_axis: idea.axis,
+        })
+        .select("id")
+        .single();
+
+      if (error) throw error;
+
+      emitWorkflowChanged({ siteId: site.id, postId: data?.id, source: "recommendations" });
+      toast({ title: "워크플로우에 추가됐어요", description: "아이디어 칸으로 이동합니다." });
+      document.getElementById("workflow")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      toast({
+        title: "추가 실패",
+        description: error instanceof Error ? error.message : "다시 시도해주세요",
+        variant: "destructive",
+      });
+    } finally {
+      setQueueingIdeaId(null);
+    }
+  };
 
   if (!site) {
     return (
@@ -245,9 +288,10 @@ export default function Recommendations() {
                   <Button
                     size="sm"
                     className="rounded-full h-8 text-xs gap-1"
+                    disabled={queueingIdeaId === idea.id}
                     onClick={() => sendToWorkflow(idea)}
                   >
-                    <Send className="w-3 h-3" /> 워크플로우로
+                    {queueingIdeaId === idea.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />} 워크플로우로
                   </Button>
                 </div>
               </div>
