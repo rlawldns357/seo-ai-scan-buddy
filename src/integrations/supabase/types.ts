@@ -164,6 +164,56 @@ export type Database = {
         }
         Relationships: []
       }
+      autopublish_settings: {
+        Row: {
+          auto_topup: boolean
+          created_at: string
+          daily_limit: number
+          enabled: boolean
+          hours_kst: number[]
+          id: string
+          last_run_at: string | null
+          min_queue: number
+          site_id: string
+          updated_at: string
+          weekdays: number[]
+        }
+        Insert: {
+          auto_topup?: boolean
+          created_at?: string
+          daily_limit?: number
+          enabled?: boolean
+          hours_kst?: number[]
+          id?: string
+          last_run_at?: string | null
+          min_queue?: number
+          site_id: string
+          updated_at?: string
+          weekdays?: number[]
+        }
+        Update: {
+          auto_topup?: boolean
+          created_at?: string
+          daily_limit?: number
+          enabled?: boolean
+          hours_kst?: number[]
+          id?: string
+          last_run_at?: string | null
+          min_queue?: number
+          site_id?: string
+          updated_at?: string
+          weekdays?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "autopublish_settings_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: true
+            referencedRelation: "user_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       beta_waitlist: {
         Row: {
           created_at: string
