@@ -7,7 +7,15 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const MONTHLY_LIMIT = 5;
+/** Monthly publish caps per tier (BM v7) */
+const TIER_MONTHLY_LIMIT: Record<string, number> = {
+  free: 5,
+  beta: 60,
+  lite: 10,
+  pro: 60,
+  studio: 200,
+  admin: 9999,
+};
 
 type SitePostRow = {
   id: string;
@@ -190,7 +198,24 @@ serve(async (req) => {
       });
     }
 
-    // 월 5건 한도
+    // 사이트 슬러그 + 소유자 user_id 가져오기 (티어 결정용)
+    const { data: site } = await supabase
+      .from("user_sites")
+      .select("site_slug, user_id")
+      .eq("id", post.site_id)
+      .maybeSingle();
+
+    const siteSlug = site?.site_slug || "";
+
+    // 소유자 티어 조회 → 월 발행 한도 결정
+    let tier = "free";
+    if (site?.user_id) {
+      const { data: tierRow } = await supabase.rpc("get_user_tier", { _user_id: site.user_id });
+      if (typeof tierRow === "string") tier = tierRow;
+    }
+    const monthlyLimit = TIER_MONTHLY_LIMIT[tier] ?? TIER_MONTHLY_LIMIT.free;
+
+    // 월 발행 한도 체크
     const since = new Date();
     since.setDate(since.getDate() - 30);
     const { count } = await supabase
@@ -200,20 +225,11 @@ serve(async (req) => {
       .eq("status", "published")
       .gte("published_at", since.toISOString());
 
-    if ((count ?? 0) >= MONTHLY_LIMIT) {
-      return new Response(JSON.stringify({ error: `월 발행 한도(${MONTHLY_LIMIT}건) 초과` }), {
+    if ((count ?? 0) >= monthlyLimit) {
+      return new Response(JSON.stringify({ error: `월 발행 한도(${monthlyLimit}건) 초과 — 현재 플랜: ${tier.toUpperCase()}` }), {
         status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // 사이트 슬러그 + 후보 글 가져오기
-    const { data: site } = await supabase
-      .from("user_sites")
-      .select("site_slug")
-      .eq("id", post.site_id)
-      .maybeSingle();
-
-    const siteSlug = site?.site_slug || "";
 
     const { data: others } = await supabase
       .from("site_posts")
