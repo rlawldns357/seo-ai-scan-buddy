@@ -1,89 +1,84 @@
 
 
-User provided full marketing copy + flow. This is the **landing/marketing page** for the Auto Publish product (`/dashboard`). Currently `/dashboard/Index.tsx` is a bare site-creation form. Need to transform it into a full marketing landing that converts to signup, with the signup form integrated.
+# 대시보드를 라이브 데모처럼 "원페이지 스크롤" 구조로 재편
 
-## 빌드 계획: Auto Publish 랜딩 페이지
+지금 대시보드의 카드/타이포/사이드바 디자인 자산은 그대로 유지하고, **정보 흐름만** 데모처럼 한 페이지에서 위→아래로 자연스럽게 스크롤되며 읽히는 구조로 바꿉니다. 사이드바 메뉴 클릭 = 같은 페이지 내 해당 섹션으로 스무스 스크롤.
 
-### 위치
-- **로그인 안 한 상태**: `/dashboard` 진입 시 RequireAuth가 `/auth`로 보내는 대신, 마케팅 랜딩을 보여주고 CTA → `/auth` 이동
-- **로그인 한 상태**: 기존 사이트 생성 폼 + 내 사이트 카드 유지
+## 핵심 변화
 
-→ `/dashboard/Index.tsx`를 **두 분기 렌더링**으로 재구성:
-- 미로그인: 풀 마케팅 랜딩 (히어로 + 5단계 + 핵심가치 + FAQ + 마지막 CTA)
-- 로그인: 기존 폼/카드
+**Before**: 사이드바 클릭 → 라우트 이동 → 새 페이지 로드 → 컨텍스트 단절 (현재 6~7개 분리 페이지)
+**After**: `/dashboard`가 하나의 긴 페이지. 섹션 6개가 위→아래 흐름으로 배치. 사이드바는 앵커 내비.
 
-### RequireAuth 조정
-- `/dashboard` 루트만 인증 없이 접근 가능 (랜딩 노출용)
-- 하위 라우트(`/dashboard/recommendations`, `/content`, `/auto-publish`, `/reports`)는 RequireAuth 유지
-- → `Layout.tsx`의 RequireAuth 래핑을 라우트 단위로 분리
+## 페이지 구조 (`/dashboard` 단일 페이지, 위→아래)
 
-### 섹션 구성 (단일 페이지)
+```text
+[#overview]    오늘의 운영 현황 (KPI 4카드 + "다음 할 일" 카드)
+       ↓
+[#scores]      평균 SEO/AEO/GEO 게이지 + 약점 축 강조
+       ↓
+[#recommendations]  추천 액션 카드 (현재 Recommendations 페이지 내용)
+       ↓
+[#content]     새 글 작성 패널 (현재 Content 페이지)
+       ↓
+[#queue]       발행 큐 (현재 AutoPublish 큐 부분)
+       ↓
+[#posts]       발행된 글 목록 (현재 Posts 페이지)
+       ↓
+[#reports]     점수 추이 차트 (현재 Reports)
+```
 
-**1. Hero (메인 헤드라인 A — 진단 연결)**
-- H1: "진단에서 끝나지 말고, 콘텐츠 운영까지 자동화하세요"
-- Sub: "SEO·AEO·GEO 관점에서 필요한 콘텐츠를 찾고, SearchTuneOS 전용 페이지에 자동으로 발행해 사이트 운영을 더 쉽게 시작할 수 있습니다."
-- CTA: [내 사이트 연결하기] → `/auth?next=/dashboard` / [어떻게 동작하는지 보기] → 페이지 내 `#how` 스크롤
-- 우측: 모의 대시보드 카드 일러스트 (CSS-only, 콘텐츠 카드 3개 stack)
+각 섹션은 `id="…"` + `scroll-mt-20`(상단 헤더 오프셋) 적용, 섹션 사이 `<Separator />` + 섹션 헤더는 데모의 PageHero 톤.
 
-**2. 가치 제안 (헤드라인 B — 블로그 불필요)**
-- H2: "블로그를 따로 구축하지 않아도, 콘텐츠 운영은 바로 시작할 수 있습니다"
-- Sub + 보조 문구 2줄
+## 디자인 자산은 그대로 유지
 
-**3. 작동 방식 5단계 (`#how`)**
-- H2: "설정은 간단하고, 운영은 자동입니다"
-- 5개 단계 카드 (번호 + 제목 + 설명) — 데스크톱 5열 / 모바일 세로 스택
-- 아이콘: Link2, Settings, Sparkles, FileText, CheckCircle2 (lucide-react, 이미 설치됨)
+- 현재 대시보드 카드 스타일(`rounded-2xl border-border/50 shadow-card`), 타이포, 사이드바 룩앤필 — **변경 없음**
+- 데모에서 가져오는 건 **레이아웃 흐름과 섹션 헤더 패턴**뿐 (게이지 컴포넌트는 옵션)
 
-**4. 적합 대상 (섹션 D)**
-- H2: "이런 분들에게 잘 맞습니다"
-- 4개 체크 리스트 항목
+## 사이드바 동작 변경
 
-**5. 핵심 가치 3개 (섹션 E)**
-- 3-column 카드: 빠른 시작 / 자동 발행 / 가벼운 실험
-- 아이콘 + 제목 + 한 줄 설명
+- 메뉴 항목 클릭 시 `react-router` 라우팅 대신 `/dashboard#section-id`로 이동 + 스무스 스크롤
+- 현재 화면에 보이는 섹션을 `IntersectionObserver`로 감지해 사이드바 active 표시 자동 갱신
+- 기존 `ScrollToTop`은 hash 처리 로직이 이미 있어 그대로 호환
 
-**6. FAQ (섹션 F)**
-- 기존 `accordion.tsx` (shadcn) 사용
-- 3개 항목 (자체 페이지 발행 / 자동 강제 여부 / 어떤 글)
+## 라우트 정책
 
-**7. 마지막 CTA (섹션 G)**
-- H2: "내 사이트용 콘텐츠 운영, 오늘 바로 시작해보세요"
-- 서브카피
-- 버튼: "지금 가입하기" → `/auth` (유료 옵션은 추후 — v2 노트만, 지금은 무료 베타로 표기)
+- `/dashboard` = 새로운 원페이지 (모든 섹션 포함)
+- `/dashboard/posts`, `/recommendations`, `/auto-publish`, `/reports`, `/content` = **유지하되 리디렉트**: 각 라우트는 `/dashboard#섹션id`로 자동 이동 (북마크/외부 링크 호환)
+- `/dashboard/demo` = 그대로 유지 (내부 시연용)
 
-### 디자인 토큰
-- 기존 디자인 시스템 준수 (`max-w-4xl` 데스크톱, `px-2` 모바일, `rounded-full` Toss-style 버튼, `h-10`)
-- 섹션 간 spacing: `py-16 md:py-24`
-- Hero는 `py-20 md:py-32`, 시각적 무게 강조
-- 카드: `border border-border/50 bg-card rounded-2xl`
-- 1424px 뷰포트 → 5단계 가로 배치 가능
+## 성능/로드
 
-### 신규 컴포넌트 (재사용 위해 분리)
-- `src/features/publish/landing/Hero.tsx`
-- `src/features/publish/landing/HowItWorks.tsx`
-- `src/features/publish/landing/AudienceFit.tsx`
-- `src/features/publish/landing/ValueCards.tsx`
-- `src/features/publish/landing/LandingFaq.tsx`
-- `src/features/publish/landing/FinalCta.tsx`
-- `src/features/publish/landing/MarketingLanding.tsx` (조립)
+- 전체 페이지가 한 번에 로드되면 무거우므로 각 섹션을 **`React.lazy` + `Suspense`**로 감싸고, 화면에 가까워지면 마운트 (IntersectionObserver 기반 lazy mount)
+- 초기 보이는 `#overview`, `#scores`만 즉시 렌더, 나머지는 스크롤 시 마운트
+- 데이터 페칭(예: 발행글 목록, 차트)은 섹션이 마운트될 때만 시작 → 초기 부하 최소화
 
-### 수정 파일
-- `src/pages/dashboard/Index.tsx` — `useAuth()` 분기: 미로그인 → `<MarketingLanding />`, 로그인 → 현행 폼/카드
-- `src/pages/dashboard/Layout.tsx` — `/dashboard` 루트는 RequireAuth 우회. `<Outlet />` 부분만 보호. 사이드바도 미로그인 시 숨김 → 미로그인 사용자는 풀스크린 랜딩만 봄
-- `src/App.tsx` — 라우트 구조 조정: `/dashboard` 루트는 RequireAuth 없이, 하위 라우트만 보호된 Layout 안에
+## 모바일
 
-### SEO
-- `<Helmet>` title: "Auto Publish — 진단에서 콘텐츠 운영까지 | SearchTune OS"
-- meta description: 첫 서브카피 활용
-- H1 단 1개 (Hero)
+- 동일한 원페이지, 사이드바는 기존 모바일 패턴(Sheet) 유지
+- 모바일에서는 우하단에 작은 "위로" 버튼 추가 (섹션 점프용 미니 메뉴 옵션)
 
-### Navbar 연결
-- 이미 "Product PRO" 링크 존재 → 그대로 `/dashboard`로 유지 (랜딩이 자연스럽게 노출됨)
+## 구현 작업
 
-### 범위 외 (이번 안 함)
-- "발행 규칙 설정"(2단계) 실제 기능 — 마케팅 카피만, 실제 구현은 v2
-- 유료 결제 — 버튼은 "지금 가입하기 (베타 무료)"로 표기
-- 실제 자동 발행 스케줄러 — 기존 수동 발행 유지
+**신규 파일** (3):
+- `src/pages/dashboard/OnePage.tsx` — 모든 섹션을 묶는 컨테이너 (섹션별 lazy mount)
+- `src/features/publish/ui/SectionHeader.tsx` — 섹션마다 쓸 통일 헤더 (`chip`, `title`, `subtitle`)
+- `src/features/publish/useScrollSpy.ts` — IntersectionObserver 훅, 활성 섹션 ID 반환
 
-승인하면 바로 빌드합니다.
+**수정 파일** (4):
+- `src/App.tsx` — `/dashboard` → `OnePage` 매핑, 기존 서브 라우트는 hash 리디렉트로 변경
+- `src/features/publish/AppSidebar.tsx` — 메뉴 항목을 `Link to="/dashboard#xxx"` + scrollSpy active 상태 연동, 이모지 제거
+- `src/pages/dashboard/Layout.tsx` — outlet 그대로, 단 hash 변화 시 스크롤 보정
+- `src/components/ScrollToTop.tsx` — 이미 hash 지원하므로 검증만
+
+**기존 페이지 컴포넌트** (Index/Posts/Recommendations/AutoPublish/Reports/Content): **삭제하지 않고 섹션 컴포넌트로 재사용**. `OnePage.tsx`에서 import해 각 `<section>` 안에 배치. 내용/스타일 변경 최소화.
+
+## 범위 외 (이번 작업에서 제외)
+
+- 데모의 ScoreGauge/AxisBadge 추출 — 이전 라운드 제안. 이번엔 **레이아웃 통합만** 집중
+- 기존 카드/버튼 디자인 토큰 변경 — 사용자 의견대로 "지금이 더 간지난다" → 그대로 유지
+- 리프레시/스크롤 위치 복원 같은 고급 UX는 v2
+
+## 진행 가능한 옵션
+
+승인 시 default mode로 전환해 신규 3 + 수정 4 파일을 한 번에 구현합니다. 구현 후 `/dashboard`에 접속하면 사이드바 클릭 = 같은 페이지 내 스크롤로 동작합니다.
 
