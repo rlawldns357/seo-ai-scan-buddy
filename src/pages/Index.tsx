@@ -236,7 +236,9 @@ const Index = () => {
         trackEvent("analyze_fail", { url: finalUrl, error: (err as Error)?.message ?? "unknown" });
       }
     } finally {
-      // Always release the analyzing lock for the latest request.
+      // Always release the synchronous re-entry lock.
+      analyzingRef.current = false;
+      // Only the latest request may flip the visible analyzing state back off.
       if (isLatest()) setIsAnalyzing(false);
     }
   };
