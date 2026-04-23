@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
 import LockedFeature from "@/features/publish/LockedFeature";
-import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { emitWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
 import { ExternalLink, Dice5, Loader2, Send } from "lucide-react";
@@ -47,7 +46,6 @@ export default function Recommendations() {
   const { site } = useUserSite();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const guard = useRequireAuthAction();
   const [seed, setSeed] = useState("");
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [loading, setLoading] = useState(false);
