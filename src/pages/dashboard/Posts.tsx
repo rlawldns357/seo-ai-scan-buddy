@@ -143,63 +143,61 @@ export default function DashboardPosts() {
         <div className="space-y-2">
           <div className="text-xs text-muted-foreground px-1">총 {posts.length}편</div>
           {posts.map((p) => (
-            <Card key={p.id} className="p-4 hover:border-primary/40 transition-colors">
-              <div className="flex items-start gap-4">
-                <div className="flex-1 min-w-0 space-y-2">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary">
-                      발행됨
-                    </span>
+            <Card key={p.id} className="px-3 py-2.5 hover:border-primary/40 transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary">발행됨</span>
                     {p.published_at && (
-                      <span className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
+                      <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
+                        <Calendar className="h-2.5 w-2.5" />
                         {new Date(p.published_at).toLocaleDateString("ko-KR")}
                       </span>
                     )}
-                    <span className="text-[11px] text-muted-foreground inline-flex items-center gap-1">
-                      <Eye className="h-3 w-3" />
+                    <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
+                      <Eye className="h-2.5 w-2.5" />
                       {p.view_count}
                     </span>
                     {(p.seo_score !== null || p.aeo_score !== null || p.geo_score !== null) && (
-                      <span className="text-[11px] text-muted-foreground">
-                        SEO {p.seo_score ?? "–"} · AEO {p.aeo_score ?? "–"} · GEO {p.geo_score ?? "–"}
+                      <span className="text-[10px] text-muted-foreground">
+                        S {p.seo_score ?? "–"} · A {p.aeo_score ?? "–"} · G {p.geo_score ?? "–"}
                       </span>
                     )}
                   </div>
-                  <h3 className="font-semibold leading-snug truncate">{p.title}</h3>
-                  {p.excerpt && (
-                    <p className="text-xs text-muted-foreground line-clamp-2">{p.excerpt}</p>
-                  )}
+                  <h3 className="text-sm font-medium leading-snug truncate">{p.title}</h3>
                 </div>
-                <div className="flex flex-col gap-1.5 shrink-0">
-                  <Button asChild size="sm" variant="outline" className="h-8 text-xs">
+                <div className="flex gap-1 shrink-0">
+                  <Button asChild size="sm" variant="outline" className="h-8 w-8 p-0" title="보기">
                     <Link to={`/sites/${site!.site_slug}/${p.slug}`} target="_blank">
-                      <ExternalLink className="h-3 w-3 mr-1" />보기
+                      <ExternalLink className="h-3.5 w-3.5" />
                     </Link>
                   </Button>
                   <Button
                     size="sm"
                     variant="default"
-                    className="h-8 text-xs"
+                    className="h-8 text-xs rounded-full"
                     onClick={() => handleRollDice(p)}
+                    title="주사위 굴려 다시 쓰기"
                   >
-                    <Dice5 className="h-3 w-3 mr-1" />🎲 굴리기
+                    <Dice5 className="h-3.5 w-3.5" /> 🎲
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 text-xs"
+                    className="h-8 w-8 p-0 text-muted-foreground"
                     onClick={() => handleUnpublish(p)}
+                    title="발행 취소"
                   >
-                    발행 취소
+                    ↩
                   </Button>
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-8 text-xs text-destructive hover:text-destructive"
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
                     onClick={() => handleDelete(p)}
+                    title="삭제"
                   >
-                    <Trash2 className="h-3 w-3 mr-1" />삭제
+                    <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>

@@ -53,11 +53,18 @@ export default function Reports() {
 
   return (
     <>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-        <Card className="p-4"><p className="text-xs text-muted-foreground">발행됨</p><p className="text-2xl font-bold text-foreground">{publishedCount}</p></Card>
-        <Card className="p-4"><p className="text-xs text-muted-foreground">대기 중</p><p className="text-2xl font-bold text-foreground">{queuedCount}</p></Card>
-        <Card className="p-4"><p className="text-xs text-muted-foreground">분석 횟수</p><p className="text-2xl font-bold text-foreground">{history.length}</p></Card>
-      </div>
+      <Card className="rounded-2xl border-border/50 shadow-card divide-x divide-border/50 grid grid-cols-3 overflow-hidden mb-4">
+        {[
+          { label: "발행됨", value: publishedCount },
+          { label: "대기 중", value: queuedCount },
+          { label: "분석 횟수", value: history.length },
+        ].map((k) => (
+          <div key={k.label} className="px-4 py-2.5 flex items-center justify-between sm:flex-col sm:items-start sm:justify-center sm:gap-0.5">
+            <p className="text-[11px] text-muted-foreground">{k.label}</p>
+            <p className="text-lg font-bold text-foreground tabular-nums">{k.value}</p>
+          </div>
+        ))}
+      </Card>
 
       <Card className="p-5">
         <h2 className="text-sm font-semibold text-foreground mb-4">분석 점수 추이</h2>
