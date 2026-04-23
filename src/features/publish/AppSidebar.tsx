@@ -1,4 +1,4 @@
-import { LayoutDashboard, Lightbulb, KanbanSquare, BarChart3, ExternalLink, LogOut, Home, Clapperboard } from "lucide-react";
+import { LayoutDashboard, Lightbulb, KanbanSquare, BarChart3, ExternalLink, LogOut, Home, Clapperboard, Archive } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -12,7 +12,7 @@ import { useScrollSpy } from "./useScrollSpy";
 type SectionItem = { title: string; section: string; icon: typeof Home };
 type RouteItem = { title: string; url: string; icon: typeof Home; end?: boolean };
 
-const SECTION_IDS = ["overview", "recommendations", "workflow", "reports"];
+const SECTION_IDS = ["overview", "recommendations", "workflow", "archive", "reports"];
 
 const overviewItems: SectionItem[] = [
   { title: "대시보드", section: "overview", icon: LayoutDashboard },
@@ -21,6 +21,7 @@ const overviewItems: SectionItem[] = [
 const workflowItems: SectionItem[] = [
   { title: "콘텐츠 추천", section: "recommendations", icon: Lightbulb },
   { title: "워크플로우", section: "workflow", icon: KanbanSquare },
+  { title: "발행 아카이브", section: "archive", icon: Archive },
 ];
 
 const analyticsItems: SectionItem[] = [
