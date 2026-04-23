@@ -54,18 +54,17 @@ export default function Reports() {
 
   return (
     <Card className="rounded-2xl border-border/60 overflow-hidden">
-      {/* 카드 헤더: 좌측 액센트 점 + 타이틀 + 우측 미니 메타 */}
-      <div className="flex items-center justify-between gap-3 px-5 pt-4 pb-3 border-b border-border/60">
-        <div className="flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-score-excellent" />
-          <h2 className="text-sm font-semibold text-foreground">분석 점수 추이</h2>
-        </div>
-        <div className="flex items-center gap-3 text-[11px] text-muted-foreground tabular-nums">
-          <span><span className="text-foreground font-semibold">{publishedCount}</span> 발행</span>
-          <span><span className="text-foreground font-semibold">{queuedCount}</span> 대기</span>
-          <span><span className="text-foreground font-semibold">{history.length}</span> 분석</span>
-        </div>
-      </div>
+      <SectionCardHeader
+        tone="success"
+        title="분석 점수 추이"
+        meta={
+          <>
+            <span><span className="text-foreground font-semibold">{publishedCount}</span> 발행</span>
+            <span><span className="text-foreground font-semibold">{queuedCount}</span> 대기</span>
+            <span><span className="text-foreground font-semibold">{history.length}</span> 분석</span>
+          </>
+        }
+      />
       <div className="p-5">
         {chartData.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-12">분석 기록이 없습니다. 메인에서 사이트를 분석해보세요.</p>
