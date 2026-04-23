@@ -192,6 +192,20 @@ export default function KanbanBoard() {
     setPosts((cur) => cur.filter((p) => p.id !== id));
   };
 
+  const handleArchive = async (id: string, archive: boolean) => {
+    const { error } = await supabase
+      .from("site_posts")
+      .update({ status: archive ? "archived" : "published" } as any)
+      .eq("id", id);
+    if (error) {
+      toast({ title: archive ? "보관 실패" : "복원 실패", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: archive ? "보관됨 — 칸반에서 숨겨졌어요" : "복원됨 — 발행됨으로 이동" });
+    setOpenPost(null);
+    await load();
+  };
+
   const createIdea = requireAuth(async () => {
     if (!site) return;
     const title = window.prompt("새 아이디어 제목을 입력하세요");
