@@ -7,9 +7,10 @@ import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import LockedFeature from "@/features/publish/LockedFeature";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ExternalLink, Eye, Trash2, FileText, Calendar } from "lucide-react";
+import { ExternalLink, Eye, Trash2, FileText, Calendar, Dice5 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet-async";
+import DiceRoller from "@/components/DiceRoller";
 
 type Post = {
   id: string;
@@ -31,6 +32,11 @@ export default function DashboardPosts() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dicePost, setDicePost] = useState<Post | null>(null);
+
+  const handleRollDice = requireAuth((post: Post) => {
+    setDicePost(post);
+  });
 
   const load = async () => {
     if (!site) {
@@ -173,6 +179,14 @@ export default function DashboardPosts() {
                   </Button>
                   <Button
                     size="sm"
+                    variant="default"
+                    className="h-8 text-xs"
+                    onClick={() => handleRollDice(p)}
+                  >
+                    <Dice5 className="h-3 w-3 mr-1" />🎲 굴리기
+                  </Button>
+                  <Button
+                    size="sm"
                     variant="ghost"
                     className="h-8 text-xs"
                     onClick={() => handleUnpublish(p)}
@@ -192,6 +206,19 @@ export default function DashboardPosts() {
             </Card>
           ))}
         </div>
+      )}
+
+      {dicePost && (
+        <DiceRoller
+          open={!!dicePost}
+          onOpenChange={(o) => !o && setDicePost(null)}
+          postId={dicePost.id}
+          postTitle={dicePost.title}
+          onSuccess={() => {
+            setDicePost(null);
+            load();
+          }}
+        />
       )}
     </div>
   );
