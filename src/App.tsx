@@ -1,6 +1,6 @@
 import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -63,12 +63,12 @@ const App = () => (
             {/* 게스트 접근 시 /auth로 자동 이동하지 않음.               */}
             {/* 인증은 useRequireAuthAction을 통한 액션 클릭 시점에만.   */}
             <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<DashboardIndex />} />
-              <Route path="recommendations" element={<DashboardRecommendations />} />
-              <Route path="content" element={<DashboardContent />} />
-              <Route path="auto-publish" element={<DashboardAutoPublish />} />
-              <Route path="posts" element={<DashboardPosts />} />
-              <Route path="reports" element={<DashboardReports />} />
+              <Route index element={<DashboardOnePage />} />
+              <Route path="recommendations" element={<Navigate to="/dashboard#recommendations" replace />} />
+              <Route path="content" element={<Navigate to="/dashboard#content" replace />} />
+              <Route path="auto-publish" element={<Navigate to="/dashboard#queue" replace />} />
+              <Route path="posts" element={<Navigate to="/dashboard#posts" replace />} />
+              <Route path="reports" element={<Navigate to="/dashboard#reports" replace />} />
               <Route path="demo" element={<DashboardDemo />} />
             </Route>
 
