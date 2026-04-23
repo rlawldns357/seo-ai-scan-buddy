@@ -287,29 +287,35 @@ export default function Recommendations() {
         </Card>
       ) : (
         <div className="space-y-2">
-          {ideas.map((idea) => (
-            <Card key={idea.id} className={`px-3 py-3 transition-colors ${idea.rolling ? "opacity-60" : "hover:border-primary/50"}`}>
-              <div className="flex items-center justify-between gap-3 flex-wrap">
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${axisColor[idea.axis]}`}>{idea.axis}</span>
-                  <div className="min-w-0">
-                    <h3 className="text-sm font-medium text-foreground line-clamp-1 break-keep">{idea.topic}</h3>
-                    <p className="text-[11px] text-muted-foreground line-clamp-1 break-keep">{idea.reason}</p>
+          {ideas.map((idea) => {
+            const isQueued = queuedIdeaIds.has(idea.id);
+            const isQueueing = queueingIdeaId === idea.id;
+            return (
+              <Card key={idea.id} className={`px-3 py-3 transition-colors ${idea.rolling || isQueued ? "opacity-60" : "hover:border-primary/50"}`}>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${axisColor[idea.axis]}`}>{idea.axis}</span>
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-medium text-foreground line-clamp-1 break-keep">{idea.topic}</h3>
+                      <p className="text-[11px] text-muted-foreground line-clamp-1 break-keep">{idea.reason}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      size="sm"
+                      variant={isQueued ? "outline" : "default"}
+                      className="rounded-full h-8 text-xs gap-1"
+                      disabled={isQueueing || isQueued || !!queueingIdeaId}
+                      onClick={() => sendToWorkflow(idea)}
+                    >
+                      {isQueueing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                      {isQueued ? "추가됨" : "워크플로우로"}
+                    </Button>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <Button
-                    size="sm"
-                    className="rounded-full h-8 text-xs gap-1"
-                    disabled={queueingIdeaId === idea.id}
-                    onClick={() => sendToWorkflow(idea)}
-                  >
-                    {queueingIdeaId === idea.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />} 워크플로우로
-                  </Button>
-                </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>
