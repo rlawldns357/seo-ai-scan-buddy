@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -12,8 +12,22 @@ import { Search } from "lucide-react";
 
 type Mode = "signin" | "signup";
 
+/** Resolve a safe redirect target from ?next=… (must be a same-origin path). */
+function resolveNext(rawNext: string | null): string {
+  if (!rawNext) return "/dashboard";
+  try {
+    const decoded = decodeURIComponent(rawNext);
+    if (!decoded.startsWith("/") || decoded.startsWith("//")) return "/dashboard";
+    return decoded;
+  } catch {
+    return "/dashboard";
+  }
+}
+
 export default function Auth() {
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const next = resolveNext(params.get("next"));
   const [mode, setMode] = useState<Mode>("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,13 +35,13 @@ export default function Auth() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate("/dashboard", { replace: true });
+      if (data.session) navigate(next, { replace: true });
     });
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (s) navigate("/dashboard", { replace: true });
+      if (s) navigate(next, { replace: true });
     });
     return () => sub.subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, next]);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +52,7 @@ export default function Auth() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+          options: { emailRedirectTo: `${window.location.origin}${next}` },
         });
         if (error) throw error;
         toast.success("가입 완료! 대시보드로 이동합니다.");
@@ -58,7 +72,7 @@ export default function Auth() {
   const handleGoogle = async () => {
     setSubmitting(true);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/dashboard",
+      redirect_uri: window.location.origin + next,
     });
     if (result.error) {
       toast.error("Google 로그인 실패");
