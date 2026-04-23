@@ -1,11 +1,12 @@
 import { lazy, Suspense, useEffect, useState, useRef, ReactNode } from "react";
 import { Helmet } from "react-helmet-async";
-import { ArrowUp, LayoutDashboard, Lightbulb, KanbanSquare, BarChart3 } from "lucide-react";
+import { ArrowUp, LayoutDashboard, Lightbulb, KanbanSquare, BarChart3, Archive } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
 import DashboardIndex from "./Index";
 const DashboardRecommendations = lazy(() => import("./Recommendations"));
 const KanbanBoard = lazy(() => import("@/features/publish/kanban/KanbanBoard"));
+const ArchiveSection = lazy(() => import("@/features/publish/ArchiveSection"));
 const DashboardReports = lazy(() => import("./Reports"));
 
 type SectionMeta = {
