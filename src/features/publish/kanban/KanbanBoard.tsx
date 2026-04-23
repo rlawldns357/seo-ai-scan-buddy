@@ -282,7 +282,7 @@ export default function KanbanBoard() {
       site_id: site.id,
       slug,
       title: title.trim(),
-      content: "",
+      content: `# ${title.trim()}\n\n(아이디어 단계 — 초안으로 옮기면 AI가 본문을 생성합니다)`,
       status: "idea",
     } as any);
     if (error) {
