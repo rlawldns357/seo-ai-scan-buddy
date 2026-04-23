@@ -28,7 +28,7 @@ const TIERS: Tier[] = [
     ctaVariant: "outline",
     icon: Zap,
     features: [
-      "브랜드 페이지 1개",
+      "블로그 허브 1개",
       "월 10편 발행",
       "재생성 20회 / 월",
       "글당 약 3,000자",
@@ -47,7 +47,7 @@ const TIERS: Tier[] = [
     badge: "가장 인기",
     icon: Sparkles,
     features: [
-      "브랜드 페이지 3개",
+      "블로그 허브 3개",
       "월 60편 + 일 2편 자동 발행",
       "♾ 재생성 무제한 (Fair Use)",
       "글당 약 5,000자",
@@ -66,7 +66,7 @@ const TIERS: Tier[] = [
     ctaVariant: "outline",
     icon: Crown,
     features: [
-      "브랜드 페이지 10개",
+      "블로그 허브 10개",
       "월 200편 + 일 7편 자동 발행",
       "Gemini 2.5 Pro 프리미엄 모델",
       "글당 약 8,000자 장문",
@@ -88,7 +88,7 @@ export default function Pricing() {
             필요한 만큼만, <span className="text-primary">단순한 3단계</span>
           </h2>
           <p className="text-[15px] leading-[1.7] md:text-base md:leading-relaxed text-muted-foreground mt-4 break-keep">
-            모든 플랜은 SearchTune OS 도메인의 브랜드 페이지에 발행됩니다. 별도 블로그 운영 없이 바로 시작할 수 있습니다.
+            모든 플랜은 SearchTune OS 도메인의 블로그 허브에 발행됩니다. 별도 블로그 운영 없이 바로 시작할 수 있습니다.
           </p>
         </div>
 

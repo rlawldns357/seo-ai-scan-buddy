@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { Navigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import { Sparkles, Play, RotateCcw, Check, Loader2, Send, FileText, Gauge, Lightbulb, TrendingUp, ShoppingBag, MousePointerClick, Eye, ClipboardList, ChevronDown, ChevronUp, Mic, FlaskConical } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PURELEAF_DEMO } from "@/data/demoBrandSeed";
+import { useUserTier } from "@/features/auth/useUserTier";
 
 type Phase = "idle" | "recommend" | "brief" | "draft" | "score" | "publish" | "done";
 type Topic = { axis: "SEO" | "AEO" | "GEO"; title: string; reason: string };
@@ -203,6 +205,7 @@ function ScoreGauge({
 }
 
 export default function Demo() {
+  const { tier, loading: tierLoading } = useUserTier();
   const [siteUrl, setSiteUrl] = useState("https://my-brand-shop.com");
   const [seedTopic, setSeedTopic] = useState("");
   const [brief, setBrief] = useState<SeoBrief | null>(null);
@@ -387,6 +390,18 @@ export default function Demo() {
 
   const axisColor = (a: string) =>
     a === "SEO" ? "hsl(var(--primary))" : a === "AEO" ? "hsl(217 91% 60%)" : "hsl(280 70% 60%)";
+
+  // Admin-only gate (라이브 데모는 내부 시연 전용)
+  if (tierLoading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-sm text-muted-foreground">
+        권한 확인 중…
+      </div>
+    );
+  }
+  if (tier !== "admin") {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <>

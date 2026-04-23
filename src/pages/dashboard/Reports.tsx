@@ -38,9 +38,9 @@ export default function Reports() {
   if (!site) {
     return (
       <LockedFeature
-        title="먼저 브랜드 페이지를 만들어주세요"
-        description="브랜드 페이지에 발행된 글의 성과를 추적합니다."
-        ctaLabel="브랜드 페이지 만들기"
+        title="먼저 블로그 허브를 만들어주세요"
+        description="블로그 허브에 발행된 글의 성과를 추적합니다."
+        ctaLabel="블로그 허브 만들기"
         onCta={() => {
           document.getElementById("overview")?.scrollIntoView({ behavior: "smooth", block: "start" });
         }}

@@ -253,21 +253,23 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup>
-          {!collapsed && (
-            <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.14em] font-semibold">
-              내부 시연
-            </SidebarGroupLabel>
-          )}
-          <SidebarGroupContent>
-            <SidebarMenu>{internalItems.map(renderRoute)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {tier === "admin" && (
+          <SidebarGroup>
+            {!collapsed && (
+              <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.14em] font-semibold">
+                관리자 도구
+              </SidebarGroupLabel>
+            )}
+            <SidebarGroupContent>
+              <SidebarMenu>{internalItems.map(renderRoute)}</SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {site && !collapsed && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-[10px] uppercase tracking-[0.14em] font-semibold">
-              라이브 보기
+              블로그 허브
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>

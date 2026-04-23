@@ -88,7 +88,7 @@ export default function AddSiteModal({
               </div>
               <DialogTitle className="text-center">사이트 한도에 도달했어요</DialogTitle>
               <DialogDescription className="text-center">
-                현재 플랜({tier.toUpperCase()})은 브랜드 페이지 {siteLimit}개까지 운영할 수 있어요.
+                현재 플랜({tier.toUpperCase()})은 블로그 허브 {siteLimit}개까지 운영할 수 있어요.
                 <br />
                 추가 페이지는 상위 플랜에서 운영할 수 있어요.
               </DialogDescription>
@@ -99,7 +99,7 @@ export default function AddSiteModal({
                 준비 중인 PRO 플랜
               </div>
               <ul className="list-disc list-inside space-y-0.5 ml-1">
-                <li>추가 브랜드 페이지 운영</li>
+                <li>추가 블로그 허브 운영</li>
                 <li>사이트별 자동 발행 큐 분리</li>
                 <li>통합 리포트 / 도메인 연결</li>
               </ul>
@@ -113,9 +113,9 @@ export default function AddSiteModal({
         ) : (
           <>
             <DialogHeader>
-              <DialogTitle>브랜드 페이지 만들기</DialogTitle>
+              <DialogTitle>블로그 허브 만들기</DialogTitle>
               <DialogDescription>
-                자동 발행할 사이트의 URL과 표시 제목을 입력하면 전용 브랜드 페이지가 만들어집니다.
+                자동 발행할 사이트의 URL과 표시 제목을 입력하면 전용 블로그 허브가 만들어집니다.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 py-2">
@@ -130,7 +130,7 @@ export default function AddSiteModal({
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="add-site-title" className="text-xs">브랜드 페이지 제목</Label>
+                <Label htmlFor="add-site-title" className="text-xs">블로그 허브 제목</Label>
                 <Input
                   id="add-site-title"
                   value={title}
@@ -144,7 +144,7 @@ export default function AddSiteModal({
                   취소
                 </Button>
                 <Button type="submit" disabled={submitting} className="rounded-full">
-                  {submitting ? "만드는 중..." : "브랜드 페이지 만들기"}
+                  {submitting ? "만드는 중..." : "블로그 허브 만들기"}
                 </Button>
               </DialogFooter>
             </form>
