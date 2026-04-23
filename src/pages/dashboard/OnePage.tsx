@@ -119,9 +119,9 @@ const SECTIONS: SectionMeta[] = [
   {
     id: "recommendations",
     index: 2,
-    chip: "Ideas",
-    title: "추천 주제",
-    subtitle: "분석 결과를 바탕으로 SEO·AEO·GEO 약점을 보강할 주제를 추천합니다.",
+    chip: "Start Here",
+    title: "URL · 주제 입력하고 추천 받기",
+    subtitle: "사이트 URL은 자동으로 채워집니다. 관심 주제를 넣고, 마음에 안 드는 추천은 🎲 주사위로 다시 굴려보세요.",
     icon: Lightbulb,
   },
   {

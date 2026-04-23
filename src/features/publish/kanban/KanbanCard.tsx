@@ -2,7 +2,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Calendar, Dice5, GripVertical } from "lucide-react";
+import { Eye, Calendar, GripVertical } from "lucide-react";
 import type { KanbanPost, KanbanStatus } from "./types";
 import { COLUMN_META } from "./types";
 
@@ -85,17 +85,6 @@ export default function KanbanCard({ post, busy, onOpen, onAdvance, onRollDice, 
               onClick={(e) => { e.stopPropagation(); onAdvance(post); }}
             >
               {COLUMN_META[nextStatus].label}로 ▶
-            </Button>
-          )}
-          {post.status === "published" && onRollDice && (
-            <Button
-              size="sm"
-              variant="ghost"
-              className="h-6 text-[10px] px-2 rounded-full ml-auto"
-              onClick={(e) => { e.stopPropagation(); onRollDice(post); }}
-              title="주사위 굴려 다시 쓰기"
-            >
-              <Dice5 className="h-3 w-3" /> 🎲
             </Button>
           )}
         </div>
