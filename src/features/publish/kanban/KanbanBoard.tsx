@@ -273,16 +273,29 @@ export default function KanbanBoard() {
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 mb-4">
         <div className="text-[11px] text-muted-foreground">
-          총 <span className="text-foreground font-semibold tabular-nums">{posts.length}</span>편
-          {COLUMN_ORDER.map((s, i) => (
+          작업 큐 <span className="text-foreground font-semibold tabular-nums">{posts.length - archivedCount}</span>편
+          {COLUMN_ORDER.map((s) => (
             <span key={s}>
-              {i === 0 ? " · " : " · "}
+              {" · "}
               {COLUMN_META[s].label}{" "}
               <span className="font-semibold text-foreground tabular-nums">{grouped[s].length}</span>
             </span>
           ))}
+          {archivedCount > 0 && (
+            <span> · 보관 <span className="font-semibold text-foreground tabular-nums">{archivedCount}</span></span>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
+          {archivedCount > 0 && (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="rounded-full h-8 text-xs"
+              onClick={() => document.getElementById("archive")?.scrollIntoView({ behavior: "smooth" })}
+            >
+              <Archive className="h-3 w-3" /> 보관함 {archivedCount}
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="rounded-full h-8 text-xs" onClick={createIdea}>
             <Plus className="h-3 w-3" /> 아이디어
           </Button>
