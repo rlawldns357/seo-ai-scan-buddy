@@ -106,16 +106,22 @@ export default function SitePost() {
   const url = `https://searchtuneos.com/sites/${site.site_slug}/${postSlug}`;
   const faqItems: FaqItem[] = Array.isArray(post.faq) ? post.faq.filter((f) => f?.q && f?.a) : [];
 
-  // BlogPosting JSON-LD
+  // BlogPosting JSON-LD (보강: author/dateModified/image/wordCount)
+  const wordCount = post.content.replace(/\s+/g, " ").trim().split(" ").length;
   const blogJsonLd = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
     description: post.excerpt,
     datePublished: post.published_at,
+    dateModified: post.published_at,
     url,
     mainEntityOfPage: url,
+    wordCount,
+    inLanguage: "ko-KR",
+    author: { "@type": "Organization", name: site.title },
     publisher: { "@type": "Organization", name: "SearchTune OS" },
+    ...(post.og_image ? { image: post.og_image } : {}),
   };
 
   // FAQPage JSON-LD (AEO 핵심)
