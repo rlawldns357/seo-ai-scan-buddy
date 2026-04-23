@@ -20,7 +20,13 @@ export function useRequireAuthAction() {
   return useCallback(
     <T extends (...args: any[]) => any>(action: T) => {
       return ((...args: Parameters<T>) => {
-        if (loading) return;
+        if (loading) {
+          toast({
+            title: "로그인 상태 확인 중입니다",
+            description: "잠시 후 다시 시도해주세요.",
+          });
+          return;
+        }
         if (!user) {
           const next = encodeURIComponent(location.pathname + location.search + location.hash);
           toast({

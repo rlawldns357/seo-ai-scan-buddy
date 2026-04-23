@@ -14,6 +14,7 @@ import { useUserSite } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
 import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import LockedFeature from "@/features/publish/LockedFeature";
+import { onWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -74,6 +75,16 @@ export default function KanbanBoard() {
   useEffect(() => {
     if (!siteLoading) load();
   }, [siteLoading, load]);
+
+  useEffect(() => {
+    if (!site) return;
+
+    return onWorkflowChanged((detail) => {
+      if (detail.siteId !== site.id) return;
+      setActiveTab("idea");
+      void load();
+    });
+  }, [site, load]);
 
   const grouped = useMemo(() => {
     const out: Record<KanbanStatus, KanbanPost[]> = { idea: [], draft: [], scheduled: [], published: [], archived: [] };
