@@ -101,6 +101,69 @@ export type Database = {
         }
         Relationships: []
       }
+      autoblog_engine_config: {
+        Row: {
+          config_key: string
+          config_value: string
+          created_at: string
+          id: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          config_key: string
+          config_value: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          config_key?: string
+          config_value?: string
+          created_at?: string
+          id?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      autoblog_engine_log: {
+        Row: {
+          changes_summary: string
+          config_key: string
+          created_at: string
+          id: string
+          new_value: string | null
+          previous_value: string | null
+          status: string
+          trends_found: Json | null
+          version: number
+        }
+        Insert: {
+          changes_summary: string
+          config_key: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          previous_value?: string | null
+          status?: string
+          trends_found?: Json | null
+          version: number
+        }
+        Update: {
+          changes_summary?: string
+          config_key?: string
+          created_at?: string
+          id?: string
+          new_value?: string | null
+          previous_value?: string | null
+          status?: string
+          trends_found?: Json | null
+          version?: number
+        }
+        Relationships: []
+      }
       beta_waitlist: {
         Row: {
           created_at: string

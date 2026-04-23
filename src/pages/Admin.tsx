@@ -56,6 +56,9 @@ export default function Admin() {
   const [engineConfig, setEngineConfig] = useState<{ version: number; updated_at: string } | null>(null);
   const [engineLogs, setEngineLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
   const [engineUpdating, setEngineUpdating] = useState(false);
+  const [autoblogConfig, setAutoblogConfig] = useState<{ version: number; updated_at: string } | null>(null);
+  const [autoblogLogs, setAutoblogLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
+  const [autoblogUpdating, setAutoblogUpdating] = useState(false);
   const [failedPosts, setFailedPosts] = useState<{ id: string; title: string; slug: string; category: string; author: string; failure_reason: string; failure_attempts: number; created_at: string; contentLength: number }[]>([]);
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
@@ -179,6 +182,30 @@ export default function Admin() {
     setEngineUpdating(false);
   };
 
+  const fetchAutoblogStatus = async () => {
+    const { data: cfg } = await (supabase as any)
+      .from("autoblog_engine_config")
+      .select("version, updated_at")
+      .eq("config_key", "content_system_prompt")
+      .maybeSingle();
+    if (cfg) setAutoblogConfig(cfg);
+    const { data: logs } = await (supabase as any)
+      .from("autoblog_engine_log")
+      .select("version, changes_summary, trends_found, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10);
+    if (logs) setAutoblogLogs(logs);
+  };
+
+  const triggerAutoblogUpdate = async () => {
+    setAutoblogUpdating(true);
+    try {
+      const { data: res } = await supabase.functions.invoke("update-autoblog-engine", {});
+      if (res?.success) await fetchAutoblogStatus();
+    } catch {}
+    setAutoblogUpdating(false);
+  };
+
   const fetchFailedPosts = async () => {
     const pw = sessionStorage.getItem("admin_pw") || password;
     const { data: res } = await supabase.functions.invoke("admin-insights", {
@@ -225,6 +252,7 @@ export default function Admin() {
       fetchInsights(days);
       fetchBlogPosts();
       fetchEngineStatus();
+      fetchAutoblogStatus();
       fetchFailedPosts();
     }
   }, [authed, days]);
@@ -636,6 +664,65 @@ export default function Admin() {
                             ))}
                           </div>
                         )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    Autoblog 콘텐츠 엔진
+                    {autoblogConfig && (
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
+                        v{autoblogConfig.version}
+                      </span>
+                    )}
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={triggerAutoblogUpdate}
+                    disabled={autoblogUpdating}
+                    className="gap-1.5"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${autoblogUpdating ? "animate-spin" : ""}`} />
+                    {autoblogUpdating ? "업데이트 중..." : "수동 업데이트"}
+                  </Button>
+                </div>
+                {autoblogConfig && (
+                  <p className="text-xs text-muted-foreground">
+                    마지막 업데이트: {new Date(autoblogConfig.updated_at).toLocaleString("ko-KR")} · 자동 글쓰기(SEO/AEO/GEO) 시스템 프롬프트
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {autoblogLogs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">업데이트 이력 없음</p>
+                  ) : (
+                    autoblogLogs.map((log, i) => (
+                      <div key={i} className="border border-border rounded-lg p-3 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-foreground">v{log.version}</span>
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
+                              log.status === "success"
+                                ? "bg-score-excellent/10 text-score-excellent"
+                                : "bg-muted text-muted-foreground"
+                            }`}>
+                              {log.status === "success" ? "업데이트됨" : "변경 없음"}
+                            </span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(log.created_at).toLocaleString("ko-KR")}
+                          </span>
+                        </div>
+                        <p className="text-sm text-foreground">{log.changes_summary}</p>
                       </div>
                     ))
                   )}
