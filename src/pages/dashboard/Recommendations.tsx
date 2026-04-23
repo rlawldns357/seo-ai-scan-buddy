@@ -75,6 +75,7 @@ export default function Recommendations() {
 
   useEffect(() => {
     setIdeas(buildIdeasFromSeed(seed, orderedAxes));
+    setQueuedIdeaIds(new Set());
   }, [seed, orderedAxes]);
 
   // Load score order only; don't show generic recommendations without a real topic
