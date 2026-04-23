@@ -132,10 +132,6 @@ export default function DashboardHero(props: Props) {
           </>
         )}
       </div>
-
-      <p className="relative mt-4 text-[11px] text-muted-foreground">
-        {"\n"}
-      </p>
     </section>
   );
 }
