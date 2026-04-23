@@ -24,6 +24,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import KanbanColumn from "./KanbanColumn";
 import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
+import AutopublishControl from "@/features/publish/AutopublishControl";
 import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_LIMIT } from "./types";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
@@ -379,6 +380,7 @@ export default function KanbanBoard() {
           )}
         </div>
         <div className="flex items-center gap-1.5">
+          <AutopublishControl siteId={site?.id} />
           {archivedCount > 0 && (
             <Button
               size="sm"
