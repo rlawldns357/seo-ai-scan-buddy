@@ -1,6 +1,16 @@
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Sparkles, Crown, Zap, Shield, Star } from "lucide-react";
 import { useUserSite } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
+import { useUserTier, type AppRole } from "@/features/auth/useUserTier";
+
+const TIER_META: Record<AppRole, { label: string; icon: typeof Sparkles; className: string }> = {
+  free: { label: "Free", icon: Star, className: "bg-muted text-muted-foreground" },
+  beta: { label: "Beta", icon: Sparkles, className: "bg-primary/10 text-primary ring-1 ring-primary/30" },
+  lite: { label: "Lite", icon: Zap, className: "bg-accent/10 text-accent ring-1 ring-accent/30" },
+  pro: { label: "Pro", icon: Sparkles, className: "bg-primary text-primary-foreground" },
+  studio: { label: "Studio", icon: Crown, className: "bg-foreground text-background" },
+  admin: { label: "Admin", icon: Shield, className: "bg-score-warning/10 text-score-warning ring-1 ring-score-warning/30" },
+};
 
 /**
  * Top-of-page workspace identity header for /dashboard.
@@ -10,8 +20,12 @@ import { useAuth } from "@/features/auth/useAuth";
 export default function WorkspaceHeader() {
   const { site } = useUserSite();
   const { user } = useAuth();
+  const { tier } = useUserTier();
 
   if (!site || !user) return null;
+
+  const tierMeta = TIER_META[tier];
+  const TierIcon = tierMeta.icon;
 
   return (
     <div className="flex items-start justify-between gap-4 flex-wrap pb-5 mb-2 border-b border-border/60">
@@ -26,6 +40,9 @@ export default function WorkspaceHeader() {
             </h1>
             <span className="inline-flex items-center gap-1 rounded-full bg-score-excellent/10 text-score-excellent text-[10px] font-semibold px-2 py-0.5">
               <span className="w-1.5 h-1.5 rounded-full bg-score-excellent animate-pulse" /> 운영중
+            </span>
+            <span className={`inline-flex items-center gap-1 rounded-full text-[10px] font-bold px-2 py-0.5 ${tierMeta.className}`}>
+              <TierIcon className="w-3 h-3" /> {tierMeta.label}
             </span>
           </div>
           <a
