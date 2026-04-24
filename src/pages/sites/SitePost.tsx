@@ -238,29 +238,18 @@ export default function SitePost() {
                         </div>
                       )}
                       <div className="min-w-0 flex-1 flex flex-col">
-                        {/* 세일 라벨 + 카운트다운 (할인 정보 없으면 '추천' 폴백) */}
-                        <div className={`flex items-center gap-1.5 flex-wrap ${isHero ? "mb-2" : "mb-1"}`}>
-                          {p.sale_label ? (
-                            <span className={`inline-flex items-center rounded font-bold bg-destructive/15 text-destructive ${
-                              isHero ? "px-2 py-1 text-xs" : "px-1.5 py-0.5 text-[10px]"
-                            }`}>
-                              {p.sale_label}
-                            </span>
-                          ) : (
-                            <span className={`inline-flex items-center gap-1 rounded font-bold bg-destructive/10 text-destructive ${
-                              isHero ? "px-2 py-1 text-xs" : "px-1.5 py-0.5 text-[10px]"
-                            }`}>
-                              <Flame className={isHero ? "w-3 h-3" : "w-2.5 h-2.5"} aria-hidden /> 특가
-                            </span>
-                          )}
-                          {countdown && (
-                            <span className={`inline-flex items-center gap-0.5 rounded font-semibold bg-destructive/10 text-destructive/80 ${
-                              isHero ? "px-2 py-1 text-xs" : "px-1.5 py-0.5 text-[10px]"
-                            }`}>
-                              <Clock className={isHero ? "w-3 h-3" : "w-2.5 h-2.5"} aria-hidden /> {countdown}
-                            </span>
-                          )}
-                        </div>
+                        {/* 세일 라벨 + 카운트다운 — 작은 텍스트 톤 */}
+                        {(p.sale_label || countdown) && (
+                          <div className={`flex items-center gap-2 flex-wrap text-xs text-muted-foreground ${isHero ? "mb-1.5" : "mb-1"}`}>
+                            {p.sale_label && <span className="font-medium text-foreground/70">{p.sale_label}</span>}
+                            {p.sale_label && countdown && <span className="text-border">·</span>}
+                            {countdown && (
+                              <span className="inline-flex items-center gap-1">
+                                <Clock className="w-3 h-3" aria-hidden /> {countdown}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <p className={`font-semibold text-foreground group-hover:text-primary transition ${
                           isHero ? "text-base sm:text-lg line-clamp-2" : "text-sm line-clamp-2"
                         }`}>
@@ -279,8 +268,8 @@ export default function SitePost() {
                             <span
                               className={`font-bold tabular-nums ${
                                 discount
-                                  ? isHero ? "text-destructive text-2xl" : "text-destructive text-base"
-                                  : isHero ? "text-primary text-lg" : "text-primary text-sm"
+                                  ? isHero ? "text-destructive text-xl" : "text-destructive text-base"
+                                  : isHero ? "text-foreground text-lg" : "text-foreground text-sm"
                               }`}
                             >
                               {p.price}
@@ -289,15 +278,15 @@ export default function SitePost() {
                         )}
                         {p.description && (
                           <p className={`text-muted-foreground mt-1.5 ${
-                            isHero ? "text-sm line-clamp-3" : "text-[11px] line-clamp-2 mt-1"
+                            isHero ? "text-sm line-clamp-2" : "text-[11px] line-clamp-2 mt-1"
                           }`}>
                             {p.description}
                           </p>
                         )}
                         {isHero && (
                           <div className="mt-auto pt-3">
-                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-destructive text-destructive-foreground text-sm font-bold shadow-md group-hover:shadow-lg transition">
-                              지금 특가 보러가기 →
+                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-foreground/20 text-foreground text-sm font-medium group-hover:bg-foreground group-hover:text-background transition">
+                              자세히 보기 →
                             </span>
                           </div>
                         )}
