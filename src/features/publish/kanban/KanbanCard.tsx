@@ -220,64 +220,18 @@ export default function KanbanCard({
             </div>
           )}
 
-          {/* Action row */}
-          {showScheduleArea && onSchedule ? (
-            <div className="flex items-center flex-wrap gap-1 mt-1.5">
-              {scheduleStatus === "none" ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-7 text-[11px] px-2.5 rounded-full"
-                  onClick={(e) => { e.stopPropagation(); setScheduleOpen(true); }}
-                >
-                  <CalendarClock className="h-3 w-3" /> 자동 발행 예약
-                </Button>
-              ) : (
-                <>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[11px] px-2.5 rounded-full"
-                    onClick={(e) => { e.stopPropagation(); setScheduleOpen(true); }}
-                  >
-                    <CalendarClock className="h-3 w-3" /> 시간 변경
-                  </Button>
-                  {onCancelSchedule && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-7 text-[11px] px-2 rounded-full text-muted-foreground hover:text-foreground"
-                      onClick={(e) => { e.stopPropagation(); onCancelSchedule(post); }}
-                    >
-                      <X className="h-3 w-3" /> 취소
-                    </Button>
-                  )}
-                </>
-              )}
-              {onPublishNow && (
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-[11px] px-2 rounded-full ml-auto"
-                  onClick={(e) => { e.stopPropagation(); onPublishNow(post); }}
-                >
-                  <Send className="h-3 w-3" /> 즉시
-                </Button>
-              )}
+          {/* Advance fallback (non-scheduled columns) */}
+          {!showScheduleArea && nextStatus && onAdvance && (
+            <div className="flex items-center flex-wrap gap-1 mt-2 pt-2 border-t border-border/40 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-6 text-[10px] px-2 rounded-full"
+                onClick={(e) => { e.stopPropagation(); onAdvance(post); }}
+              >
+                {COLUMN_META[nextStatus].label}(으)로 ▶
+              </Button>
             </div>
-          ) : (
-            nextStatus && onAdvance && (
-              <div className="flex items-center flex-wrap gap-1 mt-2 pt-2 border-t border-border/40 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 text-[10px] px-2 rounded-full"
-                  onClick={(e) => { e.stopPropagation(); onAdvance(post); }}
-                >
-                  {COLUMN_META[nextStatus].label}(으)로 ▶
-                </Button>
-              </div>
-            )
           )}
         </div>
       </Card>
