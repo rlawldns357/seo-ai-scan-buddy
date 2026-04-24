@@ -322,7 +322,7 @@ export default function Recommendations() {
           </div>
         </div>
          <p className="text-[11px] text-muted-foreground mt-2">
-           <span className="font-semibold text-foreground">🎲 주사위</span>로 사이트에 맞는 관심 주제를 먼저 받고, 직접 입력해도 아래 아이디어가 갱신됩니다.
+           <span className="font-semibold text-foreground">🎲 주사위</span>로 사이트 맞춤 관심 주제를 받거나 직접 입력하면, AI가 SEO·AEO·GEO 3축 아이디어를 만들어드려요.
         </p>
       </Card>
 
