@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, FileText, Sparkles, Search, MessageSquareQuote, Quote } from "lucide-react";
+import { ArrowRight, FileText, Sparkles, Search, MessageSquareQuote, Quote, LayoutDashboard, LogIn } from "lucide-react";
+import { useAuth } from "@/features/auth/useAuth";
 
 export default function Hero() {
+  const { user, loading } = useAuth();
   return (
     <section className="py-12 md:py-32 px-4 md:px-6">
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 md:gap-12 items-center">
@@ -41,16 +43,33 @@ export default function Hero() {
           </ul>
 
           <div className="flex flex-wrap gap-3 mt-8">
-            <Link to="/auth?next=/dashboard">
-              <Button size="lg" className="rounded-full h-12 px-6 gap-2">
-                페이지 만들기 <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            <a href="#how">
-              <Button size="lg" variant="outline" className="rounded-full h-12 px-6">
-                작동 방식 보기
-              </Button>
-            </a>
+            {!loading && user ? (
+              <>
+                <Link to="/dashboard">
+                  <Button size="lg" className="rounded-full h-12 px-6 gap-2">
+                    <LayoutDashboard className="w-4 h-4" /> 대시보드로 가기
+                  </Button>
+                </Link>
+                <a href="#how">
+                  <Button size="lg" variant="outline" className="rounded-full h-12 px-6">
+                    작동 방식 보기
+                  </Button>
+                </a>
+              </>
+            ) : (
+              <>
+                <Link to="/auth?next=/dashboard">
+                  <Button size="lg" className="rounded-full h-12 px-6 gap-2">
+                    페이지 만들기 <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+                <Link to="/auth?next=/dashboard">
+                  <Button size="lg" variant="outline" className="rounded-full h-12 px-6 gap-2">
+                    <LogIn className="w-4 h-4" /> 베타 가입자 로그인
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
