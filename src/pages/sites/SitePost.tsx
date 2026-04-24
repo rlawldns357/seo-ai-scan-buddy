@@ -206,7 +206,7 @@ export default function SitePost() {
                       onClick={() => {
                         void (supabase as any).rpc("increment_site_product_click", { _product_id: p.id });
                       }}
-                      className={`group relative flex ${isHero ? "flex-col sm:flex-row gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl border border-border bg-card hover:border-foreground/20 hover:shadow-sm transition no-underline`}
+                      className={`group relative flex ${isHero ? "flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl border border-border bg-card hover:border-foreground/20 hover:shadow-sm transition no-underline`}
                     >
                       {/* 할인률 배지 — 이미지 좌상단 오버레이 (담백) */}
                       {discount && (
@@ -224,65 +224,67 @@ export default function SitePost() {
                           alt=""
                           loading="lazy"
                           className={`rounded-lg object-cover shrink-0 bg-muted ${
-                            isHero ? "h-40 w-full sm:h-44 sm:w-44" : "h-20 w-20"
+                            isHero ? "h-40 w-full sm:h-40 sm:w-40" : "h-20 w-20"
                           }`}
                         />
                       ) : (
                         <div className={`rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground/50 text-xs ${
-                          isHero ? "h-40 w-full sm:h-44 sm:w-44" : "h-20 w-20"
+                          isHero ? "h-40 w-full sm:h-40 sm:w-40" : "h-20 w-20"
                         }`}>
                           제품
                         </div>
                       )}
-                      <div className="min-w-0 flex-1 flex flex-col">
-                        {/* 세일 라벨 + 카운트다운 — 작은 텍스트 톤 */}
-                        {(p.sale_label || countdown) && (
-                          <div className={`flex items-center gap-2 flex-wrap text-xs text-muted-foreground ${isHero ? "mb-1.5" : "mb-1"}`}>
-                            {p.sale_label && <span className="font-medium text-foreground/70">{p.sale_label}</span>}
-                            {p.sale_label && countdown && <span className="text-border">·</span>}
-                            {countdown && (
-                              <span className="inline-flex items-center gap-1">
-                                <Clock className="w-3 h-3" aria-hidden /> {countdown}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        <p className={`font-semibold text-foreground group-hover:text-primary transition ${
-                          isHero ? "text-base sm:text-lg line-clamp-2" : "text-sm line-clamp-2"
-                        }`}>
-                          {p.title}
-                        </p>
-                        {/* 가격: 원가 취소선 + 판매가 강조 */}
-                        {p.price && (
-                          <div className={`flex items-baseline gap-2 flex-wrap ${isHero ? "mt-2" : "mt-1.5"}`}>
-                            {p.compare_at_price && discount && (
-                              <span className={`text-muted-foreground line-through tabular-nums ${
-                                isHero ? "text-sm" : "text-[11px]"
-                              }`}>
-                                {p.compare_at_price}
-                              </span>
-                            )}
-                            <span
-                              className={`font-bold tabular-nums ${
-                                discount
-                                  ? isHero ? "text-destructive text-xl" : "text-destructive text-base"
-                                  : isHero ? "text-foreground text-lg" : "text-foreground text-sm"
-                              }`}
-                            >
-                              {p.price}
-                            </span>
-                          </div>
-                        )}
-                        {p.description && (
-                          <p className={`text-muted-foreground mt-1.5 ${
-                            isHero ? "text-sm line-clamp-2" : "text-[11px] line-clamp-2 mt-1"
+                      <div className={`min-w-0 flex-1 flex flex-col ${isHero ? "sm:py-1 justify-between" : ""}`}>
+                        <div>
+                          {/* 세일 라벨 + 카운트다운 — 작은 텍스트 톤 */}
+                          {(p.sale_label || countdown) && (
+                            <div className={`flex items-center gap-2 flex-wrap text-xs text-muted-foreground ${isHero ? "mb-1.5" : "mb-1"}`}>
+                              {p.sale_label && <span className="font-medium text-foreground/70">{p.sale_label}</span>}
+                              {p.sale_label && countdown && <span className="text-border">·</span>}
+                              {countdown && (
+                                <span className="inline-flex items-center gap-1">
+                                  <Clock className="w-3 h-3" aria-hidden /> {countdown}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <p className={`font-semibold text-foreground group-hover:text-primary transition ${
+                            isHero ? "text-base sm:text-lg line-clamp-2" : "text-sm line-clamp-2"
                           }`}>
-                            {p.description}
+                            {p.title}
                           </p>
-                        )}
+                          {/* 가격: 원가 취소선 + 판매가 강조 */}
+                          {p.price && (
+                            <div className={`flex items-baseline gap-2 flex-wrap ${isHero ? "mt-1.5" : "mt-1.5"}`}>
+                              {p.compare_at_price && discount && (
+                                <span className={`text-muted-foreground line-through tabular-nums ${
+                                  isHero ? "text-sm" : "text-[11px]"
+                                }`}>
+                                  {p.compare_at_price}
+                                </span>
+                              )}
+                              <span
+                                className={`font-bold tabular-nums ${
+                                  discount
+                                    ? isHero ? "text-destructive text-xl" : "text-destructive text-base"
+                                    : isHero ? "text-foreground text-lg" : "text-foreground text-sm"
+                                }`}
+                              >
+                                {p.price}
+                              </span>
+                            </div>
+                          )}
+                          {p.description && (
+                            <p className={`text-muted-foreground ${
+                              isHero ? "text-sm line-clamp-2 mt-1.5" : "text-[11px] line-clamp-2 mt-1"
+                            }`}>
+                              {p.description}
+                            </p>
+                          )}
+                        </div>
                         {isHero && (
-                          <div className="mt-auto pt-3 flex flex-wrap gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-foreground text-background text-sm font-medium group-hover:opacity-90 transition">
+                          <div className="pt-4 flex flex-wrap gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-foreground text-background text-sm font-medium group-hover:opacity-90 transition">
                               자세히 보기 →
                             </span>
                             {(() => {
@@ -297,7 +299,7 @@ export default function SitePost() {
                                       e.stopPropagation();
                                       window.open(brandUrl, "_blank", "noopener");
                                     }}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-foreground/20 text-foreground/80 text-sm font-medium hover:bg-foreground/5 transition"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-foreground/20 text-foreground/80 text-sm font-medium hover:bg-foreground/5 transition"
                                   >
                                     {host} 홈 →
                                   </button>
