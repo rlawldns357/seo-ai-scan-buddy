@@ -215,7 +215,7 @@ export default function Recommendations() {
         return next;
       });
       emitWorkflowChanged({ siteId: site.id, postId: data?.id, source: "recommendations" });
-      toast({ title: "워크플로우에 추가됐어요", description: "아이디어 칸으로 이동합니다." });
+      toast({ title: "✨ 본문 생성 완료", description: "발행 대기 칸으로 이동합니다." });
     } catch (error) {
       toast({
         title: "추가 실패",
