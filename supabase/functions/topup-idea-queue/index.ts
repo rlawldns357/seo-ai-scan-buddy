@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const siteId: string = body.siteId;
-    const target: number = Math.min(Math.max(body.target ?? 5, 1), 20);
+    const target: number = Math.min(Math.max(body.target ?? 10, 1), 200);
     const seed: string = (body.seed ?? "").toString().slice(0, 200);
     if (!siteId) return json({ error: "siteId required" }, 400);
 
