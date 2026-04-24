@@ -35,6 +35,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const siteId: string = body.siteId;
     const target: number = Math.min(Math.max(body.target ?? 5, 1), 20);
+    const seed: string = (body.seed ?? "").toString().slice(0, 200);
     if (!siteId) return json({ error: "siteId required" }, 400);
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -78,6 +79,7 @@ Deno.serve(async (req) => {
         mode: "recommend",
         url: site.site_url,
         siteTitle: site.title,
+        seed: seed || undefined,
       }),
     });
     if (!recRes.ok) {
