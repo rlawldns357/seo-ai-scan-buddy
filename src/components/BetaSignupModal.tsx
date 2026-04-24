@@ -69,10 +69,10 @@ export default function BetaSignupModal({ open, onClose }: BetaSignupModalProps)
     setDone(false);
   };
 
-  const bullets = [
-    "초대받은 사용자만 베타 무료 이용",
-    "SEO·AEO·GEO 3축 자동 설계",
-    "전용 블로그 허브 즉시 생성",
+  const flow = [
+    { icon: Wand2, label: "자동 생성" },
+    { icon: Send, label: "자동 발행" },
+    { icon: BarChart3, label: "자동 채점" },
   ];
 
   return (
