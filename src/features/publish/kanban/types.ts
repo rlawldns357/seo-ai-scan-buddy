@@ -21,7 +21,7 @@ export type KanbanPost = {
   keywords: string[] | null;
 };
 
-export const COLUMN_ORDER: KanbanStatus[] = ["draft", "scheduled", "published"];
+export const COLUMN_ORDER: KanbanStatus[] = ["scheduled", "published"];
 
 export const COLUMN_META: Record<
   KanbanStatus,
@@ -43,7 +43,7 @@ export const COLUMN_META: Record<
   scheduled: {
     label: "발행 대기",
     emoji: "⏳",
-    description: "발행됨으로 옮기면 즉시 라이브",
+    description: "AI가 본문을 생성한 글들이 대기 중. 발행됨으로 옮기면 라이브",
     accent: "border-l-violet-400/60",
   },
   published: {
