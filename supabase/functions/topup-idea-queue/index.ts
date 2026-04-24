@@ -67,8 +67,8 @@ Deno.serve(async (req) => {
       (existing ?? []).map((r: any) => (r.title ?? "").trim().toLowerCase()),
     );
 
-    // Ask demo-stream-content (recommend mode) for ideas. Cap at 5 per call.
-    const wantHere = Math.min(need, 5);
+    // Ask demo-stream-content (recommend mode) for ideas. Cap at 10 per call.
+    const wantHere = Math.min(need, 10);
     const recRes = await fetch(`${SUPABASE_URL}/functions/v1/demo-stream-content`, {
       method: "POST",
       headers: {
