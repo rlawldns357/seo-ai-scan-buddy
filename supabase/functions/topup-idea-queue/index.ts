@@ -34,7 +34,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const siteId: string = body.siteId;
-    const target: number = Math.min(Math.max(body.target ?? 5, 1), 20);
+    const target: number = Math.min(Math.max(body.target ?? 10, 1), 200);
     const seed: string = (body.seed ?? "").toString().slice(0, 200);
     if (!siteId) return json({ error: "siteId required" }, 400);
 
@@ -67,8 +67,8 @@ Deno.serve(async (req) => {
       (existing ?? []).map((r: any) => (r.title ?? "").trim().toLowerCase()),
     );
 
-    // Ask demo-stream-content (recommend mode) for ideas. Cap at 5 per call.
-    const wantHere = Math.min(need, 5);
+    // Ask demo-stream-content (recommend mode) for ideas. Cap at 10 per call.
+    const wantHere = Math.min(need, 10);
     const recRes = await fetch(`${SUPABASE_URL}/functions/v1/demo-stream-content`, {
       method: "POST",
       headers: {

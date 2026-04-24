@@ -191,7 +191,7 @@ export default function Recommendations() {
   }
 
   const stockCount = ideas.length;
-  const targetStock = Math.max(autopubSettings?.min_queue ?? 5, 5);
+  const targetStock = Math.max(autopubSettings?.min_queue ?? 10, 10);
   const isFull = stockCount >= targetStock;
   const stockPct = Math.min(100, Math.round((stockCount / targetStock) * 100));
   const stockTone =
@@ -238,12 +238,12 @@ export default function Recommendations() {
               variant="default"
               className="rounded-full h-9 px-3 gap-1.5"
               disabled={topupLoading || isFull}
-              onClick={() => topup(stockCount + 5)}
+              onClick={() => topup(stockCount + 10)}
               title={isFull ? "재고가 충분해요" : undefined}
             >
               {topupLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               <span className="text-xs font-semibold">
-                {isFull ? "재고 충분" : "블로그 5개 더 받기"}
+                {isFull ? "재고 충분" : "블로그 10개 더 받기"}
               </span>
             </Button>
           </div>
@@ -299,7 +299,7 @@ export default function Recommendations() {
           </p>
           <p className="text-[12px] text-muted-foreground mt-1 break-keep">
             {ideas.length === 0
-              ? "위 ‘블로그 5개 더 받기’를 눌러 재고를 채워보세요."
+              ? "위 ‘블로그 10개 더 받기’를 눌러 재고를 채워보세요."
               : "키워드를 비우거나 더 받아보세요."}
           </p>
         </Card>
