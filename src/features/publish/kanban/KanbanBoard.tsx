@@ -367,7 +367,7 @@ export default function KanbanBoard() {
       {/* Toolbar */}
       <div className="flex items-center justify-between gap-2 mb-4">
         <div className="text-[11px] text-muted-foreground">
-          작업 큐 <span className="text-foreground font-semibold tabular-nums">{posts.length - archivedCount}</span>편
+          작업 큐 <span className="text-foreground font-semibold tabular-nums">{posts.length - archivedCount}</span>건
           {COLUMN_ORDER.map((s) => (
             <span key={s}>
               {" · "}

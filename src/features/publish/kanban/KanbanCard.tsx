@@ -57,7 +57,7 @@ export default function KanbanCard({ post, busy, onOpen, onAdvance, onRollDice, 
                   {new Date(post.published_at).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}
                 </span>
               )}
-              {post.status === "published" && (
+              {post.status === "published" && post.view_count > 0 && (
                 <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
                   <Eye className="h-2.5 w-2.5" />
                   {post.view_count}
@@ -84,7 +84,7 @@ export default function KanbanCard({ post, busy, onOpen, onAdvance, onRollDice, 
               className="h-6 text-[10px] px-2 rounded-full"
               onClick={(e) => { e.stopPropagation(); onAdvance(post); }}
             >
-              {COLUMN_META[nextStatus].label}로 ▶
+              {COLUMN_META[nextStatus].label}(으)로 ▶
             </Button>
           )}
         </div>
