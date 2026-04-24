@@ -26,7 +26,7 @@ import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
 import AutopublishControl from "@/features/publish/AutopublishControl";
 import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_LIMIT } from "./types";
-import { sortScheduledColumn, isToday } from "./scheduleUtils";
+import { sortScheduledColumn } from "./scheduleUtils";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
   idea: "draft",
@@ -323,46 +323,37 @@ export default function KanbanBoard() {
 
   const activePost = activeDragId ? posts.find((p) => p.id === activeDragId) : null;
 
-  const handleSetSchedule = useCallback(
-    async (post: KanbanPost, iso: string) => {
-      const isChange = !!post.published_at;
-      const { error } = await supabase
-        .from("site_posts")
-        .update({ status: "scheduled", published_at: iso } as any)
-        .eq("id", post.id);
-      if (error) {
-        toast({ title: "예약 실패", description: error.message, variant: "destructive" });
-        return;
-      }
-      toast({ title: isChange ? "예약 발행 시간이 변경되었어요" : "예약 발행이 설정되었어요" });
-      await load();
-    },
-    [load],
-  );
+  const handleSetSchedule = async (post: KanbanPost, iso: string) => {
+    const isChange = !!post.published_at;
+    const { error } = await supabase
+      .from("site_posts")
+      .update({ status: "scheduled", published_at: iso } as any)
+      .eq("id", post.id);
+    if (error) {
+      toast({ title: "예약 실패", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: isChange ? "예약 발행 시간이 변경되었어요" : "예약 발행이 설정되었어요" });
+    await load();
+  };
 
-  const handleCancelSchedule = useCallback(
-    async (post: KanbanPost) => {
-      const { error } = await supabase
-        .from("site_posts")
-        .update({ status: "draft", published_at: null } as any)
-        .eq("id", post.id);
-      if (error) {
-        toast({ title: "취소 실패", description: error.message, variant: "destructive" });
-        return;
-      }
-      toast({ title: "예약 발행이 취소되었어요" });
-      await load();
-    },
-    [load],
-  );
+  const handleCancelSchedule = async (post: KanbanPost) => {
+    const { error } = await supabase
+      .from("site_posts")
+      .update({ status: "draft", published_at: null } as any)
+      .eq("id", post.id);
+    if (error) {
+      toast({ title: "취소 실패", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "예약 발행이 취소되었어요" });
+    await load();
+  };
 
-  const handlePublishNow = useCallback(
-    (post: KanbanPost) => {
-      toast({ title: "지금 바로 발행을 시작해요" });
-      void performTransition(post, "published");
-    },
-    [performTransition],
-  );
+  const handlePublishNow = (post: KanbanPost) => {
+    toast({ title: "지금 바로 발행을 시작해요" });
+    void performTransition(post, "published");
+  };
 
   const renderCard = (p: KanbanPost) => (
     <KanbanCard
