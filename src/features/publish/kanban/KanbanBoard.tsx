@@ -155,16 +155,7 @@ export default function KanbanBoard() {
     [load, posts, site?.site_url, site?.site_slug, user, navigate],
   );
 
-  const onDragStart = (e: DragStartEvent) => setActiveDragId(String(e.active.id));
-  const onDragEnd = (e: DragEndEvent) => {
-    setActiveDragId(null);
-    const id = String(e.active.id);
-    const post = posts.find((p) => p.id === id);
-    const to = e.over?.id as KanbanStatus | undefined;
-    if (!post || !to || !COLUMN_ORDER.includes(to)) return;
-    if (post.status === to) return;
-    performTransition(post, to);
-  };
+  // (Drag-and-drop removed — board is now a simple 2-tab list.)
 
   const handleSave = async (
     id: string,
