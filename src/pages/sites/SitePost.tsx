@@ -283,8 +283,8 @@ export default function SitePost() {
                           )}
                         </div>
                         {isHero && (
-                          <div className="mt-auto pt-3 flex flex-wrap gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-foreground text-background text-sm font-medium group-hover:opacity-90 transition">
+                          <div className="pt-4 flex flex-wrap gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-foreground text-background text-sm font-medium group-hover:opacity-90 transition">
                               자세히 보기 →
                             </span>
                             {(() => {
@@ -299,7 +299,7 @@ export default function SitePost() {
                                       e.stopPropagation();
                                       window.open(brandUrl, "_blank", "noopener");
                                     }}
-                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-foreground/20 text-foreground/80 text-sm font-medium hover:bg-foreground/5 transition"
+                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-foreground/20 text-foreground/80 text-sm font-medium hover:bg-foreground/5 transition"
                                   >
                                     {host} 홈 →
                                   </button>
