@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { useDraggable } from "@dnd-kit/core";
-import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Calendar, GripVertical, CalendarClock, X, Send, AlertCircle } from "lucide-react";
+import { Eye, Calendar, CalendarClock, X, Send, AlertCircle, CheckCircle2 } from "lucide-react";
 import type { KanbanPost, KanbanStatus } from "./types";
 import { COLUMN_META } from "./types";
 import {
@@ -41,14 +39,10 @@ export default function KanbanCard({
   onPublishNow,
   scheduledSiblings,
 }: Props) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: post.id,
-    data: { post },
-  });
-
   const meta = COLUMN_META[post.status];
   const scheduleStatus = getScheduleStatus(post);
   const isScheduledCol = post.status === "scheduled";
+  const isPublishedCol = post.status === "published";
   const showScheduleArea = isScheduledCol;
   const badge = SCHEDULE_BADGE[scheduleStatus];
 
@@ -58,25 +52,11 @@ export default function KanbanCard({
   return (
     <>
       <Card
-        ref={setNodeRef}
-        style={{
-          transform: CSS.Translate.toString(transform),
-          opacity: isDragging ? 0.4 : 1,
-        }}
-        onClick={() => !isDragging && onOpen(post)}
+        onClick={() => onOpen(post)}
         className={`group relative cursor-pointer hover:border-primary/40 transition-colors border-l-2 ${meta.accent} ${busy ? "opacity-60 pointer-events-none" : ""}`}
       >
         <div className="px-3 py-2.5">
           <div className="flex items-start gap-2">
-            <button
-              {...attributes}
-              {...listeners}
-              onClick={(e) => e.stopPropagation()}
-              className="shrink-0 mt-0.5 text-muted-foreground/50 hover:text-foreground cursor-grab active:cursor-grabbing"
-              aria-label="드래그하여 이동"
-            >
-              <GripVertical className="h-3.5 w-3.5" />
-            </button>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
                 {post.source_axis && (
