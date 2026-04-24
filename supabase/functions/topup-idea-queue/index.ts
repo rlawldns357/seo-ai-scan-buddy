@@ -67,35 +67,42 @@ Deno.serve(async (req) => {
       (existing ?? []).map((r: any) => (r.title ?? "").trim().toLowerCase()),
     );
 
-    // Ask demo-stream-content (recommend mode) for ideas. Cap at 10 per call.
+    // Ask demo-stream-content (recommend mode) for ideas. The response is SSE, so parse streamed text.
     const wantHere = Math.min(need, 10);
-    const recRes = await fetch(`${SUPABASE_URL}/functions/v1/demo-stream-content`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${SERVICE_KEY}`,
-      },
-      body: JSON.stringify({
-        mode: "recommend",
-        url: site.site_url,
-        siteTitle: site.title,
-        seed: seed || undefined,
-      }),
-    });
-    if (!recRes.ok) {
-      const t = await recRes.text();
-      throw new Error(`recommend failed: ${recRes.status} ${t.slice(0, 120)}`);
-    }
-    const recBody = await recRes.json().catch(() => ({}));
-    const ideas: Array<{ topic: string; axis?: string; reason?: string }> =
-      Array.isArray(recBody?.ideas) ? recBody.ideas : [];
+    const collected: Array<{ topic: string; axis?: string; reason?: string }> = [];
 
-    const fresh = ideas
-      .filter((i) => i?.topic && !existingTitles.has(i.topic.trim().toLowerCase()))
-      .slice(0, wantHere);
+    for (let round = 0; round < 4 && collected.length < wantHere; round += 1) {
+      const recRes = await fetch(`${SUPABASE_URL}/functions/v1/demo-stream-content`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${SERVICE_KEY}`,
+        },
+        body: JSON.stringify({
+          mode: "recommend",
+          siteUrl: site.site_url,
+          siteTitle: site.title,
+          seed: seed || undefined,
+        }),
+      });
+      if (!recRes.ok) {
+        const t = await recRes.text();
+        throw new Error(`recommend failed: ${recRes.status} ${t.slice(0, 120)}`);
+      }
+
+      const streamText = await recRes.text();
+      const parsedIdeas = extractIdeasFromSse(streamText);
+      for (const idea of parsedIdeas) {
+        const normalized = idea.topic.trim().toLowerCase();
+        if (!normalized || existingTitles.has(normalized)) continue;
+        existingTitles.add(normalized);
+        collected.push(idea);
+        if (collected.length >= wantHere) break;
+      }
+    }
 
     let inserted = 0;
-    for (const idea of fresh) {
+    for (const idea of collected) {
       const slug = `idea-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
       const { error } = await admin.from("site_posts").insert({
         site_id: siteId,
@@ -110,7 +117,7 @@ Deno.serve(async (req) => {
       if (!error) inserted += 1;
     }
 
-    return json({ inserted, depth: depth ?? 0, target, attempted: fresh.length });
+    return json({ inserted, depth: depth ?? 0, target, attempted: collected.length });
   } catch (e) {
     console.error("topup-idea-queue error", e);
     return json({ error: e instanceof Error ? e.message : "Unknown" }, 500);
@@ -122,4 +129,37 @@ function json(b: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
+}
+
+function extractIdeasFromSse(raw: string): Array<{ topic: string; axis?: string; reason?: string }> {
+  const ideas: Array<{ topic: string; axis?: string; reason?: string }> = [];
+  const seen = new Set<string>();
+
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("data:")) continue;
+
+    const payload = trimmed.slice(5).trim();
+    if (!payload || payload === "[DONE]") continue;
+
+    try {
+      const parsed = JSON.parse(payload);
+      const chunk = parsed?.choices?.[0]?.delta?.content;
+      if (!chunk || typeof chunk !== "string") continue;
+
+      for (const match of chunk.matchAll(/\{[^\n]*"axis"\s*:\s*"(SEO|AEO|GEO)"[^\n]*"title"\s*:\s*"([^"]{1,200})"[^\n]*"reason"\s*:\s*"([^"]{1,280})"[^\n]*\}/g)) {
+        const axis = match[1];
+        const topic = match[2]?.trim();
+        const reason = match[3]?.trim();
+        const key = `${axis}:${topic}`.toLowerCase();
+        if (!topic || seen.has(key)) continue;
+        seen.add(key);
+        ideas.push({ axis, topic, reason });
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return ideas;
 }

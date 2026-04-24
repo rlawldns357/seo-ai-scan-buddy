@@ -89,10 +89,18 @@ export default function Recommendations() {
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
       const inserted = Number(data?.inserted ?? 0);
+      const depth = Number(data?.depth ?? stockCount);
+      const targetDepth = Number(data?.target ?? target);
       if (inserted > 0) {
-        toast({ title: `✨ 아이디어 ${inserted}개 추가`, description: "재고에 쌓아뒀어요." });
+        toast({ title: `✨ 블로그 ${inserted}개 추가`, description: "재고에 쌓아뒀어요." });
+      } else if (depth >= targetDepth) {
+        toast({ title: "이미 충분해요", description: "블로그 재고가 목표치에 도달했어요." });
       } else {
-        toast({ title: "이미 충분해요", description: "큐가 목표치에 도달했어요." });
+        toast({
+          title: "이번엔 못 채웠어요",
+          description: "추천이 겹쳐서 새 재고를 못 넣었어요. 한 번 더 눌러주세요.",
+          variant: "destructive",
+        });
       }
       await loadIdeas();
     } catch (e) {
