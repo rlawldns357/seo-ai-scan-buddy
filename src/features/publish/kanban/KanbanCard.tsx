@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Calendar, CalendarClock, X, Send, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Eye, Calendar, CalendarClock, X, Send, AlertCircle, CheckCircle2, Trash2 } from "lucide-react";
 import type { KanbanPost, KanbanStatus } from "./types";
 import { COLUMN_META } from "./types";
 import {
@@ -25,6 +25,8 @@ type Props = {
   onCancelSchedule?: (p: KanbanPost) => Promise<void> | void;
   /** Publish immediately (skip schedule). */
   onPublishNow?: (p: KanbanPost) => Promise<void> | void;
+  /** Permanently delete the post. */
+  onDelete?: (p: KanbanPost) => Promise<void> | void;
   /** Other already-scheduled posts in this site, for the modal's 7-day timeline. */
   scheduledSiblings?: { id: string; title: string; iso: string }[];
 };
@@ -38,6 +40,7 @@ export default function KanbanCard({
   onSchedule,
   onCancelSchedule,
   onPublishNow,
+  onDelete,
   scheduledSiblings,
 }: Props) {
   const meta = COLUMN_META[post.status];
