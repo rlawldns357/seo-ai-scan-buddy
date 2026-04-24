@@ -295,11 +295,11 @@ export default function Recommendations() {
         <Card className="px-4 py-8 border-dashed border-border/60 bg-muted/20 text-center">
           <Sparkles className="w-6 h-6 text-muted-foreground/60 mx-auto mb-2" />
           <p className="text-sm font-medium text-foreground">
-            {ideas.length === 0 ? "아직 재고가 없어요" : "필터에 맞는 아이디어가 없어요"}
+            {ideas.length === 0 ? "아직 재고가 없어요" : "필터에 맞는 블로그가 없어요"}
           </p>
           <p className="text-[12px] text-muted-foreground mt-1 break-keep">
             {ideas.length === 0
-              ? "위 ‘아이디어 5개 더 받기’를 눌러 재고를 채워보세요."
+              ? "위 ‘블로그 5개 더 받기’를 눌러 재고를 채워보세요."
               : "키워드를 비우거나 더 받아보세요."}
           </p>
         </Card>
