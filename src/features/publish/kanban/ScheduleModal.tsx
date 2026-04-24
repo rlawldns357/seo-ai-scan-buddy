@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -65,38 +65,14 @@ function formatRelative(d: Date, now: number): string {
   return `약 ${days}일 후`;
 }
 
-/** 추천 날짜 2개:
- *  1) 내일 오전 9시 — 가장 빠르고 안전한 선택
- *  2) 다음 평일 오전 9시 — 주말이면 월요일로 미루기 (트래픽 피크)
+/** 추천 시간 2개 (선택한 날짜 기준):
+ *  1) 오전 9시 — 출근/오전 검색 피크
+ *  2) 오후 8시 — 저녁 모바일 트래픽 피크
  */
-function buildRecommendations(now: Date) {
-  const tomorrow9 = new Date(now);
-  tomorrow9.setDate(tomorrow9.getDate() + 1);
-  tomorrow9.setHours(9, 0, 0, 0);
-
-  // 다음 "평일" 9시 (내일이 평일이면 모레, 주말이면 다음 월요일)
-  const nextWeekday = new Date(tomorrow9);
-  nextWeekday.setDate(nextWeekday.getDate() + 1);
-  while (nextWeekday.getDay() === 0 || nextWeekday.getDay() === 6) {
-    nextWeekday.setDate(nextWeekday.getDate() + 1);
-  }
-  nextWeekday.setHours(9, 0, 0, 0);
-
-  return [
-    {
-      key: "tomorrow",
-      label: "내일 오전 9시",
-      sublabel: "가장 빠른 안전 발행",
-      date: tomorrow9,
-    },
-    {
-      key: "next-weekday",
-      label: `${nextWeekday.getMonth() + 1}/${nextWeekday.getDate()} (${WEEKDAY[nextWeekday.getDay()]}) 오전 9시`,
-      sublabel: "트래픽 피크 평일",
-      date: nextWeekday,
-    },
-  ];
-}
+const TIME_RECOMMENDATIONS = [
+  { key: "morning", time: "09:00", label: "오전 9시", sublabel: "출근·오전 검색 피크" },
+  { key: "evening", time: "20:00", label: "오후 8시", sublabel: "저녁 모바일 피크" },
+];
 
 const TIME_PRESETS = ["09:00", "12:00", "15:00", "18:00", "20:00", "22:00"];
 
@@ -124,7 +100,6 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
   }, [open, initialIso]);
 
   const now = Date.now();
-  const recommendations = useMemo(() => buildRecommendations(new Date()), [open]);
   const combined = combineDateTime(date, time);
   const isPast = combined ? combined.getTime() <= now : false;
   const canSave = !!combined && !isPast && !saving;
@@ -147,46 +122,8 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
           </DialogDescription>
         </DialogHeader>
 
-        {/* 추천 발행 시각 */}
-        <div className="px-5 pt-4">
-          <div className="text-[11px] font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-primary" />
-            추천 발행 시각
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {recommendations.map((r) => {
-              const active =
-                combined &&
-                Math.abs(combined.getTime() - r.date.getTime()) < 60_000;
-              return (
-                <button
-                  key={r.key}
-                  type="button"
-                  onClick={() => {
-                    setDate(r.date);
-                    setTime(`${pad(r.date.getHours())}:${pad(r.date.getMinutes())}`);
-                  }}
-                  className={cn(
-                    "rounded-lg border p-3 text-left transition-all",
-                    active
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "border-border/60 bg-background hover:bg-muted hover:border-border"
-                  )}
-                >
-                  <div className="text-sm font-semibold text-foreground">
-                    {r.label}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    {r.sublabel}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* STEP 1 — 날짜 선택 */}
-        <div className="px-5 pt-5">
+        <div className="px-5 pt-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] font-semibold text-muted-foreground">
               1. 날짜 선택
@@ -214,6 +151,35 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
             </div>
             <div className="text-[11px] font-medium text-foreground">{time}</div>
           </div>
+
+          {/* 추천 시간 2개 */}
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            {TIME_RECOMMENDATIONS.map((r) => {
+              const active = time === r.time;
+              return (
+                <button
+                  key={r.key}
+                  type="button"
+                  onClick={() => setTime(r.time)}
+                  className={cn(
+                    "rounded-lg border p-2.5 text-left transition-all",
+                    active
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border/60 bg-background hover:bg-muted hover:border-border"
+                  )}
+                >
+                  <div className="flex items-center gap-1 text-sm font-semibold text-foreground">
+                    <Sparkles className="w-3 h-3 text-primary" />
+                    {r.label}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    {r.sublabel}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
           <div className="grid grid-cols-6 gap-1.5 mb-2">
             {TIME_PRESETS.map((t) => (
               <button
