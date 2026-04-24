@@ -30,6 +30,7 @@ const axisColor: Record<string, string> = {
 export default function Recommendations() {
   const { site } = useUserSite();
   const { user, loading: authLoading } = useAuth();
+  const { settings: autopubSettings } = useAutopublishSettings(site?.id);
   const navigate = useNavigate();
 
   const [ideas, setIdeas] = useState<IdeaRow[]>([]);
