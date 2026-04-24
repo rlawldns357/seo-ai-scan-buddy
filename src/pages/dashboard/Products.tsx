@@ -273,13 +273,38 @@ export default function DashboardProducts() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-border/40">
-                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <div className="flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
                     {p.is_active ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
                     <span>{p.is_active ? "노출 중" : "숨김"}</span>
                     <span>·</span>
                     <span className="tabular-nums">클릭 {p.click_count}</span>
+                    <span>·</span>
+                    {p.compare_at_price || p.sale_label ? (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-destructive/10 text-destructive font-semibold">
+                        <Flame className="w-2.5 h-2.5" /> 할인 강조 ON
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                        ⚠️ 할인 정보 없음
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
+                    {!(p.compare_at_price || p.sale_label) && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-[11px] gap-1 rounded-full"
+                        onClick={() => void handleRefillSale(p)}
+                        disabled={refillingId === p.id}
+                      >
+                        {refillingId === p.id ? (
+                          <><Loader2 className="w-3 h-3 animate-spin" /> 분석</>
+                        ) : (
+                          <><RefreshCw className="w-3 h-3" /> 할인 채우기</>
+                        )}
+                      </Button>
+                    )}
                     <Switch
                       checked={p.is_active}
                       onCheckedChange={(v) => void handleToggle(p.id, v)}
