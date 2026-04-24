@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, CheckCircle2, LayoutDashboard } from "lucide-react";
+import { ArrowRight, Sparkles, CheckCircle2, LayoutDashboard, LogIn } from "lucide-react";
 import { useState } from "react";
 import BetaSignupModal from "@/components/BetaSignupModal";
 import { useAuth } from "@/features/auth/useAuth";
@@ -81,23 +81,36 @@ export default function FinalCta() {
               </Button>
             </Link>
           ) : (
-            <Button
-              size="lg"
-              onClick={() => setBetaOpen(true)}
-              className="order-1 sm:order-2 rounded-full h-16 px-12 gap-2 w-full sm:w-auto justify-center text-base md:text-lg font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.02] transition-all"
-            >
-              베타 신청하기 <ArrowRight className="w-5 h-5" />
-            </Button>
+            <>
+              <Button
+                size="lg"
+                onClick={() => setBetaOpen(true)}
+                className="order-1 sm:order-2 rounded-full h-16 px-12 gap-2 w-full sm:w-auto justify-center text-base md:text-lg font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.02] transition-all"
+              >
+                베타 신청하기 <ArrowRight className="w-5 h-5" />
+              </Button>
+              <Link to="/auth?next=%2Fautoblog" className="w-full sm:w-auto order-2 sm:order-1">
+                <Button
+                  size="lg"
+                  variant="ghost"
+                  className="rounded-full h-16 px-10 w-full sm:w-auto justify-center text-base md:text-lg gap-2 hover:bg-card/60"
+                >
+                  <LogIn className="w-5 h-5" /> 베타 가입자 로그인
+                </Button>
+              </Link>
+            </>
           )}
-          <a href="#pricing" className="w-full sm:w-auto order-2 sm:order-1">
-            <Button
-              size="lg"
-              variant="ghost"
-              className="rounded-full h-16 px-10 w-full sm:w-auto justify-center text-base md:text-lg hover:bg-card/60"
-            >
-              요금제 보기
-            </Button>
-          </a>
+          {!loading && user && (
+            <a href="#pricing" className="w-full sm:w-auto order-2 sm:order-1">
+              <Button
+                size="lg"
+                variant="ghost"
+                className="rounded-full h-16 px-10 w-full sm:w-auto justify-center text-base md:text-lg hover:bg-card/60"
+              >
+                요금제 보기
+              </Button>
+            </a>
+          )}
         </div>
 
         {/* trust line */}
