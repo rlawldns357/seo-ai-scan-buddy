@@ -34,6 +34,8 @@ type PostLite = {
   created_at: string;
 };
 
+const STOCK_TARGET = 30;
+
 const AXIS_TONE: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
   AEO: "bg-accent/10 text-accent",
@@ -101,6 +103,7 @@ function ConnectedHome({ siteId }: { siteId: string }) {
 
   const queued = useMemo(() => posts.filter((p) => p.status === "scheduled"), [posts]);
   const published = useMemo(() => posts.filter((p) => p.status === "published"), [posts]);
+  const stockIdeas = useMemo(() => posts.filter((p) => p.status === "idea"), [posts]);
   const autoOn = settings?.enabled ?? false;
 
   const checklist = [
@@ -115,7 +118,14 @@ function ConnectedHome({ siteId }: { siteId: string }) {
       {/* 1) Next action — primary CTA */}
       <NextActionCard queuedCount={queued.length} />
 
-      {/* 2-3) 큐 미리보기 + 자동발행 상태 (2열) */}
+      {/* 2) 블로그 재고 현황 */}
+      <StockStatusCard
+        loading={loadingPosts}
+        stockCount={stockIdeas.length}
+        target={settings?.min_queue ?? STOCK_TARGET}
+      />
+
+      {/* 3-4) 큐 미리보기 + 자동발행 상태 (2열) */}
       <div className="grid gap-4 md:grid-cols-2">
         <QueuePreviewCard queued={queued} loading={loadingPosts} />
         <AutopublishCard
@@ -163,6 +173,78 @@ function NextActionCard({ queuedCount }: { queuedCount: number }) {
         </Link>
       </Button>
     </div>
+  );
+}
+
+function StockStatusCard({
+  loading,
+  stockCount,
+  target,
+}: {
+  loading: boolean;
+  stockCount: number;
+  target: number;
+}) {
+  const safeTarget = Math.max(target, 1);
+  const pct = Math.min(100, Math.round((stockCount / safeTarget) * 100));
+  const low = stockCount < safeTarget;
+  const empty = stockCount === 0;
+  const barTone = empty
+    ? "bg-destructive"
+    : low
+      ? "bg-score-warning"
+      : "bg-score-excellent";
+  const chipTone = empty
+    ? "bg-destructive/10 text-destructive"
+    : low
+      ? "bg-score-warning/10 text-score-warning"
+      : "bg-score-excellent/10 text-score-excellent";
+  const chipLabel = empty ? "재고 없음" : low ? "보충 필요" : "충분";
+
+  return (
+    <Card className="p-4 rounded-2xl border-border/60 bg-card">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Lightbulb className="w-4 h-4 text-score-warning" />
+          <h3 className="text-sm font-semibold text-foreground">블로그 재고</h3>
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${chipTone}`}>
+            {chipLabel}
+          </span>
+        </div>
+        <Link
+          to="/dashboard/recommendations"
+          className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-0.5"
+        >
+          재고 보기 <ArrowRight className="w-3 h-3" />
+        </Link>
+      </div>
+      {loading ? (
+        <div className="h-12 rounded-lg bg-muted/30 animate-pulse" />
+      ) : (
+        <>
+          <div className="flex items-end justify-between mb-2">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-bold text-foreground tabular-nums">{stockCount}</span>
+              <span className="text-xs text-muted-foreground tabular-nums">/ {safeTarget}편</span>
+            </div>
+            <span className="text-[11px] font-mono tabular-nums text-muted-foreground">{pct}%</span>
+          </div>
+          <div className="h-1.5 w-full rounded-full bg-muted/40 overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${barTone}`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+          <p className="text-[12px] text-muted-foreground mt-2 leading-relaxed">
+            {empty
+              ? "재고가 비었어요. 추천에서 주제를 채워주세요."
+              : low
+                ? `목표까지 ${safeTarget - stockCount}편 부족해요. 자동 보충이 켜져 있다면 곧 채워집니다.`
+                : "재고가 충분해요. 자동 발행이 안정적으로 돌 수 있어요."}
+          </p>
+        </>
+      )}
+    </Card>
   );
 }
 
