@@ -13,7 +13,9 @@ type EventName =
   | "consultation_submit_fail"
   | "result_email_submit"
   | "report_email_sent"
-  | "share_click";
+  | "share_click"
+  | "autoblog_beta_signup"
+  | "autoblog_beta_modal_open";
 
 let sessionId: string | null = null;
 
