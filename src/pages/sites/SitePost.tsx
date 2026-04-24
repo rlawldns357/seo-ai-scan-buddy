@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
+import { Flame, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import JsonLd from "@/components/JsonLd";
 import { renderMarkdown } from "@/lib/markdown";
+import { calcDiscountPercent, formatSaleCountdown } from "@/lib/productPricing";
 
 type Site = { id: string; title: string; site_slug: string };
 type FaqItem = { q: string; a: string };
@@ -14,6 +16,9 @@ type ProductLink = {
   description: string | null;
   price: string | null;
   image_url: string | null;
+  compare_at_price?: string | null;
+  sale_label?: string | null;
+  sale_ends_at?: string | null;
   matched_keywords?: string[];
 };
 type Post = {
