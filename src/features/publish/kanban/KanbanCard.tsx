@@ -10,6 +10,7 @@ import {
   getScheduleStatus,
 } from "./scheduleUtils";
 import ScheduleModal from "./ScheduleModal";
+import { cn } from "@/lib/utils";
 
 type Props = {
   post: KanbanPost;
