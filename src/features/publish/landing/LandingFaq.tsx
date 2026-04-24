@@ -5,8 +5,9 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import { HelpCircle, MessageCircle, ArrowRight } from "lucide-react";
+import BetaSignupModal from "@/components/BetaSignupModal";
 
 const FAQS = [
   {
@@ -32,6 +33,7 @@ const FAQS = [
 ];
 
 export default function LandingFaq() {
+  const [betaOpen, setBetaOpen] = useState(false);
   return (
     <section
       id="faq"
@@ -99,17 +101,17 @@ export default function LandingFaq() {
             </p>
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <Link to="/auth?next=/dashboard" className="w-full sm:w-auto">
-              <Button
-                size="sm"
-                className="rounded-full h-10 px-5 gap-1.5 w-full sm:w-auto"
-              >
-                페이지 만들기 <ArrowRight className="w-3.5 h-3.5" />
-              </Button>
-            </Link>
+            <Button
+              size="sm"
+              onClick={() => setBetaOpen(true)}
+              className="rounded-full h-10 px-5 gap-1.5 w-full sm:w-auto"
+            >
+              베타 신청하기 <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
           </div>
         </div>
       </div>
+      <BetaSignupModal open={betaOpen} onClose={() => setBetaOpen(false)} />
     </section>
   );
 }

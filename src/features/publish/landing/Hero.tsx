@@ -2,9 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, FileText, Sparkles, Search, MessageSquareQuote, Quote, LayoutDashboard, LogIn } from "lucide-react";
 import { useAuth } from "@/features/auth/useAuth";
+import { useState } from "react";
+import BetaSignupModal from "@/components/BetaSignupModal";
 
 export default function Hero() {
   const { user, loading } = useAuth();
+  const [betaOpen, setBetaOpen] = useState(false);
   return (
     <section className="py-12 md:py-32 px-4 md:px-6">
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 md:gap-12 items-center">
@@ -58,11 +61,13 @@ export default function Hero() {
               </>
             ) : (
               <>
-                <Link to="/auth?next=%2Fautoblog">
-                  <Button size="lg" className="rounded-full h-12 px-6 gap-2">
-                    페이지 만들기 <ArrowRight className="w-4 h-4" />
-                  </Button>
-                </Link>
+                <Button
+                  size="lg"
+                  className="rounded-full h-12 px-6 gap-2"
+                  onClick={() => setBetaOpen(true)}
+                >
+                  베타 신청하기 <ArrowRight className="w-4 h-4" />
+                </Button>
                 <Link to="/auth?next=%2Fautoblog">
                   <Button size="lg" variant="outline" className="rounded-full h-12 px-6 gap-2">
                     <LogIn className="w-4 h-4" /> 베타 가입자 로그인
@@ -103,6 +108,7 @@ export default function Hero() {
           </div>
         </div>
       </div>
+      <BetaSignupModal open={betaOpen} onClose={() => setBetaOpen(false)} />
     </section>
   );
 }
