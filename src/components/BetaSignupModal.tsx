@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles, CheckCircle2, X, ArrowRight, Wand2, Send, BarChart3 } from "lucide-react";
+import { Sparkles, CheckCircle2, ArrowRight, Wand2, Send, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -88,14 +88,6 @@ export default function BetaSignupModal({ open, onClose }: BetaSignupModalProps)
       <DialogContent className="max-w-md p-0 overflow-hidden gap-0 border-0 bg-card max-h-[92vh] overflow-y-auto">
         {/* Header — LIVE 모집 + 자동화 정체성 */}
         <div className="relative px-6 pt-6 pb-5 bg-gradient-to-b from-primary/[0.07] via-primary/[0.03] to-transparent">
-          <button
-            onClick={onClose}
-            className="absolute right-3 top-3 w-8 h-8 rounded-full bg-foreground/5 hover:bg-foreground/10 inline-flex items-center justify-center transition-colors z-10"
-            aria-label="닫기"
-          >
-            <X className="w-4 h-4 text-foreground" />
-          </button>
-
           {/* LIVE · 모집중 */}
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-destructive/10 text-destructive text-[10px] font-extrabold tracking-[0.18em] uppercase ring-1 ring-destructive/20">
