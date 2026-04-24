@@ -1,6 +1,6 @@
 import { useEffect, useState, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X } from "lucide-react";
+import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -244,6 +244,41 @@ function ProductForm({
   const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
   const [keywordsText, setKeywordsText] = useState((initial?.keywords ?? []).join(", "));
   const [saving, setSaving] = useState(false);
+  const [autofilling, setAutofilling] = useState(false);
+
+  const handleAutofill = async () => {
+    const target = url.trim();
+    if (!target || !/^https?:\/\//i.test(target)) {
+      toast.error("먼저 제품 URL을 입력해주세요 (https://...)");
+      return;
+    }
+    setAutofilling(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-product-info", {
+        body: { url: target },
+      });
+      if (error) throw error;
+      const info = (data as any)?.data ?? {};
+      let filled = 0;
+      if (info.title && !title.trim()) { setTitle(info.title); filled++; }
+      if (info.description && !description.trim()) { setDescription(info.description); filled++; }
+      if (info.price && !price.trim()) { setPrice(info.price); filled++; }
+      if (info.image_url && !imageUrl.trim()) { setImageUrl(info.image_url); filled++; }
+      if (Array.isArray(info.keywords) && info.keywords.length > 0 && !keywordsText.trim()) {
+        setKeywordsText(info.keywords.join(", "));
+        filled++;
+      }
+      if (filled === 0) {
+        toast.info("이미 채워진 항목이 있어 덮어쓰지 않았어요. 빈 칸을 비우고 다시 시도해보세요.");
+      } else {
+        toast.success(`${filled}개 항목을 자동으로 채웠어요`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message ?? "자동 채우기에 실패했어요");
+    } finally {
+      setAutofilling(false);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -312,14 +347,34 @@ function ProductForm({
           </div>
           <div className="sm:col-span-2">
             <Label htmlFor="p-url" className="text-xs">제품 URL *</Label>
-            <Input
-              id="p-url"
-              type="url"
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="https://"
-              required
-            />
+            <div className="flex gap-2">
+              <Input
+                id="p-url"
+                type="url"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="https://"
+                required
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="rounded-full shrink-0 gap-1"
+                onClick={() => void handleAutofill()}
+                disabled={autofilling || !url.trim()}
+              >
+                {autofilling ? (
+                  <><Loader2 className="w-3.5 h-3.5 animate-spin" /> 분석 중…</>
+                ) : (
+                  <><Sparkles className="w-3.5 h-3.5" /> 자동 채우기</>
+                )}
+              </Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground mt-1">
+              URL을 붙여넣고 ✨ 버튼을 누르면 제품명·설명·가격·이미지·키워드를 AI가 자동으로 채워줘요.
+            </p>
           </div>
           <div>
             <Label htmlFor="p-price" className="text-xs">가격 (선택)</Label>
