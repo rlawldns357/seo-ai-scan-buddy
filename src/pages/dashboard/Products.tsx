@@ -1,6 +1,6 @@
 import { useEffect, useState, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame } from "lucide-react";
+import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -37,6 +37,69 @@ export default function DashboardProducts() {
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
   const [prefillUrl, setPrefillUrl] = useState<string | null>(null);
   const [quickUrl, setQuickUrl] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const selectAll = () => setSelectedIds(new Set(items.map((i) => i.id)));
+
+  /** 긴 URL을 도메인 + 마지막 경로 한 조각으로 축약 */
+  const shortenUrl = (raw: string): string => {
+    try {
+      const u = new URL(raw);
+      const segs = u.pathname.split("/").filter(Boolean);
+      if (segs.length === 0) return u.host;
+      const last = decodeURIComponent(segs[segs.length - 1]);
+      const trimmed = last.length > 28 ? last.slice(0, 26) + "…" : last;
+      return segs.length > 1 ? `${u.host}/…/${trimmed}` : `${u.host}/${trimmed}`;
+    } catch {
+      return raw.length > 50 ? raw.slice(0, 48) + "…" : raw;
+    }
+  };
+
+  const handleBulkToggle = async (next: boolean) => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    const ids = Array.from(selectedIds);
+    const { error } = await (supabase as any)
+      .from("site_products")
+      .update({ is_active: next })
+      .in("id", ids);
+    setBulkBusy(false);
+    if (error) {
+      toast.error("일괄 변경에 실패했어요");
+      return;
+    }
+    setItems((prev) => prev.map((p) => (selectedIds.has(p.id) ? { ...p, is_active: next } : p)));
+    toast.success(`${ids.length}개 제품을 ${next ? "노출" : "숨김"} 처리했어요`);
+    clearSelection();
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`선택한 ${selectedIds.size}개 제품을 삭제할까요? 되돌릴 수 없어요.`)) return;
+    setBulkBusy(true);
+    const ids = Array.from(selectedIds);
+    const { error } = await (supabase as any).from("site_products").delete().in("id", ids);
+    setBulkBusy(false);
+    if (error) {
+      toast.error("일괄 삭제에 실패했어요");
+      return;
+    }
+    setItems((prev) => prev.filter((p) => !selectedIds.has(p.id)));
+    toast.success(`${ids.length}개 제품을 삭제했어요`);
+    clearSelection();
+  };
 
   const load = async (siteId: string) => {
     setLoading(true);
