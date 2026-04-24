@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { CalendarClock, Clock, Sparkles } from "lucide-react";
+import { CalendarClock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ScheduleItem = { id: string; title: string; iso: string };
@@ -19,235 +18,40 @@ type Props = {
   initialIso: string | null;
   onClose: () => void;
   onSave: (iso: string) => Promise<void> | void;
-  /** Other already-scheduled posts in this site (for 7-day timeline). */
   existingSchedules?: ScheduleItem[];
-  /** Exclude this post id from timeline (it's the one being scheduled). */
   currentPostId?: string;
 };
 
 const WEEKDAY = ["일", "월", "화", "수", "목", "금", "토"];
+const TIME_PRESETS = ["09:00", "12:00", "15:00", "18:00", "20:00", "22:00"];
 
-function pad(n: number) {
-  return String(n).padStart(2, "0");
+const pad = (n: number) => String(n).padStart(2, "0");
+
+function toDateInputValue(d: Date) {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-function combineDateTime(date: Date | undefined, time: string): Date | null {
-  if (!date || !time) return null;
-  const [h, m] = time.split(":").map(Number);
-  if (Number.isNaN(h) || Number.isNaN(m)) return null;
-  const d = new Date(date);
-  d.setHours(h, m, 0, 0);
-  return d;
+function combine(dateStr: string, time: string): Date | null {
+  if (!dateStr || !time) return null;
+  const [y, mo, d] = dateStr.split("-").map(Number);
+  const [h, mi] = time.split(":").map(Number);
+  if ([y, mo, d, h, mi].some((n) => Number.isNaN(n))) return null;
+  return new Date(y, mo - 1, d, h, mi, 0, 0);
 }
 
-function sameYMD(a: Date, b: Date) {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
+function formatPreview(d: Date) {
+  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} (${WEEKDAY[d.getDay()]}) ${pad(d.getHours())}:${pad(d.getMinutes())} KST`;
 }
 
-function formatDateLabel(d: Date, now: Date): string {
-  const tomorrow = new Date(now);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  if (sameYMD(d, now)) return `오늘 (${WEEKDAY[d.getDay()]})`;
-  if (sameYMD(d, tomorrow)) return `내일 (${WEEKDAY[d.getDay()]})`;
-  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${WEEKDAY[d.getDay()]})`;
-}
-
-function formatPreview(d: Date): string {
-  return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${WEEKDAY[d.getDay()]} ${pad(d.getHours())}:${pad(d.getMinutes())} KST`;
-}
-
-function formatRelative(d: Date, now: number): string {
+function formatRelative(d: Date, now: number) {
   const diff = d.getTime() - now;
   if (diff <= 0) return "이미 지난 시각";
   const mins = Math.round(diff / 60000);
-  if (mins < 60) return `약 ${mins}분 후`;
+  if (mins < 60) return `${mins}분 후`;
   const hours = Math.round(mins / 60);
-  if (hours < 24) return `약 ${hours}시간 후`;
-  const days = Math.round(hours / 24);
-  return `약 ${days}일 후`;
+  if (hours < 24) return `${hours}시간 후`;
+  return `${Math.round(hours / 24)}일 후`;
 }
-
-/** 추천 시간 2개 (선택한 날짜 기준):
- *  1) 오전 9시 — 출근/오전 검색 피크
- *  2) 오후 8시 — 저녁 모바일 트래픽 피크
- */
-const TIME_RECOMMENDATIONS = [
-  { key: "morning", time: "09:00", label: "오전 9시", sublabel: "출근·오전 검색 피크" },
-  { key: "evening", time: "20:00", label: "오후 8시", sublabel: "저녁 모바일 피크" },
-];
-
-const TIME_PRESETS = ["09:00", "12:00", "15:00", "18:00", "20:00", "22:00"];
-
-/** 7일 발행 타임라인 — 각 날짜 column에 시간순 도트 표시 */
-function ScheduleTimeline({
-  schedules,
-  selectedDate,
-  selectedIso,
-  onPickDay,
-}: {
-  schedules: ScheduleItem[];
-  selectedDate?: Date;
-  selectedIso: string | null;
-  onPickDay: (d: Date) => void;
-}) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const days = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(today);
-    d.setDate(d.getDate() + i);
-    return d;
-  });
-
-  const byDay = new Map<string, { iso: string; title: string }[]>();
-  for (const s of schedules) {
-    const d = new Date(s.iso);
-    if (Number.isNaN(d.getTime())) continue;
-    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    const arr = byDay.get(key) ?? [];
-    arr.push({ iso: s.iso, title: s.title });
-    byDay.set(key, arr);
-  }
-
-  const selectedKey = selectedDate
-    ? `${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}`
-    : null;
-
-  const selectedTime = selectedIso ? new Date(selectedIso) : null;
-
-  return (
-    <div className="px-5 pt-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-          <CalendarClock className="w-3 h-3 text-primary" />
-          앞으로 7일 발행 일정
-        </div>
-        <div className="text-[10px] text-muted-foreground">
-          {schedules.length === 0 ? "예약된 글 없음" : `예약 ${schedules.length}건`}
-        </div>
-      </div>
-      <div className="rounded-lg border border-border/60 bg-muted/10 p-2">
-        <div className="grid grid-cols-7 gap-1">
-          {days.map((d, idx) => {
-            const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-            const items = (byDay.get(key) ?? []).sort(
-              (a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime(),
-            );
-            const isSelected = selectedKey === key;
-            const isToday = idx === 0;
-            const showSelectedDot = isSelected && selectedTime;
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onPickDay(d)}
-                className={cn(
-                  "rounded-md py-1.5 px-1 text-center transition-all border",
-                  isSelected
-                    ? "border-primary bg-primary/10"
-                    : "border-transparent hover:bg-background hover:border-border/60",
-                )}
-                title={
-                  items.length
-                    ? items.map((i) => `${pad(new Date(i.iso).getHours())}:${pad(new Date(i.iso).getMinutes())} · ${i.title}`).join("\n")
-                    : "예약 없음"
-                }
-              >
-                <div
-                  className={cn(
-                    "text-[10px] font-medium",
-                    isSelected ? "text-primary" : "text-muted-foreground",
-                  )}
-                >
-                  {WEEKDAY[d.getDay()]}
-                </div>
-                <div
-                  className={cn(
-                    "text-sm font-semibold mt-0.5",
-                    isSelected ? "text-primary" : isToday ? "text-foreground" : "text-foreground/80",
-                  )}
-                >
-                  {d.getDate()}
-                </div>
-                {/* 도트 영역 — 최대 4개 + N */}
-                <div className="flex items-center justify-center gap-0.5 mt-1 min-h-[8px]">
-                  {items.slice(0, 4).map((i) => (
-                    <span
-                      key={i.iso}
-                      className="w-1 h-1 rounded-full bg-primary/60"
-                    />
-                  ))}
-                  {items.length > 4 && (
-                    <span className="text-[8px] text-muted-foreground ml-0.5">
-                      +{items.length - 4}
-                    </span>
-                  )}
-                  {showSelectedDot && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-score-warning ring-2 ring-score-warning/20 ml-0.5" />
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-        {/* 선택일 상세 리스트 */}
-        {selectedKey && (
-          <div className="mt-2 pt-2 border-t border-border/60">
-            <div className="text-[10px] text-muted-foreground mb-1">
-              {selectedDate && `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 (${WEEKDAY[selectedDate.getDay()]}) 일정`}
-            </div>
-            <div className="flex flex-col gap-1 max-h-24 overflow-y-auto">
-              {(byDay.get(selectedKey) ?? [])
-                .sort((a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime())
-                .map((i) => {
-                  const d = new Date(i.iso);
-                  return (
-                    <div
-                      key={i.iso}
-                      className="flex items-center gap-2 text-[11px] text-foreground/80"
-                    >
-                      <span className="font-mono text-primary tabular-nums">
-                        {pad(d.getHours())}:{pad(d.getMinutes())}
-                      </span>
-                      <span className="truncate flex-1">{i.title}</span>
-                    </div>
-                  );
-                })}
-              {showSelectedDotPreview(byDay.get(selectedKey), selectedTime) && (
-                <div className="flex items-center gap-2 text-[11px]">
-                  <span className="font-mono text-score-warning tabular-nums">
-                    {selectedTime && `${pad(selectedTime.getHours())}:${pad(selectedTime.getMinutes())}`}
-                  </span>
-                  <span className="truncate flex-1 text-score-warning font-medium">
-                    이 글 (예약 예정)
-                  </span>
-                </div>
-              )}
-              {(byDay.get(selectedKey) ?? []).length === 0 && !selectedTime && (
-                <div className="text-[11px] text-muted-foreground">예약 없음</div>
-              )}
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function showSelectedDotPreview(
-  existing: { iso: string; title: string }[] | undefined,
-  selectedTime: Date | null,
-): boolean {
-  if (!selectedTime) return false;
-  if (!existing) return true;
-  // Always show preview row for the post being edited.
-  return true;
-}
-
 
 export default function ScheduleModal({
   open,
@@ -257,8 +61,8 @@ export default function ScheduleModal({
   existingSchedules = [],
   currentPostId,
 }: Props) {
-  const [date, setDate] = useState<Date | undefined>(undefined);
-  const [time, setTime] = useState<string>("09:00");
+  const [dateStr, setDateStr] = useState("");
+  const [time, setTime] = useState("09:00");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -266,177 +70,129 @@ export default function ScheduleModal({
     if (initialIso) {
       const d = new Date(initialIso);
       if (!Number.isNaN(d.getTime())) {
-        setDate(d);
+        setDateStr(toDateInputValue(d));
         setTime(`${pad(d.getHours())}:${pad(d.getMinutes())}`);
         return;
       }
     }
-    // 기본값: 내일 오전 9시
     const def = new Date();
     def.setDate(def.getDate() + 1);
-    def.setHours(9, 0, 0, 0);
-    setDate(def);
+    setDateStr(toDateInputValue(def));
     setTime("09:00");
   }, [open, initialIso]);
 
   const now = Date.now();
-  const combined = combineDateTime(date, time);
+  const combined = combine(dateStr, time);
   const isPast = combined ? combined.getTime() <= now : false;
   const canSave = !!combined && !isPast && !saving;
+  const minDate = toDateInputValue(new Date());
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const dateLabel = date ? formatDateLabel(date, new Date()) : "날짜 미선택";
+  // 같은 날 다른 예약 (충돌 안내용)
+  const sameDayOthers = useMemo(() => {
+    if (!dateStr) return [];
+    return existingSchedules
+      .filter((s) => s.id !== currentPostId)
+      .filter((s) => {
+        const d = new Date(s.iso);
+        return !Number.isNaN(d.getTime()) && toDateInputValue(d) === dateStr;
+      })
+      .sort((a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime());
+  }, [existingSchedules, currentPostId, dateStr]);
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && !saving && onClose()}>
-      <DialogContent className="sm:max-w-[560px] p-0 overflow-hidden">
-        <DialogHeader className="px-5 pt-5 pb-3 border-b border-border/60">
+      <DialogContent className="sm:max-w-[420px]">
+        <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-base">
             <CalendarClock className="w-4 h-4 text-primary" />
-            예약 발행 설정
+            예약 발행
           </DialogTitle>
           <DialogDescription className="text-xs">
-            지정한 시각이 되면 자동으로 발행됩니다. 기본 시간대: KST
+            지정한 시각(KST)에 자동 발행됩니다.
           </DialogDescription>
         </DialogHeader>
 
-        {/* 7일 발행 타임라인 미리보기 */}
-        <ScheduleTimeline
-          schedules={existingSchedules.filter((s) => s.id !== currentPostId)}
-          selectedDate={date}
-          selectedIso={combined && !isPast ? combined.toISOString() : null}
-          onPickDay={(d) => setDate(d)}
-        />
-
-        {/* STEP 1 — 날짜 선택 */}
-        <div className="px-5 pt-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] font-semibold text-muted-foreground">
-              1. 날짜 선택
-            </div>
-            <div className="text-[11px] font-medium text-foreground">
-              {dateLabel}
-            </div>
-          </div>
-          <div className="rounded-lg border border-border/60 bg-muted/20 flex justify-center">
-            <Calendar
-              mode="single"
-              selected={date}
-              onSelect={(d) => d && setDate(d)}
-              disabled={(d) => d < today}
-              initialFocus
+        <div className="space-y-4 py-2">
+          {/* 날짜 */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">날짜</label>
+            <input
+              type="date"
+              value={dateStr}
+              min={minDate}
+              onChange={(e) => setDateStr(e.target.value)}
+              className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm"
             />
           </div>
-        </div>
 
-        {/* STEP 2 — 시간 선택 */}
-        <div className="px-5 pt-5 pb-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-              <Clock className="w-3 h-3" /> 2. 시간 선택
-            </div>
-            <div className="text-[11px] font-medium text-foreground">{time}</div>
-          </div>
-
-          {/* 추천 시간 2개 */}
-          <div className="grid grid-cols-2 gap-2 mb-2">
-            {TIME_RECOMMENDATIONS.map((r) => {
-              const active = time === r.time;
-              return (
+          {/* 시간 */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-muted-foreground">시간</label>
+            <div className="grid grid-cols-6 gap-1.5">
+              {TIME_PRESETS.map((t) => (
                 <button
-                  key={r.key}
+                  key={t}
                   type="button"
-                  onClick={() => setTime(r.time)}
+                  onClick={() => setTime(t)}
                   className={cn(
-                    "rounded-lg border p-2.5 text-left transition-all",
-                    active
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "border-border/60 bg-background hover:bg-muted hover:border-border"
+                    "h-8 rounded-md text-xs border transition-colors",
+                    time === t
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background hover:bg-muted border-border/60",
                   )}
                 >
-                  <div className="flex items-center gap-1 text-sm font-semibold text-foreground">
-                    <Sparkles className="w-3 h-3 text-primary" />
-                    {r.label}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    {r.sublabel}
-                  </div>
+                  {t}
                 </button>
-              );
-            })}
+              ))}
+            </div>
+            <input
+              type="time"
+              value={time}
+              onChange={(e) => setTime(e.target.value)}
+              className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
+            />
           </div>
 
-          <div className="grid grid-cols-6 gap-1.5 mb-2">
-            {TIME_PRESETS.map((t) => (
-              <button
-                key={t}
-                type="button"
-                onClick={() => setTime(t)}
-                className={cn(
-                  "h-9 rounded-md text-xs border transition-colors",
-                  time === t
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background hover:bg-muted border-border/60"
-                )}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-          <input
-            type="time"
-            value={time}
-            onChange={(e) => setTime(e.target.value)}
-            className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-          />
-        </div>
-
-        {/* 미리보기 */}
-        <div className="px-5 pb-4">
+          {/* 미리보기 */}
           <div
             className={cn(
-              "rounded-lg border p-3 text-sm",
+              "rounded-md border px-3 py-2 text-sm flex items-center justify-between gap-2",
               isPast
                 ? "border-destructive/40 bg-destructive/5"
                 : combined
-                ? "border-primary/30 bg-primary/5"
-                : "border-border/60 bg-muted/20"
+                ? "border-border bg-muted/30"
+                : "border-border/60 bg-muted/20",
             )}
           >
             {combined ? (
               <>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-foreground">
-                    {formatPreview(combined)}
-                  </span>
-                  <span
-                    className={cn(
-                      "text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
-                      isPast
-                        ? "bg-destructive/15 text-destructive"
-                        : "bg-primary/15 text-primary"
-                    )}
-                  >
-                    {formatRelative(combined, now)}
-                  </span>
-                </div>
-                {isPast && (
-                  <p className="text-[11px] text-destructive mt-1">
-                    현재보다 이후 시간만 선택할 수 있어요
-                  </p>
-                )}
+                <span className="font-medium text-foreground">{formatPreview(combined)}</span>
+                <span
+                  className={cn(
+                    "text-[11px] whitespace-nowrap",
+                    isPast ? "text-destructive font-medium" : "text-muted-foreground",
+                  )}
+                >
+                  {formatRelative(combined, now)}
+                </span>
               </>
             ) : (
-              <span className="text-muted-foreground text-xs">
-                날짜와 시간을 선택해주세요
-              </span>
+              <span className="text-muted-foreground text-xs">날짜와 시간을 선택하세요</span>
             )}
           </div>
+
+          {/* 같은 날 다른 예약 (있을 때만) */}
+          {sameDayOthers.length > 0 && (
+            <div className="text-[11px] text-muted-foreground">
+              <span className="font-medium text-foreground">같은 날 예약 {sameDayOthers.length}건:</span>{" "}
+              {sameDayOthers
+                .map((s) => `${pad(new Date(s.iso).getHours())}:${pad(new Date(s.iso).getMinutes())}`)
+                .join(", ")}
+            </div>
+          )}
         </div>
 
-        <DialogFooter className="px-5 py-3 border-t border-border/60 bg-muted/20 flex-row justify-end gap-2 sm:gap-2">
+        <DialogFooter className="flex-row justify-end gap-2 sm:gap-2">
           <Button
             type="button"
             variant="ghost"
