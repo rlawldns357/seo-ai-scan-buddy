@@ -104,9 +104,18 @@ export default function AddSiteModal({
                 <li>통합 리포트 / 도메인 연결</li>
               </ul>
             </div>
-            <DialogFooter className="sm:justify-center">
-              <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-full">
-                알겠어요
+            <DialogFooter className="sm:justify-between gap-2">
+              <Button variant="ghost" onClick={() => onOpenChange(false)} className="rounded-full">
+                나중에
+              </Button>
+              <Button
+                onClick={() => {
+                  onOpenChange(false);
+                  window.location.href = "/autoblog#pricing";
+                }}
+                className="rounded-full"
+              >
+                <Sparkles className="w-3.5 h-3.5" /> Pro 플랜 알림 받기
               </Button>
             </DialogFooter>
           </>

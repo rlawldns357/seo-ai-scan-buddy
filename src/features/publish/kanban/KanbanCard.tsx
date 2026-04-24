@@ -47,7 +47,18 @@ export default function KanbanCard({ post, busy, onOpen, onAdvance, onRollDice, 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
               {post.source_axis && (
-                <span className="text-[9px] font-bold text-muted-foreground tracking-wider">
+                <span
+                  className="text-[9px] font-bold text-muted-foreground tracking-wider cursor-help"
+                  title={
+                    post.source_axis === "SEO"
+                      ? "SEO — 검색 엔진 최적화 콘텐츠"
+                      : post.source_axis === "AEO"
+                      ? "AEO — AI 답변 엔진 최적화 콘텐츠"
+                      : post.source_axis === "GEO"
+                      ? "GEO — 생성형 AI 인용 최적화 콘텐츠"
+                      : post.source_axis
+                  }
+                >
                   {post.source_axis}
                 </span>
               )}

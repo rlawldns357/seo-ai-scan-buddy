@@ -68,7 +68,17 @@ export default function Reports() {
       />
       <div className="p-3 sm:p-5">
         {chartData.length === 0 ? (
-          <p className="text-xs text-muted-foreground text-center py-12">분석 기록이 없습니다. 메인에서 사이트를 분석해보세요.</p>
+          <div className="flex flex-col items-center gap-3 py-12">
+            <p className="text-xs text-muted-foreground text-center">
+              아직 분석 기록이 없어요. 무료 진단을 실행하면 점수 추이가 여기에 쌓입니다.
+            </p>
+            <button
+              onClick={() => navigate("/")}
+              className="inline-flex items-center gap-1.5 rounded-full bg-foreground text-background text-xs font-semibold px-4 py-2 hover:bg-foreground/90 transition"
+            >
+              무료 진단 실행하러 가기 →
+            </button>
+          </div>
         ) : (
           <div className="w-full h-64">
             <ResponsiveContainer>
