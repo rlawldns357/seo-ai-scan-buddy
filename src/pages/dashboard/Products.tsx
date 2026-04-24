@@ -1,6 +1,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame, CheckSquare, Square } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame, CheckSquare, Square, Copy, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,7 +10,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
+import { useUserTier } from "@/features/auth/useUserTier";
 import PageHeader from "@/features/publish/ui/PageHeader";
+import LockedFeature from "@/features/publish/LockedFeature";
+import CopyCatalogModal from "@/features/publish/CopyCatalogModal";
 import { cleanProductUrl } from "@/lib/cleanProductUrl";
 
 type Product = {
