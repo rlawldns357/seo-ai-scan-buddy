@@ -239,19 +239,31 @@ export default function Recommendations() {
               />
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              className="rounded-full h-9 px-3 gap-1.5"
+              disabled={topupLoading || isFull}
+              onClick={() => topup(stockCount + 1)}
+              title={isFull ? "재고가 충분해요" : "1개만 받기"}
+            >
+              {topupLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+              <span className="text-xs font-semibold">+1</span>
+            </Button>
             <Button
               type="button"
               size="sm"
               variant="default"
               className="rounded-full h-9 px-3 gap-1.5"
               disabled={topupLoading || isFull}
-              onClick={() => topup(stockCount + 10)}
+              onClick={() => topup(stockCount + 5)}
               title={isFull ? "재고가 충분해요" : undefined}
             >
               {topupLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               <span className="text-xs font-semibold">
-                {isFull ? "재고 충분" : "블로그 10개 더 받기"}
+                {isFull ? "재고 충분" : "블로그 5개 더 받기"}
               </span>
             </Button>
           </div>
@@ -307,7 +319,7 @@ export default function Recommendations() {
           </p>
           <p className="text-[12px] text-muted-foreground mt-1 break-keep">
             {ideas.length === 0
-              ? "위 ‘블로그 10개 더 받기’를 눌러 재고를 채워보세요."
+              ? "위 ‘블로그 5개 더 받기’를 눌러 재고를 채워보세요."
               : "키워드를 비우거나 더 받아보세요."}
           </p>
         </Card>
