@@ -414,17 +414,17 @@ export default function KanbanBoard() {
             </Button>
           )}
           <Button size="sm" className="rounded-full h-8 text-xs" onClick={createDraft}>
-            <Plus className="h-3 w-3" /> 새 글
+            <Plus className="h-3 w-3" /> AI로 새 글 추가
           </Button>
         </div>
       </div>
 
-      {/* Mobile tabs grid: 3 cols (draft / scheduled / published) */}
+      {/* Mobile tabs: 2 cols (scheduled / published) */}
 
       {isMobile ? (
         // Mobile: tabs (no drag UX on small screens)
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as KanbanStatus)}>
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-2 w-full">
             {COLUMN_ORDER.map((s) => (
               <TabsTrigger key={s} value={s} className="text-[11px]">
                 {COLUMN_META[s].emoji} {grouped[s].length}
@@ -446,7 +446,7 @@ export default function KanbanBoard() {
         </Tabs>
       ) : (
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {COLUMN_ORDER.map((s) => (
               <KanbanColumn
                 key={s}
