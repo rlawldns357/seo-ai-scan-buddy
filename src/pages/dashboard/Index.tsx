@@ -367,14 +367,14 @@ export default function DashboardIndex() {
               </h3>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {queueCounts.queued.length > 0
-                  ? "워크플로우 섹션에서 카드를 드래그해 발행할 수 있어요."
+                  ? "자동 발행 섹션에서 카드를 드래그해 발행할 수 있어요."
                   : "추천 주제에서 고르거나 직접 주제를 입력해 시작하세요."}
               </p>
             </div>
             <Button asChild className="relative rounded-full shrink-0">
               <Link to={queueCounts.queued.length > 0 ? "/dashboard/workflow" : "/dashboard/recommendations"}>
                 {queueCounts.queued.length > 0 ? (
-                  <><Send className="w-4 h-4" /> 워크플로우 열기</>
+                  <><Send className="w-4 h-4" /> 자동 발행 열기</>
                 ) : (
                   <><Plus className="w-4 h-4" /> 추천 보기</>
                 )}

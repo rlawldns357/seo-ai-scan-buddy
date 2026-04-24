@@ -163,7 +163,7 @@ export default function Recommendations() {
     if (!site) {
       toast({
         title: "사이트를 먼저 선택해주세요",
-        description: "블로그 허브가 준비되면 워크플로우로 보낼 수 있어요.",
+        description: "블로그 허브가 준비되면 자동 발행로 보낼 수 있어요.",
         variant: "destructive",
       });
       return;
@@ -324,7 +324,7 @@ export default function Recommendations() {
                       onClick={() => sendToWorkflow(idea)}
                     >
                       {isQueueing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                      {isQueued ? "추가됨" : "워크플로우로"}
+                      {isQueued ? "추가됨" : "자동 발행로"}
                     </Button>
                   </div>
                 </div>
