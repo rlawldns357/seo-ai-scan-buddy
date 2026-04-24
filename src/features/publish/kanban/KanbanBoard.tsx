@@ -133,7 +133,7 @@ export default function KanbanBoard() {
           description: "다시 로그인 후 시도해주세요.",
           variant: "destructive",
         });
-        navigate(`/auth?next=${encodeURIComponent("/dashboard#workflow")}`);
+        navigate(`/auth?next=${encodeURIComponent("/dashboard/workflow")}`);
         return;
       }
       setBusyId(post.id);
@@ -300,9 +300,9 @@ export default function KanbanBoard() {
     return (
       <LockedFeature
         title="워크플로우 보드"
-        description="로그인하면 추천부터 발행까지 한 화면에서 관리할 수 있어요."
+        description="로그인하면 추천부터 발행까지 운영 플로우를 관리할 수 있어요."
         ctaLabel="로그인"
-        onCta={() => navigate(`/auth?next=${encodeURIComponent("/dashboard#workflow")}`)}
+        onCta={() => navigate(`/auth?next=${encodeURIComponent("/dashboard/workflow")}`)}
       />
     );
   }

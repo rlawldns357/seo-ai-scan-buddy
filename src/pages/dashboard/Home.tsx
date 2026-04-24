@@ -113,10 +113,10 @@ function ConnectedHome({ siteId }: { siteId: string }) {
     {
       done: queued.length > 0 || published.length > 0,
       label: "첫 추천을 큐에 추가",
-      to: "/dashboard#recommendations",
+      to: "/dashboard/recommendations",
     },
-    { done: published.length > 0, label: "글 1건 발행", to: "/dashboard#workflow" },
-    { done: autoOn, label: "자동 발행 켜기", to: "/dashboard#workflow" },
+    { done: published.length > 0, label: "글 1건 발행", to: "/dashboard/workflow" },
+    { done: autoOn, label: "자동 발행 켜기", to: "/dashboard/workflow" },
   ];
   const allDone = checklist.every((c) => c.done);
 
@@ -162,12 +162,12 @@ function NextActionCard({ queuedCount }: { queuedCount: number }) {
       </div>
       <Button asChild size="sm" className="rounded-full shrink-0">
         {hasQueue ? (
-          <Link to="/dashboard#workflow">
+          <Link to="/dashboard/workflow">
             <Send className="w-4 h-4 mr-1.5" />
             자동 발행 열기
           </Link>
         ) : (
-          <Link to="/dashboard#recommendations">
+          <Link to="/dashboard/recommendations">
             <Plus className="w-4 h-4 mr-1.5" />
             추천 보기
           </Link>
@@ -213,7 +213,7 @@ function StockStatusCard({
           </span>
         </div>
         <Link
-          to="/dashboard#recommendations"
+          to="/dashboard/recommendations"
           className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
         >
           재고 보기 <ArrowRight className="w-3 h-3" />
@@ -264,7 +264,7 @@ function QueuePreviewCard({ queued, loading }: { queued: PostLite[]; loading: bo
           )}
         </div>
         <Link
-          to="/dashboard#workflow"
+          to="/dashboard/workflow"
           className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
         >
           전체 보기 <ArrowRight className="w-3 h-3" />
@@ -281,7 +281,7 @@ function QueuePreviewCard({ queued, loading }: { queued: PostLite[]; loading: bo
           icon={Sparkles}
           message="대기 중인 글이 없어요"
           ctaLabel="추천 보기"
-          to="/dashboard#recommendations"
+          to="/dashboard/recommendations"
         />
       ) : (
         <ul className="space-y-2">
@@ -341,7 +341,7 @@ function AutopublishCard({
           </span>
         </div>
         <Link
-          to="/dashboard#workflow"
+          to="/dashboard/workflow"
           className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
         >
           설정 <ArrowRight className="w-3 h-3" />

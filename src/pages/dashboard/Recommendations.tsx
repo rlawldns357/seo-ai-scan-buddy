@@ -152,7 +152,7 @@ export default function Recommendations() {
       return;
     }
     if (!user) {
-      const next = encodeURIComponent("/dashboard#recommendations");
+      const next = encodeURIComponent("/dashboard/recommendations");
       toast({
         title: "로그인이 필요한 작업입니다",
         description: "이 작업을 계속하려면 먼저 로그인하세요.",
