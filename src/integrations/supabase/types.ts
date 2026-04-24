@@ -857,6 +857,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_site_products: { Args: { _site_id: string }; Returns: number }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
