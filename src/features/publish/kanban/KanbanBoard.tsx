@@ -355,13 +355,9 @@ export default function KanbanBoard() {
     void performTransition(post, "published");
   };
 
-  const scheduledList = useMemo(
-    () =>
-      posts
-        .filter((p) => p.status === "scheduled" && p.published_at)
-        .map((p) => ({ id: p.id, title: p.title, iso: p.published_at as string })),
-    [posts],
-  );
+  const scheduledList = posts
+    .filter((p) => p.status === "scheduled" && p.published_at)
+    .map((p) => ({ id: p.id, title: p.title, iso: p.published_at as string }));
 
   const renderCard = (p: KanbanPost) => (
     <KanbanCard
