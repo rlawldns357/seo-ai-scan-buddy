@@ -94,11 +94,11 @@ const Index = () => {
 
           <form onSubmit={onSubmit} className="flex flex-col sm:flex-row gap-2 mb-3">
             <Input
-              type="text"
+              type="url"
               inputMode="url"
-              placeholder="example.com"
+              placeholder="https://example.com"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => setInput(e.target.value.replace(/\s+/g, ""))}
               disabled={loading}
               className="h-14 text-base flex-1 rounded-full px-5"
               aria-label="분석할 사이트 URL"
