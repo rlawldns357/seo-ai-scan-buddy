@@ -94,68 +94,80 @@ ${analysisSummary ? `분석 컨텍스트:\n${analysisSummary}` : ""}
 - 키워드(keywords): 본문 내 자연스러운 백링크 매칭에 사용할 핵심 단어 5~8개를 한국어로 추출 (중복·조사 제외)
 - 외부 출처(externalCitation): 본문에 실제 사용한 권위 외부 링크 1개 (url, anchor)`;
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt + authorityGuide },
-          { role: "user", content: user },
-        ],
-        temperature: 0.4,
-        tools: [{
-          type: "function",
-          function: {
-            name: "create_post",
-            description: "Create SEO/AEO/GEO optimized blog post with FAQ, keywords, and authority citation",
-            parameters: {
-              type: "object",
-              properties: {
-                title: { type: "string", description: "60자 이내, 주 키워드 포함 SEO 제목" },
-                slug: { type: "string", description: "url-friendly english slug, lowercase, hyphens" },
-                excerpt: { type: "string", description: "150자 이내 메타 설명형 요약" },
-                content: { type: "string", description: "마크다운 본문 (FAQ 섹션 + 권위 외부 링크 포함)" },
-                keywords: {
-                  type: "array",
-                  items: { type: "string" },
-                  description: "한국어 핵심 키워드 5~8개 (백링크 매칭용)",
-                },
-                faq: {
-                  type: "array",
-                  description: "FAQ 5개 (FAQPage JSON-LD용)",
-                  items: {
-                    type: "object",
-                    properties: {
-                      q: { type: "string" },
-                      a: { type: "string", description: "100~200자 직접 답변" },
-                    },
-                    required: ["q", "a"],
-                    additionalProperties: false,
-                  },
-                },
-                externalCitation: {
+    const requestBody = JSON.stringify({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: systemPrompt + authorityGuide },
+        { role: "user", content: user },
+      ],
+      temperature: 0.4,
+      tools: [{
+        type: "function",
+        function: {
+          name: "create_post",
+          description: "Create SEO/AEO/GEO optimized blog post with FAQ, keywords, and authority citation",
+          parameters: {
+            type: "object",
+            properties: {
+              title: { type: "string", description: "60자 이내, 주 키워드 포함 SEO 제목" },
+              slug: { type: "string", description: "url-friendly english slug, lowercase, hyphens" },
+              excerpt: { type: "string", description: "150자 이내 메타 설명형 요약" },
+              content: { type: "string", description: "마크다운 본문 (FAQ 섹션 + 권위 외부 링크 포함)" },
+              keywords: {
+                type: "array",
+                items: { type: "string" },
+                description: "한국어 핵심 키워드 5~8개 (백링크 매칭용)",
+              },
+              faq: {
+                type: "array",
+                description: "FAQ 5개 (FAQPage JSON-LD용)",
+                items: {
                   type: "object",
-                  description: "본문에 사용한 권위 외부 링크 1개",
                   properties: {
-                    url: { type: "string" },
-                    anchor: { type: "string", description: "본문에 표시한 앵커 텍스트" },
+                    q: { type: "string" },
+                    a: { type: "string", description: "100~200자 직접 답변" },
                   },
-                  required: ["url", "anchor"],
+                  required: ["q", "a"],
                   additionalProperties: false,
                 },
               },
-              required: ["title", "slug", "excerpt", "content", "keywords", "faq", "externalCitation"],
-              additionalProperties: false,
+              externalCitation: {
+                type: "object",
+                description: "본문에 사용한 권위 외부 링크 1개",
+                properties: {
+                  url: { type: "string" },
+                  anchor: { type: "string", description: "본문에 표시한 앵커 텍스트" },
+                },
+                required: ["url", "anchor"],
+                additionalProperties: false,
+              },
             },
+            required: ["title", "slug", "excerpt", "content", "keywords", "faq", "externalCitation"],
+            additionalProperties: false,
           },
-        }],
-        tool_choice: { type: "function", function: { name: "create_post" } },
-      }),
+        },
+      }],
+      tool_choice: { type: "function", function: { name: "create_post" } },
     });
+
+    async function callAI() {
+      return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: requestBody,
+      });
+    }
+
+    let resp = await callAI();
+    // Retry once on transient gateway errors
+    if (resp.status === 502 || resp.status === 503 || resp.status === 504) {
+      console.warn("AI gateway transient error, retrying:", resp.status);
+      await new Promise((r) => setTimeout(r, 1500));
+      resp = await callAI();
+    }
 
     if (resp.status === 429) {
       return new Response(JSON.stringify({ error: "Rate limit. Please retry shortly." }), {
@@ -176,9 +188,24 @@ ${analysisSummary ? `분석 컨텍스트:\n${analysisSummary}` : ""}
     }
 
     const data = await resp.json();
-    const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    if (!args) throw new Error("No tool call");
-    const parsed = JSON.parse(args);
+    const msg = data.choices?.[0]?.message;
+    const args = msg?.tool_calls?.[0]?.function?.arguments;
+    let parsed: any;
+    if (args) {
+      parsed = JSON.parse(args);
+    } else if (typeof msg?.content === "string" && msg.content.trim()) {
+      // Fallback: model returned JSON as plain text instead of tool call
+      const text = msg.content.trim().replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+      try {
+        parsed = JSON.parse(text);
+      } catch (_) {
+        const match = text.match(/\{[\s\S]*\}/);
+        if (!match) throw new Error("AI returned no usable content");
+        parsed = JSON.parse(match[0]);
+      }
+    } else {
+      throw new Error("AI returned no tool call or content");
+    }
 
     parsed.keywords = Array.isArray(parsed.keywords) ? parsed.keywords.slice(0, 8) : [];
     parsed.faq = Array.isArray(parsed.faq) ? parsed.faq.slice(0, 8) : [];
