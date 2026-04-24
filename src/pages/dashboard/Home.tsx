@@ -145,7 +145,7 @@ function NextActionCard({ queuedCount }: { queuedCount: number }) {
         </h2>
         <p className="text-sm text-muted-foreground mt-0.5">
           {hasQueue
-            ? "워크플로우 칸반에서 카드를 드래그해 발행할 수 있어요."
+            ? "자동 발행 칸반에서 카드를 드래그해 발행할 수 있어요."
             : "추천 주제에서 고르거나 직접 주제를 입력해 시작하세요."}
         </p>
       </div>
@@ -153,7 +153,7 @@ function NextActionCard({ queuedCount }: { queuedCount: number }) {
         <Link to={hasQueue ? "/dashboard/workflow" : "/dashboard/recommendations"}>
           {hasQueue ? (
             <>
-              <Send className="w-4 h-4" /> 워크플로우 열기
+              <Send className="w-4 h-4" /> 자동 발행 열기
             </>
           ) : (
             <>
@@ -279,7 +279,7 @@ function AutopublishCard({
         </div>
       ) : (
         <p className="text-[12px] text-muted-foreground leading-relaxed">
-          자동 발행이 꺼져 있어요. 워크플로우에서 ⚡ 버튼으로 요일·시간을 설정하면 큐가 자동으로
+          자동 발행이 꺼져 있어요. 자동 발행에서 ⚡ 버튼으로 요일·시간을 설정하면 큐가 자동으로
           발행됩니다.
         </p>
       )}

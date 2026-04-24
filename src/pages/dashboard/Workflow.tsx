@@ -9,12 +9,12 @@ export default function DashboardWorkflow() {
   return (
     <>
       <Helmet>
-        <title>워크플로우 | AutoBlog</title>
+        <title>자동 발행 | AutoBlog</title>
       </Helmet>
       <PageHeader
         icon={KanbanSquare}
-        chip="Workflow"
-        title="콘텐츠 워크플로우"
+        chip="Auto Publish"
+        title="자동 발행"
         subtitle="AI가 본문을 만들어 ‘발행 대기’에 쌓아둡니다. 시간을 정해 자동 발행하거나 즉시 발행하세요."
         tone="accent"
       />

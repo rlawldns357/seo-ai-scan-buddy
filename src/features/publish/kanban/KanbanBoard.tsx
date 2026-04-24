@@ -259,7 +259,7 @@ export default function KanbanBoard() {
   if (!authLoading && !user) {
     return (
       <LockedFeature
-        title="워크플로우 보드"
+        title="자동 발행 보드"
         description="로그인하면 추천부터 발행까지 한 화면에서 관리할 수 있어요."
         ctaLabel="로그인"
         onCta={() => navigate(`/auth?next=${encodeURIComponent("/dashboard#workflow")}`)}
