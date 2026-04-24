@@ -10,6 +10,7 @@ import {
   Archive,
   Sparkles,
   Crown,
+  ShoppingBag,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
