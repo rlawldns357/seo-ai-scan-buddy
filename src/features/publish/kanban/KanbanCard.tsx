@@ -220,6 +220,8 @@ export default function KanbanCard({
         <ScheduleModal
           open={scheduleOpen}
           initialIso={post.published_at}
+          currentPostId={post.id}
+          existingSchedules={scheduledSiblings ?? []}
           onClose={() => setScheduleOpen(false)}
           onSave={async (iso) => {
             await onSchedule(post, iso);
