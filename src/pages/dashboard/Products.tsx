@@ -278,9 +278,67 @@ export default function DashboardProducts() {
         </Card>
       )}
 
+      {/* 일괄 액션 바 */}
+      {!loading && items.length > 0 && (
+        <div className="flex items-center justify-between gap-2 mt-4 px-1">
+          <button
+            type="button"
+            onClick={selectedIds.size === items.length ? clearSelection : selectAll}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            {selectedIds.size === items.length ? (
+              <CheckSquare className="w-3.5 h-3.5 text-primary" />
+            ) : (
+              <Square className="w-3.5 h-3.5" />
+            )}
+            {selectedIds.size > 0 ? `${selectedIds.size}개 선택됨` : "전체 선택"}
+          </button>
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11px] gap-1 rounded-full"
+                disabled={bulkBusy}
+                onClick={() => void handleBulkToggle(true)}
+              >
+                <Eye className="w-3 h-3" /> 노출
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11px] gap-1 rounded-full"
+                disabled={bulkBusy}
+                onClick={() => void handleBulkToggle(false)}
+              >
+                <EyeOff className="w-3 h-3" /> 숨김
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11px] gap-1 rounded-full text-destructive hover:text-destructive"
+                disabled={bulkBusy}
+                onClick={() => void handleBulkDelete()}
+              >
+                <Trash2 className="w-3 h-3" /> 삭제
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={clearSelection}
+                aria-label="선택 해제"
+              >
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 목록 */}
       {!loading && items.length > 0 && (
-        <div className="grid gap-3 mt-4">
+        <div className="grid gap-3 mt-2">
           {items.map((p) =>
             editingId === p.id ? (
               <ProductForm
@@ -296,9 +354,23 @@ export default function DashboardProducts() {
             ) : (
               <Card
                 key={p.id}
-                className={`p-4 rounded-2xl border-border/60 bg-card transition ${!p.is_active ? "opacity-60" : ""}`}
+                className={`p-4 rounded-2xl transition ${
+                  selectedIds.has(p.id) ? "border-primary/60 bg-primary/[0.03]" : "border-border/60 bg-card"
+                } ${!p.is_active ? "opacity-60" : ""}`}
               >
                 <div className="flex gap-3 items-start">
+                  <button
+                    type="button"
+                    onClick={() => toggleSelect(p.id)}
+                    className="mt-0.5 shrink-0 text-muted-foreground hover:text-foreground"
+                    aria-label={selectedIds.has(p.id) ? "선택 해제" : "선택"}
+                  >
+                    {selectedIds.has(p.id) ? (
+                      <CheckSquare className="w-4 h-4 text-primary" />
+                    ) : (
+                      <Square className="w-4 h-4" />
+                    )}
+                  </button>
                   {p.image_url ? (
                     <img src={p.image_url} alt="" className="h-14 w-14 rounded-lg object-cover bg-muted shrink-0" />
                   ) : (
@@ -317,9 +389,11 @@ export default function DashboardProducts() {
                       href={p.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mt-0.5 line-clamp-1"
+                      title={p.url}
+                      className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mt-0.5 max-w-full"
                     >
-                      {p.url} <ExternalLink className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{shortenUrl(p.url)}</span>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
                     </a>
                     {p.description && (
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>
