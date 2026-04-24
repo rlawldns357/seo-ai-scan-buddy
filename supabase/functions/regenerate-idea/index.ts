@@ -63,7 +63,8 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
 
     const body = await req.json().catch(() => ({}));
-    const mode: "topic" | "seed" = body.mode === "seed" ? "seed" : "topic";
+    const mode: "topic" | "seed" | "topup" =
+      body.mode === "seed" ? "seed" : body.mode === "topup" ? "topup" : "topic";
     const siteUrl: string = body.siteUrl ?? "";
     const siteTitle: string = body.siteTitle ?? "";
     const axis: Axis = (body.axis as Axis) || "SEO";
