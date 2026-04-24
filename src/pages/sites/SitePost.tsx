@@ -187,10 +187,7 @@ export default function SitePost() {
           {/* 제품 CTA — 세일 강조 디자인. 모든 글 100% 노출 (전환 핵심) */}
           {products.length > 0 && (
             <section className="mt-12 pt-8 border-t" aria-label="이 글과 관련된 제품">
-              <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-4 h-4 text-destructive" aria-hidden />
-                <h2 className="text-xl font-bold text-foreground">지금 진행 중인 특가</h2>
-              </div>
+              <h2 className="text-xl font-bold text-foreground mb-1">함께 보면 좋은 제품</h2>
               <p className="text-xs text-muted-foreground mb-4">
                 글 내용과 가장 잘 맞는 제품을 골라드렸어요.
               </p>
