@@ -352,8 +352,8 @@ export default function DashboardIndex() {
         </div>
       ) : (
         <div className="space-y-4">
-          {/* 로그인 후 홈 대시보드에서는 요약 카드 + 다음 액션만 노출합니다.
-              세부 운영은 각 전용 페이지(추천/워크플로우/아카이브/리포트)에서 처리합니다. */}
+          {/* Workspace 헤더 + KPI는 OnePage 최상단에서 렌더됩니다.
+              여기서는 Overview 섹션 본문(다음 할 일 + 진단 추천)만 담당. */}
 
           {/* 다음 할 일 — 5% 브랜딩 강조 (그라디언트 + primary border) */}
           <div className="relative overflow-hidden flex items-start justify-between gap-4 flex-wrap rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/[0.06] via-card to-accent/[0.06] px-5 py-4">
@@ -367,19 +367,18 @@ export default function DashboardIndex() {
               </h3>
               <p className="text-sm text-muted-foreground mt-0.5">
                 {queueCounts.queued.length > 0
-                  ? "워크플로우 섹션에서 카드를 드래그해 발행할 수 있어요."
+                  ? "자동 발행 섹션에서 카드를 드래그해 발행할 수 있어요."
                   : "추천 주제에서 고르거나 직접 주제를 입력해 시작하세요."}
               </p>
             </div>
-            <Button
-              className="relative rounded-full shrink-0"
-              onClick={() => navigate(queueCounts.queued.length > 0 ? "/dashboard/workflow" : "/dashboard/recommendations")}
-            >
-              {queueCounts.queued.length > 0 ? (
-                <><Send className="w-4 h-4" /> 워크플로우 열기</>
-              ) : (
-                <><Plus className="w-4 h-4" /> 추천 보기</>
-              )}
+            <Button asChild className="relative rounded-full shrink-0">
+              <Link to={queueCounts.queued.length > 0 ? "/dashboard/workflow" : "/dashboard/recommendations"}>
+                {queueCounts.queued.length > 0 ? (
+                  <><Send className="w-4 h-4" /> 자동 발행 열기</>
+                ) : (
+                  <><Plus className="w-4 h-4" /> 추천 보기</>
+                )}
+              </Link>
             </Button>
           </div>
 

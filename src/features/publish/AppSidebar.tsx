@@ -10,6 +10,7 @@ import {
   Archive,
   Sparkles,
   Crown,
+  ShoppingBag,
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -32,15 +33,17 @@ import SiteSwitcher from "./SiteSwitcher";
 import { cn } from "@/lib/utils";
 
 type Tone = "primary" | "warning" | "accent" | "neutral" | "success";
-type RouteItem = {
+type RouteSection = {
   title: string;
   url: string;
+  index: number;
   icon: LucideIcon;
-  tone?: Tone;
-  index?: number;
+  tone: Tone;
   end?: boolean;
 };
+type RouteItem = { title: string; url: string; icon: LucideIcon; end?: boolean };
 
+/** OnePage 의 SectionShell 톤과 1:1 매칭 — 색만 사이드바 컨텍스트에 맞게 정리 */
 const TONE: Record<Tone, { dot: string; text: string; badgeBg: string; activeBg: string }> = {
   primary: {
     dot: "bg-primary",
@@ -74,18 +77,19 @@ const TONE: Record<Tone, { dot: string; text: string; badgeBg: string; activeBg:
   },
 };
 
-const overviewItems: RouteItem[] = [
+const overviewItems: RouteSection[] = [
   { title: "대시보드", url: "/dashboard", index: 1, icon: LayoutDashboard, tone: "primary", end: true },
 ];
 
-const workflowItems: RouteItem[] = [
+const workflowItems: RouteSection[] = [
   { title: "블로그 재고", url: "/dashboard/recommendations", index: 2, icon: Lightbulb, tone: "warning" },
   { title: "자동 발행", url: "/dashboard/workflow", index: 3, icon: KanbanSquare, tone: "accent" },
-  { title: "제품 카탈로그", url: "/dashboard/archive", index: 4, icon: Archive, tone: "neutral" },
+  { title: "제품 카탈로그", url: "/dashboard/products", index: 4, icon: ShoppingBag, tone: "primary" },
+  { title: "발행 아카이브", url: "/dashboard/archive", index: 5, icon: Archive, tone: "neutral" },
 ];
 
-const analyticsItems: RouteItem[] = [
-  { title: "성과 리포트", url: "/dashboard/reports", index: 5, icon: BarChart3, tone: "success" },
+const analyticsItems: RouteSection[] = [
+  { title: "성과 리포트", url: "/dashboard/reports", index: 6, icon: BarChart3, tone: "success" },
 ];
 
 const internalItems: RouteItem[] = [
@@ -124,27 +128,28 @@ export default function AppSidebar() {
     navigate("/", { replace: true });
   };
 
-  const renderRoute = (item: RouteItem) => {
-    const active = item.end ? location.pathname === item.url : location.pathname.startsWith(item.url);
-    const tone = item.tone ? TONE[item.tone] : null;
-
+  const renderSection = (item: RouteSection) => {
+    const active = item.end
+      ? location.pathname === item.url
+      : location.pathname === item.url || location.pathname.startsWith(item.url + "/");
+    const tone = TONE[item.tone];
     return (
       <SidebarMenuItem key={item.url}>
         <SidebarMenuButton
           asChild
           isActive={active}
-          className={cn("group/sec relative h-9 transition-colors", active && tone?.activeBg)}
+          className={cn("group/sec relative h-9 transition-colors", active && tone.activeBg)}
         >
           <NavLink to={item.url} end={item.end} className="flex items-center gap-2 w-full">
-            {active && !collapsed && tone && (
+            {active && !collapsed && (
               <span
                 className={cn("absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full", tone.dot)}
                 aria-hidden
               />
             )}
             {collapsed ? (
-              <item.icon className={cn("h-4 w-4", active && tone ? tone.text : "text-muted-foreground")} />
-            ) : item.index && tone ? (
+              <item.icon className={cn("h-4 w-4", active ? tone.text : "text-muted-foreground")} />
+            ) : (
               <>
                 <span
                   className={cn(
@@ -155,10 +160,7 @@ export default function AppSidebar() {
                   {String(item.index).padStart(2, "0")}
                 </span>
                 <item.icon
-                  className={cn(
-                    "h-3.5 w-3.5 shrink-0 transition",
-                    active ? tone.text : "text-muted-foreground",
-                  )}
+                  className={cn("h-3.5 w-3.5 shrink-0 transition", active ? tone.text : "text-muted-foreground")}
                 />
                 <span
                   className={cn(
@@ -169,12 +171,23 @@ export default function AppSidebar() {
                   {item.title}
                 </span>
               </>
-            ) : (
-              <>
-                <item.icon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-[13px] truncate">{item.title}</span>
-              </>
             )}
+          </NavLink>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  };
+
+  const renderRoute = (item: RouteItem) => {
+    const active = item.end
+      ? location.pathname === item.url
+      : location.pathname.startsWith(item.url);
+    return (
+      <SidebarMenuItem key={item.url}>
+        <SidebarMenuButton asChild isActive={active} className="h-9">
+          <NavLink to={item.url} end={item.end} className="flex items-center gap-2">
+            <item.icon className="h-4 w-4 text-muted-foreground" />
+            {!collapsed && <span className="text-[13px]">{item.title}</span>}
           </NavLink>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -188,7 +201,7 @@ export default function AppSidebar() {
 
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>{overviewItems.map(renderRoute)}</SidebarMenu>
+            <SidebarMenu>{overviewItems.map(renderSection)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -199,7 +212,7 @@ export default function AppSidebar() {
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu>{workflowItems.map(renderRoute)}</SidebarMenu>
+            <SidebarMenu>{workflowItems.map(renderSection)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -210,7 +223,7 @@ export default function AppSidebar() {
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
-            <SidebarMenu>{analyticsItems.map(renderRoute)}</SidebarMenu>
+            <SidebarMenu>{analyticsItems.map(renderSection)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
 
@@ -251,6 +264,7 @@ export default function AppSidebar() {
           </SidebarGroup>
         )}
 
+        {/* Pro 업그레이드 프롬프트 — Free/Beta/Lite 한정, 접힘 상태 숨김 */}
         {!collapsed && user && (tier === "free" || tier === "beta" || tier === "lite") && (
           <div className="px-2 mt-2">
             <button
