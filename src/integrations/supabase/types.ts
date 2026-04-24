@@ -877,6 +877,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_site_product_click: {
+        Args: { _product_id: string }
+        Returns: undefined
+      }
       log_site_post_view: {
         Args: { _post_id: string; _referrer?: string; _session_id: string }
         Returns: undefined
