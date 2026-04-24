@@ -14,7 +14,14 @@ const TIER_META: Record<AppRole, { label: string; icon: typeof Sparkles; classNa
   admin: { label: "Admin", icon: Shield, className: "bg-score-warning/10 text-score-warning ring-1 ring-score-warning/30" },
 };
 
-type Kpi = { queued: number; publishedToday: number; totalViews: number; weeklyVisitors: number };
+type Kpi = {
+  queued: number;
+  publishedToday: number;
+  totalViews: number;
+  weeklyVisitors: number;
+  scheduledToday: number;
+  nextScheduledAt: string | null;
+};
 
 /**
  * Top-of-page workspace identity header for /dashboard.
@@ -25,7 +32,14 @@ export default function WorkspaceHeader() {
   const { site } = useUserSite();
   const { user } = useAuth();
   const { tier } = useUserTier();
-  const [kpi, setKpi] = useState<Kpi>({ queued: 0, publishedToday: 0, totalViews: 0, weeklyVisitors: 0 });
+  const [kpi, setKpi] = useState<Kpi>({
+    queued: 0,
+    publishedToday: 0,
+    totalViews: 0,
+    weeklyVisitors: 0,
+    scheduledToday: 0,
+    nextScheduledAt: null,
+  });
 
   useEffect(() => {
     if (!site) return;
@@ -49,6 +63,22 @@ export default function WorkspaceHeader() {
       ).length;
       const totalViews = published.reduce((s: number, p: any) => s + (p.view_count ?? 0), 0);
 
+      // Schedule snapshot — counted from `scheduled` posts with future `published_at`.
+      const now = Date.now();
+      const todayEnd = new Date(todayStart);
+      todayEnd.setDate(todayEnd.getDate() + 1);
+      const scheduledRows = posts.filter(
+        (p: any) => p.status === "scheduled" && p.published_at && new Date(p.published_at).getTime() >= now,
+      );
+      const scheduledToday = scheduledRows.filter(
+        (p: any) =>
+          new Date(p.published_at).getTime() >= todayStart.getTime() &&
+          new Date(p.published_at).getTime() < todayEnd.getTime(),
+      ).length;
+      const nextScheduledAt = scheduledRows
+        .map((p: any) => p.published_at as string)
+        .sort((a: string, b: string) => new Date(a).getTime() - new Date(b).getTime())[0] ?? null;
+
       const publishedIds = published.map((p: any) => p.id);
       let weeklyVisitors = 0;
       if (publishedIds.length) {
@@ -60,7 +90,8 @@ export default function WorkspaceHeader() {
         weeklyVisitors = new Set((views ?? []).map((v: any) => v.session_id)).size;
       }
 
-      if (!cancelled) setKpi({ queued, publishedToday, totalViews, weeklyVisitors });
+      if (!cancelled)
+        setKpi({ queued, publishedToday, totalViews, weeklyVisitors, scheduledToday, nextScheduledAt });
     })();
     return () => { cancelled = true; };
   }, [site]);
@@ -129,6 +160,42 @@ export default function WorkspaceHeader() {
           </div>
         ))}
       </div>
+
+      {/* Schedule snapshot — small line under KPIs */}
+      <div className="relative mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground">
+        <span>
+          오늘 예약 발행{" "}
+          {kpi.scheduledToday > 0 ? (
+            <span className="font-semibold text-foreground tabular-nums">{kpi.scheduledToday}건</span>
+          ) : (
+            "없음"
+          )}
+        </span>
+        <span className="text-border">·</span>
+        <span>
+          다음 예약{" "}
+          {kpi.nextScheduledAt ? (
+            <span className="font-semibold text-foreground">
+              {formatNextSchedule(kpi.nextScheduledAt)}
+            </span>
+          ) : (
+            "없음"
+          )}
+        </span>
+      </div>
     </div>
   );
+}
+
+/** "2026.04.29 09:00" — compact KST. */
+function formatNextSchedule(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const kst = new Date(d.getTime() + 9 * 60 * 60 * 1000);
+  const y = kst.getUTCFullYear();
+  const m = String(kst.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(kst.getUTCDate()).padStart(2, "0");
+  const hh = String(kst.getUTCHours()).padStart(2, "0");
+  const mm = String(kst.getUTCMinutes()).padStart(2, "0");
+  return `${y}.${m}.${day} ${hh}:${mm}`;
 }
