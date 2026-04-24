@@ -206,7 +206,7 @@ export default function SitePost() {
                       onClick={() => {
                         void (supabase as any).rpc("increment_site_product_click", { _product_id: p.id });
                       }}
-                      className={`group relative flex ${isHero ? "flex-col sm:flex-row gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl border border-border bg-card hover:border-foreground/20 hover:shadow-sm transition no-underline`}
+                      className={`group relative flex ${isHero ? "flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl border border-border bg-card hover:border-foreground/20 hover:shadow-sm transition no-underline`}
                     >
                       {/* 할인률 배지 — 이미지 좌상단 오버레이 (담백) */}
                       {discount && (
