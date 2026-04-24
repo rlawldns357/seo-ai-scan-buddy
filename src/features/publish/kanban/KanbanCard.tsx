@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Eye, Calendar, CalendarClock, X, Send, AlertCircle, CheckCircle2, Trash2 } from "lucide-react";
 import type { KanbanPost, KanbanStatus } from "./types";
 import { COLUMN_META } from "./types";
