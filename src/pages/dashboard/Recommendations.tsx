@@ -191,7 +191,7 @@ export default function Recommendations() {
   }
 
   const stockCount = ideas.length;
-  const targetStock = Math.max(autopubSettings?.min_queue ?? 5, 5);
+  const targetStock = Math.max(autopubSettings?.min_queue ?? 10, 10);
   const isFull = stockCount >= targetStock;
   const stockPct = Math.min(100, Math.round((stockCount / targetStock) * 100));
   const stockTone =
