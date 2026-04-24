@@ -31,6 +31,8 @@ export default function DashboardProducts() {
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
+  const [prefillUrl, setPrefillUrl] = useState<string | null>(null);
+  const [quickUrl, setQuickUrl] = useState("");
 
   const load = async (siteId: string) => {
     setLoading(true);
@@ -106,10 +108,13 @@ export default function DashboardProducts() {
       {editingId === "new" && (
         <ProductForm
           siteId={site.id}
-          onClose={() => setEditingId(null)}
+          prefillUrl={prefillUrl ?? undefined}
+          autoFillOnMount={!!prefillUrl}
+          onClose={() => { setEditingId(null); setPrefillUrl(null); }}
           onSaved={(p) => {
             setItems((prev) => [p, ...prev]);
             setEditingId(null);
+            setPrefillUrl(null);
           }}
         />
       )}
@@ -122,8 +127,49 @@ export default function DashboardProducts() {
           <p className="text-xs text-muted-foreground mt-1 mb-4">
             대표 제품을 1~5개 등록하면 모든 발행 글 끝에 자동으로 노출돼요.
           </p>
-          <Button size="sm" className="rounded-full" onClick={() => setEditingId("new")}>
-            <Plus className="w-4 h-4" /> 첫 제품 등록
+
+          {/* URL 빠른 추가 — 붙여넣으면 ✨ AI가 자동으로 제품 정보를 채워요 */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const v = quickUrl.trim();
+              if (!v) return;
+              if (!/^https?:\/\//i.test(v)) {
+                toast.error("https:// 로 시작하는 URL을 입력해주세요");
+                return;
+              }
+              setPrefillUrl(v);
+              setEditingId("new");
+              setQuickUrl("");
+            }}
+            className="max-w-md mx-auto flex flex-col sm:flex-row gap-2 mb-3"
+          >
+            <Input
+              type="url"
+              inputMode="url"
+              placeholder="제품 URL 붙여넣기 (예: https://...)"
+              value={quickUrl}
+              onChange={(e) => setQuickUrl(e.target.value)}
+              className="rounded-full h-10 text-sm"
+            />
+            <Button
+              type="submit"
+              size="sm"
+              className="rounded-full h-10 gap-1 shrink-0"
+              disabled={!quickUrl.trim()}
+            >
+              <Sparkles className="w-3.5 h-3.5" /> AI로 자동 채우기
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-3 max-w-md mx-auto my-3">
+            <div className="flex-1 h-px bg-border/60" />
+            <span className="text-[10px] text-muted-foreground/70">또는</span>
+            <div className="flex-1 h-px bg-border/60" />
+          </div>
+
+          <Button size="sm" variant="outline" className="rounded-full" onClick={() => setEditingId("new")}>
+            <Plus className="w-4 h-4" /> 직접 입력하기
           </Button>
         </Card>
       )}
@@ -229,16 +275,20 @@ export default function DashboardProducts() {
 function ProductForm({
   siteId,
   initial,
+  prefillUrl,
+  autoFillOnMount,
   onSaved,
   onClose,
 }: {
   siteId: string;
   initial?: Product;
+  prefillUrl?: string;
+  autoFillOnMount?: boolean;
   onSaved: (p: Product) => void;
   onClose: () => void;
 }) {
   const [title, setTitle] = useState(initial?.title ?? "");
-  const [url, setUrl] = useState(initial?.url ?? "");
+  const [url, setUrl] = useState(initial?.url ?? prefillUrl ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
   const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
@@ -279,6 +329,14 @@ function ProductForm({
       setAutofilling(false);
     }
   };
+
+  // 빈 카탈로그에서 URL을 붙여넣고 들어온 경우 마운트 직후 1회 자동 실행
+  useEffect(() => {
+    if (autoFillOnMount && (prefillUrl ?? "").trim()) {
+      void handleAutofill();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
