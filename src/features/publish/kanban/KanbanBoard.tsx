@@ -414,18 +414,13 @@ export default function KanbanBoard() {
               <Archive className="h-3 w-3" /> 보관함 {archivedCount}
             </Button>
           )}
-          <Button size="sm" variant="outline" className="rounded-full h-8 text-xs" onClick={createIdea}>
-            <Plus className="h-3 w-3" /> 아이디어
-          </Button>
-          <Button
-            size="sm"
-            className="rounded-full h-8 text-xs"
-            onClick={() => document.getElementById("recommendations")?.scrollIntoView({ behavior: "smooth" })}
-          >
-            <Sparkles className="h-3 w-3" /> 추천에서 가져오기
+          <Button size="sm" className="rounded-full h-8 text-xs" onClick={createDraft}>
+            <Plus className="h-3 w-3" /> 새 글
           </Button>
         </div>
       </div>
+
+      {/* Mobile tabs grid: 3 cols (draft / scheduled / published) */}
 
       {isMobile ? (
         // Mobile: tabs (no drag UX on small screens)
