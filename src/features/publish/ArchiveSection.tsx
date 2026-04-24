@@ -145,9 +145,12 @@ export default function ArchiveSection() {
                     <span className="text-[9px] font-bold text-muted-foreground tracking-wider">{p.source_axis}</span>
                   )}
                   {p.published_at && (
-                    <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
+                    <span
+                      className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5"
+                      title={`발행: ${new Date(p.published_at).toLocaleString("ko-KR")}`}
+                    >
                       <Calendar className="h-2.5 w-2.5" />
-                      {new Date(p.published_at).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}
+                      발행 {new Date(p.published_at).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}
                     </span>
                   )}
                   <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
