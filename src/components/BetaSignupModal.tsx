@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Sparkles, CheckCircle2, ArrowRight, Wand2, Send, BarChart3 } from "lucide-react";
+import { Sparkles, CheckCircle2, ArrowRight, Wand2, Send, BarChart3, LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -246,6 +247,19 @@ export default function BetaSignupModal({ open, onClose }: BetaSignupModalProps)
               <p className="text-[11px] text-muted-foreground text-center break-keep">
                 <span className="font-semibold text-foreground">신용카드 불필요</span> · 베타 기간 무료 · 언제든 자동 발행 정지 가능
               </p>
+
+              {/* 이미 베타 가입한 사용자용 진입점 */}
+              <div className="pt-3 mt-1 border-t border-border/60 text-center">
+                <span className="text-[11.5px] text-muted-foreground">이미 베타 가입했나요? </span>
+                <Link
+                  to="/auth?next=%2Fdashboard"
+                  onClick={onClose}
+                  className="inline-flex items-center gap-1 text-[11.5px] font-semibold text-primary hover:underline"
+                >
+                  <LogIn className="w-3 h-3" />
+                  로그인하기
+                </Link>
+              </div>
             </form>
           )}
         </div>
