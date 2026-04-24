@@ -194,16 +194,10 @@ export default function KanbanBoard() {
       content: patch.content,
     };
 
-    // Schedule handling: only meaningful for draft/scheduled rows.
-    if (current && (current.status === "draft" || current.status === "scheduled")) {
-      if (patch.published_at) {
-        // User picked a time → move into the scheduled column and store the timestamp.
-        update.status = "scheduled";
-        update.published_at = patch.published_at;
-      } else if (patch.published_at === null) {
-        // User cleared the time → back to draft, no published_at.
-        update.status = "draft";
-        update.published_at = null;
+    // Schedule handling: only meaningful for scheduled rows.
+    if (current && current.status === "scheduled") {
+      if (patch.published_at !== undefined) {
+        update.published_at = patch.published_at; // null clears it (manual publish)
       }
     }
 
@@ -213,10 +207,9 @@ export default function KanbanBoard() {
       return;
     }
     toast({
-      title:
-        update.status === "scheduled"
-          ? "예약되었습니다 — 시각이 되면 자동 발행됩니다"
-          : "저장되었습니다",
+      title: update.published_at
+        ? "예약되었습니다 — 시각이 되면 자동 발행됩니다"
+        : "저장되었습니다",
     });
     await load();
     setOpenPost(null);
