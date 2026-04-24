@@ -1,6 +1,7 @@
 import { useEffect, useState, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame, CheckSquare, Square } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame, CheckSquare, Square, Copy, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -9,7 +10,10 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
+import { useUserTier } from "@/features/auth/useUserTier";
 import PageHeader from "@/features/publish/ui/PageHeader";
+import LockedFeature from "@/features/publish/LockedFeature";
+import CopyCatalogModal from "@/features/publish/CopyCatalogModal";
 import { cleanProductUrl } from "@/lib/cleanProductUrl";
 
 type Product = {
@@ -32,6 +36,8 @@ const MAX_PRODUCTS = 50;
 
 export default function DashboardProducts() {
   const { site, loading: siteLoading } = useUserSite();
+  const { tier, productLimit, loading: tierLoading } = useUserTier();
+  const navigate = useNavigate();
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
@@ -39,6 +45,11 @@ export default function DashboardProducts() {
   const [quickUrl, setQuickUrl] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+
+  const effectiveLimit = Math.min(MAX_PRODUCTS, productLimit);
+  const isLocked = !tierLoading && productLimit === 0;
+  const atLimit = items.length >= effectiveLimit;
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
@@ -187,6 +198,24 @@ export default function DashboardProducts() {
     );
   }
 
+  // Tier-locked: Free / Beta
+  if (isLocked) {
+    return (
+      <>
+        <Helmet><title>제품 카탈로그 | AutoBlog</title></Helmet>
+        <PageHeader icon={ShoppingBag} chip="Products" title="제품 카탈로그" tone="primary" />
+        <LockedFeature
+          title="제품 카탈로그는 Lite 플랜부터 사용할 수 있어요"
+          description={`현재 ${tier.toUpperCase()} 플랜이에요. Lite로 업그레이드하면 카탈로그 1개를 등록할 수 있고, Pro부터 최대 ${MAX_PRODUCTS}개까지 가능해요. 등록한 제품은 발행되는 모든 글 끝에 자동으로 노출됩니다.`}
+          ctaLabel="플랜 알아보기"
+          onCta={() => navigate("/autoblog#pricing")}
+        />
+      </>
+    );
+  }
+
+  const canAddNew = editingId !== "new" && !atLimit;
+
   return (
     <>
       <Helmet>
@@ -196,16 +225,56 @@ export default function DashboardProducts() {
         icon={ShoppingBag}
         chip="Products"
         title="제품 카탈로그"
-        subtitle="등록한 제품은 발행되는 모든 글 끝에 자동으로 노출됩니다. AI가 글 키워드를 보고 가장 잘 맞는 1~3개를 골라 추천해요."
+        subtitle={`등록한 제품은 발행되는 모든 글 끝에 자동으로 노출됩니다. AI가 글 키워드를 보고 가장 잘 맞는 1~3개를 골라 추천해요. (${items.length}/${effectiveLimit})`}
         tone="primary"
         right={
-          editingId !== "new" && items.length < MAX_PRODUCTS ? (
-            <Button size="sm" className="rounded-full" onClick={() => setEditingId("new")}>
-              <Plus className="w-4 h-4" /> 새 제품
-            </Button>
-          ) : undefined
+          <div className="flex items-center gap-2">
+            {items.length > 0 && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full gap-1"
+                onClick={() => setCopyOpen(true)}
+              >
+                <Copy className="w-3.5 h-3.5" /> 다른 사이트로 복사
+              </Button>
+            )}
+            {canAddNew ? (
+              <Button size="sm" className="rounded-full" onClick={() => setEditingId("new")}>
+                <Plus className="w-4 h-4" /> 새 제품
+              </Button>
+            ) : atLimit ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full gap-1"
+                onClick={() => navigate("/autoblog#pricing")}
+                title={`${tier.toUpperCase()} 플랜 한도(${effectiveLimit}개) 도달`}
+              >
+                <Lock className="w-3.5 h-3.5" /> 한도 도달 · 업그레이드
+              </Button>
+            ) : null}
+          </div>
         }
       />
+
+      {/* Lite teaser banner */}
+      {tier === "lite" && items.length > 0 && (
+        <div className="mt-3 flex items-center gap-3 rounded-xl border border-primary/20 bg-primary/[0.04] px-4 py-2.5">
+          <Sparkles className="w-4 h-4 text-primary shrink-0" />
+          <p className="text-xs text-foreground leading-relaxed break-keep flex-1">
+            <span className="font-semibold">Lite 플랜은 카탈로그 맛보기 1개</span>까지 등록할 수 있어요. Pro로 업그레이드하면 최대 {MAX_PRODUCTS}개까지 등록 가능해요.
+          </p>
+          <Button
+            size="sm"
+            variant="ghost"
+            className="rounded-full h-7 text-[11px] text-primary shrink-0"
+            onClick={() => navigate("/autoblog#pricing")}
+          >
+            업그레이드
+          </Button>
+        </div>
+      )}
 
       {/* 인라인 추가/편집 폼 */}
       {editingId === "new" && (
@@ -471,6 +540,15 @@ export default function DashboardProducts() {
           최대 {MAX_PRODUCTS}개까지 등록할 수 있어요.
         </p>
       )}
+
+      <CopyCatalogModal
+        open={copyOpen}
+        onClose={() => setCopyOpen(false)}
+        sourceSiteId={site.id}
+        sourceSiteTitle={site.title}
+        selectedProducts={items.filter((p) => selectedIds.has(p.id))}
+        allProducts={items}
+      />
     </>
   );
 }
