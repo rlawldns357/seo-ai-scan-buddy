@@ -83,10 +83,15 @@ export default function KanbanCard({
                     {badge.label}
                   </span>
                 )}
-                {post.status === "published" && post.published_at && (
+                {isPublishedCol && (
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-0.5">
+                    <CheckCircle2 className="h-2.5 w-2.5" /> 발행됨
+                  </span>
+                )}
+                {isPublishedCol && post.published_at && (
                   <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
                     <Calendar className="h-2.5 w-2.5" />
-                    {new Date(post.published_at).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}
+                    {new Date(post.published_at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
                   </span>
                 )}
                 {post.status === "published" && post.view_count > 0 && (
