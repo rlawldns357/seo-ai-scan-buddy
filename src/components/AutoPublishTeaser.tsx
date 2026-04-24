@@ -1,12 +1,11 @@
 import { useState } from "react";
-import { ArrowRight, Sparkles, Bookmark } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import BetaSignupModal from "@/components/BetaSignupModal";
 import { trackEvent } from "@/lib/analytics";
 
 /**
- * Compact horizontal launch bookmark for AutoBlog.
- * Single-row focus on "신제품 출시" — no pillars, no queue preview, no coverage chips.
- * Just: brand mark · NEW · headline · CTA.
+ * Premium minimal horizontal teaser — focused solely on "신제품 출시".
+ * Editorial typography, restrained color, single CTA.
  */
 export default function AutoPublishTeaser() {
   const [betaOpen, setBetaOpen] = useState(false);
@@ -18,45 +17,37 @@ export default function AutoPublishTeaser() {
 
   return (
     <section className="mt-12 max-w-2xl mx-auto">
-      <article className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-shadow">
-        {/* left brand strip */}
-        <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary to-accent" />
-
-        <div className="pl-5 pr-4 sm:pl-6 sm:pr-5 py-3.5 flex items-center gap-3 sm:gap-4">
-          {/* brand mark */}
-          <div className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-gradient-to-br from-primary/15 to-accent/15 border border-primary/20 shrink-0">
-            <Bookmark className="w-4 h-4 text-primary" fill="currentColor" />
+      <button
+        onClick={openBeta}
+        className="group w-full text-left rounded-2xl border border-border bg-card hover:border-foreground/20 hover:shadow-elevated transition-all duration-300"
+      >
+        <div className="px-5 sm:px-6 py-4 flex items-center gap-4 sm:gap-5">
+          {/* meta label */}
+          <div className="flex flex-col items-start shrink-0 border-r border-border pr-4 sm:pr-5">
+            <span className="text-[9px] font-bold tracking-[0.18em] uppercase text-muted-foreground leading-none">
+              New
+            </span>
+            <span className="mt-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/70 leading-none">
+              2026
+            </span>
           </div>
 
-          {/* text block */}
+          {/* headline */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="text-[10px] font-extrabold tracking-wider uppercase text-muted-foreground">
-                신제품 출시
-              </span>
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-primary to-accent text-primary-foreground leading-none">
-                <Sparkles className="w-2.5 h-2.5" /> NEW
-              </span>
-            </div>
-            <p className="text-[13px] sm:text-sm font-extrabold text-foreground leading-snug tracking-tight break-keep truncate">
-              Auto
-              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Blog
-              </span>
-              <span className="text-muted-foreground font-bold"> · </span>
-              한 달치 블로그 재고를 자동 발행
+            <p className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-1">
+              신제품 출시
             </p>
+            <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-foreground leading-tight truncate">
+              AutoBlog<span className="text-muted-foreground font-medium"> — 곧 공개됩니다</span>
+            </h3>
           </div>
 
-          {/* CTA */}
-          <button
-            onClick={openBeta}
-            className="shrink-0 inline-flex items-center justify-center gap-1 h-9 px-3.5 sm:px-4 rounded-full bg-primary text-primary-foreground text-[12px] sm:text-[13px] font-extrabold hover:opacity-90 transition-opacity shadow-sm"
-          >
-            베타 신청 <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+          {/* arrow */}
+          <div className="shrink-0 w-9 h-9 rounded-full border border-border flex items-center justify-center group-hover:bg-foreground group-hover:border-foreground transition-colors">
+            <ArrowUpRight className="w-4 h-4 text-foreground group-hover:text-background transition-colors" />
+          </div>
         </div>
-      </article>
+      </button>
 
       <BetaSignupModal open={betaOpen} onClose={() => setBetaOpen(false)} />
     </section>
