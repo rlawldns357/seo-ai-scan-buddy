@@ -374,6 +374,9 @@ function ProductForm({
       url: cleanProductUrl(url.trim()),
       description: description.trim() || null,
       price: price.trim() || null,
+      compare_at_price: compareAtPrice.trim() || null,
+      sale_label: saleLabel.trim() || null,
+      sale_ends_at: saleEndsAt ? new Date(saleEndsAt).toISOString() : null,
       image_url: imageUrl.trim() || null,
       keywords,
     };
@@ -452,10 +455,22 @@ function ProductForm({
             </p>
           </div>
           <div>
-            <Label htmlFor="p-price" className="text-xs">가격 (선택)</Label>
+            <Label htmlFor="p-price" className="text-xs">판매가 (할인 적용된 최종가)</Label>
             <Input id="p-price" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="29,000원" />
           </div>
           <div>
+            <Label htmlFor="p-compare" className="text-xs">원가 (취소선 표시)</Label>
+            <Input id="p-compare" value={compareAtPrice} onChange={(e) => setCompareAtPrice(e.target.value)} placeholder="59,000원" />
+          </div>
+          <div>
+            <Label htmlFor="p-sale-label" className="text-xs">세일 라벨 (선택)</Label>
+            <Input id="p-sale-label" value={saleLabel} onChange={(e) => setSaleLabel(e.target.value)} maxLength={30} placeholder="예) 오늘만, 단독특가, 재고소진임박" />
+          </div>
+          <div>
+            <Label htmlFor="p-sale-ends" className="text-xs">행사 종료 시각 (선택)</Label>
+            <Input id="p-sale-ends" type="datetime-local" value={saleEndsAt} onChange={(e) => setSaleEndsAt(e.target.value)} />
+          </div>
+          <div className="sm:col-span-2">
             <Label htmlFor="p-image" className="text-xs">이미지 URL (선택)</Label>
             <Input id="p-image" type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://" />
           </div>
