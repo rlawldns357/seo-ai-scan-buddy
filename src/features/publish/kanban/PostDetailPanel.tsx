@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { ExternalLink, Save, Trash2, Archive, ArchiveRestore, CalendarClock } from "lucide-react";
+import { ExternalLink, Save, Trash2, Archive, ArchiveRestore, CalendarClock, Sparkles, Loader2 } from "lucide-react";
 import type { KanbanPost } from "./types";
 import { COLUMN_META } from "./types";
 
@@ -22,6 +22,8 @@ type Props = {
   onSave: (patch: SavePatch) => Promise<void>;
   onDelete: () => Promise<void>;
   onArchive?: (archive: boolean) => Promise<void>;
+  /** Generate (or regenerate) body via AI for a draft. Receives current title from the form. */
+  onGenerateBody?: (title: string) => Promise<{ title?: string; excerpt?: string; content?: string } | void>;
 };
 
 /** ISO → "YYYY-MM-DDTHH:mm" (browser local) for <input type="datetime-local">. */
