@@ -187,10 +187,7 @@ export default function SitePost() {
           {/* 제품 CTA — 세일 강조 디자인. 모든 글 100% 노출 (전환 핵심) */}
           {products.length > 0 && (
             <section className="mt-12 pt-8 border-t" aria-label="이 글과 관련된 제품">
-              <div className="flex items-center gap-2 mb-1">
-                <Flame className="w-4 h-4 text-destructive" aria-hidden />
-                <h2 className="text-xl font-bold text-foreground">지금 진행 중인 특가</h2>
-              </div>
+              <h2 className="text-xl font-bold text-foreground mb-1">함께 보면 좋은 제품</h2>
               <p className="text-xs text-muted-foreground mb-4">
                 글 내용과 가장 잘 맞는 제품을 골라드렸어요.
               </p>
@@ -209,18 +206,14 @@ export default function SitePost() {
                       onClick={() => {
                         void (supabase as any).rpc("increment_site_product_click", { _product_id: p.id });
                       }}
-                      className={`group relative flex ${isHero ? "flex-col sm:flex-row gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl transition no-underline ${
-                        hasSaleSignal
-                          ? "border-2 border-destructive/40 bg-gradient-to-br from-destructive/[0.06] via-card to-card hover:border-destructive/70 hover:shadow-[0_8px_24px_-8px_hsl(var(--destructive)/0.35)]"
-                          : "border border-border bg-card hover:border-primary/40 hover:shadow-sm"
-                      }`}
+                      className={`group relative flex ${isHero ? "flex-col sm:flex-row gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl border border-border bg-card hover:border-foreground/20 hover:shadow-sm transition no-underline`}
                     >
-                      {/* 할인률 배지 */}
+                      {/* 할인률 배지 — 이미지 좌상단 오버레이 (담백) */}
                       {discount && (
-                        <span className={`absolute z-10 inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-black tabular-nums shadow-lg ring-2 ring-background ${
+                        <span className={`absolute z-10 inline-flex items-center justify-center rounded-md bg-destructive text-destructive-foreground font-bold tabular-nums ${
                           isHero
-                            ? "-top-3 -left-3 min-w-[60px] h-14 px-3 text-xl"
-                            : "-top-2 -left-2 min-w-[44px] h-11 px-2 text-base"
+                            ? "top-3 left-3 px-2 py-1 text-sm"
+                            : "top-2 left-2 px-1.5 py-0.5 text-xs"
                         }`}>
                           {discount}%
                         </span>
@@ -242,29 +235,18 @@ export default function SitePost() {
                         </div>
                       )}
                       <div className="min-w-0 flex-1 flex flex-col">
-                        {/* 세일 라벨 + 카운트다운 (할인 정보 없으면 '추천' 폴백) */}
-                        <div className={`flex items-center gap-1.5 flex-wrap ${isHero ? "mb-2" : "mb-1"}`}>
-                          {p.sale_label ? (
-                            <span className={`inline-flex items-center rounded font-bold bg-destructive/15 text-destructive ${
-                              isHero ? "px-2 py-1 text-xs" : "px-1.5 py-0.5 text-[10px]"
-                            }`}>
-                              {p.sale_label}
-                            </span>
-                          ) : (
-                            <span className={`inline-flex items-center gap-1 rounded font-bold bg-destructive/10 text-destructive ${
-                              isHero ? "px-2 py-1 text-xs" : "px-1.5 py-0.5 text-[10px]"
-                            }`}>
-                              <Flame className={isHero ? "w-3 h-3" : "w-2.5 h-2.5"} aria-hidden /> 특가
-                            </span>
-                          )}
-                          {countdown && (
-                            <span className={`inline-flex items-center gap-0.5 rounded font-semibold bg-destructive/10 text-destructive/80 ${
-                              isHero ? "px-2 py-1 text-xs" : "px-1.5 py-0.5 text-[10px]"
-                            }`}>
-                              <Clock className={isHero ? "w-3 h-3" : "w-2.5 h-2.5"} aria-hidden /> {countdown}
-                            </span>
-                          )}
-                        </div>
+                        {/* 세일 라벨 + 카운트다운 — 작은 텍스트 톤 */}
+                        {(p.sale_label || countdown) && (
+                          <div className={`flex items-center gap-2 flex-wrap text-xs text-muted-foreground ${isHero ? "mb-1.5" : "mb-1"}`}>
+                            {p.sale_label && <span className="font-medium text-foreground/70">{p.sale_label}</span>}
+                            {p.sale_label && countdown && <span className="text-border">·</span>}
+                            {countdown && (
+                              <span className="inline-flex items-center gap-1">
+                                <Clock className="w-3 h-3" aria-hidden /> {countdown}
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <p className={`font-semibold text-foreground group-hover:text-primary transition ${
                           isHero ? "text-base sm:text-lg line-clamp-2" : "text-sm line-clamp-2"
                         }`}>
@@ -283,8 +265,8 @@ export default function SitePost() {
                             <span
                               className={`font-bold tabular-nums ${
                                 discount
-                                  ? isHero ? "text-destructive text-2xl" : "text-destructive text-base"
-                                  : isHero ? "text-primary text-lg" : "text-primary text-sm"
+                                  ? isHero ? "text-destructive text-xl" : "text-destructive text-base"
+                                  : isHero ? "text-foreground text-lg" : "text-foreground text-sm"
                               }`}
                             >
                               {p.price}
@@ -293,15 +275,15 @@ export default function SitePost() {
                         )}
                         {p.description && (
                           <p className={`text-muted-foreground mt-1.5 ${
-                            isHero ? "text-sm line-clamp-3" : "text-[11px] line-clamp-2 mt-1"
+                            isHero ? "text-sm line-clamp-2" : "text-[11px] line-clamp-2 mt-1"
                           }`}>
                             {p.description}
                           </p>
                         )}
                         {isHero && (
                           <div className="mt-auto pt-3">
-                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-destructive text-destructive-foreground text-sm font-bold shadow-md group-hover:shadow-lg transition">
-                              지금 특가 보러가기 →
+                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-foreground/20 text-foreground text-sm font-medium group-hover:bg-foreground group-hover:text-background transition">
+                              자세히 보기 →
                             </span>
                           </div>
                         )}
