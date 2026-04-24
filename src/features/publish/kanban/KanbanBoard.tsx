@@ -244,20 +244,41 @@ export default function KanbanBoard() {
     if (!site) return;
     const title = window.prompt("새 글의 주제(제목)를 입력하세요");
     if (!title?.trim()) return;
-    const slug = `draft-${Date.now().toString(36)}`;
-    const { error } = await supabase.from("site_posts").insert({
-      site_id: site.id,
-      slug,
-      title: title.trim(),
-      content: "",
-      status: "draft",
-    } as any);
-    if (error) {
-      toast({ title: "추가 실패", description: error.message, variant: "destructive" });
-      return;
+    const slug = `post-${Date.now().toString(36)}`;
+    const trimmed = title.trim();
+
+    setLoading(true);
+    try {
+      // Run the AI engine, then insert directly into the 발행 대기 column.
+      const { data, error } = await supabase.functions.invoke("generate-content-draft", {
+        body: { topic: trimmed, targetAxis: "SEO", siteUrl: site.site_url },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      const { error: insertErr } = await supabase.from("site_posts").insert({
+        site_id: site.id,
+        slug,
+        title: data?.title || trimmed,
+        excerpt: data?.excerpt ?? null,
+        content: data?.content || "",
+        status: "scheduled",
+        published_at: null,
+        keywords: Array.isArray(data?.keywords) ? data.keywords : [],
+        faq: Array.isArray(data?.faq) ? data.faq : [],
+      } as any);
+      if (insertErr) throw insertErr;
+      toast({ title: "✨ 발행 대기에 새 글이 추가되었어요" });
+    } catch (e: any) {
+      toast({
+        title: "생성 실패",
+        description: e?.message || "잠시 후 다시 시도해주세요",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      load();
     }
-    toast({ title: "초안 추가됨 — 카드를 열어 ‘AI로 본문 생성’을 눌러주세요" });
-    load();
   });
 
   // Guards
@@ -305,13 +326,13 @@ export default function KanbanBoard() {
   const handleCancelSchedule = async (post: KanbanPost) => {
     const { error } = await supabase
       .from("site_posts")
-      .update({ status: "draft", published_at: null } as any)
+      .update({ status: "scheduled", published_at: null } as any)
       .eq("id", post.id);
     if (error) {
       toast({ title: "취소 실패", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "예약 발행이 취소되었어요" });
+    toast({ title: "예약 발행이 취소되었어요 — 수동 발행 대기" });
     await load();
   };
 
