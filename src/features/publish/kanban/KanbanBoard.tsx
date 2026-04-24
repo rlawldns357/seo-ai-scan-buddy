@@ -467,6 +467,7 @@ export default function KanbanBoard() {
                 status={s}
                 count={s === "published" ? totalPublishedHistory : grouped[s].length}
                 isEmpty={grouped[s].length === 0}
+                posts={grouped[s]}
               >
                 {renderColumnContent(s)}
               </KanbanColumn>
