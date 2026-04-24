@@ -20,6 +20,9 @@ type Product = {
   keywords: string[];
   price: string | null;
   image_url: string | null;
+  compare_at_price: string | null;
+  sale_label: string | null;
+  sale_ends_at: string | null;
   is_active: boolean;
   click_count: number;
   sort_order: number;
