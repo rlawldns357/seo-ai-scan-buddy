@@ -296,6 +296,11 @@ function ProductForm({
   const [url, setUrl] = useState(initial?.url ?? prefillUrl ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
+  const [compareAtPrice, setCompareAtPrice] = useState(initial?.compare_at_price ?? "");
+  const [saleLabel, setSaleLabel] = useState(initial?.sale_label ?? "");
+  const [saleEndsAt, setSaleEndsAt] = useState(
+    initial?.sale_ends_at ? new Date(initial.sale_ends_at).toISOString().slice(0, 16) : "",
+  );
   const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
   const [keywordsText, setKeywordsText] = useState((initial?.keywords ?? []).join(", "));
   const [saving, setSaving] = useState(false);
@@ -323,6 +328,8 @@ function ProductForm({
       if (info.title && !title.trim()) { setTitle(info.title); filled++; }
       if (info.description && !description.trim()) { setDescription(info.description); filled++; }
       if (info.price && !price.trim()) { setPrice(info.price); filled++; }
+      if (info.compare_at_price && !compareAtPrice.trim()) { setCompareAtPrice(info.compare_at_price); filled++; }
+      if (info.sale_label && !saleLabel.trim()) { setSaleLabel(info.sale_label); filled++; }
       if (info.image_url && !imageUrl.trim()) { setImageUrl(info.image_url); filled++; }
       if (Array.isArray(info.keywords) && info.keywords.length > 0 && !keywordsText.trim()) {
         setKeywordsText(info.keywords.join(", "));
