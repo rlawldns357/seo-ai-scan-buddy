@@ -352,8 +352,8 @@ export default function DashboardIndex() {
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Workspace 헤더 + KPI는 OnePage 최상단에서 렌더됩니다.
-              여기서는 Overview 섹션 본문(다음 할 일 + 진단 추천)만 담당. */}
+          {/* 로그인 후 홈 대시보드에서는 요약 카드 + 다음 액션만 노출합니다.
+              세부 운영은 각 전용 페이지(추천/워크플로우/아카이브/리포트)에서 처리합니다. */}
 
           {/* 다음 할 일 — 5% 브랜딩 강조 (그라디언트 + primary border) */}
           <div className="relative overflow-hidden flex items-start justify-between gap-4 flex-wrap rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/[0.06] via-card to-accent/[0.06] px-5 py-4">
