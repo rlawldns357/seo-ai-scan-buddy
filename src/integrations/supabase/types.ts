@@ -640,6 +640,7 @@ export type Database = {
           keywords: string[] | null
           last_viewed_at: string | null
           og_image: string | null
+          product_links: Json
           published_at: string | null
           queue_position: number | null
           scored_at: string | null
@@ -665,6 +666,7 @@ export type Database = {
           keywords?: string[] | null
           last_viewed_at?: string | null
           og_image?: string | null
+          product_links?: Json
           published_at?: string | null
           queue_position?: number | null
           scored_at?: string | null
@@ -690,6 +692,7 @@ export type Database = {
           keywords?: string[] | null
           last_viewed_at?: string | null
           og_image?: string | null
+          product_links?: Json
           published_at?: string | null
           queue_position?: number | null
           scored_at?: string | null
@@ -705,6 +708,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_posts_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "user_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_products: {
+        Row: {
+          click_count: number
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          keywords: string[] | null
+          price: string | null
+          site_id: string
+          sort_order: number
+          title: string
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          click_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          keywords?: string[] | null
+          price?: string | null
+          site_id: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          click_count?: number
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          keywords?: string[] | null
+          price?: string | null
+          site_id?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_products_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "user_sites"
