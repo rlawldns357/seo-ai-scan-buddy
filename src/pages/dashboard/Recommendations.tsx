@@ -10,8 +10,7 @@ import { useAutopublishSettings } from "@/features/publish/useAutopublishSetting
 import LockedFeature from "@/features/publish/LockedFeature";
 import { emitWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
-import { ExternalLink, Loader2, Send, Plus, Trash2, Sparkles, Search, CheckSquare, Square } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ExternalLink, Loader2, Send, Plus, Trash2, Sparkles, Search, CheckCheck, X } from "lucide-react";
 
 type Axis = "SEO" | "AEO" | "GEO";
 type IdeaRow = {
