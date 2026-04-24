@@ -262,23 +262,23 @@ export default function KanbanBoard() {
     await load();
   };
 
-  const createIdea = requireAuth(async () => {
+  const createDraft = requireAuth(async () => {
     if (!site) return;
-    const title = window.prompt("새 아이디어 제목을 입력하세요");
+    const title = window.prompt("새 글의 주제(제목)를 입력하세요");
     if (!title?.trim()) return;
-    const slug = `idea-${Date.now().toString(36)}`;
+    const slug = `draft-${Date.now().toString(36)}`;
     const { error } = await supabase.from("site_posts").insert({
       site_id: site.id,
       slug,
       title: title.trim(),
-      content: `# ${title.trim()}\n\n(아이디어 단계 — 초안으로 옮기면 AI가 본문을 생성합니다)`,
-      status: "idea",
+      content: "",
+      status: "draft",
     } as any);
     if (error) {
       toast({ title: "추가 실패", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "아이디어 추가됨" });
+    toast({ title: "초안 추가됨 — 카드를 열어 ‘AI로 본문 생성’을 눌러주세요" });
     load();
   });
 
