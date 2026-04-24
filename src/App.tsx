@@ -5,6 +5,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import ScrollToTop from "@/components/ScrollToTop";
 import GAListener from "@/components/GAListener";
 import Index from "./pages/Index.tsx";
@@ -42,6 +43,7 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <GAListener />
+        <PaymentTestModeBanner />
         <Suspense fallback={null}>
           <Routes>
             {/* ───── 공개 라우트 (Public) ─────────────────────────────── */}

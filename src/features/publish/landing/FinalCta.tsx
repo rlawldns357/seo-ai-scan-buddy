@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Sparkles, CheckCircle2, LayoutDashboard } from "lucide-react";
+import { useState } from "react";
+import BetaSignupModal from "@/components/BetaSignupModal";
+import { useAuth } from "@/features/auth/useAuth";
 
 const HIGHLIGHTS = [
   "SEO·AEO·GEO 3축 자동 설계",
@@ -9,6 +12,8 @@ const HIGHLIGHTS = [
 ];
 
 export default function FinalCta() {
+  const { user, loading } = useAuth();
+  const [betaOpen, setBetaOpen] = useState(false);
   return (
     <section className="relative w-full overflow-hidden py-24 md:py-40 px-4 md:px-6 bg-gradient-to-b from-background via-primary/5 to-background">
       {/* full-bleed background layers */}
@@ -66,30 +71,41 @@ export default function FinalCta() {
 
         {/* CTAs */}
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Link to="/auth?next=/dashboard" className="w-full sm:w-auto order-1 sm:order-2">
+          {!loading && user ? (
+            <Link to="/dashboard" className="w-full sm:w-auto order-1 sm:order-2">
+              <Button
+                size="lg"
+                className="rounded-full h-16 px-12 gap-2 w-full sm:w-auto justify-center text-base md:text-lg font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.02] transition-all"
+              >
+                <LayoutDashboard className="w-5 h-5" /> 대시보드로 가기
+              </Button>
+            </Link>
+          ) : (
             <Button
               size="lg"
-              className="rounded-full h-16 px-12 gap-2 w-full sm:w-auto justify-center text-base md:text-lg font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.02] transition-all"
+              onClick={() => setBetaOpen(true)}
+              className="order-1 sm:order-2 rounded-full h-16 px-12 gap-2 w-full sm:w-auto justify-center text-base md:text-lg font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.02] transition-all"
             >
-              페이지 만들기 <ArrowRight className="w-5 h-5" />
+              베타 신청하기 <ArrowRight className="w-5 h-5" />
             </Button>
-          </Link>
-          <a href="#how" className="w-full sm:w-auto order-2 sm:order-1">
+          )}
+          <a href="#pricing" className="w-full sm:w-auto order-2 sm:order-1">
             <Button
               size="lg"
               variant="ghost"
               className="rounded-full h-16 px-10 w-full sm:w-auto justify-center text-base md:text-lg hover:bg-card/60"
             >
-              작동 방식 보기
+              요금제 보기
             </Button>
           </a>
         </div>
 
         {/* trust line */}
         <p className="mt-8 text-xs md:text-sm text-muted-foreground">
-          신용카드 등록 없이 시작 · 언제든 자동 발행 정지 가능
+          베타 무료 · 출시 시 Pro 50% 평생 쿠폰 자동 발급
         </p>
       </div>
+      <BetaSignupModal open={betaOpen} onClose={() => setBetaOpen(false)} />
     </section>
   );
 }
