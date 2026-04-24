@@ -54,7 +54,7 @@ export default function KanbanBoard() {
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [openPost, setOpenPost] = useState<KanbanPost | null>(null);
   
-  const [activeTab, setActiveTab] = useState<KanbanStatus>("idea");
+  const [activeTab, setActiveTab] = useState<KanbanStatus>("draft");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
