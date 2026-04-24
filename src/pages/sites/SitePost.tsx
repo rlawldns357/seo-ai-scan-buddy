@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import JsonLd from "@/components/JsonLd";
+import { renderMarkdown } from "@/lib/markdown";
 
 type Site = { id: string; title: string; site_slug: string };
 type FaqItem = { q: string; a: string };
@@ -26,22 +27,7 @@ type Post = {
   product_links: ProductLink[] | null;
 };
 
-function mdToHtml(md: string): string {
-  return md
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/^### (.*)$/gm, "<h3>$1</h3>")
-    .replace(/^## (.*)$/gm, "<h2>$1</h2>")
-    .replace(/^# (.*)$/gm, "<h1>$1</h1>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
-    .replace(/\[(.+?)\]\((.+?)\)/g, (_m, text, url) => {
-      const isExternal = /^https?:\/\//.test(url);
-      const rel = isExternal ? ' target="_blank" rel="noreferrer"' : "";
-      return `<a href="${url}"${rel}>${text}</a>`;
-    })
-    .replace(/\n\n/g, "</p><p>")
-    .replace(/^/, "<p>").concat("</p>");
-}
+// (markdown 렌더링은 src/lib/markdown.ts의 renderMarkdown 사용 — 표/리스트/코드블록/인용 모두 지원)
 
 /**
  * 본문에서 ## FAQ 섹션 이후를 잘라내 깔끔한 본문만 반환.
@@ -167,8 +153,8 @@ export default function SitePost() {
           <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">{post.title}</h1>
           {post.published_at && <p className="text-xs text-muted-foreground mt-2">{new Date(post.published_at).toLocaleDateString("ko-KR")}</p>}
           <div
-            className="prose prose-sm md:prose-base max-w-none mt-8 text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:font-semibold [&_h3]:mt-6 [&_p]:my-3 [&_p]:leading-relaxed [&_a]:text-primary [&_a]:underline [&_table]:my-4 [&_table]:w-full [&_table]:text-sm [&_th]:text-left [&_th]:font-semibold [&_th]:p-2 [&_th]:border-b [&_td]:p-2 [&_td]:border-b [&_td]:border-border/60"
-            dangerouslySetInnerHTML={{ __html: mdToHtml(cleanBody) }}
+            className="mt-8 text-base leading-[1.8] text-foreground/90 [&>*:first-child]:mt-0"
+            dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanBody) }}
           />
 
           {/* FAQ 섹션 — AEO 강화 */}
