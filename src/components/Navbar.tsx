@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Search, ShieldCheck, Bell, MessageSquare, Briefcase, LogIn, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
 import ConsultationModal from "@/components/ConsultationModal";
 import LeadModal from "@/components/LeadModal";
@@ -10,6 +10,12 @@ import { useAuth } from "@/features/auth/useAuth";
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
   const { user } = useAuth();
+  const location = useLocation();
+  // Preserve current location as the post-auth redirect target so users land back where they were.
+  // Excludes /auth itself to avoid redirect loops.
+  const nextParam = encodeURIComponent(
+    location.pathname.startsWith("/auth") ? "/dashboard" : location.pathname + location.search,
+  );
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [engineVersion, setEngineVersion] = useState<number | null>(null);
   const [contactOpen, setContactOpen] = useState(false);
@@ -106,7 +112,7 @@ export default function Navbar() {
               </Link>
             ) : (
               <Link
-                to="/auth?next=/dashboard"
+                to={`/auth?next=${nextParam}`}
                 className="inline-flex items-center gap-1 sm:gap-1.5 px-3 h-8 rounded-full border border-border bg-card text-foreground text-xs font-semibold hover:bg-muted transition-colors whitespace-nowrap"
               >
                 <LogIn className="w-3.5 h-3.5" />

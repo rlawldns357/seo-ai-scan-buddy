@@ -58,12 +58,12 @@ export default function Hero() {
               </>
             ) : (
               <>
-                <Link to="/auth?next=/dashboard">
+                <Link to="/auth?next=%2Fautoblog">
                   <Button size="lg" className="rounded-full h-12 px-6 gap-2">
                     페이지 만들기 <ArrowRight className="w-4 h-4" />
                   </Button>
                 </Link>
-                <Link to="/auth?next=/dashboard">
+                <Link to="/auth?next=%2Fautoblog">
                   <Button size="lg" variant="outline" className="rounded-full h-12 px-6 gap-2">
                     <LogIn className="w-4 h-4" /> 베타 가입자 로그인
                   </Button>
