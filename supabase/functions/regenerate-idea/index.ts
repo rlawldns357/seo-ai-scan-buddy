@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
     // topup mode: 무료(크레딧 미차감) — 사용자 사이트의 idea 큐에 N개 보충
     if (mode === "topup") {
       const siteId: string = body.siteId ?? "";
-      const target: number = Math.min(Math.max(Number(body.target ?? 5), 1), 20);
+      const target: number = Math.min(Math.max(Number(body.target ?? 10), 1), 200);
       if (!siteId) return json({ error: "siteId가 필요합니다." }, 400);
 
       // 본인 사이트 확인
