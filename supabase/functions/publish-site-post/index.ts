@@ -368,6 +368,33 @@ serve(async (req) => {
       ? injectInternalLinks(post.content, candidates, siteSlug)
       : { newContent: post.content, injected: [] };
 
+    // ── 제품 카탈로그 매칭 (사이트 단위 등록 → AI 키워드 매칭) ──
+    const { data: productRows } = await supabase
+      .from("site_products")
+      .select("id, title, url, description, keywords, price, image_url")
+      .eq("site_id", post.site_id)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const productCandidates: ProductCandidate[] = (productRows || []).map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      url: p.url,
+      description: p.description,
+      keywords: Array.isArray(p.keywords) ? p.keywords : [],
+      price: p.price,
+      image_url: p.image_url,
+    }));
+
+    const matchedProducts = matchProducts(
+      newContent,
+      Array.isArray(post.keywords) ? post.keywords : [],
+      post.title,
+      productCandidates,
+    );
+
     // ── 발행 후 3축 자동 채점 ──
     const faqArr = Array.isArray(post.faq) ? post.faq : [];
     const kwArr = Array.isArray(post.keywords) ? post.keywords : [];
@@ -388,6 +415,7 @@ serve(async (req) => {
         published_at: nowIso,
         content: newContent,
         internal_links: injected,
+        product_links: matchedProducts,
         seo_score: scores.seo,
         aeo_score: scores.aeo,
         geo_score: scores.geo,
@@ -401,6 +429,7 @@ serve(async (req) => {
       JSON.stringify({
         ok: true,
         injectedLinks: injected.length,
+        productLinks: matchedProducts.length,
         scores,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },
