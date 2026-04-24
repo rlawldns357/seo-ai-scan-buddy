@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,216 +7,113 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
 import LockedFeature from "@/features/publish/LockedFeature";
-import { useRequireAuthAction } from "@/features/auth/useRequireAuthAction";
 import { emitWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
-import { ExternalLink, Dice5, Loader2, Send } from "lucide-react";
-
-const MAX_SEED_HISTORY = 12;
+import { ExternalLink, Loader2, Send, Plus, Trash2, Sparkles, Search } from "lucide-react";
 
 type Axis = "SEO" | "AEO" | "GEO";
-type Idea = { id: string; topic: string; axis: Axis; reason: string; rolling?: boolean };
+type IdeaRow = {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  source_axis: string | null;
+  created_at: string;
+};
 
-const axisColor: Record<Axis, string> = {
+const axisColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
   AEO: "bg-accent/10 text-accent",
   GEO: "bg-score-warning/10 text-score-warning",
 };
 
-const AXES: Axis[] = ["SEO", "AEO", "GEO"];
-
-// Fallback templates (used only if AI fails) — kept simple/neutral
-const FALLBACK_BUILDERS: Record<Axis, (seed: string) => string> = {
-  SEO: (seed) => `${seed} 핵심 가이드`,
-  AEO: (seed) => `${seed} 자주 묻는 질문`,
-  GEO: (seed) => `${seed} 비교와 선택 기준`,
-};
-
-function buildFallbackIdeas(seed: string, orderedAxes: Axis[]): Idea[] {
-  const cleanSeed = seed.trim();
-  if (!cleanSeed) return [];
-  return orderedAxes.map((axis) => ({
-    id: `${axis}-${cleanSeed}`,
-    topic: FALLBACK_BUILDERS[axis](cleanSeed),
-    axis,
-    reason: `${cleanSeed} 중심 ${axis} 아이디어`,
-  }));
-}
-
 export default function Recommendations() {
   const { site } = useUserSite();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const guard = useRequireAuthAction();
-  const [seed, setSeed] = useState("");
-  const [ideas, setIdeas] = useState<Idea[]>([]);
+
+  const [ideas, setIdeas] = useState<IdeaRow[]>([]);
   const [loading, setLoading] = useState(false);
-  const [creditTotal, setCreditTotal] = useState<number | null>(null);
-  const [seedRolling, setSeedRolling] = useState(false);
-  const [queueingIdeaId, setQueueingIdeaId] = useState<string | null>(null);
-  const [seedHistory, setSeedHistory] = useState<string[]>([]);
-  const [orderedAxes, setOrderedAxes] = useState<Axis[]>(AXES);
-  const [queuedIdeaIds, setQueuedIdeaIds] = useState<Set<string>>(new Set());
+  const [topupLoading, setTopupLoading] = useState(false);
+  const [filterSeed, setFilterSeed] = useState("");
+  const [promotingId, setPromotingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const loadCredits = useCallback(async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data } = await supabase
-      .from("regeneration_credits")
-      .select("balance, addon_balance")
-      .eq("user_id", user.id)
-      .maybeSingle();
-    setCreditTotal((data?.balance ?? 0) + (data?.addon_balance ?? 0));
-  }, []);
-
-  useEffect(() => {
-    void loadCredits();
-  }, [loadCredits]);
-
-  // Generate ideas via AI when seed/axes change (debounced for typing)
-  useEffect(() => {
-    setQueuedIdeaIds(new Set());
-    const cleanSeed = seed.trim();
-    if (!cleanSeed || !site) {
-      setIdeas([]);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    const t = setTimeout(async () => {
-      try {
-        const { data, error } = await supabase.functions.invoke("regenerate-idea", {
-          body: {
-            mode: "ideas3",
-            seed: cleanSeed,
-            siteUrl: site.site_url,
-            siteTitle: site.title,
-          },
-        });
-        if (cancelled) return;
-        if (error || data?.error || !data?.ideas) {
-          // Fallback to neutral templates
-          setIdeas(buildFallbackIdeas(cleanSeed, orderedAxes));
-          return;
-        }
-        const next: Idea[] = orderedAxes.map((axis) => ({
-          id: `${axis}-${cleanSeed}`,
-          topic: data.ideas[axis]?.topic ?? FALLBACK_BUILDERS[axis](cleanSeed),
-          axis,
-          reason: data.ideas[axis]?.reason ?? `${cleanSeed} 중심 ${axis} 아이디어`,
-        }));
-        setIdeas(next);
-      } catch {
-        if (!cancelled) setIdeas(buildFallbackIdeas(cleanSeed, orderedAxes));
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }, 600);
-    return () => { cancelled = true; clearTimeout(t); };
-  }, [seed, orderedAxes, site]);
-
-  // Load score order only; don't show generic recommendations without a real topic
-  useEffect(() => {
+  // Realtime: load idea queue + subscribe to changes
+  const loadIdeas = useCallback(async () => {
     if (!site) return;
     setLoading(true);
-    (async () => {
-      const { data: history } = await supabase
-        .from("analysis_history")
-        .select("seo_score, aeo_score, geo_score")
-        .eq("url", site.site_url)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      let orderedAxes: Axis[] = [...AXES];
-      if (history) {
-        const map: Record<Axis, number> = {
-          SEO: history.seo_score, AEO: history.aeo_score, GEO: history.geo_score,
-        };
-        orderedAxes.sort((a, b) => map[a] - map[b]); // worst first
-      }
-      setOrderedAxes(orderedAxes);
-      setLoading(false);
-    })();
+    const { data } = await (supabase as any)
+      .from("site_posts")
+      .select("id, title, excerpt, source_axis, created_at")
+      .eq("site_id", site.id)
+      .eq("status", "idea")
+      .order("created_at", { ascending: false })
+      .limit(50);
+    setIdeas((data ?? []) as IdeaRow[]);
+    setLoading(false);
   }, [site]);
 
-  const rollSeed = guard(async () => {
+  useEffect(() => {
+    void loadIdeas();
+  }, [loadIdeas]);
+
+  // Filtered view (selective seed filter)
+  const visibleIdeas = useMemo(() => {
+    const q = filterSeed.trim().toLowerCase();
+    if (!q) return ideas;
+    return ideas.filter(
+      (i) =>
+        i.title.toLowerCase().includes(q) ||
+        (i.excerpt ?? "").toLowerCase().includes(q),
+    );
+  }, [ideas, filterSeed]);
+
+  const topup = async (target: number) => {
     if (!site) return;
-    setSeedRolling(true);
+    if (!user) {
+      navigate(`/auth?next=${encodeURIComponent("/dashboard/recommendations")}`);
+      return;
+    }
+    setTopupLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke("regenerate-idea", {
         body: {
-          mode: "seed",
-          siteUrl: site.site_url,
-          siteTitle: site.title,
-          avoidSeeds: seedHistory,
+          mode: "topup",
+          siteId: site.id,
+          target,
+          seed: filterSeed.trim() || undefined,
         },
       });
-      // 컨텍스트 부족(422) — 일반론 추천을 거부하고 사용자 입력 유도
-      const insufficient = (data?.insufficient_context === true) ||
-        (typeof error?.message === "string" && error.message.includes("422"));
-      if (insufficient) {
-        toast({
-          title: "추천할 만한 주제가 없어요",
-          description: data?.error ?? "사이트 내용이 부족합니다. 관심 주제를 직접 입력해주세요.",
-        });
-        return;
-      }
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
-      const next: string = data?.seed ?? "";
-      if (!next) throw new Error("빈 응답");
-      setSeed(next);
-      setSeedHistory((h) => [next, ...h.filter((s) => s !== next)].slice(0, MAX_SEED_HISTORY));
-      toast({ title: "🎲 관심 주제 추천 완료", description: next });
+      const inserted = Number(data?.inserted ?? 0);
+      if (inserted > 0) {
+        toast({ title: `✨ 아이디어 ${inserted}개 추가`, description: "재고에 쌓아뒀어요." });
+      } else {
+        toast({ title: "이미 충분해요", description: "큐가 목표치에 도달했어요." });
+      }
+      await loadIdeas();
     } catch (e) {
       toast({
-        title: "추천 실패",
+        title: "보충 실패",
         description: e instanceof Error ? e.message : "다시 시도해주세요",
         variant: "destructive",
       });
     } finally {
-      setSeedRolling(false);
+      setTopupLoading(false);
     }
-  });
+  };
 
-  const sendToWorkflow = async (idea: Idea) => {
-    if (authLoading) {
-      toast({
-        title: "로그인 상태 확인 중입니다",
-        description: "잠시 후 다시 시도해주세요.",
-      });
-      return;
-    }
-    if (!user) {
-      const next = encodeURIComponent("/dashboard/recommendations");
-      toast({
-        title: "로그인이 필요한 작업입니다",
-        description: "이 작업을 계속하려면 먼저 로그인하세요.",
-      });
-      navigate(`/auth?next=${next}`);
-      return;
-    }
-    if (!site) {
-      toast({
-        title: "사이트를 먼저 선택해주세요",
-        description: "블로그 허브가 준비되면 자동 발행로 보낼 수 있어요.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (queueingIdeaId || queuedIdeaIds.has(idea.id)) {
-      // Prevent rapid double-clicks and re-adding the same idea
-      return;
-    }
-
-    setQueueingIdeaId(idea.id);
+  const promoteIdea = async (idea: IdeaRow) => {
+    if (authLoading) return;
+    if (!user || !site) return;
+    if (promotingId) return;
+    setPromotingId(idea.id);
     try {
-      // 1) AI 엔진으로 본문 생성 (페르소나 v3 적용)
+      const axis = (idea.source_axis as Axis) || "SEO";
       const { data: gen, error: genErr } = await supabase.functions.invoke(
         "generate-content-draft",
-        { body: { topic: idea.topic, targetAxis: idea.axis, siteUrl: site.site_url } },
+        { body: { topic: idea.title, targetAxis: axis, siteUrl: site.site_url } },
       );
       if (genErr) throw genErr;
       if (gen?.error) throw new Error(gen.error);
@@ -227,40 +124,56 @@ export default function Recommendations() {
       const rand = Math.random().toString(36).slice(2, 6);
       const slug = gen?.slug
         ? `${gen.slug}-${Date.now().toString(36)}`
-        : `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}-${rand}`;
-      const { data, error } = await (supabase as any)
+        : `idea-${slugify(idea.title).slice(0, 24)}-${Date.now().toString(36)}-${rand}`;
+
+      // Update the existing idea row → promote to scheduled with full content
+      const { error } = await (supabase as any)
         .from("site_posts")
-        .insert({
-          site_id: site.id,
+        .update({
           slug,
-          title: gen?.title || idea.topic,
-          excerpt: gen?.excerpt ?? null,
+          title: gen?.title || idea.title,
+          excerpt: gen?.excerpt ?? idea.excerpt,
           content: gen.content,
           status: "scheduled",
-          source_axis: idea.axis,
+          source_axis: axis,
           keywords: Array.isArray(gen?.keywords) ? gen.keywords : [],
           faq: Array.isArray(gen?.faq) ? gen.faq : [],
         })
-        .select("id")
-        .single();
-
+        .eq("id", idea.id);
       if (error) throw error;
 
-      setQueuedIdeaIds((prev) => {
-        const next = new Set(prev);
-        next.add(idea.id);
-        return next;
-      });
-      emitWorkflowChanged({ siteId: site.id, postId: data?.id, source: "recommendations" });
+      emitWorkflowChanged({ siteId: site.id, postId: idea.id, source: "recommendations" });
       toast({ title: "✨ 본문 생성 완료", description: "발행 대기 칸으로 이동합니다." });
-    } catch (error) {
+      setIdeas((prev) => prev.filter((i) => i.id !== idea.id));
+    } catch (e) {
       toast({
-        title: "추가 실패",
-        description: error instanceof Error ? error.message : "다시 시도해주세요",
+        title: "본문 생성 실패",
+        description: e instanceof Error ? e.message : "다시 시도해주세요",
         variant: "destructive",
       });
     } finally {
-      setQueueingIdeaId(null);
+      setPromotingId(null);
+    }
+  };
+
+  const deleteIdea = async (idea: IdeaRow) => {
+    if (deletingId) return;
+    setDeletingId(idea.id);
+    try {
+      const { error } = await (supabase as any)
+        .from("site_posts")
+        .delete()
+        .eq("id", idea.id);
+      if (error) throw error;
+      setIdeas((prev) => prev.filter((i) => i.id !== idea.id));
+    } catch (e) {
+      toast({
+        title: "삭제 실패",
+        description: e instanceof Error ? e.message : "다시 시도해주세요",
+        variant: "destructive",
+      });
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -268,100 +181,153 @@ export default function Recommendations() {
     return (
       <LockedFeature
         title="먼저 블로그 허브를 만들어주세요"
-        description="블로그 허브를 만들면 분석 결과를 바탕으로 글 아이디어를 추천해드려요."
+        description="블로그 허브를 만들면 사이트에 맞는 글 아이디어를 자동으로 쌓아드려요."
         ctaLabel="블로그 허브 만들기"
         onCta={() => navigate("/dashboard")}
       />
     );
   }
 
+  const stockCount = ideas.length;
+
   return (
     <div className="space-y-4">
-      {/* Site URL + topic seed input */}
+      {/* Header card */}
       <Card className="p-4 rounded-2xl border-border/50 shadow-card bg-card">
-        <div className="grid md:grid-cols-[1fr_1.2fr_auto] gap-2 items-end">
-          <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">분석 대상 URL</label>
-            <div className="mt-1 flex items-center gap-1.5 px-3 h-10 rounded-full bg-muted/50 border border-border/40">
-              <span className="text-sm text-foreground truncate flex-1">{site.site_url}</span>
-              <a href={site.site_url} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-primary shrink-0" aria-label="새 탭">
-                <ExternalLink className="h-3.5 w-3.5" />
-              </a>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h2 className="text-base font-bold text-foreground">아이디어 재고</h2>
+              <span className="px-2 py-0.5 rounded-full bg-muted text-foreground/80 text-xs font-semibold tabular-nums">
+                {stockCount}
+              </span>
             </div>
-          </div>
-          <div>
-            <label htmlFor="seed-topic" className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">관심 주제 (선택)</label>
-            <div className="mt-1 flex items-center gap-1.5">
-              <Input
-                id="seed-topic"
-                placeholder="예: 친환경 패키징, 신규 방문자 유입"
-                value={seed}
-                onChange={(e) => setSeed(e.target.value)}
-                className="h-10 rounded-full flex-1"
-                maxLength={120}
-              />
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="rounded-full h-10 px-3 gap-1 shrink-0"
-                disabled={seedRolling}
-                onClick={() => rollSeed()}
-                title="사이트 컨텍스트로 관심 주제 추천 (무료)"
-                aria-label="관심 주제 추천"
-              >
-                {seedRolling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Dice5 className="w-4 h-4" />}
-                <span className="hidden sm:inline text-xs">추천</span>
-              </Button>
-            </div>
-          </div>
-          <div className="text-[11px] text-muted-foreground inline-flex items-center gap-1 shrink-0 pb-2 md:pb-3">
-            <span>🎲</span>
-            <span className="font-semibold text-foreground tabular-nums">{creditTotal ?? "-"}</span>
-            <span>크레딧</span>
-          </div>
-        </div>
-         <p className="text-[11px] text-muted-foreground mt-2">
-           <span className="font-semibold text-foreground">🎲 주사위</span>로 사이트 맞춤 관심 주제를 받거나 직접 입력하면, AI가 SEO·AEO·GEO 3축 아이디어를 만들어드려요.
-        </p>
-      </Card>
-
-      {loading ? (
-        <p className="text-sm text-muted-foreground">불러오는 중...</p>
-      ) : ideas.length === 0 ? (
-        <Card className="px-4 py-6 border-dashed border-border/60 bg-muted/20">
-          <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">아직 추천 아이디어가 없어요</p>
-            <p className="text-sm text-muted-foreground break-keep">
-              관심 주제를 직접 적거나 주사위로 추천받으면, 그 주제 기준으로만 아이디어를 보여드릴게요.
+            <p className="text-[12px] text-muted-foreground mt-0.5 break-keep">
+              사이트 컨텍스트로 자동 생성된 글 아이디어가 쌓입니다. 발행 대기로 보내면 본문이 생성돼요.
             </p>
           </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              type="button"
+              size="sm"
+              variant="default"
+              className="rounded-full h-9 px-3 gap-1.5"
+              disabled={topupLoading}
+              onClick={() => topup(stockCount + 5)}
+            >
+              {topupLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
+              <span className="text-xs font-semibold">아이디어 5개 더 받기</span>
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-3 flex items-center gap-2 px-3 h-10 rounded-full bg-muted/40 border border-border/40">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground shrink-0">URL</span>
+          <span className="text-sm text-foreground/80 truncate flex-1">{site.site_url}</span>
+          <a
+            href={site.site_url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-muted-foreground hover:text-primary shrink-0"
+            aria-label="새 탭"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        </div>
+
+        <div className="mt-2 flex items-center gap-1.5">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+            <Input
+              placeholder="키워드로 재고 필터링 (선택)"
+              value={filterSeed}
+              onChange={(e) => setFilterSeed(e.target.value)}
+              className="h-9 rounded-full pl-9 text-sm"
+              maxLength={120}
+            />
+          </div>
+          {filterSeed && (
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              className="rounded-full h-9 px-3 text-xs"
+              onClick={() => setFilterSeed("")}
+            >
+              초기화
+            </Button>
+          )}
+        </div>
+      </Card>
+
+      {/* Idea stock list */}
+      {loading ? (
+        <p className="text-sm text-muted-foreground">불러오는 중...</p>
+      ) : visibleIdeas.length === 0 ? (
+        <Card className="px-4 py-8 border-dashed border-border/60 bg-muted/20 text-center">
+          <Sparkles className="w-6 h-6 text-muted-foreground/60 mx-auto mb-2" />
+          <p className="text-sm font-medium text-foreground">
+            {ideas.length === 0 ? "아직 재고가 없어요" : "필터에 맞는 아이디어가 없어요"}
+          </p>
+          <p className="text-[12px] text-muted-foreground mt-1 break-keep">
+            {ideas.length === 0
+              ? "위 ‘아이디어 5개 더 받기’를 눌러 재고를 채워보세요."
+              : "키워드를 비우거나 더 받아보세요."}
+          </p>
         </Card>
       ) : (
         <div className="space-y-2">
-          {ideas.map((idea) => {
-            const isQueued = queuedIdeaIds.has(idea.id);
-            const isQueueing = queueingIdeaId === idea.id;
+          {visibleIdeas.map((idea) => {
+            const isPromoting = promotingId === idea.id;
+            const isDeleting = deletingId === idea.id;
+            const axis = (idea.source_axis as Axis) || "SEO";
             return (
-              <Card key={idea.id} className={`px-3 py-3 transition-colors ${idea.rolling || isQueued ? "opacity-60" : "hover:border-primary/50"}`}>
+              <Card
+                key={idea.id}
+                className={`px-3 py-3 transition-colors ${
+                  isPromoting || isDeleting ? "opacity-60" : "hover:border-primary/50"
+                }`}
+              >
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${axisColor[idea.axis]}`}>{idea.axis}</span>
+                    <span
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
+                        axisColor[axis] ?? "bg-muted text-foreground"
+                      }`}
+                    >
+                      {axis}
+                    </span>
                     <div className="min-w-0">
-                      <h3 className="text-sm font-medium text-foreground line-clamp-1 break-keep">{idea.topic}</h3>
-                      <p className="text-[11px] text-muted-foreground line-clamp-1 break-keep">{idea.reason}</p>
+                      <h3 className="text-sm font-medium text-foreground line-clamp-1 break-keep">
+                        {idea.title}
+                      </h3>
+                      {idea.excerpt && (
+                        <p className="text-[11px] text-muted-foreground line-clamp-1 break-keep">
+                          {idea.excerpt}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <Button
                       size="sm"
-                      variant={isQueued ? "outline" : "default"}
+                      variant="default"
                       className="rounded-full h-8 text-xs gap-1"
-                      disabled={isQueueing || isQueued || !!queueingIdeaId}
-                      onClick={() => sendToWorkflow(idea)}
+                      disabled={isPromoting || !!promotingId}
+                      onClick={() => promoteIdea(idea)}
                     >
-                      {isQueueing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
-                      {isQueued ? "추가됨" : "자동 발행로"}
+                      {isPromoting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
+                      발행 대기로
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      disabled={isDeleting}
+                      onClick={() => deleteIdea(idea)}
+                      aria-label="아이디어 삭제"
+                    >
+                      {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                     </Button>
                   </div>
                 </div>

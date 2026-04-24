@@ -63,7 +63,11 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
 
     const body = await req.json().catch(() => ({}));
-    const mode: "topic" | "seed" | "ideas3" = body.mode === "seed" ? "seed" : body.mode === "ideas3" ? "ideas3" : "topic";
+    const mode: "topic" | "seed" | "ideas3" | "topup" =
+      body.mode === "seed" ? "seed"
+      : body.mode === "ideas3" ? "ideas3"
+      : body.mode === "topup" ? "topup"
+      : "topic";
     const siteUrl: string = body.siteUrl ?? "";
     const siteTitle: string = body.siteTitle ?? "";
     const axis: Axis = (body.axis as Axis) || "SEO";
@@ -73,6 +77,38 @@ Deno.serve(async (req) => {
     const avoidSeeds: string[] = Array.isArray(body.avoidSeeds) ? body.avoidSeeds.slice(0, 20) : [];
 
     const admin = createClient(supabaseUrl, serviceKey);
+
+    // topup mode: 무료(크레딧 미차감) — 사용자 사이트의 idea 큐에 N개 보충
+    if (mode === "topup") {
+      const siteId: string = body.siteId ?? "";
+      const target: number = Math.min(Math.max(Number(body.target ?? 5), 1), 20);
+      if (!siteId) return json({ error: "siteId가 필요합니다." }, 400);
+
+      // 본인 사이트 확인
+      const { data: ownSite } = await admin
+        .from("user_sites")
+        .select("id")
+        .eq("id", siteId)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!ownSite) return json({ error: "사이트 권한이 없습니다." }, 403);
+
+      // 내부 호출 (service role)
+      const tRes = await fetch(`${supabaseUrl}/functions/v1/topup-idea-queue`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({ siteId, target }),
+      });
+      const tBody = await tRes.json().catch(() => ({}));
+      if (!tRes.ok) {
+        console.error("topup failed", tRes.status, tBody);
+        return json({ error: tBody?.error ?? "보충 실패" }, tRes.status);
+      }
+      return json({ ok: true, ...tBody });
+    }
 
     // ideas3 mode: 무료 — 시드 1개로 SEO/AEO/GEO 3축 주제를 한 번에 생성
     if (mode === "ideas3") {

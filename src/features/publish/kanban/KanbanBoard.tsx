@@ -54,6 +54,7 @@ export default function KanbanBoard() {
       .from("site_posts")
       .select("id,site_id,slug,title,excerpt,content,status,source_axis,published_at,created_at,updated_at,view_count,seo_score,aeo_score,geo_score,keywords")
       .eq("site_id", site.id)
+      .neq("status", "idea") // ideas live in /dashboard/recommendations stock, not workflow
       .order("updated_at", { ascending: false });
     if (error) {
       toast({ title: "불러오기 실패", description: error.message, variant: "destructive" });
