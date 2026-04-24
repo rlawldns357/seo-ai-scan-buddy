@@ -209,18 +209,14 @@ export default function SitePost() {
                       onClick={() => {
                         void (supabase as any).rpc("increment_site_product_click", { _product_id: p.id });
                       }}
-                      className={`group relative flex ${isHero ? "flex-col sm:flex-row gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl transition no-underline ${
-                        hasSaleSignal
-                          ? "border-2 border-destructive/40 bg-gradient-to-br from-destructive/[0.06] via-card to-card hover:border-destructive/70 hover:shadow-[0_8px_24px_-8px_hsl(var(--destructive)/0.35)]"
-                          : "border border-border bg-card hover:border-primary/40 hover:shadow-sm"
-                      }`}
+                      className={`group relative flex ${isHero ? "flex-col sm:flex-row gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl border border-border bg-card hover:border-foreground/20 hover:shadow-sm transition no-underline`}
                     >
-                      {/* 할인률 배지 */}
+                      {/* 할인률 배지 — 이미지 좌상단 오버레이 (담백) */}
                       {discount && (
-                        <span className={`absolute z-10 inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground font-black tabular-nums shadow-lg ring-2 ring-background ${
+                        <span className={`absolute z-10 inline-flex items-center justify-center rounded-md bg-destructive text-destructive-foreground font-bold tabular-nums ${
                           isHero
-                            ? "-top-3 -left-3 min-w-[60px] h-14 px-3 text-xl"
-                            : "-top-2 -left-2 min-w-[44px] h-11 px-2 text-base"
+                            ? "top-3 left-3 px-2 py-1 text-sm"
+                            : "top-2 left-2 px-1.5 py-0.5 text-xs"
                         }`}>
                           {discount}%
                         </span>
