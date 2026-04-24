@@ -12,11 +12,17 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarClock, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type ScheduleItem = { id: string; title: string; iso: string };
+
 type Props = {
   open: boolean;
   initialIso: string | null;
   onClose: () => void;
   onSave: (iso: string) => Promise<void> | void;
+  /** Other already-scheduled posts in this site (for 7-day timeline). */
+  existingSchedules?: ScheduleItem[];
+  /** Exclude this post id from timeline (it's the one being scheduled). */
+  currentPostId?: string;
 };
 
 const WEEKDAY = ["일", "월", "화", "수", "목", "금", "토"];
