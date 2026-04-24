@@ -312,7 +312,7 @@ export default function KanbanBoard() {
         title="사이트가 아직 없어요"
         description="대시보드 상단에서 사이트를 먼저 등록해주세요."
         ctaLabel="사이트 등록으로"
-        onCta={() => document.getElementById("overview")?.scrollIntoView({ behavior: "smooth" })}
+        onCta={() => navigate("/dashboard")}
       />
     );
   }
@@ -383,7 +383,7 @@ export default function KanbanBoard() {
         <>
           {visible.map(renderCard)}
           <button
-            onClick={() => document.getElementById("archive")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => navigate("/dashboard/archive")}
             className="w-full text-[11px] text-muted-foreground hover:text-foreground border border-dashed border-border/40 rounded-xl py-2.5 transition-colors"
           >
             +{hidden}편 더보기 → 보관함으로 정리하기
@@ -417,7 +417,7 @@ export default function KanbanBoard() {
               size="sm"
               variant="ghost"
               className="rounded-full h-8 text-xs"
-              onClick={() => document.getElementById("archive")?.scrollIntoView({ behavior: "smooth" })}
+              onClick={() => navigate("/dashboard/archive")}
             >
               <Archive className="h-3 w-3" /> 보관함 {archivedCount}
             </Button>
@@ -428,7 +428,7 @@ export default function KanbanBoard() {
           <Button
             size="sm"
             className="rounded-full h-8 text-xs"
-            onClick={() => document.getElementById("recommendations")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => navigate("/dashboard/recommendations")}
           >
             <Sparkles className="h-3 w-3" /> 추천에서 가져오기
           </Button>

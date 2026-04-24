@@ -373,10 +373,7 @@ export default function DashboardIndex() {
             </div>
             <Button
               className="relative rounded-full shrink-0"
-              onClick={() => {
-                const target = queueCounts.queued.length > 0 ? "workflow" : "recommendations";
-                document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
+              onClick={() => navigate(queueCounts.queued.length > 0 ? "/dashboard/workflow" : "/dashboard/recommendations")}
             >
               {queueCounts.queued.length > 0 ? (
                 <><Send className="w-4 h-4" /> 워크플로우 열기</>
