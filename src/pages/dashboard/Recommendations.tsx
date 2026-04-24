@@ -152,7 +152,7 @@ export default function Recommendations() {
       return;
     }
     if (!user) {
-      const next = encodeURIComponent("/dashboard#recommendations");
+      const next = encodeURIComponent("/dashboard/recommendations");
       toast({
         title: "로그인이 필요한 작업입니다",
         description: "이 작업을 계속하려면 먼저 로그인하세요.",
@@ -233,7 +233,7 @@ export default function Recommendations() {
         title="먼저 블로그 허브를 만들어주세요"
         description="블로그 허브를 만들면 분석 결과를 바탕으로 글 아이디어를 추천해드려요."
         ctaLabel="블로그 허브 만들기"
-        onCta={() => navigate("/dashboard#overview")}
+        onCta={() => navigate("/dashboard")}
       />
     );
   }
