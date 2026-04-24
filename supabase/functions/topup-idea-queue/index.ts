@@ -130,3 +130,36 @@ function json(b: unknown, status = 200) {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 }
+
+function extractIdeasFromSse(raw: string): Array<{ topic: string; axis?: string; reason?: string }> {
+  const ideas: Array<{ topic: string; axis?: string; reason?: string }> = [];
+  const seen = new Set<string>();
+
+  for (const line of raw.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith("data:")) continue;
+
+    const payload = trimmed.slice(5).trim();
+    if (!payload || payload === "[DONE]") continue;
+
+    try {
+      const parsed = JSON.parse(payload);
+      const chunk = parsed?.choices?.[0]?.delta?.content;
+      if (!chunk || typeof chunk !== "string") continue;
+
+      for (const match of chunk.matchAll(/\{[^\n]*"axis"\s*:\s*"(SEO|AEO|GEO)"[^\n]*"title"\s*:\s*"([^"]{1,200})"[^\n]*"reason"\s*:\s*"([^"]{1,280})"[^\n]*\}/g)) {
+        const axis = match[1];
+        const topic = match[2]?.trim();
+        const reason = match[3]?.trim();
+        const key = `${axis}:${topic}`.toLowerCase();
+        if (!topic || seen.has(key)) continue;
+        seen.add(key);
+        ideas.push({ axis, topic, reason });
+      }
+    } catch {
+      continue;
+    }
+  }
+
+  return ideas;
+}
