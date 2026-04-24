@@ -59,6 +59,8 @@ export default function KanbanCard({
   const badge = SCHEDULE_BADGE[scheduleStatus];
 
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const publishError: string | null = (post as KanbanPost & { publishError?: string | null }).publishError ?? null;
 
   return (
@@ -74,9 +76,10 @@ export default function KanbanCard({
             className="absolute top-1 right-1 h-6 w-6 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity z-10"
             onClick={(e) => {
               e.stopPropagation();
-              if (confirm(`"${post.title}"을(를) 영구 삭제할까요?`)) onDelete(post);
+              setDeleteOpen(true);
             }}
             title="삭제"
+            aria-label="이 글 삭제"
           >
             <Trash2 className="h-3 w-3" />
           </Button>
