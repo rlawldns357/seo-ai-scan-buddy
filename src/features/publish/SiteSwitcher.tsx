@@ -66,8 +66,8 @@ export default function SiteSwitcher() {
 
       {open && (
         <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute left-2 right-2 mt-1 z-50 rounded-lg border border-sidebar-border bg-popover shadow-lg overflow-hidden">
+          <div className="fixed inset-0 z-[60]" onClick={() => setOpen(false)} />
+          <div className="absolute left-2 right-2 mt-1 z-[61] rounded-lg border border-sidebar-border bg-popover shadow-lg overflow-hidden">
             <div className="max-h-64 overflow-y-auto py-1">
               {sites.length === 0 && (
                 <div className="px-3 py-2 text-xs text-muted-foreground">등록된 사이트가 없습니다</div>
