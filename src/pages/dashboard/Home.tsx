@@ -73,7 +73,7 @@ export default function DashboardHome() {
         <title>대시보드 · SearchTune OS</title>
       </Helmet>
       <WorkspaceHeader />
-      <DashboardHero />
+      <DashboardHero stage="ready" siteTitle={site.title} siteHref={site.site_url} />
       <ConnectedHome siteId={site.id} />
     </>
   );
