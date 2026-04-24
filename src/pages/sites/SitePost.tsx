@@ -184,52 +184,99 @@ export default function SitePost() {
             </section>
           )}
 
-          {/* 제품 CTA 섹션 — 글 끝 추천. 모든 글 100% 노출 (전환 핵심) */}
+          {/* 제품 CTA — 세일 강조 디자인. 모든 글 100% 노출 (전환 핵심) */}
           {products.length > 0 && (
             <section className="mt-12 pt-8 border-t" aria-label="이 글과 관련된 제품">
-              <h2 className="text-xl font-bold text-foreground mb-1">이 글과 관련된 제품</h2>
+              <div className="flex items-center gap-2 mb-1">
+                <Flame className="w-4 h-4 text-destructive" aria-hidden />
+                <h2 className="text-xl font-bold text-foreground">지금 진행 중인 특가</h2>
+              </div>
               <p className="text-xs text-muted-foreground mb-4">
                 글 내용과 가장 잘 맞는 제품을 골라드렸어요.
               </p>
               <div className="grid gap-3 sm:grid-cols-2">
-                {products.map((p) => (
-                  <a
-                    key={p.id}
-                    href={p.url}
-                    target="_blank"
-                    rel="sponsored noopener"
-                    onClick={() => {
-                      void (supabase as any).rpc("increment_site_product_click", { _product_id: p.id });
-                    }}
-                    className="group flex gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary/40 hover:shadow-sm transition no-underline"
-                  >
-                    {p.image_url ? (
-                      <img
-                        src={p.image_url}
-                        alt=""
-                        loading="lazy"
-                        className="h-16 w-16 rounded-lg object-cover shrink-0 bg-muted"
-                      />
-                    ) : (
-                      <div className="h-16 w-16 rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground/50 text-xs">
-                        제품
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition">
-                        {p.title}
-                      </p>
-                      {p.price && (
-                        <p className="text-xs font-mono text-primary mt-0.5 tabular-nums">{p.price}</p>
+                {products.map((p) => {
+                  const discount = calcDiscountPercent(p.price, p.compare_at_price);
+                  const countdown = formatSaleCountdown(p.sale_ends_at);
+                  const hasSaleSignal = !!discount || !!p.sale_label || !!countdown;
+                  return (
+                    <a
+                      key={p.id}
+                      href={p.url}
+                      target="_blank"
+                      rel="sponsored noopener"
+                      onClick={() => {
+                        void (supabase as any).rpc("increment_site_product_click", { _product_id: p.id });
+                      }}
+                      className={`group relative flex gap-3 rounded-xl p-3 transition no-underline ${
+                        hasSaleSignal
+                          ? "border-2 border-destructive/40 bg-gradient-to-br from-destructive/[0.06] via-card to-card hover:border-destructive/70 hover:shadow-[0_8px_24px_-8px_hsl(var(--destructive)/0.35)]"
+                          : "border border-border bg-card hover:border-primary/40 hover:shadow-sm"
+                      }`}
+                    >
+                      {/* 할인률 배지 */}
+                      {discount && (
+                        <span className="absolute -top-2 -left-2 z-10 inline-flex items-center justify-center min-w-[44px] h-11 px-2 rounded-full bg-destructive text-destructive-foreground text-base font-black tabular-nums shadow-lg ring-2 ring-background">
+                          {discount}%
+                        </span>
                       )}
-                      {p.description && (
-                        <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1">
-                          {p.description}
+                      {p.image_url ? (
+                        <img
+                          src={p.image_url}
+                          alt=""
+                          loading="lazy"
+                          className="h-20 w-20 rounded-lg object-cover shrink-0 bg-muted"
+                        />
+                      ) : (
+                        <div className="h-20 w-20 rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground/50 text-xs">
+                          제품
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        {/* 세일 라벨 + 카운트다운 */}
+                        {(p.sale_label || countdown) && (
+                          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                            {p.sale_label && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-destructive/15 text-destructive">
+                                {p.sale_label}
+                              </span>
+                            )}
+                            {countdown && (
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-500/15 text-amber-700 dark:text-amber-400">
+                                <Clock className="w-2.5 h-2.5" aria-hidden /> {countdown}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        <p className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition">
+                          {p.title}
                         </p>
-                      )}
-                    </div>
-                  </a>
-                ))}
+                        {/* 가격: 원가 취소선 + 판매가 강조 */}
+                        {p.price && (
+                          <div className="mt-1.5 flex items-baseline gap-1.5 flex-wrap">
+                            {p.compare_at_price && discount && (
+                              <span className="text-[11px] text-muted-foreground line-through tabular-nums">
+                                {p.compare_at_price}
+                              </span>
+                            )}
+                            <span
+                              className={`font-bold tabular-nums ${
+                                discount ? "text-destructive text-base" : "text-primary text-sm"
+                              }`}
+                            >
+                              {p.price}
+                            </span>
+                          </div>
+                        )}
+                        {p.description && (
+                          <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1">
+                            {p.description}
+                          </p>
+                        )}
+                      </div>
+                    </a>
+                  );
+                })}
               </div>
             </section>
           )}
