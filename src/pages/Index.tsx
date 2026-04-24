@@ -334,7 +334,7 @@ const Index = () => {
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl text-foreground leading-snug sm:leading-[1.45] mb-6 tracking-tight">
               <span className="font-light">내 사이트,</span><br className="hidden sm:block" />
-              <span className="font-extrabold">검색엔진과 AI</span>가<br />
+              <span className="font-extrabold">검색엔진과 AI</span>가{" "}
               <span className="font-extrabold">제대로 이해</span><span className="font-light">하고 있을까?</span>
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg mb-10 leading-relaxed">
