@@ -115,6 +115,9 @@ export default function SitePost() {
 
   const url = `https://searchtuneos.com/sites/${site.site_slug}/${postSlug}`;
   const faqItems: FaqItem[] = Array.isArray(post.faq) ? post.faq.filter((f) => f?.q && f?.a) : [];
+  const products: ProductLink[] = Array.isArray(post.product_links)
+    ? post.product_links.filter((p) => p?.id && p?.title && p?.url)
+    : [];
 
   // BlogPosting JSON-LD (보강: author/dateModified/image/wordCount)
   const wordCount = post.content.replace(/\s+/g, " ").trim().split(" ").length;
