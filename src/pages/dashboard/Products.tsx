@@ -299,10 +299,15 @@ function ProductForm({
   const [autofilling, setAutofilling] = useState(false);
 
   const handleAutofill = async () => {
-    const target = url.trim();
-    if (!target || !/^https?:\/\//i.test(target)) {
+    const raw = url.trim();
+    if (!raw || !/^https?:\/\//i.test(raw)) {
       toast.error("먼저 제품 URL을 입력해주세요 (https://...)");
       return;
+    }
+    const target = cleanProductUrl(raw);
+    if (target !== raw) {
+      setUrl(target);
+      toast.message("URL의 추적 파라미터를 정리했어요", { description: "utm·gclid 등은 자동 제거됩니다." });
     }
     setAutofilling(true);
     try {
