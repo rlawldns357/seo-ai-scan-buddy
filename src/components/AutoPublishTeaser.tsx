@@ -26,20 +26,20 @@ export default function AutoPublishTeaser() {
           <div className="flex flex-col items-start shrink-0 border-r border-border pr-4 sm:pr-5">
             <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.18em] uppercase text-primary leading-none">
               <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              Beta
+              Live
             </span>
             <span className="mt-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/70 leading-none">
-              모집중
+              Closed Beta
             </span>
           </div>
 
           {/* headline */}
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground mb-1">
-              얼리 액세스 · 무료 베타
+              지금 사용해볼 수 있습니다
             </p>
             <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-foreground leading-tight truncate">
-              AutoBlog<span className="text-muted-foreground font-medium"> — 지금 신청하고 먼저 써보세요</span>
+              AutoBlog<span className="text-muted-foreground font-medium"> — 클로즈베타 신청하기</span>
             </h3>
           </div>
 
