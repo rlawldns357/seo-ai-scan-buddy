@@ -13,7 +13,7 @@ export default function DashboardWorkflow() {
       </Helmet>
       <PageHeader
         icon={KanbanSquare}
-        chip="Workflow"
+        chip="Auto Publish"
         title="자동 발행"
         subtitle="AI가 본문을 만들어 ‘발행 대기’에 쌓아둡니다. 시간을 정해 자동 발행하거나 즉시 발행하세요."
         tone="accent"
