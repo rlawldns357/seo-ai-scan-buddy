@@ -23,6 +23,16 @@ export const SITE_LIMIT: Record<AppRole, number> = {
   admin: 99,
 };
 
+/** Product catalog limits per tier. Free/Beta locked, Lite teaser=1, Pro/Studio=50 */
+export const PRODUCT_LIMIT: Record<AppRole, number> = {
+  free: 0,
+  beta: 0,
+  lite: 1,
+  pro: 50,
+  studio: 50,
+  admin: 99,
+};
+
 /** Returns the user's highest-rank active role. */
 export function useUserTier() {
   const { user, loading: authLoading } = useAuth();
@@ -64,5 +74,10 @@ export function useUserTier() {
     };
   }, [user, authLoading]);
 
-  return { tier, siteLimit: SITE_LIMIT[tier], loading: loading || authLoading };
+  return {
+    tier,
+    siteLimit: SITE_LIMIT[tier],
+    productLimit: PRODUCT_LIMIT[tier],
+    loading: loading || authLoading,
+  };
 }
