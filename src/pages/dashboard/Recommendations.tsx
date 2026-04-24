@@ -39,6 +39,9 @@ export default function Recommendations() {
   const [filterSeed, setFilterSeed] = useState("");
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number; failed: number }>({ done: 0, total: 0, failed: 0 });
 
   // Realtime: load idea queue + subscribe to changes
   const loadIdeas = useCallback(async () => {
