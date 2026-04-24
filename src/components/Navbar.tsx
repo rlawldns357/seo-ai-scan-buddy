@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, ShieldCheck, Bell, MessageSquare, Briefcase, LogIn } from "lucide-react";
+import { Search, ShieldCheck, Bell, MessageSquare, Briefcase, LogIn, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
@@ -94,7 +94,9 @@ export default function Navbar() {
             >
               {!user && <LogIn className="w-3.5 h-3.5 hidden sm:inline-block" />}
               <span>AutoBlog</span>
-              <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary leading-none">PRO</span>
+              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-primary to-accent text-primary-foreground leading-none shadow-sm">
+                <Sparkles className="w-2.5 h-2.5" /> NEW
+              </span>
             </Link>
             <Link
               to="/blog"
