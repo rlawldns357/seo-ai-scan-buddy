@@ -34,6 +34,8 @@ type PostLite = {
   created_at: string;
 };
 
+const STOCK_TARGET = 30;
+
 const AXIS_TONE: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
   AEO: "bg-accent/10 text-accent",
@@ -101,6 +103,7 @@ function ConnectedHome({ siteId }: { siteId: string }) {
 
   const queued = useMemo(() => posts.filter((p) => p.status === "scheduled"), [posts]);
   const published = useMemo(() => posts.filter((p) => p.status === "published"), [posts]);
+  const stockIdeas = useMemo(() => posts.filter((p) => p.status === "idea"), [posts]);
   const autoOn = settings?.enabled ?? false;
 
   const checklist = [
@@ -115,7 +118,14 @@ function ConnectedHome({ siteId }: { siteId: string }) {
       {/* 1) Next action — primary CTA */}
       <NextActionCard queuedCount={queued.length} />
 
-      {/* 2-3) 큐 미리보기 + 자동발행 상태 (2열) */}
+      {/* 2) 블로그 재고 현황 */}
+      <StockStatusCard
+        loading={loadingPosts}
+        stockCount={stockIdeas.length}
+        target={settings?.min_queue ?? STOCK_TARGET}
+      />
+
+      {/* 3-4) 큐 미리보기 + 자동발행 상태 (2열) */}
       <div className="grid gap-4 md:grid-cols-2">
         <QueuePreviewCard queued={queued} loading={loadingPosts} />
         <AutopublishCard
