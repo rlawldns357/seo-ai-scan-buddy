@@ -29,12 +29,17 @@ import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_
 import { sortScheduledColumn } from "./scheduleUtils";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
-  idea: "draft",
+  idea: "draft", // legacy rows
   draft: "scheduled",
   scheduled: "published",
   published: null,
   archived: null,
 };
+
+/** Normalize legacy 'idea' rows to 'draft' for grouping/UI. */
+function normalizeStatus(s: KanbanStatus): KanbanStatus {
+  return s === "idea" ? "draft" : s;
+}
 
 export default function KanbanBoard() {
   const { user, loading: authLoading } = useAuth();
