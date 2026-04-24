@@ -110,27 +110,6 @@ export default function KanbanCard({
                 </p>
               )}
 
-              {/* Schedule info — scheduled column only */}
-              {showScheduleArea && (
-                <div className="mt-1.5 text-[11px] text-muted-foreground flex items-center gap-1 break-keep">
-                  <CalendarClock className="h-3 w-3 shrink-0" />
-                  {scheduleStatus === "none" && <span>예약 없음</span>}
-                  {scheduleStatus === "scheduled" && (
-                    <span>예약: {formatScheduleKST(post.published_at)}</span>
-                  )}
-                  {scheduleStatus === "due_soon" && (
-                    <span className="text-score-warning font-medium">
-                      곧 발행 · {formatScheduleKST(post.published_at)}
-                    </span>
-                  )}
-                  {scheduleStatus === "overdue" && (
-                    <span className="text-destructive font-medium">
-                      예약 지남 · {formatScheduleKST(post.published_at)}
-                    </span>
-                  )}
-                </div>
-              )}
-
               {publishError && (
                 <p className="mt-1 text-[11px] text-destructive inline-flex items-center gap-1">
                   <AlertCircle className="h-3 w-3" />
