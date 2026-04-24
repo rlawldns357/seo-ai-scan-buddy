@@ -281,10 +281,31 @@ export default function SitePost() {
                           </p>
                         )}
                         {isHero && (
-                          <div className="mt-auto pt-3">
-                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-foreground/20 text-foreground text-sm font-medium group-hover:bg-foreground group-hover:text-background transition">
+                          <div className="mt-auto pt-3 flex flex-wrap gap-2">
+                            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-foreground text-background text-sm font-medium group-hover:opacity-90 transition">
                               자세히 보기 →
                             </span>
+                            {(() => {
+                              try {
+                                const host = new URL(p.url).hostname.replace(/^www\./, "");
+                                const brandUrl = `${new URL(p.url).protocol}//${new URL(p.url).hostname}`;
+                                return (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      e.stopPropagation();
+                                      window.open(brandUrl, "_blank", "noopener");
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-foreground/20 text-foreground/80 text-sm font-medium hover:bg-foreground/5 transition"
+                                  >
+                                    {host} 홈 →
+                                  </button>
+                                );
+                              } catch {
+                                return null;
+                              }
+                            })()}
                           </div>
                         )}
                       </div>
