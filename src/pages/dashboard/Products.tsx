@@ -131,18 +131,19 @@ export default function DashboardProducts() {
 
           {/* URL 빠른 추가 — 붙여넣으면 ✨ AI가 자동으로 제품 정보를 채워요 */}
           <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const v = quickUrl.trim();
-              if (!v) return;
-              if (!/^https?:\/\//i.test(v)) {
-                toast.error("https:// 로 시작하는 URL을 입력해주세요");
-                return;
-              }
-              setPrefillUrl(v);
-              setEditingId("new");
-              setQuickUrl("");
-            }}
+              onSubmit={(e) => {
+                e.preventDefault();
+                const v = quickUrl.trim();
+                if (!v) return;
+                if (!/^https?:\/\//i.test(v)) {
+                  toast.error("https:// 로 시작하는 URL을 입력해주세요");
+                  return;
+                }
+                const cleaned = cleanProductUrl(v);
+                setPrefillUrl(cleaned);
+                setEditingId("new");
+                setQuickUrl("");
+              }}
             className="max-w-md mx-auto flex flex-col sm:flex-row gap-2 mb-3"
           >
             <Input
