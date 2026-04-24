@@ -14,7 +14,7 @@ const QUEUE_PREVIEW = [
 ];
 
 const toneClass = {
-  success: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+  success: "bg-accent/15 text-accent",
   info: "bg-primary/10 text-primary",
   muted: "bg-muted text-muted-foreground",
 };
