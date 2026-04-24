@@ -29,16 +29,16 @@ import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_
 import { sortScheduledColumn } from "./scheduleUtils";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
-  idea: "draft", // legacy rows
-  draft: "scheduled",
+  idea: "scheduled", // legacy rows
+  draft: "scheduled", // legacy rows — treat as scheduled
   scheduled: "published",
   published: null,
   archived: null,
 };
 
-/** Normalize legacy 'idea' rows to 'draft' for grouping/UI. */
+/** Normalize legacy 'idea'/'draft' rows to 'scheduled' for grouping/UI. */
 function normalizeStatus(s: KanbanStatus): KanbanStatus {
-  return s === "idea" ? "draft" : s;
+  return s === "idea" || s === "draft" ? "scheduled" : s;
 }
 
 export default function KanbanBoard() {
@@ -54,7 +54,7 @@ export default function KanbanBoard() {
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [openPost, setOpenPost] = useState<KanbanPost | null>(null);
   
-  const [activeTab, setActiveTab] = useState<KanbanStatus>("draft");
+  const [activeTab, setActiveTab] = useState<KanbanStatus>("scheduled");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -88,7 +88,7 @@ export default function KanbanBoard() {
 
     return onWorkflowChanged((detail) => {
       if (detail.siteId !== site.id) return;
-      setActiveTab("draft");
+      setActiveTab("scheduled");
       void load();
     });
   }, [site, load]);
@@ -116,22 +116,6 @@ export default function KanbanBoard() {
     async (post: KanbanPost, to: KanbanStatus) => {
       if (post.status === to) return;
 
-      // Enforce one-step-at-a-time flow: idea → draft → scheduled → published.
-      // Allow: backwards moves, archive ↔ published, and published → draft (unpublish).
-      const FLOW: KanbanStatus[] = ["idea", "draft", "scheduled", "published"];
-      const fromIdx = FLOW.indexOf(post.status);
-      const toIdx = FLOW.indexOf(to);
-      const isForward = fromIdx >= 0 && toIdx >= 0 && toIdx > fromIdx;
-      if (isForward && toIdx - fromIdx > 1) {
-        const need = FLOW[fromIdx + 1];
-        toast({
-          title: "한 단계씩 진행해주세요",
-          description: `먼저 "${COLUMN_META[need].label}" 단계를 거쳐야 해요.`,
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Hard auth check — publishing/AI calls require a logged-in owner.
       if (!user) {
         toast({
@@ -158,16 +142,17 @@ export default function KanbanBoard() {
             title: "✅ 발행되었습니다",
             description: site?.site_slug ? `/sites/${site.site_slug}/${post.slug} 에서 확인하세요` : undefined,
           });
-        } else if (to === "draft" && post.status === "published") {
+        } else if (to === "scheduled" && post.status === "published") {
+          // Unpublish → back to scheduled queue
           const { error } = await supabase
             .from("site_posts")
-            .update({ status: "draft", published_at: null })
+            .update({ status: "scheduled", published_at: null })
             .eq("id", post.id);
           if (error) throw error;
-          toast({ title: "발행 취소 — 초안으로 이동" });
+          toast({ title: "발행 취소 — 발행 대기로 이동" });
         } else {
           const patch: { status: KanbanStatus; published_at?: string | null } = { status: to };
-          if (to === "scheduled" || to === "draft") patch.published_at = null;
+          if (to === "scheduled") patch.published_at = null;
           const { error } = await supabase.from("site_posts").update(patch).eq("id", post.id);
           if (error) throw error;
           toast({ title: `${COLUMN_META[to].label}(으)로 이동` });
@@ -209,16 +194,10 @@ export default function KanbanBoard() {
       content: patch.content,
     };
 
-    // Schedule handling: only meaningful for draft/scheduled rows.
-    if (current && (current.status === "draft" || current.status === "scheduled")) {
-      if (patch.published_at) {
-        // User picked a time → move into the scheduled column and store the timestamp.
-        update.status = "scheduled";
-        update.published_at = patch.published_at;
-      } else if (patch.published_at === null) {
-        // User cleared the time → back to draft, no published_at.
-        update.status = "draft";
-        update.published_at = null;
+    // Schedule handling: only meaningful for scheduled rows.
+    if (current && current.status === "scheduled") {
+      if (patch.published_at !== undefined) {
+        update.published_at = patch.published_at; // null clears it (manual publish)
       }
     }
 
@@ -228,10 +207,9 @@ export default function KanbanBoard() {
       return;
     }
     toast({
-      title:
-        update.status === "scheduled"
-          ? "예약되었습니다 — 시각이 되면 자동 발행됩니다"
-          : "저장되었습니다",
+      title: update.published_at
+        ? "예약되었습니다 — 시각이 되면 자동 발행됩니다"
+        : "저장되었습니다",
     });
     await load();
     setOpenPost(null);
@@ -266,20 +244,41 @@ export default function KanbanBoard() {
     if (!site) return;
     const title = window.prompt("새 글의 주제(제목)를 입력하세요");
     if (!title?.trim()) return;
-    const slug = `draft-${Date.now().toString(36)}`;
-    const { error } = await supabase.from("site_posts").insert({
-      site_id: site.id,
-      slug,
-      title: title.trim(),
-      content: "",
-      status: "draft",
-    } as any);
-    if (error) {
-      toast({ title: "추가 실패", description: error.message, variant: "destructive" });
-      return;
+    const slug = `post-${Date.now().toString(36)}`;
+    const trimmed = title.trim();
+
+    setLoading(true);
+    try {
+      // Run the AI engine, then insert directly into the 발행 대기 column.
+      const { data, error } = await supabase.functions.invoke("generate-content-draft", {
+        body: { topic: trimmed, targetAxis: "SEO", siteUrl: site.site_url },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      const { error: insertErr } = await supabase.from("site_posts").insert({
+        site_id: site.id,
+        slug,
+        title: data?.title || trimmed,
+        excerpt: data?.excerpt ?? null,
+        content: data?.content || "",
+        status: "scheduled",
+        published_at: null,
+        keywords: Array.isArray(data?.keywords) ? data.keywords : [],
+        faq: Array.isArray(data?.faq) ? data.faq : [],
+      } as any);
+      if (insertErr) throw insertErr;
+      toast({ title: "✨ 발행 대기에 새 글이 추가되었어요" });
+    } catch (e: any) {
+      toast({
+        title: "생성 실패",
+        description: e?.message || "잠시 후 다시 시도해주세요",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      load();
     }
-    toast({ title: "초안 추가됨 — 카드를 열어 ‘AI로 본문 생성’을 눌러주세요" });
-    load();
   });
 
   // Guards
@@ -327,13 +326,13 @@ export default function KanbanBoard() {
   const handleCancelSchedule = async (post: KanbanPost) => {
     const { error } = await supabase
       .from("site_posts")
-      .update({ status: "draft", published_at: null } as any)
+      .update({ status: "scheduled", published_at: null } as any)
       .eq("id", post.id);
     if (error) {
       toast({ title: "취소 실패", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "예약 발행이 취소되었어요" });
+    toast({ title: "예약 발행이 취소되었어요 — 수동 발행 대기" });
     await load();
   };
 
@@ -415,17 +414,17 @@ export default function KanbanBoard() {
             </Button>
           )}
           <Button size="sm" className="rounded-full h-8 text-xs" onClick={createDraft}>
-            <Plus className="h-3 w-3" /> 새 글
+            <Plus className="h-3 w-3" /> AI로 새 글 추가
           </Button>
         </div>
       </div>
 
-      {/* Mobile tabs grid: 3 cols (draft / scheduled / published) */}
+      {/* Mobile tabs: 2 cols (scheduled / published) */}
 
       {isMobile ? (
         // Mobile: tabs (no drag UX on small screens)
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as KanbanStatus)}>
-          <TabsList className="grid grid-cols-3 w-full">
+          <TabsList className="grid grid-cols-2 w-full">
             {COLUMN_ORDER.map((s) => (
               <TabsTrigger key={s} value={s} className="text-[11px]">
                 {COLUMN_META[s].emoji} {grouped[s].length}
@@ -447,7 +446,7 @@ export default function KanbanBoard() {
         </Tabs>
       ) : (
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {COLUMN_ORDER.map((s) => (
               <KanbanColumn
                 key={s}

@@ -59,7 +59,7 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
     }
   }, [post]);
 
-  const isDraftLike = post && (post.status === "draft" || post.status === "idea");
+  const isDraftLike = post && (post.status === "draft" || post.status === "idea" || post.status === "scheduled");
   const showScheduler = post && (post.status === "draft" || post.status === "scheduled" || post.status === "idea");
   const isPastDue = useMemo(() => {
     if (!scheduledLocal) return false;
