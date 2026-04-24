@@ -361,7 +361,7 @@ function ProductForm({
     const payload = {
       site_id: siteId,
       title: title.trim(),
-      url: url.trim(),
+      url: cleanProductUrl(url.trim()),
       description: description.trim() || null,
       price: price.trim() || null,
       image_url: imageUrl.trim() || null,
