@@ -116,22 +116,6 @@ export default function KanbanBoard() {
     async (post: KanbanPost, to: KanbanStatus) => {
       if (post.status === to) return;
 
-      // Enforce one-step-at-a-time flow: idea → draft → scheduled → published.
-      // Allow: backwards moves, archive ↔ published, and published → draft (unpublish).
-      const FLOW: KanbanStatus[] = ["idea", "draft", "scheduled", "published"];
-      const fromIdx = FLOW.indexOf(post.status);
-      const toIdx = FLOW.indexOf(to);
-      const isForward = fromIdx >= 0 && toIdx >= 0 && toIdx > fromIdx;
-      if (isForward && toIdx - fromIdx > 1) {
-        const need = FLOW[fromIdx + 1];
-        toast({
-          title: "한 단계씩 진행해주세요",
-          description: `먼저 "${COLUMN_META[need].label}" 단계를 거쳐야 해요.`,
-          variant: "destructive",
-        });
-        return;
-      }
-
       // Hard auth check — publishing/AI calls require a logged-in owner.
       if (!user) {
         toast({
@@ -158,16 +142,17 @@ export default function KanbanBoard() {
             title: "✅ 발행되었습니다",
             description: site?.site_slug ? `/sites/${site.site_slug}/${post.slug} 에서 확인하세요` : undefined,
           });
-        } else if (to === "draft" && post.status === "published") {
+        } else if (to === "scheduled" && post.status === "published") {
+          // Unpublish → back to scheduled queue
           const { error } = await supabase
             .from("site_posts")
-            .update({ status: "draft", published_at: null })
+            .update({ status: "scheduled", published_at: null })
             .eq("id", post.id);
           if (error) throw error;
-          toast({ title: "발행 취소 — 초안으로 이동" });
+          toast({ title: "발행 취소 — 발행 대기로 이동" });
         } else {
           const patch: { status: KanbanStatus; published_at?: string | null } = { status: to };
-          if (to === "scheduled" || to === "draft") patch.published_at = null;
+          if (to === "scheduled") patch.published_at = null;
           const { error } = await supabase.from("site_posts").update(patch).eq("id", post.id);
           if (error) throw error;
           toast({ title: `${COLUMN_META[to].label}(으)로 이동` });
