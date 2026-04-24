@@ -10,6 +10,8 @@ type ScrapedProduct = {
   title?: string;
   description?: string;
   price?: string;
+  compare_at_price?: string;
+  sale_label?: string;
   image_url?: string;
   keywords?: string[];
 };
@@ -42,7 +44,9 @@ Deno.serve(async (req) => {
       properties: {
         title: { type: "string", description: "제품명. 브랜드명/사이트명은 제외하고 제품 자체 이름만." },
         description: { type: "string", description: "제품을 1~2문장으로 요약. 한국어." },
-        price: { type: "string", description: "표시 가격 (예: 29,000원, ₩29,000, $29). 없으면 빈 문자열." },
+        price: { type: "string", description: "현재 판매 가격(할인 적용된 최종가). 예: 29,000원, ₩29,000, $29. 없으면 빈 문자열." },
+        compare_at_price: { type: "string", description: "할인 전 원가/정가/소비자가. 취소선으로 표시되는 더 비싼 가격. 할인 표기가 없으면 빈 문자열." },
+        sale_label: { type: "string", description: "행사/세일 라벨이 페이지에 명시돼 있으면 짧게(예: '오늘만', '단독특가', '브랜드위크', '재고소진임박'). 없으면 빈 문자열." },
         image_url: { type: "string", description: "대표 제품 이미지의 절대 URL. og:image 또는 메인 상품 사진." },
         keywords: {
           type: "array",
@@ -83,6 +87,8 @@ Deno.serve(async (req) => {
       title: (extracted.title || meta.title || "").toString().trim().slice(0, 200),
       description: (extracted.description || meta.description || "").toString().trim().slice(0, 500),
       price: (extracted.price || "").toString().trim().slice(0, 50),
+      compare_at_price: (extracted.compare_at_price || "").toString().trim().slice(0, 50),
+      sale_label: (extracted.sale_label || "").toString().trim().slice(0, 30),
       image_url: (extracted.image_url || meta.ogImage || "").toString().trim().slice(0, 1000),
       keywords: Array.isArray(extracted.keywords)
         ? extracted.keywords.map((k) => String(k).trim()).filter(Boolean).slice(0, 12)

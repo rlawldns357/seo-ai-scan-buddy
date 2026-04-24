@@ -718,6 +718,7 @@ export type Database = {
       site_products: {
         Row: {
           click_count: number
+          compare_at_price: string | null
           created_at: string
           description: string | null
           id: string
@@ -725,6 +726,8 @@ export type Database = {
           is_active: boolean
           keywords: string[] | null
           price: string | null
+          sale_ends_at: string | null
+          sale_label: string | null
           site_id: string
           sort_order: number
           title: string
@@ -733,6 +736,7 @@ export type Database = {
         }
         Insert: {
           click_count?: number
+          compare_at_price?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -740,6 +744,8 @@ export type Database = {
           is_active?: boolean
           keywords?: string[] | null
           price?: string | null
+          sale_ends_at?: string | null
+          sale_label?: string | null
           site_id: string
           sort_order?: number
           title: string
@@ -748,6 +754,7 @@ export type Database = {
         }
         Update: {
           click_count?: number
+          compare_at_price?: string | null
           created_at?: string
           description?: string | null
           id?: string
@@ -755,6 +762,8 @@ export type Database = {
           is_active?: boolean
           keywords?: string[] | null
           price?: string | null
+          sale_ends_at?: string | null
+          sale_label?: string | null
           site_id?: string
           sort_order?: number
           title?: string

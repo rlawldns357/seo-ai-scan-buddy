@@ -32,6 +32,9 @@ type ProductCandidate = {
   keywords: string[];
   price: string | null;
   image_url: string | null;
+  compare_at_price: string | null;
+  sale_label: string | null;
+  sale_ends_at: string | null;
 };
 
 type ProductMatch = {
@@ -41,6 +44,9 @@ type ProductMatch = {
   description: string | null;
   price: string | null;
   image_url: string | null;
+  compare_at_price: string | null;
+  sale_label: string | null;
+  sale_ends_at: string | null;
   matched_keywords: string[];
   score: number;
 };
@@ -83,6 +89,9 @@ function matchProducts(
       description: p.description,
       price: p.price,
       image_url: p.image_url,
+      compare_at_price: p.compare_at_price,
+      sale_label: p.sale_label,
+      sale_ends_at: p.sale_ends_at,
       matched_keywords: Array.from(matched),
       score,
     };
@@ -99,6 +108,9 @@ function matchProducts(
       description: fallback.description,
       price: fallback.price,
       image_url: fallback.image_url,
+      compare_at_price: fallback.compare_at_price,
+      sale_label: fallback.sale_label,
+      sale_ends_at: fallback.sale_ends_at,
       matched_keywords: [],
       score: 0,
     });
@@ -371,7 +383,7 @@ serve(async (req) => {
     // ── 제품 카탈로그 매칭 (사이트 단위 등록 → AI 키워드 매칭) ──
     const { data: productRows } = await supabase
       .from("site_products")
-      .select("id, title, url, description, keywords, price, image_url")
+      .select("id, title, url, description, keywords, price, image_url, compare_at_price, sale_label, sale_ends_at")
       .eq("site_id", post.site_id)
       .eq("is_active", true)
       .order("sort_order", { ascending: true })
@@ -386,6 +398,9 @@ serve(async (req) => {
       keywords: Array.isArray(p.keywords) ? p.keywords : [],
       price: p.price,
       image_url: p.image_url,
+      compare_at_price: p.compare_at_price ?? null,
+      sale_label: p.sale_label ?? null,
+      sale_ends_at: p.sale_ends_at ?? null,
     }));
 
     const matchedProducts = matchProducts(

@@ -20,6 +20,9 @@ type Product = {
   keywords: string[];
   price: string | null;
   image_url: string | null;
+  compare_at_price: string | null;
+  sale_label: string | null;
+  sale_ends_at: string | null;
   is_active: boolean;
   click_count: number;
   sort_order: number;
@@ -39,7 +42,7 @@ export default function DashboardProducts() {
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("site_products")
-      .select("id, title, url, description, keywords, price, image_url, is_active, click_count, sort_order")
+      .select("id, title, url, description, keywords, price, image_url, compare_at_price, sale_label, sale_ends_at, is_active, click_count, sort_order")
       .eq("site_id", siteId)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
@@ -293,6 +296,11 @@ function ProductForm({
   const [url, setUrl] = useState(initial?.url ?? prefillUrl ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
+  const [compareAtPrice, setCompareAtPrice] = useState(initial?.compare_at_price ?? "");
+  const [saleLabel, setSaleLabel] = useState(initial?.sale_label ?? "");
+  const [saleEndsAt, setSaleEndsAt] = useState(
+    initial?.sale_ends_at ? new Date(initial.sale_ends_at).toISOString().slice(0, 16) : "",
+  );
   const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
   const [keywordsText, setKeywordsText] = useState((initial?.keywords ?? []).join(", "));
   const [saving, setSaving] = useState(false);
@@ -320,6 +328,8 @@ function ProductForm({
       if (info.title && !title.trim()) { setTitle(info.title); filled++; }
       if (info.description && !description.trim()) { setDescription(info.description); filled++; }
       if (info.price && !price.trim()) { setPrice(info.price); filled++; }
+      if (info.compare_at_price && !compareAtPrice.trim()) { setCompareAtPrice(info.compare_at_price); filled++; }
+      if (info.sale_label && !saleLabel.trim()) { setSaleLabel(info.sale_label); filled++; }
       if (info.image_url && !imageUrl.trim()) { setImageUrl(info.image_url); filled++; }
       if (Array.isArray(info.keywords) && info.keywords.length > 0 && !keywordsText.trim()) {
         setKeywordsText(info.keywords.join(", "));
@@ -364,6 +374,9 @@ function ProductForm({
       url: cleanProductUrl(url.trim()),
       description: description.trim() || null,
       price: price.trim() || null,
+      compare_at_price: compareAtPrice.trim() || null,
+      sale_label: saleLabel.trim() || null,
+      sale_ends_at: saleEndsAt ? new Date(saleEndsAt).toISOString() : null,
       image_url: imageUrl.trim() || null,
       keywords,
     };
@@ -442,10 +455,22 @@ function ProductForm({
             </p>
           </div>
           <div>
-            <Label htmlFor="p-price" className="text-xs">가격 (선택)</Label>
+            <Label htmlFor="p-price" className="text-xs">판매가 (할인 적용된 최종가)</Label>
             <Input id="p-price" value={price} onChange={(e) => setPrice(e.target.value)} placeholder="29,000원" />
           </div>
           <div>
+            <Label htmlFor="p-compare" className="text-xs">원가 (취소선 표시)</Label>
+            <Input id="p-compare" value={compareAtPrice} onChange={(e) => setCompareAtPrice(e.target.value)} placeholder="59,000원" />
+          </div>
+          <div>
+            <Label htmlFor="p-sale-label" className="text-xs">세일 라벨 (선택)</Label>
+            <Input id="p-sale-label" value={saleLabel} onChange={(e) => setSaleLabel(e.target.value)} maxLength={30} placeholder="예) 오늘만, 단독특가, 재고소진임박" />
+          </div>
+          <div>
+            <Label htmlFor="p-sale-ends" className="text-xs">행사 종료 시각 (선택)</Label>
+            <Input id="p-sale-ends" type="datetime-local" value={saleEndsAt} onChange={(e) => setSaleEndsAt(e.target.value)} />
+          </div>
+          <div className="sm:col-span-2">
             <Label htmlFor="p-image" className="text-xs">이미지 URL (선택)</Label>
             <Input id="p-image" type="url" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://" />
           </div>
