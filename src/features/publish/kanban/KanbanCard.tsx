@@ -1,6 +1,14 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Eye, Calendar, CalendarClock, X, Send, AlertCircle, CheckCircle2, Trash2 } from "lucide-react";
 import type { KanbanPost, KanbanStatus } from "./types";
 import { COLUMN_META } from "./types";
@@ -51,6 +59,8 @@ export default function KanbanCard({
   const badge = SCHEDULE_BADGE[scheduleStatus];
 
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const publishError: string | null = (post as KanbanPost & { publishError?: string | null }).publishError ?? null;
 
   return (
@@ -66,9 +76,10 @@ export default function KanbanCard({
             className="absolute top-1 right-1 h-6 w-6 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity z-10"
             onClick={(e) => {
               e.stopPropagation();
-              if (confirm(`"${post.title}"을(를) 영구 삭제할까요?`)) onDelete(post);
+              setDeleteOpen(true);
             }}
             title="삭제"
+            aria-label="이 글 삭제"
           >
             <Trash2 className="h-3 w-3" />
           </Button>
@@ -265,6 +276,63 @@ export default function KanbanCard({
             setScheduleOpen(false);
           }}
         />
+      )}
+
+      {onDelete && (
+        <Dialog open={deleteOpen} onOpenChange={(o) => !deleting && setDeleteOpen(o)}>
+          <DialogContent className="sm:max-w-md rounded-2xl">
+            <DialogHeader>
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center shrink-0">
+                  <Trash2 className="h-5 w-5" />
+                </div>
+                <div className="min-w-0">
+                  <DialogTitle className="text-base">이 글을 삭제할까요?</DialogTitle>
+                  <DialogDescription className="text-xs mt-0.5">삭제 후에는 되돌릴 수 없어요.</DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
+            <div className="px-1">
+              <div className="rounded-xl border border-border/60 bg-muted/30 px-3 py-2.5">
+                <p className="text-sm font-medium text-foreground line-clamp-2 break-keep">
+                  {post.title}
+                </p>
+                {post.excerpt && (
+                  <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5 break-keep">
+                    {post.excerpt}
+                  </p>
+                )}
+              </div>
+            </div>
+            <DialogFooter className="gap-2 sm:gap-2">
+              <Button
+                variant="outline"
+                className="rounded-full"
+                disabled={deleting}
+                onClick={() => setDeleteOpen(false)}
+              >
+                취소
+              </Button>
+              <Button
+                variant="destructive"
+                className="rounded-full"
+                disabled={deleting}
+                onClick={async () => {
+                  setDeleting(true);
+                  try {
+                    await onDelete(post);
+                    setDeleteOpen(false);
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+                {deleting ? "삭제 중…" : "영구 삭제"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </>
   );
