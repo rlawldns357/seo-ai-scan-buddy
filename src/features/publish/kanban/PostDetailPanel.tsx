@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
-import { ExternalLink, Save, Trash2, Archive, ArchiveRestore, CalendarClock, Sparkles, Loader2 } from "lucide-react";
+import { ExternalLink, Save, Trash2, Archive, ArchiveRestore, CalendarClock } from "lucide-react";
 import type { KanbanPost } from "./types";
 import { COLUMN_META } from "./types";
 
@@ -22,8 +22,6 @@ type Props = {
   onSave: (patch: SavePatch) => Promise<void>;
   onDelete: () => Promise<void>;
   onArchive?: (archive: boolean) => Promise<void>;
-  /** Generate (or regenerate) body via AI for a draft. Receives current title from the form. */
-  onGenerateBody?: (title: string) => Promise<{ title?: string; excerpt?: string; content?: string } | void>;
 };
 
 /** ISO → "YYYY-MM-DDTHH:mm" (browser local) for <input type="datetime-local">. */
@@ -42,13 +40,12 @@ function localInputToIso(local: string): string | null {
   return d.toISOString();
 }
 
-export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDelete, onArchive, onGenerateBody }: Props) {
+export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDelete, onArchive }: Props) {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [scheduledLocal, setScheduledLocal] = useState("");
   const [saving, setSaving] = useState(false);
-  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (post) {
@@ -59,8 +56,7 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
     }
   }, [post]);
 
-  const isDraftLike = post && (post.status === "draft" || post.status === "idea" || post.status === "scheduled");
-  const showScheduler = post && (post.status === "draft" || post.status === "scheduled" || post.status === "idea");
+  const showScheduler = post && (post.status === "draft" || post.status === "scheduled");
   const isPastDue = useMemo(() => {
     if (!scheduledLocal) return false;
     const t = new Date(scheduledLocal).getTime();
@@ -69,7 +65,6 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
 
   if (!post) return null;
   const meta = COLUMN_META[post.status];
-  const hasBody = (content?.trim().length ?? 0) >= 30;
 
   return (
     <Sheet open={!!post} onOpenChange={(o) => !o && onClose()}>
@@ -97,43 +92,11 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
             <Input id="post-excerpt" value={excerpt} onChange={(e) => setExcerpt(e.target.value)} />
           </div>
           <div>
-            <div className="flex items-center justify-between mb-1">
-              <Label htmlFor="post-content" className="text-xs">본문 (마크다운)</Label>
-              {isDraftLike && onGenerateBody && (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={hasBody ? "outline" : "default"}
-                  className="h-7 text-[11px] rounded-full"
-                  disabled={generating || !title.trim()}
-                  onClick={async () => {
-                    if (hasBody && !confirm("기존 본문을 덮어쓰고 다시 생성할까요?")) return;
-                    setGenerating(true);
-                    try {
-                      const res = await onGenerateBody(title.trim());
-                      if (res) {
-                        if (res.title) setTitle(res.title);
-                        if (res.excerpt) setExcerpt(res.excerpt);
-                        if (res.content) setContent(res.content);
-                      }
-                    } finally {
-                      setGenerating(false);
-                    }
-                  }}
-                >
-                  {generating ? (
-                    <><Loader2 className="w-3 h-3 animate-spin" /> 생성 중…</>
-                  ) : (
-                    <><Sparkles className="w-3 h-3" /> {hasBody ? "AI로 다시 생성" : "AI로 본문 생성"}</>
-                  )}
-                </Button>
-              )}
-            </div>
+            <Label htmlFor="post-content" className="text-xs">본문 (마크다운)</Label>
             <textarea
               id="post-content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder={isDraftLike ? "위의 ‘AI로 본문 생성’을 누르거나 직접 마크다운으로 작성하세요" : ""}
               className="w-full min-h-[280px] rounded-md border border-input bg-background p-3 text-xs font-mono"
             />
           </div>

@@ -1,26 +1,11 @@
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
-import { Flame, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import JsonLd from "@/components/JsonLd";
-import { renderMarkdown } from "@/lib/markdown";
-import { calcDiscountPercent, formatSaleCountdown } from "@/lib/productPricing";
 
 type Site = { id: string; title: string; site_slug: string };
 type FaqItem = { q: string; a: string };
-type ProductLink = {
-  id: string;
-  title: string;
-  url: string;
-  description: string | null;
-  price: string | null;
-  image_url: string | null;
-  compare_at_price?: string | null;
-  sale_label?: string | null;
-  sale_ends_at?: string | null;
-  matched_keywords?: string[];
-};
 type Post = {
   id: string;
   title: string;
@@ -29,10 +14,24 @@ type Post = {
   published_at: string | null;
   og_image: string | null;
   faq: FaqItem[] | null;
-  product_links: ProductLink[] | null;
 };
 
-// (markdown 렌더링은 src/lib/markdown.ts의 renderMarkdown 사용 — 표/리스트/코드블록/인용 모두 지원)
+function mdToHtml(md: string): string {
+  return md
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/^### (.*)$/gm, "<h3>$1</h3>")
+    .replace(/^## (.*)$/gm, "<h2>$1</h2>")
+    .replace(/^# (.*)$/gm, "<h1>$1</h1>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/\[(.+?)\]\((.+?)\)/g, (_m, text, url) => {
+      const isExternal = /^https?:\/\//.test(url);
+      const rel = isExternal ? ' target="_blank" rel="noreferrer"' : "";
+      return `<a href="${url}"${rel}>${text}</a>`;
+    })
+    .replace(/\n\n/g, "</p><p>")
+    .replace(/^/, "<p>").concat("</p>");
+}
 
 /**
  * 본문에서 ## FAQ 섹션 이후를 잘라내 깔끔한 본문만 반환.
@@ -72,7 +71,7 @@ export default function SitePost() {
 
       const { data: p } = await (supabase as any)
         .from("site_posts")
-        .select("id, title, excerpt, content, published_at, og_image, faq, product_links")
+        .select("id, title, excerpt, content, published_at, og_image, faq")
         .eq("site_id", s.id)
         .eq("slug", postSlug)
         .eq("status", "published")
@@ -106,9 +105,6 @@ export default function SitePost() {
 
   const url = `https://searchtuneos.com/sites/${site.site_slug}/${postSlug}`;
   const faqItems: FaqItem[] = Array.isArray(post.faq) ? post.faq.filter((f) => f?.q && f?.a) : [];
-  const products: ProductLink[] = Array.isArray(post.product_links)
-    ? post.product_links.filter((p) => p?.id && p?.title && p?.url)
-    : [];
 
   // BlogPosting JSON-LD (보강: author/dateModified/image/wordCount)
   const wordCount = post.content.replace(/\s+/g, " ").trim().split(" ").length;
@@ -158,8 +154,8 @@ export default function SitePost() {
           <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight">{post.title}</h1>
           {post.published_at && <p className="text-xs text-muted-foreground mt-2">{new Date(post.published_at).toLocaleDateString("ko-KR")}</p>}
           <div
-            className="mt-8 text-base leading-[1.8] text-foreground/90 [&>*:first-child]:mt-0"
-            dangerouslySetInnerHTML={{ __html: renderMarkdown(cleanBody) }}
+            className="prose prose-sm md:prose-base max-w-none mt-8 text-foreground [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-8 [&_h2]:mb-3 [&_h3]:font-semibold [&_h3]:mt-6 [&_p]:my-3 [&_p]:leading-relaxed [&_a]:text-primary [&_a]:underline [&_table]:my-4 [&_table]:w-full [&_table]:text-sm [&_th]:text-left [&_th]:font-semibold [&_th]:p-2 [&_th]:border-b [&_td]:p-2 [&_td]:border-b [&_td]:border-border/60"
+            dangerouslySetInnerHTML={{ __html: mdToHtml(cleanBody) }}
           />
 
           {/* FAQ 섹션 — AEO 강화 */}
@@ -180,139 +176,6 @@ export default function SitePost() {
                     <p className="mt-3 text-sm text-foreground/80 leading-relaxed">{f.a}</p>
                   </details>
                 ))}
-              </div>
-            </section>
-          )}
-
-          {/* 제품 CTA — 세일 강조 디자인. 모든 글 100% 노출 (전환 핵심) */}
-          {products.length > 0 && (
-            <section className="mt-12 pt-8 border-t" aria-label="이 글과 관련된 제품">
-              <h2 className="text-xl font-bold text-foreground mb-1">함께 보면 좋은 제품</h2>
-              <p className="text-xs text-muted-foreground mb-4">
-                글 내용과 가장 잘 맞는 제품을 골라드렸어요.
-              </p>
-              <div className={`grid gap-3 ${products.length === 1 ? "grid-cols-1" : "sm:grid-cols-2"}`}>
-                {products.map((p) => {
-                  const discount = calcDiscountPercent(p.price, p.compare_at_price);
-                  const countdown = formatSaleCountdown(p.sale_ends_at);
-                  const hasSaleSignal = !!discount || !!p.sale_label || !!countdown;
-                  const isHero = products.length === 1;
-                  return (
-                    <a
-                      key={p.id}
-                      href={p.url}
-                      target="_blank"
-                      rel="sponsored noopener"
-                      onClick={() => {
-                        void (supabase as any).rpc("increment_site_product_click", { _product_id: p.id });
-                      }}
-                      className={`group relative flex ${isHero ? "flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-5 p-4 sm:p-5" : "gap-3 p-3"} rounded-xl border border-border bg-card hover:border-foreground/20 hover:shadow-sm transition no-underline`}
-                    >
-                      {/* 할인률 배지 — 이미지 좌상단 오버레이 (담백) */}
-                      {discount && (
-                        <span className={`absolute z-10 inline-flex items-center justify-center rounded-md bg-destructive text-destructive-foreground font-bold tabular-nums ${
-                          isHero
-                            ? "top-3 left-3 px-2 py-1 text-sm"
-                            : "top-2 left-2 px-1.5 py-0.5 text-xs"
-                        }`}>
-                          {discount}%
-                        </span>
-                      )}
-                      {p.image_url ? (
-                        <img
-                          src={p.image_url}
-                          alt=""
-                          loading="lazy"
-                          className={`rounded-lg object-cover shrink-0 bg-muted ${
-                            isHero ? "h-48 w-full sm:h-52 sm:w-52" : "h-20 w-20"
-                          }`}
-                        />
-                      ) : (
-                        <div className={`rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground/50 text-xs ${
-                          isHero ? "h-48 w-full sm:h-52 sm:w-52" : "h-20 w-20"
-                        }`}>
-                          제품
-                        </div>
-                      )}
-                      <div className={`min-w-0 flex-1 flex flex-col ${isHero ? "sm:py-1 justify-between" : ""}`}>
-                        <div>
-                          {/* 세일 라벨 + 카운트다운 — 작은 텍스트 톤 */}
-                          {(p.sale_label || countdown) && (
-                            <div className={`flex items-center gap-2 flex-wrap text-xs text-muted-foreground ${isHero ? "mb-1.5" : "mb-1"}`}>
-                              {p.sale_label && <span className="font-medium text-foreground/70">{p.sale_label}</span>}
-                              {p.sale_label && countdown && <span className="text-border">·</span>}
-                              {countdown && (
-                                <span className="inline-flex items-center gap-1">
-                                  <Clock className="w-3 h-3" aria-hidden /> {countdown}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                          <p className={`font-semibold text-foreground group-hover:text-primary transition ${
-                            isHero ? "text-base sm:text-lg line-clamp-2" : "text-sm line-clamp-2"
-                          }`}>
-                            {p.title}
-                          </p>
-                          {/* 가격: 원가 취소선 + 판매가 강조 */}
-                          {p.price && (
-                            <div className={`flex items-baseline gap-2 flex-wrap ${isHero ? "mt-1.5" : "mt-1.5"}`}>
-                              {p.compare_at_price && discount && (
-                                <span className={`text-muted-foreground line-through tabular-nums ${
-                                  isHero ? "text-sm" : "text-[11px]"
-                                }`}>
-                                  {p.compare_at_price}
-                                </span>
-                              )}
-                              <span
-                                className={`font-bold tabular-nums ${
-                                  discount
-                                    ? isHero ? "text-destructive text-xl" : "text-destructive text-base"
-                                    : isHero ? "text-foreground text-lg" : "text-foreground text-sm"
-                                }`}
-                              >
-                                {p.price}
-                              </span>
-                            </div>
-                          )}
-                          {p.description && (
-                            <p className={`text-muted-foreground ${
-                              isHero ? "text-sm line-clamp-2 mt-1.5" : "text-[11px] line-clamp-2 mt-1"
-                            }`}>
-                              {p.description}
-                            </p>
-                          )}
-                        </div>
-                        {isHero && (
-                          <div className="pt-4 flex flex-wrap gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-foreground text-background text-sm font-medium group-hover:opacity-90 transition">
-                              제품 더 알아보기 →
-                            </span>
-                            {(() => {
-                              try {
-                                const brandUrl = `${new URL(p.url).protocol}//${new URL(p.url).hostname}`;
-                                return (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      window.open(brandUrl, "_blank", "noopener");
-                                    }}
-                                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-foreground/20 text-foreground/80 text-sm font-medium hover:bg-foreground/5 transition"
-                                  >
-                                    공식몰 살펴보기 →
-                                  </button>
-                                );
-                              } catch {
-                                return null;
-                              }
-                            })()}
-                          </div>
-                        )}
-                      </div>
-                    </a>
-                  );
-                })}
               </div>
             </section>
           )}

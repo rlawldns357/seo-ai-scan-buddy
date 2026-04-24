@@ -30,17 +30,6 @@ export function validateUrl(input: string): UrlValidationResult {
     return { isValid: false, finalUrl: '', isSubpage: false, rootUrl: '', errorMessage: 'URL을 입력해 주세요.' };
   }
 
-  // Block whitespace inside URL (e.g., placeholder text typed by mistake)
-  if (/\s/.test(trimmed)) {
-    return { isValid: false, finalUrl: trimmed, isSubpage: false, rootUrl: '', errorMessage: 'URL에 공백이 포함될 수 없어요. 예: https://example.com' };
-  }
-
-  // Require a dot in the host portion (rejects "SearchTune OS" etc.)
-  const hostPart = trimmed.replace(/^https?:\/\//i, '').split('/')[0];
-  if (!hostPart.includes('.')) {
-    return { isValid: false, finalUrl: trimmed, isSubpage: false, rootUrl: '', errorMessage: '도메인 형식이 올바르지 않아요. 예: https://example.com' };
-  }
-
   // Block unsupported schemes
   if (UNSUPPORTED_SCHEMES.test(trimmed)) {
     return { isValid: false, finalUrl: trimmed, isSubpage: false, rootUrl: '', errorMessage: '지원하지 않는 URL 형식이에요. http 또는 https URL을 입력해 주세요.' };

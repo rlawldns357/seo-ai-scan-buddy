@@ -34,8 +34,7 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const siteId: string = body.siteId;
-    const target: number = Math.min(Math.max(body.target ?? 10, 1), 200);
-    const seed: string = (body.seed ?? "").toString().slice(0, 200);
+    const target: number = Math.min(Math.max(body.target ?? 5, 1), 20);
     if (!siteId) return json({ error: "siteId required" }, 400);
 
     const admin = createClient(SUPABASE_URL, SERVICE_KEY);
@@ -51,7 +50,7 @@ Deno.serve(async (req) => {
       .from("site_posts")
       .select("id", { count: "exact", head: true })
       .eq("site_id", siteId)
-      .eq("status", "idea");
+      .in("status", ["idea", "draft", "scheduled"]);
 
     const need = Math.max(0, target - (depth ?? 0));
     if (need === 0) return json({ inserted: 0, depth: depth ?? 0, target });
@@ -67,42 +66,34 @@ Deno.serve(async (req) => {
       (existing ?? []).map((r: any) => (r.title ?? "").trim().toLowerCase()),
     );
 
-    // Ask demo-stream-content (recommend mode) for ideas. The response is SSE, so parse streamed text.
-    const wantHere = Math.min(need, 10);
-    const collected: Array<{ topic: string; axis?: string; reason?: string }> = [];
-
-    for (let round = 0; round < 4 && collected.length < wantHere; round += 1) {
-      const recRes = await fetch(`${SUPABASE_URL}/functions/v1/demo-stream-content`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${SERVICE_KEY}`,
-        },
-        body: JSON.stringify({
-          mode: "recommend",
-          siteUrl: site.site_url,
-          siteTitle: site.title,
-          seed: seed || undefined,
-        }),
-      });
-      if (!recRes.ok) {
-        const t = await recRes.text();
-        throw new Error(`recommend failed: ${recRes.status} ${t.slice(0, 120)}`);
-      }
-
-      const streamText = await recRes.text();
-      const parsedIdeas = extractIdeasFromSse(streamText);
-      for (const idea of parsedIdeas) {
-        const normalized = idea.topic.trim().toLowerCase();
-        if (!normalized || existingTitles.has(normalized)) continue;
-        existingTitles.add(normalized);
-        collected.push(idea);
-        if (collected.length >= wantHere) break;
-      }
+    // Ask demo-stream-content (recommend mode) for ideas. Cap at 5 per call.
+    const wantHere = Math.min(need, 5);
+    const recRes = await fetch(`${SUPABASE_URL}/functions/v1/demo-stream-content`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${SERVICE_KEY}`,
+      },
+      body: JSON.stringify({
+        mode: "recommend",
+        url: site.site_url,
+        siteTitle: site.title,
+      }),
+    });
+    if (!recRes.ok) {
+      const t = await recRes.text();
+      throw new Error(`recommend failed: ${recRes.status} ${t.slice(0, 120)}`);
     }
+    const recBody = await recRes.json().catch(() => ({}));
+    const ideas: Array<{ topic: string; axis?: string; reason?: string }> =
+      Array.isArray(recBody?.ideas) ? recBody.ideas : [];
+
+    const fresh = ideas
+      .filter((i) => i?.topic && !existingTitles.has(i.topic.trim().toLowerCase()))
+      .slice(0, wantHere);
 
     let inserted = 0;
-    for (const idea of collected) {
+    for (const idea of fresh) {
       const slug = `idea-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
       const { error } = await admin.from("site_posts").insert({
         site_id: siteId,
@@ -117,7 +108,7 @@ Deno.serve(async (req) => {
       if (!error) inserted += 1;
     }
 
-    return json({ inserted, depth: depth ?? 0, target, attempted: collected.length });
+    return json({ inserted, depth: depth ?? 0, target, attempted: fresh.length });
   } catch (e) {
     console.error("topup-idea-queue error", e);
     return json({ error: e instanceof Error ? e.message : "Unknown" }, 500);
@@ -129,51 +120,4 @@ function json(b: unknown, status = 200) {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
-}
-
-function extractIdeasFromSse(raw: string): Array<{ topic: string; axis?: string; reason?: string }> {
-  // 1) Concatenate all delta.content chunks across the SSE stream first.
-  let full = "";
-  for (const line of raw.split("\n")) {
-    const trimmed = line.trim();
-    if (!trimmed.startsWith("data:")) continue;
-    const payload = trimmed.slice(5).trim();
-    if (!payload || payload === "[DONE]") continue;
-    try {
-      const parsed = JSON.parse(payload);
-      const chunk =
-        parsed?.choices?.[0]?.delta?.content ??
-        parsed?.choices?.[0]?.message?.content ??
-        "";
-      if (typeof chunk === "string") full += chunk;
-    } catch {
-      continue;
-    }
-  }
-
-  // 2) Extract JSON-line ideas. Be permissive about key order and whitespace.
-  const ideas: Array<{ topic: string; axis?: string; reason?: string }> = [];
-  const seen = new Set<string>();
-
-  // Match anything that looks like a JSON object on its own area.
-  const objectRe = /\{[^{}]{10,600}\}/g;
-  for (const m of full.matchAll(objectRe)) {
-    const raw = m[0];
-    try {
-      const obj = JSON.parse(raw);
-      const axis = String(obj.axis ?? obj.target ?? "SEO").toUpperCase();
-      const topic = String(obj.title ?? obj.topic ?? "").trim();
-      const reason = obj.reason ? String(obj.reason).trim() : undefined;
-      if (!topic || !["SEO", "AEO", "GEO"].includes(axis)) continue;
-      const key = `${axis}:${topic}`.toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      ideas.push({ axis, topic, reason });
-    } catch {
-      continue;
-    }
-  }
-
-  console.log("extractIdeasFromSse", { fullLen: full.length, ideas: ideas.length });
-  return ideas;
 }

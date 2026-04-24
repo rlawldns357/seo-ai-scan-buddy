@@ -640,7 +640,6 @@ export type Database = {
           keywords: string[] | null
           last_viewed_at: string | null
           og_image: string | null
-          product_links: Json
           published_at: string | null
           queue_position: number | null
           scored_at: string | null
@@ -666,7 +665,6 @@ export type Database = {
           keywords?: string[] | null
           last_viewed_at?: string | null
           og_image?: string | null
-          product_links?: Json
           published_at?: string | null
           queue_position?: number | null
           scored_at?: string | null
@@ -692,7 +690,6 @@ export type Database = {
           keywords?: string[] | null
           last_viewed_at?: string | null
           og_image?: string | null
-          product_links?: Json
           published_at?: string | null
           queue_position?: number | null
           scored_at?: string | null
@@ -708,71 +705,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_posts_site_id_fkey"
-            columns: ["site_id"]
-            isOneToOne: false
-            referencedRelation: "user_sites"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      site_products: {
-        Row: {
-          click_count: number
-          compare_at_price: string | null
-          created_at: string
-          description: string | null
-          id: string
-          image_url: string | null
-          is_active: boolean
-          keywords: string[] | null
-          price: string | null
-          sale_ends_at: string | null
-          sale_label: string | null
-          site_id: string
-          sort_order: number
-          title: string
-          updated_at: string
-          url: string
-        }
-        Insert: {
-          click_count?: number
-          compare_at_price?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean
-          keywords?: string[] | null
-          price?: string | null
-          sale_ends_at?: string | null
-          sale_label?: string | null
-          site_id: string
-          sort_order?: number
-          title: string
-          updated_at?: string
-          url: string
-        }
-        Update: {
-          click_count?: number
-          compare_at_price?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          is_active?: boolean
-          keywords?: string[] | null
-          price?: string | null
-          sale_ends_at?: string | null
-          sale_label?: string | null
-          site_id?: string
-          sort_order?: number
-          title?: string
-          updated_at?: string
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "site_products_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "user_sites"
@@ -866,7 +798,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      count_site_products: { Args: { _site_id: string }; Returns: number }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -886,10 +817,6 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
-      }
-      increment_site_product_click: {
-        Args: { _product_id: string }
-        Returns: undefined
       }
       log_site_post_view: {
         Args: { _post_id: string; _referrer?: string; _session_id: string }

@@ -95,12 +95,11 @@ serve(async (req) => {
           .maybeSingle();
         if (nextSched) next = nextSched;
         if (!next) {
-          // Fallback: oldest draft OR idea row with sufficient content
           const { data: nextDraft } = await supabase
             .from("site_posts")
             .select("id, content")
             .eq("site_id", s.site_id)
-            .in("status", ["draft", "idea"])
+            .eq("status", "draft")
             .order("created_at", { ascending: true })
             .limit(1)
             .maybeSingle();

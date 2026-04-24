@@ -1,4 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
@@ -9,8 +18,10 @@ import { onWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Archive } from "lucide-react";
+import { Plus, Sparkles, Archive } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
+import KanbanColumn from "./KanbanColumn";
 import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
 import AutopublishControl from "@/features/publish/AutopublishControl";
@@ -18,30 +29,31 @@ import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_
 import { sortScheduledColumn } from "./scheduleUtils";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
-  idea: "scheduled", // legacy rows
-  draft: "scheduled", // legacy rows — treat as scheduled
+  idea: "draft",
+  draft: "scheduled",
   scheduled: "published",
   published: null,
   archived: null,
 };
-
-/** Normalize legacy 'idea'/'draft' rows to 'scheduled' for grouping/UI. */
-function normalizeStatus(s: KanbanStatus): KanbanStatus {
-  return s === "idea" || s === "draft" ? "scheduled" : s;
-}
 
 export default function KanbanBoard() {
   const { user, loading: authLoading } = useAuth();
   const { site, loading: siteLoading } = useUserSite();
   const navigate = useNavigate();
   const requireAuth = useRequireAuthAction();
+  const isMobile = useIsMobile();
 
   const [posts, setPosts] = useState<KanbanPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [openPost, setOpenPost] = useState<KanbanPost | null>(null);
+  
+  const [activeTab, setActiveTab] = useState<KanbanStatus>("idea");
 
-  const [activeTab, setActiveTab] = useState<KanbanStatus>("scheduled");
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
 
   const load = useCallback(async () => {
     if (!site) {
@@ -54,7 +66,6 @@ export default function KanbanBoard() {
       .from("site_posts")
       .select("id,site_id,slug,title,excerpt,content,status,source_axis,published_at,created_at,updated_at,view_count,seo_score,aeo_score,geo_score,keywords")
       .eq("site_id", site.id)
-      .neq("status", "idea") // ideas live in /dashboard/recommendations stock, not workflow
       .order("updated_at", { ascending: false });
     if (error) {
       toast({ title: "불러오기 실패", description: error.message, variant: "destructive" });
@@ -72,7 +83,7 @@ export default function KanbanBoard() {
 
     return onWorkflowChanged((detail) => {
       if (detail.siteId !== site.id) return;
-      setActiveTab("scheduled");
+      setActiveTab("idea");
       void load();
     });
   }, [site, load]);
@@ -80,8 +91,7 @@ export default function KanbanBoard() {
   const grouped = useMemo(() => {
     const out: Record<KanbanStatus, KanbanPost[]> = { idea: [], draft: [], scheduled: [], published: [], archived: [] };
     for (const p of posts) {
-      const key = normalizeStatus(p.status);
-      if (out[key]) out[key].push(p);
+      if (out[p.status]) out[p.status].push(p);
     }
     return out;
   }, [posts]);
@@ -100,6 +110,22 @@ export default function KanbanBoard() {
     async (post: KanbanPost, to: KanbanStatus) => {
       if (post.status === to) return;
 
+      // Enforce one-step-at-a-time flow: idea → draft → scheduled → published.
+      // Allow: backwards moves, archive ↔ published, and published → draft (unpublish).
+      const FLOW: KanbanStatus[] = ["idea", "draft", "scheduled", "published"];
+      const fromIdx = FLOW.indexOf(post.status);
+      const toIdx = FLOW.indexOf(to);
+      const isForward = fromIdx >= 0 && toIdx >= 0 && toIdx > fromIdx;
+      if (isForward && toIdx - fromIdx > 1) {
+        const need = FLOW[fromIdx + 1];
+        toast({
+          title: "한 단계씩 진행해주세요",
+          description: `먼저 "${COLUMN_META[need].label}" 단계를 거쳐야 해요.`,
+          variant: "destructive",
+        });
+        return;
+      }
+
       // Hard auth check — publishing/AI calls require a logged-in owner.
       if (!user) {
         toast({
@@ -113,9 +139,28 @@ export default function KanbanBoard() {
       setBusyId(post.id);
       const rollback = optimisticMove(post.id, to);
       try {
-        if (to === "published") {
+        if (to === "draft" && post.status === "idea") {
+          const { data, error } = await supabase.functions.invoke("generate-content-draft", {
+            body: { topic: post.title, targetAxis: post.source_axis || "SEO", siteUrl: site?.site_url },
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          const { error: upErr } = await supabase
+            .from("site_posts")
+            .update({
+              status: "draft",
+              title: data.title || post.title,
+              excerpt: data.excerpt || post.excerpt,
+              content: data.content || post.content || "",
+              keywords: Array.isArray(data.keywords) ? data.keywords : (post.keywords ?? []),
+              faq: Array.isArray(data.faq) ? data.faq : [],
+            } as any)
+            .eq("id", post.id);
+          if (upErr) throw upErr;
+          toast({ title: "AI가 초안을 생성했어요" });
+        } else if (to === "published") {
           if (!post.content || post.content.trim().length < 30) {
-            throw new Error("본문이 비어 있어 발행할 수 없어요. 카드를 열어 ‘AI로 본문 생성’ 후 다시 시도해주세요.");
+            throw new Error("본문이 비어 있어 발행할 수 없어요. 카드를 열어 초안부터 작성해주세요.");
           }
           const { data, error } = await supabase.functions.invoke("publish-site-post", {
             body: { postId: post.id },
@@ -126,17 +171,16 @@ export default function KanbanBoard() {
             title: "✅ 발행되었습니다",
             description: site?.site_slug ? `/sites/${site.site_slug}/${post.slug} 에서 확인하세요` : undefined,
           });
-        } else if (to === "scheduled" && post.status === "published") {
-          // Unpublish → back to scheduled queue
+        } else if (to === "draft" && post.status === "published") {
           const { error } = await supabase
             .from("site_posts")
-            .update({ status: "scheduled", published_at: null })
+            .update({ status: "draft", published_at: null })
             .eq("id", post.id);
           if (error) throw error;
-          toast({ title: "발행 취소 — 발행 대기로 이동" });
+          toast({ title: "발행 취소 — 초안으로 이동" });
         } else {
           const patch: { status: KanbanStatus; published_at?: string | null } = { status: to };
-          if (to === "scheduled") patch.published_at = null;
+          if (to === "scheduled" || to === "idea") patch.published_at = null;
           const { error } = await supabase.from("site_posts").update(patch).eq("id", post.id);
           if (error) throw error;
           toast({ title: `${COLUMN_META[to].label}(으)로 이동` });
@@ -156,7 +200,16 @@ export default function KanbanBoard() {
     [load, posts, site?.site_url, site?.site_slug, user, navigate],
   );
 
-  // (Drag-and-drop removed — board is now a simple 2-tab list.)
+  const onDragStart = (e: DragStartEvent) => setActiveDragId(String(e.active.id));
+  const onDragEnd = (e: DragEndEvent) => {
+    setActiveDragId(null);
+    const id = String(e.active.id);
+    const post = posts.find((p) => p.id === id);
+    const to = e.over?.id as KanbanStatus | undefined;
+    if (!post || !to || !COLUMN_ORDER.includes(to)) return;
+    if (post.status === to) return;
+    performTransition(post, to);
+  };
 
   const handleSave = async (
     id: string,
@@ -169,10 +222,16 @@ export default function KanbanBoard() {
       content: patch.content,
     };
 
-    // Schedule handling: only meaningful for scheduled rows.
-    if (current && current.status === "scheduled") {
-      if (patch.published_at !== undefined) {
-        update.published_at = patch.published_at; // null clears it (manual publish)
+    // Schedule handling: only meaningful for draft/scheduled rows.
+    if (current && (current.status === "draft" || current.status === "scheduled")) {
+      if (patch.published_at) {
+        // User picked a time → move into the scheduled column and store the timestamp.
+        update.status = "scheduled";
+        update.published_at = patch.published_at;
+      } else if (patch.published_at === null) {
+        // User cleared the time → back to draft, no published_at.
+        update.status = "draft";
+        update.published_at = null;
       }
     }
 
@@ -182,9 +241,10 @@ export default function KanbanBoard() {
       return;
     }
     toast({
-      title: update.published_at
-        ? "예약되었습니다 — 시각이 되면 자동 발행됩니다"
-        : "저장되었습니다",
+      title:
+        update.status === "scheduled"
+          ? "예약되었습니다 — 시각이 되면 자동 발행됩니다"
+          : "저장되었습니다",
     });
     await load();
     setOpenPost(null);
@@ -215,52 +275,31 @@ export default function KanbanBoard() {
     await load();
   };
 
-  const createDraft = requireAuth(async () => {
+  const createIdea = requireAuth(async () => {
     if (!site) return;
-    const title = window.prompt("새 글의 주제(제목)를 입력하세요");
+    const title = window.prompt("새 아이디어 제목을 입력하세요");
     if (!title?.trim()) return;
-    const slug = `post-${Date.now().toString(36)}`;
-    const trimmed = title.trim();
-
-    setLoading(true);
-    try {
-      // Run the AI engine, then insert directly into the 발행 대기 column.
-      const { data, error } = await supabase.functions.invoke("generate-content-draft", {
-        body: { topic: trimmed, targetAxis: "SEO", siteUrl: site.site_url },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      const { error: insertErr } = await supabase.from("site_posts").insert({
-        site_id: site.id,
-        slug,
-        title: data?.title || trimmed,
-        excerpt: data?.excerpt ?? null,
-        content: data?.content || "",
-        status: "scheduled",
-        published_at: null,
-        keywords: Array.isArray(data?.keywords) ? data.keywords : [],
-        faq: Array.isArray(data?.faq) ? data.faq : [],
-      } as any);
-      if (insertErr) throw insertErr;
-      toast({ title: "✨ 발행 대기에 새 글이 추가되었어요" });
-    } catch (e: any) {
-      toast({
-        title: "생성 실패",
-        description: e?.message || "잠시 후 다시 시도해주세요",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-      load();
+    const slug = `idea-${Date.now().toString(36)}`;
+    const { error } = await supabase.from("site_posts").insert({
+      site_id: site.id,
+      slug,
+      title: title.trim(),
+      content: `# ${title.trim()}\n\n(아이디어 단계 — 초안으로 옮기면 AI가 본문을 생성합니다)`,
+      status: "idea",
+    } as any);
+    if (error) {
+      toast({ title: "추가 실패", description: error.message, variant: "destructive" });
+      return;
     }
+    toast({ title: "아이디어 추가됨" });
+    load();
   });
 
   // Guards
   if (!authLoading && !user) {
     return (
       <LockedFeature
-        title="자동 발행 보드"
+        title="워크플로우 보드"
         description="로그인하면 추천부터 발행까지 한 화면에서 관리할 수 있어요."
         ctaLabel="로그인"
         onCta={() => navigate(`/auth?next=${encodeURIComponent("/dashboard#workflow")}`)}
@@ -282,7 +321,7 @@ export default function KanbanBoard() {
     return <div className="text-sm text-muted-foreground py-12 text-center">불러오는 중…</div>;
   }
 
-  // (drag overlay removed)
+  const activePost = activeDragId ? posts.find((p) => p.id === activeDragId) : null;
 
   const handleSetSchedule = async (post: KanbanPost, iso: string) => {
     const isChange = !!post.published_at;
@@ -301,13 +340,13 @@ export default function KanbanBoard() {
   const handleCancelSchedule = async (post: KanbanPost) => {
     const { error } = await supabase
       .from("site_posts")
-      .update({ status: "scheduled", published_at: null } as any)
+      .update({ status: "draft", published_at: null } as any)
       .eq("id", post.id);
     if (error) {
       toast({ title: "취소 실패", description: error.message, variant: "destructive" });
       return;
     }
-    toast({ title: "예약 발행이 취소되었어요 — 수동 발행 대기" });
+    toast({ title: "예약 발행이 취소되었어요" });
     await load();
   };
 
@@ -315,10 +354,6 @@ export default function KanbanBoard() {
     toast({ title: "지금 바로 발행을 시작해요" });
     void performTransition(post, "published");
   };
-
-  const scheduledList = posts
-    .filter((p) => p.status === "scheduled" && p.published_at)
-    .map((p) => ({ id: p.id, title: p.title, iso: p.published_at as string }));
 
   const renderCard = (p: KanbanPost) => (
     <KanbanCard
@@ -334,8 +369,6 @@ export default function KanbanBoard() {
       onSchedule={handleSetSchedule}
       onCancelSchedule={handleCancelSchedule}
       onPublishNow={handlePublishNow}
-      onDelete={(post) => handleDelete(post.id)}
-      scheduledSiblings={scheduledList}
     />
   );
 
@@ -363,12 +396,18 @@ export default function KanbanBoard() {
   return (
     <>
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
-        <div className="text-[12px] text-muted-foreground">
-          발행 대기 <span className="text-foreground font-semibold tabular-nums">{grouped.scheduled.length}</span>편
-          {" · "}발행됨 <span className="text-foreground font-semibold tabular-nums">{totalPublishedHistory}</span>편
+      <div className="flex items-center justify-between gap-2 mb-4">
+        <div className="text-[11px] text-muted-foreground">
+          작업 큐 <span className="text-foreground font-semibold tabular-nums">{posts.length - archivedCount}</span>건
+          {COLUMN_ORDER.map((s) => (
+            <span key={s}>
+              {" · "}
+              {COLUMN_META[s].label}{" "}
+              <span className="font-semibold text-foreground tabular-nums">{grouped[s].length}</span>
+            </span>
+          ))}
           {archivedCount > 0 && (
-            <span className="text-muted-foreground/70"> (보관 {archivedCount})</span>
+            <span> · 보관 <span className="font-semibold text-foreground tabular-nums">{archivedCount}</span></span>
           )}
         </div>
         <div className="flex items-center gap-1.5">
@@ -383,38 +422,70 @@ export default function KanbanBoard() {
               <Archive className="h-3 w-3" /> 보관함 {archivedCount}
             </Button>
           )}
-          <Button size="sm" className="rounded-full h-8 text-xs" onClick={createDraft}>
-            <Plus className="h-3 w-3" /> AI로 새 글 추가
+          <Button size="sm" variant="outline" className="rounded-full h-8 text-xs" onClick={createIdea}>
+            <Plus className="h-3 w-3" /> 아이디어
+          </Button>
+          <Button
+            size="sm"
+            className="rounded-full h-8 text-xs"
+            onClick={() => document.getElementById("recommendations")?.scrollIntoView({ behavior: "smooth" })}
+          >
+            <Sparkles className="h-3 w-3" /> 추천에서 가져오기
           </Button>
         </div>
       </div>
 
-      {/* Unified 2-tab layout (예약 / 발행됨) */}
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as KanbanStatus)}>
-        <TabsList className="inline-flex h-9">
+      {isMobile ? (
+        // Mobile: tabs (no drag UX on small screens)
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as KanbanStatus)}>
+          <TabsList className="grid grid-cols-4 w-full">
+            {COLUMN_ORDER.map((s) => (
+              <TabsTrigger key={s} value={s} className="text-[11px]">
+                {COLUMN_META[s].emoji} {grouped[s].length}
+              </TabsTrigger>
+            ))}
+          </TabsList>
           {COLUMN_ORDER.map((s) => (
-            <TabsTrigger key={s} value={s} className="text-xs px-4">
-              {COLUMN_META[s].label}
-              <span className="ml-1.5 text-[11px] font-mono text-muted-foreground tabular-nums">
-                {s === "published" ? totalPublishedHistory : grouped[s].length}
-              </span>
-            </TabsTrigger>
+            <TabsContent key={s} value={s} className="mt-3 space-y-2">
+              <p className="text-[11px] text-muted-foreground px-1">{COLUMN_META[s].description}</p>
+              {grouped[s].length === 0 ? (
+                <div className="text-[11px] text-muted-foreground text-center py-8 border border-dashed border-border/40 rounded-xl">
+                  아직 항목이 없어요
+                </div>
+              ) : (
+                renderColumnContent(s)
+              )}
+            </TabsContent>
           ))}
-        </TabsList>
-        {COLUMN_ORDER.map((s) => (
-          <TabsContent key={s} value={s} className="mt-3 space-y-2">
-            {grouped[s].length === 0 ? (
-              <div className="text-[12px] text-muted-foreground text-center py-12 border border-dashed border-border/40 rounded-xl">
-                {s === "scheduled"
-                  ? "‘AI로 새 글 추가’를 눌러 발행 대기 큐를 채우세요"
-                  : "아직 발행된 글이 없어요"}
+        </Tabs>
+      ) : (
+        <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
+          <div className="grid grid-cols-4 gap-3">
+            {COLUMN_ORDER.map((s) => (
+              <KanbanColumn
+                key={s}
+                status={s}
+                count={s === "published" ? totalPublishedHistory : grouped[s].length}
+                isEmpty={grouped[s].length === 0}
+                posts={grouped[s]}
+              >
+                {renderColumnContent(s)}
+              </KanbanColumn>
+            ))}
+          </div>
+          <DragOverlay>
+            {activePost ? (
+              <div className="opacity-90 rotate-1">
+                <KanbanCard
+                  post={activePost}
+                  onOpen={() => {}}
+                  nextStatus={NEXT_STATUS[activePost.status]}
+                />
               </div>
-            ) : (
-              renderColumnContent(s)
-            )}
-          </TabsContent>
-        ))}
-      </Tabs>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
+      )}
 
       <PostDetailPanel
         post={openPost}
@@ -423,27 +494,6 @@ export default function KanbanBoard() {
         onSave={(patch) => openPost ? handleSave(openPost.id, patch) : Promise.resolve()}
         onDelete={() => openPost ? handleDelete(openPost.id) : Promise.resolve()}
         onArchive={(archive) => openPost ? handleArchive(openPost.id, archive) : Promise.resolve()}
-        onGenerateBody={async (title) => {
-          if (!openPost) return;
-          const { data, error } = await supabase.functions.invoke("generate-content-draft", {
-            body: { topic: title, targetAxis: openPost.source_axis || "SEO", siteUrl: site?.site_url },
-          });
-          if (error) throw error;
-          if (data?.error) throw new Error(data.error);
-          await supabase
-            .from("site_posts")
-            .update({
-              title: data.title || title,
-              excerpt: data.excerpt || openPost.excerpt,
-              content: data.content || "",
-              keywords: Array.isArray(data.keywords) ? data.keywords : (openPost.keywords ?? []),
-              faq: Array.isArray(data.faq) ? data.faq : [],
-            } as any)
-            .eq("id", openPost.id);
-          toast({ title: "AI가 본문을 생성했어요" });
-          await load();
-          return { title: data.title, excerpt: data.excerpt, content: data.content };
-        }}
       />
 
     </>
