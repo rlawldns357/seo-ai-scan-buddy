@@ -88,7 +88,7 @@ export default function KanbanBoard() {
 
     return onWorkflowChanged((detail) => {
       if (detail.siteId !== site.id) return;
-      setActiveTab("idea");
+      setActiveTab("draft");
       void load();
     });
   }, [site, load]);
@@ -96,7 +96,8 @@ export default function KanbanBoard() {
   const grouped = useMemo(() => {
     const out: Record<KanbanStatus, KanbanPost[]> = { idea: [], draft: [], scheduled: [], published: [], archived: [] };
     for (const p of posts) {
-      if (out[p.status]) out[p.status].push(p);
+      const key = normalizeStatus(p.status);
+      if (out[key]) out[key].push(p);
     }
     return out;
   }, [posts]);
