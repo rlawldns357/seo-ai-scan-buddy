@@ -224,12 +224,12 @@ export default function SitePost() {
                           alt=""
                           loading="lazy"
                           className={`rounded-lg object-cover shrink-0 bg-muted ${
-                            isHero ? "h-40 w-full sm:h-40 sm:w-40" : "h-20 w-20"
+                            isHero ? "h-48 w-full sm:h-52 sm:w-52" : "h-20 w-20"
                           }`}
                         />
                       ) : (
                         <div className={`rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground/50 text-xs ${
-                          isHero ? "h-40 w-full sm:h-40 sm:w-40" : "h-20 w-20"
+                          isHero ? "h-48 w-full sm:h-52 sm:w-52" : "h-20 w-20"
                         }`}>
                           제품
                         </div>
@@ -285,11 +285,10 @@ export default function SitePost() {
                         {isHero && (
                           <div className="pt-4 flex flex-wrap gap-2">
                             <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-foreground text-background text-sm font-medium group-hover:opacity-90 transition">
-                              자세히 보기 →
+                              제품 더 알아보기 →
                             </span>
                             {(() => {
                               try {
-                                const host = new URL(p.url).hostname.replace(/^www\./, "");
                                 const brandUrl = `${new URL(p.url).protocol}//${new URL(p.url).hostname}`;
                                 return (
                                   <button
@@ -301,7 +300,7 @@ export default function SitePost() {
                                     }}
                                     className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-foreground/20 text-foreground/80 text-sm font-medium hover:bg-foreground/5 transition"
                                   >
-                                    {host} 홈 →
+                                    공식몰 살펴보기 →
                                   </button>
                                 );
                               } catch {
