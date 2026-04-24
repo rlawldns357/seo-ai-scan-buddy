@@ -33,16 +33,15 @@ import { useScrollSpy } from "./useScrollSpy";
 import { cn } from "@/lib/utils";
 
 type Tone = "primary" | "warning" | "accent" | "neutral" | "success";
-type SectionItem = {
+type RouteSection = {
   title: string;
-  section: string;
+  url: string;
   index: number;
   icon: LucideIcon;
   tone: Tone;
+  end?: boolean;
 };
 type RouteItem = { title: string; url: string; icon: LucideIcon; end?: boolean };
-
-const SECTION_IDS = ["overview", "recommendations", "workflow", "archive", "reports"];
 
 /** OnePage 의 SectionShell 톤과 1:1 매칭 — 색만 사이드바 컨텍스트에 맞게 정리 */
 const TONE: Record<Tone, { dot: string; text: string; badgeBg: string; activeBg: string }> = {
@@ -78,18 +77,18 @@ const TONE: Record<Tone, { dot: string; text: string; badgeBg: string; activeBg:
   },
 };
 
-const overviewItems: SectionItem[] = [
-  { title: "오늘의 운영", section: "overview", index: 1, icon: LayoutDashboard, tone: "primary" },
+const overviewItems: RouteSection[] = [
+  { title: "대시보드", url: "/dashboard", index: 1, icon: LayoutDashboard, tone: "primary", end: true },
 ];
 
-const workflowItems: SectionItem[] = [
-  { title: "콘텐츠 추천", section: "recommendations", index: 2, icon: Lightbulb, tone: "warning" },
-  { title: "워크플로우", section: "workflow", index: 3, icon: KanbanSquare, tone: "accent" },
-  { title: "발행 아카이브", section: "archive", index: 4, icon: Archive, tone: "neutral" },
+const workflowItems: RouteSection[] = [
+  { title: "콘텐츠 추천", url: "/dashboard/recommendations", index: 2, icon: Lightbulb, tone: "warning" },
+  { title: "워크플로우", url: "/dashboard/workflow", index: 3, icon: KanbanSquare, tone: "accent" },
+  { title: "발행 아카이브", url: "/dashboard/archive", index: 4, icon: Archive, tone: "neutral" },
 ];
 
-const analyticsItems: SectionItem[] = [
-  { title: "성과 리포트", section: "reports", index: 5, icon: BarChart3, tone: "success" },
+const analyticsItems: RouteSection[] = [
+  { title: "성과 리포트", url: "/dashboard/reports", index: 5, icon: BarChart3, tone: "success" },
 ];
 
 const internalItems: RouteItem[] = [
@@ -123,25 +122,13 @@ export default function AppSidebar() {
   const { user, signOut } = useAuth();
   const { tier } = useUserTier();
 
-  const onDashboardOnePage =
-    location.pathname === "/dashboard" || location.pathname === "/dashboard/";
-  const activeSection = useScrollSpy(onDashboardOnePage ? SECTION_IDS : []);
-
   const handleSignOut = async () => {
     await signOut();
     navigate("/", { replace: true });
   };
 
-  const handleSectionClick = (e: React.MouseEvent, section: string) => {
-    if (onDashboardOnePage) {
-      e.preventDefault();
-      const el = document.getElementById(section);
-      if (el) {
-        window.history.replaceState(null, "", `/dashboard#${section}`);
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  };
+  const isRouteActive = (url: string, end?: boolean) =>
+    end ? location.pathname === url : location.pathname === url || location.pathname.startsWith(url + "/");
 
   const renderSection = (item: SectionItem) => {
     const active = onDashboardOnePage && activeSection === item.section;
