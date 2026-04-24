@@ -35,19 +35,13 @@ export default function KanbanBoard() {
   const { site, loading: siteLoading } = useUserSite();
   const navigate = useNavigate();
   const requireAuth = useRequireAuthAction();
-  const isMobile = useIsMobile();
 
   const [posts, setPosts] = useState<KanbanPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [openPost, setOpenPost] = useState<KanbanPost | null>(null);
-  
-  const [activeTab, setActiveTab] = useState<KanbanStatus>("scheduled");
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
+  const [activeTab, setActiveTab] = useState<KanbanStatus>("scheduled");
 
   const load = useCallback(async () => {
     if (!site) {
