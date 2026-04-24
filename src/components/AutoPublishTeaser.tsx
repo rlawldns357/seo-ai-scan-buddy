@@ -1,71 +1,122 @@
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, Rocket, Zap } from "lucide-react";
+import { ArrowRight, FileText, CalendarClock, CheckCircle2 } from "lucide-react";
 
 /**
  * Home-screen "new product launch" teaser for AutoBlog.
- * Optimized for instant "오! 신제품?!" recognition rather than feature explanation.
+ * Acquire.com-inspired: deep navy full-bleed surface, generous whitespace,
+ * a small product mockup on the right that signals what the product actually does.
  */
 export default function AutoPublishTeaser() {
   return (
-    <section className="mt-16 max-w-lg mx-auto text-left">
-      <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.08] via-card to-accent/[0.06] p-7 sm:p-8 shadow-lg shadow-primary/5">
-        {/* glow accents */}
-        <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full bg-primary/20 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-16 w-48 h-48 rounded-full bg-accent/20 blur-3xl" />
+    <section className="mt-16 max-w-2xl mx-auto text-left">
+      <div className="relative overflow-hidden rounded-3xl bg-[hsl(232_47%_14%)] text-white px-6 sm:px-10 py-10 sm:py-12 shadow-xl">
+        {/* subtle decorative glow */}
+        <div className="pointer-events-none absolute -top-24 -right-20 w-72 h-72 rounded-full bg-primary/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-24 -left-20 w-64 h-64 rounded-full bg-accent/20 blur-3xl" />
 
-        <div className="relative">
-          {/* Launch badge */}
-          <div className="flex items-center justify-between gap-2 mb-5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground text-[11px] font-extrabold tracking-widest uppercase shadow-md">
-              <Rocket className="w-3.5 h-3.5" /> Just Launched
-            </span>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/15 text-accent text-[10px] font-extrabold tracking-widest uppercase ring-1 ring-accent/30">
-              <Sparkles className="w-3 h-3" /> NEW
-            </span>
-          </div>
-
-          {/* Product name — big and proud */}
-          <div className="mb-4">
-            <div className="text-[11px] font-bold text-primary tracking-widest uppercase mb-1.5">
-              SearchTune OS 신제품
+        <div className="relative grid sm:grid-cols-[1.1fr_0.9fr] gap-8 items-center">
+          {/* LEFT — copy */}
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 text-white/90 text-[10px] font-extrabold tracking-[0.18em] uppercase ring-1 ring-white/15 mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              New product · AutoBlog
             </div>
-            <h2 className="text-3xl sm:text-4xl font-black text-foreground leading-[1.05] tracking-tight">
-              <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
-                AutoBlog
+
+            <h2 className="text-3xl sm:text-[2.4rem] font-extrabold leading-[1.1] tracking-tight">
+              매일 글 안 써도<br />
+              <span className="text-white/70">검색·AI에 노출되는 콘텐츠가</span>
+              <br />
+              <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                알아서 쌓입니다
               </span>
             </h2>
-            <p className="text-base sm:text-lg font-bold text-foreground mt-2 leading-snug">
-              주제만 적으면, 알아서 글이 올라가는<br className="hidden sm:block" /> 자동 블로그 운영 도구
+
+            <p className="text-sm sm:text-[15px] text-white/70 mt-4 leading-relaxed">
+              주제 한 줄이면 SEO·AEO·GEO 3축으로 최적화된 글이 자동 생성·예약·발행돼요.
+            </p>
+
+            <div className="mt-7 flex flex-col sm:flex-row gap-2.5">
+              <Link
+                to="/auth?next=/dashboard"
+                className="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-full bg-white text-[hsl(232_47%_14%)] text-sm font-extrabold hover:bg-white/90 transition-colors shadow-md"
+              >
+                무료로 시작하기 <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/autoblog"
+                className="inline-flex items-center justify-center gap-1.5 h-11 px-5 rounded-full bg-transparent text-white text-sm font-bold ring-1 ring-white/25 hover:bg-white/5 transition-colors"
+              >
+                둘러보기
+              </Link>
+            </div>
+
+            <p className="text-[11px] text-white/50 mt-3">
+              베타 무료 · 카드 등록 불필요
             </p>
           </div>
 
-          {/* One-line value */}
-          <div className="flex items-center gap-2 mt-4 px-3.5 py-3 rounded-2xl bg-background/70 backdrop-blur-sm border border-border/50">
-            <Zap className="w-4 h-4 text-accent shrink-0" />
-            <p className="text-sm text-foreground leading-snug">
-              <span className="font-bold">매일 글 안 써도</span> 검색·AI 답변에 노출되는 콘텐츠가 쌓여요
-            </p>
-          </div>
+          {/* RIGHT — mini product mockup */}
+          <div className="hidden sm:block relative">
+            <div className="relative rounded-2xl bg-white/[0.06] backdrop-blur-md ring-1 ring-white/10 p-3.5 shadow-2xl">
+              <div className="flex items-center gap-1.5 mb-3 px-1">
+                <span className="w-2 h-2 rounded-full bg-white/20" />
+                <span className="w-2 h-2 rounded-full bg-white/20" />
+                <span className="w-2 h-2 rounded-full bg-white/20" />
+                <span className="ml-auto text-[10px] font-bold text-white/50 tracking-wider uppercase">
+                  AutoBlog
+                </span>
+              </div>
 
-          {/* CTAs */}
-          <div className="mt-6 flex flex-col sm:flex-row gap-2.5">
-            <Link
-              to="/auth?next=/dashboard"
-              className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-extrabold hover:opacity-90 transition-opacity shadow-md"
-            >
-              <Sparkles className="w-4 h-4" /> 무료로 써보기 <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              to="/autoblog"
-              className="inline-flex items-center justify-center gap-1.5 h-12 px-6 rounded-full border border-border bg-card text-foreground text-sm font-bold hover:bg-muted/50 transition-colors"
-            >
-              제품 소개 보기
-            </Link>
-          </div>
+              <div className="space-y-2">
+                {/* Published */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.04] ring-1 ring-white/5">
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-accent/20 text-accent shrink-0">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-bold text-white truncate">
+                      가을 신상품 코디 가이드
+                    </div>
+                    <div className="text-[10px] text-white/50">발행됨 · 2시간 전</div>
+                  </div>
+                </div>
+                {/* Scheduled */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.04] ring-1 ring-white/5">
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-primary/25 text-primary-foreground shrink-0">
+                    <CalendarClock className="w-3.5 h-3.5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-bold text-white truncate">
+                      주말 세일 안내
+                    </div>
+                    <div className="text-[10px] text-white/50">예약 · 토 09:00</div>
+                  </div>
+                </div>
+                {/* Draft */}
+                <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.04] ring-1 ring-white/5">
+                  <span className="inline-flex items-center justify-center w-7 h-7 rounded-lg bg-white/10 text-white/70 shrink-0">
+                    <FileText className="w-3.5 h-3.5" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-bold text-white truncate">
+                      리뷰 베스트 5 큐레이션
+                    </div>
+                    <div className="text-[10px] text-white/50">초안 준비됨</div>
+                  </div>
+                </div>
+              </div>
 
-          <p className="text-[11px] text-muted-foreground mt-3 text-center sm:text-left">
-            베타 기간 무료 · 카드 등록 필요 없음
-          </p>
+              <div className="mt-3 flex items-center justify-between px-1">
+                <span className="text-[10px] text-white/50">큐 자동 보충</span>
+                <span className="text-[10px] font-bold text-accent">+27편 대기</span>
+              </div>
+            </div>
+
+            {/* floating little badge */}
+            <div className="absolute -top-3 -right-2 px-2.5 py-1 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground text-[10px] font-extrabold tracking-wider uppercase shadow-lg ring-2 ring-[hsl(232_47%_14%)]">
+              Live
+            </div>
+          </div>
         </div>
       </div>
     </section>
