@@ -19,7 +19,7 @@ const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
 const DashboardLayout = lazy(() => import("./pages/dashboard/Layout.tsx"));
-const DashboardOnePage = lazy(() => import("./pages/dashboard/OnePage.tsx"));
+const DashboardHome = lazy(() => import("./pages/dashboard/Home.tsx"));
 const DashboardDemo = lazy(() => import("./pages/dashboard/Demo.tsx"));
 const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
 const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
@@ -63,7 +63,7 @@ const App = () => (
             {/* 게스트 접근 시 /auth로 자동 이동하지 않음.               */}
             {/* 인증은 useRequireAuthAction을 통한 액션 클릭 시점에만.   */}
             <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<DashboardOnePage />} />
+              <Route index element={<DashboardHome />} />
               <Route path="recommendations" element={<Navigate to="/dashboard#recommendations" replace />} />
               <Route path="content" element={<Navigate to="/dashboard#workflow" replace />} />
               <Route path="auto-publish" element={<Navigate to="/dashboard#workflow" replace />} />
