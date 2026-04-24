@@ -233,21 +233,23 @@ export default function SitePost() {
                         </div>
                       )}
                       <div className="min-w-0 flex-1">
-                        {/* 세일 라벨 + 카운트다운 */}
-                        {(p.sale_label || countdown) && (
-                          <div className="flex items-center gap-1.5 mb-1 flex-wrap">
-                            {p.sale_label && (
-                              <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-destructive/15 text-destructive">
-                                {p.sale_label}
-                              </span>
-                            )}
-                            {countdown && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-destructive/10 text-destructive/80">
-                                <Clock className="w-2.5 h-2.5" aria-hidden /> {countdown}
-                              </span>
-                            )}
-                          </div>
-                        )}
+                        {/* 세일 라벨 + 카운트다운 (할인 정보 없으면 '추천' 폴백) */}
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          {p.sale_label ? (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-destructive/15 text-destructive">
+                              {p.sale_label}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-destructive/10 text-destructive">
+                              <Flame className="w-2.5 h-2.5" aria-hidden /> 특가
+                            </span>
+                          )}
+                          {countdown && (
+                            <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-destructive/10 text-destructive/80">
+                              <Clock className="w-2.5 h-2.5" aria-hidden /> {countdown}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition">
                           {p.title}
                         </p>
