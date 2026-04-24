@@ -15,12 +15,12 @@ export default function AutoPublishTeaser() {
 
         <div className="relative">
           {/* Launch badge */}
-          <div className="flex items-center gap-2 mb-5">
+          <div className="flex items-center justify-between gap-2 mb-5">
             <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground text-[11px] font-extrabold tracking-widest uppercase shadow-md">
               <Rocket className="w-3.5 h-3.5" /> Just Launched
             </span>
-            <span className="text-[11px] font-bold text-muted-foreground tracking-wider uppercase">
-              v1.0
+            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-accent/15 text-accent text-[10px] font-extrabold tracking-widest uppercase ring-1 ring-accent/30">
+              <Sparkles className="w-3 h-3" /> NEW
             </span>
           </div>
 
