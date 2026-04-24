@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { CalendarClock, Clock } from "lucide-react";
+import { CalendarClock, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -34,6 +34,22 @@ function combineDateTime(date: Date | undefined, time: string): Date | null {
   return d;
 }
 
+function sameYMD(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function formatDateLabel(d: Date, now: Date): string {
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  if (sameYMD(d, now)) return `오늘 (${WEEKDAY[d.getDay()]})`;
+  if (sameYMD(d, tomorrow)) return `내일 (${WEEKDAY[d.getDay()]})`;
+  return `${d.getMonth() + 1}월 ${d.getDate()}일 (${WEEKDAY[d.getDay()]})`;
+}
+
 function formatPreview(d: Date): string {
   return `${d.getFullYear()}.${pad(d.getMonth() + 1)}.${pad(d.getDate())} ${WEEKDAY[d.getDay()]} ${pad(d.getHours())}:${pad(d.getMinutes())} KST`;
 }
@@ -49,31 +65,36 @@ function formatRelative(d: Date, now: number): string {
   return `약 ${days}일 후`;
 }
 
-/** 빠른 프리셋: 지금 기준 상대 시각 */
-function buildPresets(now: Date) {
-  const inOneHour = new Date(now);
-  inOneHour.setMinutes(0, 0, 0);
-  inOneHour.setHours(inOneHour.getHours() + 1);
-
-  const tonight = new Date(now);
-  tonight.setHours(20, 0, 0, 0);
-  if (tonight.getTime() <= now.getTime()) tonight.setDate(tonight.getDate() + 1);
-
+/** 추천 날짜 2개:
+ *  1) 내일 오전 9시 — 가장 빠르고 안전한 선택
+ *  2) 다음 평일 오전 9시 — 주말이면 월요일로 미루기 (트래픽 피크)
+ */
+function buildRecommendations(now: Date) {
   const tomorrow9 = new Date(now);
   tomorrow9.setDate(tomorrow9.getDate() + 1);
   tomorrow9.setHours(9, 0, 0, 0);
 
-  const nextMonday9 = new Date(now);
-  const day = nextMonday9.getDay(); // 0=일
-  const add = ((1 - day + 7) % 7) || 7;
-  nextMonday9.setDate(nextMonday9.getDate() + add);
-  nextMonday9.setHours(9, 0, 0, 0);
+  // 다음 "평일" 9시 (내일이 평일이면 모레, 주말이면 다음 월요일)
+  const nextWeekday = new Date(tomorrow9);
+  nextWeekday.setDate(nextWeekday.getDate() + 1);
+  while (nextWeekday.getDay() === 0 || nextWeekday.getDay() === 6) {
+    nextWeekday.setDate(nextWeekday.getDate() + 1);
+  }
+  nextWeekday.setHours(9, 0, 0, 0);
 
   return [
-    { label: "1시간 후", date: inOneHour },
-    { label: "오늘 저녁 8시", date: tonight },
-    { label: "내일 오전 9시", date: tomorrow9 },
-    { label: "다음 주 월요일 9시", date: nextMonday9 },
+    {
+      key: "tomorrow",
+      label: "내일 오전 9시",
+      sublabel: "가장 빠른 안전 발행",
+      date: tomorrow9,
+    },
+    {
+      key: "next-weekday",
+      label: `${nextWeekday.getMonth() + 1}/${nextWeekday.getDate()} (${WEEKDAY[nextWeekday.getDay()]}) 오전 9시`,
+      sublabel: "트래픽 피크 평일",
+      date: nextWeekday,
+    },
   ];
 }
 
@@ -103,7 +124,7 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
   }, [open, initialIso]);
 
   const now = Date.now();
-  const presets = useMemo(() => buildPresets(new Date()), [open]);
+  const recommendations = useMemo(() => buildRecommendations(new Date()), [open]);
   const combined = combineDateTime(date, time);
   const isPast = combined ? combined.getTime() <= now : false;
   const canSave = !!combined && !isPast && !saving;
@@ -111,9 +132,11 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const dateLabel = date ? formatDateLabel(date, new Date()) : "날짜 미선택";
+
   return (
     <Dialog open={open} onOpenChange={(o) => !o && !saving && onClose()}>
-      <DialogContent className="sm:max-w-[520px] p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[560px] p-0 overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-3 border-b border-border/60">
           <DialogTitle className="flex items-center gap-2 text-base">
             <CalendarClock className="w-4 h-4 text-primary" />
@@ -124,79 +147,96 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
           </DialogDescription>
         </DialogHeader>
 
-        {/* 빠른 선택 */}
+        {/* 추천 발행 시각 */}
         <div className="px-5 pt-4">
-          <div className="text-[11px] font-semibold text-muted-foreground mb-2">빠른 선택</div>
-          <div className="grid grid-cols-2 gap-1.5">
-            {presets.map((p) => {
+          <div className="text-[11px] font-semibold text-muted-foreground mb-2 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-primary" />
+            추천 발행 시각
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {recommendations.map((r) => {
               const active =
                 combined &&
-                Math.abs(combined.getTime() - p.date.getTime()) < 60_000;
+                Math.abs(combined.getTime() - r.date.getTime()) < 60_000;
               return (
                 <button
-                  key={p.label}
+                  key={r.key}
                   type="button"
                   onClick={() => {
-                    setDate(p.date);
-                    setTime(`${pad(p.date.getHours())}:${pad(p.date.getMinutes())}`);
+                    setDate(r.date);
+                    setTime(`${pad(r.date.getHours())}:${pad(r.date.getMinutes())}`);
                   }}
                   className={cn(
-                    "h-9 px-3 rounded-full text-xs border transition-colors text-left",
+                    "rounded-lg border p-3 text-left transition-all",
                     active
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-background hover:bg-muted border-border/60 text-foreground"
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border/60 bg-background hover:bg-muted hover:border-border"
                   )}
                 >
-                  {p.label}
+                  <div className="text-sm font-semibold text-foreground">
+                    {r.label}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    {r.sublabel}
+                  </div>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* 달력 + 시간 */}
-        <div className="px-5 py-4 grid grid-cols-1 sm:grid-cols-[auto_1fr] gap-4">
+        {/* STEP 1 — 날짜 선택 */}
+        <div className="px-5 pt-5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[11px] font-semibold text-muted-foreground">
+              1. 날짜 선택
+            </div>
+            <div className="text-[11px] font-medium text-foreground">
+              {dateLabel}
+            </div>
+          </div>
           <div className="rounded-lg border border-border/60 bg-muted/20 flex justify-center">
             <Calendar
               mode="single"
               selected={date}
-              onSelect={setDate}
+              onSelect={(d) => d && setDate(d)}
               disabled={(d) => d < today}
               initialFocus
             />
           </div>
+        </div>
 
-          <div>
-            <div className="text-[11px] font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-              <Clock className="w-3 h-3" /> 시간
+        {/* STEP 2 — 시간 선택 */}
+        <div className="px-5 pt-5 pb-4">
+          <div className="flex items-center justify-between mb-2">
+            <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+              <Clock className="w-3 h-3" /> 2. 시간 선택
             </div>
-            <div className="grid grid-cols-3 gap-1.5 mb-3">
-              {TIME_PRESETS.map((t) => (
-                <button
-                  key={t}
-                  type="button"
-                  onClick={() => setTime(t)}
-                  className={cn(
-                    "h-9 rounded-md text-xs border transition-colors",
-                    time === t
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-background hover:bg-muted border-border/60"
-                  )}
-                >
-                  {t}
-                </button>
-              ))}
-            </div>
-            <input
-              type="time"
-              value={time}
-              onChange={(e) => setTime(e.target.value)}
-              className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
-            />
-            <p className="text-[11px] text-muted-foreground mt-2">
-              직접 입력도 가능해요
-            </p>
+            <div className="text-[11px] font-medium text-foreground">{time}</div>
           </div>
+          <div className="grid grid-cols-6 gap-1.5 mb-2">
+            {TIME_PRESETS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => setTime(t)}
+                className={cn(
+                  "h-9 rounded-md text-xs border transition-colors",
+                  time === t
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background hover:bg-muted border-border/60"
+                )}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="w-full h-9 px-3 rounded-md border border-input bg-background text-sm"
+          />
         </div>
 
         {/* 미리보기 */}
@@ -213,13 +253,13 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
           >
             {combined ? (
               <>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between gap-2">
                   <span className="font-semibold text-foreground">
                     {formatPreview(combined)}
                   </span>
                   <span
                     className={cn(
-                      "text-[11px] font-semibold px-2 py-0.5 rounded-full",
+                      "text-[11px] font-semibold px-2 py-0.5 rounded-full whitespace-nowrap",
                       isPast
                         ? "bg-destructive/15 text-destructive"
                         : "bg-primary/15 text-primary"
