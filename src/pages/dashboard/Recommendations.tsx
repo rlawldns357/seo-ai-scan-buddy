@@ -367,6 +367,76 @@ export default function Recommendations() {
         </div>
       </Card>
 
+      {/* Selection bar */}
+      {visibleIdeas.length > 0 && (
+        <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 hover:bg-muted/60 transition-colors"
+              onClick={() => {
+                const visibleIds = visibleIdeas.map((i) => i.id);
+                const allSelected = visibleIds.every((id) => selected.has(id));
+                setSelected((prev) => {
+                  const next = new Set(prev);
+                  if (allSelected) {
+                    visibleIds.forEach((id) => next.delete(id));
+                  } else {
+                    visibleIds.forEach((id) => next.add(id));
+                  }
+                  return next;
+                });
+              }}
+              disabled={bulkRunning}
+            >
+              <CheckCheck className="w-3.5 h-3.5" />
+              <span className="font-semibold">
+                {visibleIdeas.every((i) => selected.has(i.id)) ? "전체 해제" : "전체 선택"}
+              </span>
+            </button>
+            {selected.size > 0 && (
+              <span className="tabular-nums">
+                <strong className="text-foreground">{selected.size}</strong>개 선택됨
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {selected.size > 0 && !bulkRunning && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="rounded-full h-8 px-3 text-xs gap-1"
+                onClick={() => setSelected(new Set())}
+              >
+                <X className="w-3 h-3" /> 선택 해제
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="default"
+              className="rounded-full h-8 px-3 text-xs gap-1.5"
+              disabled={selected.size === 0 || bulkRunning || !!promotingId}
+              onClick={() => {
+                if (selected.size > 3 && !confirm(`선택한 ${selected.size}개를 모두 발행 대기로 보낼까요? (1개당 약 10~30초)`)) return;
+                void promoteSelected();
+              }}
+            >
+              {bulkRunning ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  {bulkProgress.done}/{bulkProgress.total} 처리 중…
+                </>
+              ) : (
+                <>
+                  <Send className="w-3 h-3" />
+                  선택 {selected.size}개 발행 대기로
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Idea stock list */}
       {loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
