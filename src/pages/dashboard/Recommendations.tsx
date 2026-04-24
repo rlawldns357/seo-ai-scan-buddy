@@ -10,7 +10,7 @@ import { useAutopublishSettings } from "@/features/publish/useAutopublishSetting
 import LockedFeature from "@/features/publish/LockedFeature";
 import { emitWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
-import { ExternalLink, Loader2, Send, Plus, Trash2, Sparkles, Search } from "lucide-react";
+import { ExternalLink, Loader2, Send, Plus, Trash2, Sparkles, Search, CheckCheck, X } from "lucide-react";
 
 type Axis = "SEO" | "AEO" | "GEO";
 type IdeaRow = {
@@ -39,6 +39,9 @@ export default function Recommendations() {
   const [filterSeed, setFilterSeed] = useState("");
   const [promotingId, setPromotingId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number; failed: number }>({ done: 0, total: 0, failed: 0 });
 
   // Realtime: load idea queue + subscribe to changes
   const loadIdeas = useCallback(async () => {
@@ -114,11 +117,9 @@ export default function Recommendations() {
     }
   };
 
-  const promoteIdea = async (idea: IdeaRow) => {
-    if (authLoading) return;
-    if (!user || !site) return;
-    if (promotingId) return;
-    setPromotingId(idea.id);
+  /** Core promotion logic. Returns true on success, false on failure. */
+  const promoteIdeaCore = async (idea: IdeaRow): Promise<boolean> => {
+    if (!user || !site) return false;
     try {
       const axis = (idea.source_axis as Axis) || "SEO";
       const { data: gen, error: genErr } = await supabase.functions.invoke(
@@ -128,7 +129,7 @@ export default function Recommendations() {
       if (genErr) throw genErr;
       if (gen?.error) throw new Error(gen.error);
       if (!gen?.content || gen.content.length < 200) {
-        throw new Error("AI가 본문을 만들지 못했어요. 잠시 후 다시 시도해주세요.");
+        throw new Error("AI가 본문을 만들지 못했어요.");
       }
 
       const rand = Math.random().toString(36).slice(2, 6);
@@ -136,7 +137,6 @@ export default function Recommendations() {
         ? `${gen.slug}-${Date.now().toString(36)}`
         : `idea-${slugify(idea.title).slice(0, 24)}-${Date.now().toString(36)}-${rand}`;
 
-      // Update the existing idea row → promote to scheduled with full content
       const { error } = await (supabase as any)
         .from("site_posts")
         .update({
@@ -153,16 +153,75 @@ export default function Recommendations() {
       if (error) throw error;
 
       emitWorkflowChanged({ siteId: site.id, postId: idea.id, source: "recommendations" });
+      return true;
+    } catch (e) {
+      console.error("[promoteIdea]", idea.title, e);
+      return false;
+    }
+  };
+
+  const promoteIdea = async (idea: IdeaRow) => {
+    if (authLoading) return;
+    if (!user || !site) return;
+    if (promotingId || bulkRunning) return;
+    setPromotingId(idea.id);
+    const ok = await promoteIdeaCore(idea);
+    setPromotingId(null);
+    if (ok) {
       toast({ title: "✨ 본문 생성 완료", description: "발행 대기 칸으로 이동합니다." });
       setIdeas((prev) => prev.filter((i) => i.id !== idea.id));
-    } catch (e) {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(idea.id);
+        return next;
+      });
+    } else {
       toast({
         title: "본문 생성 실패",
-        description: e instanceof Error ? e.message : "다시 시도해주세요",
+        description: "잠시 후 다시 시도해주세요.",
         variant: "destructive",
       });
-    } finally {
-      setPromotingId(null);
+    }
+  };
+
+  const promoteSelected = async () => {
+    if (authLoading || !user || !site) return;
+    if (bulkRunning || promotingId) return;
+    const targets = ideas.filter((i) => selected.has(i.id));
+    if (targets.length === 0) return;
+    setBulkRunning(true);
+    setBulkProgress({ done: 0, total: targets.length, failed: 0 });
+    let failed = 0;
+    for (let i = 0; i < targets.length; i++) {
+      const idea = targets[i];
+      const ok = await promoteIdeaCore(idea);
+      if (ok) {
+        setIdeas((prev) => prev.filter((x) => x.id !== idea.id));
+        setSelected((prev) => {
+          const next = new Set(prev);
+          next.delete(idea.id);
+          return next;
+        });
+      } else {
+        failed += 1;
+      }
+      setBulkProgress({ done: i + 1, total: targets.length, failed });
+    }
+    setBulkRunning(false);
+    const succeeded = targets.length - failed;
+    if (succeeded > 0 && failed === 0) {
+      toast({ title: `✨ ${succeeded}개 발행 대기로 보냄`, description: "본문 생성이 완료됐어요." });
+    } else if (succeeded > 0 && failed > 0) {
+      toast({
+        title: `${succeeded}개 성공, ${failed}개 실패`,
+        description: "실패한 항목은 다시 시도해주세요.",
+      });
+    } else {
+      toast({
+        title: "전부 실패했어요",
+        description: "잠시 후 다시 시도해주세요.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -308,6 +367,76 @@ export default function Recommendations() {
         </div>
       </Card>
 
+      {/* Selection bar */}
+      {visibleIdeas.length > 0 && (
+        <div className="flex items-center justify-between gap-2 px-1 flex-wrap">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <button
+              type="button"
+              className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 hover:bg-muted/60 transition-colors"
+              onClick={() => {
+                const visibleIds = visibleIdeas.map((i) => i.id);
+                const allSelected = visibleIds.every((id) => selected.has(id));
+                setSelected((prev) => {
+                  const next = new Set(prev);
+                  if (allSelected) {
+                    visibleIds.forEach((id) => next.delete(id));
+                  } else {
+                    visibleIds.forEach((id) => next.add(id));
+                  }
+                  return next;
+                });
+              }}
+              disabled={bulkRunning}
+            >
+              <CheckCheck className="w-3.5 h-3.5" />
+              <span className="font-semibold">
+                {visibleIdeas.every((i) => selected.has(i.id)) ? "전체 해제" : "전체 선택"}
+              </span>
+            </button>
+            {selected.size > 0 && (
+              <span className="tabular-nums">
+                <strong className="text-foreground">{selected.size}</strong>개 선택됨
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5">
+            {selected.size > 0 && !bulkRunning && (
+              <Button
+                size="sm"
+                variant="ghost"
+                className="rounded-full h-8 px-3 text-xs gap-1"
+                onClick={() => setSelected(new Set())}
+              >
+                <X className="w-3 h-3" /> 선택 해제
+              </Button>
+            )}
+            <Button
+              size="sm"
+              variant="default"
+              className="rounded-full h-8 px-3 text-xs gap-1.5"
+              disabled={selected.size === 0 || bulkRunning || !!promotingId}
+              onClick={() => {
+                if (selected.size > 3 && !confirm(`선택한 ${selected.size}개를 모두 발행 대기로 보낼까요? (1개당 약 10~30초)`)) return;
+                void promoteSelected();
+              }}
+            >
+              {bulkRunning ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                  {bulkProgress.done}/{bulkProgress.total} 처리 중…
+                </>
+              ) : (
+                <>
+                  <Send className="w-3 h-3" />
+                  선택 {selected.size}개 발행 대기로
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Idea stock list */}
       {loading ? (
         <p className="text-sm text-muted-foreground">불러오는 중...</p>
@@ -328,16 +457,32 @@ export default function Recommendations() {
           {visibleIdeas.map((idea) => {
             const isPromoting = promotingId === idea.id;
             const isDeleting = deletingId === idea.id;
+            const isSelected = selected.has(idea.id);
             const axis = (idea.source_axis as Axis) || "SEO";
             return (
               <Card
                 key={idea.id}
                 className={`px-3 py-3 transition-colors ${
                   isPromoting || isDeleting ? "opacity-60" : "hover:border-primary/50"
-                }`}
+                } ${isSelected ? "border-primary/60 bg-primary/5" : ""}`}
               >
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      disabled={bulkRunning || isPromoting || isDeleting}
+                      onChange={() => {
+                        setSelected((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(idea.id)) next.delete(idea.id);
+                          else next.add(idea.id);
+                          return next;
+                        });
+                      }}
+                      className="h-4 w-4 shrink-0 rounded border-border accent-primary cursor-pointer"
+                      aria-label="선택"
+                    />
                     <span
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
                         axisColor[axis] ?? "bg-muted text-foreground"
@@ -361,7 +506,7 @@ export default function Recommendations() {
                       size="sm"
                       variant="default"
                       className="rounded-full h-8 text-xs gap-1"
-                      disabled={isPromoting || !!promotingId}
+                      disabled={isPromoting || !!promotingId || bulkRunning}
                       onClick={() => promoteIdea(idea)}
                     >
                       {isPromoting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
@@ -371,7 +516,7 @@ export default function Recommendations() {
                       size="sm"
                       variant="ghost"
                       className="rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                      disabled={isDeleting}
+                      disabled={isDeleting || bulkRunning}
                       onClick={() => deleteIdea(idea)}
                       aria-label="아이디어 삭제"
                     >
