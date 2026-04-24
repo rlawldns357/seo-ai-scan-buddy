@@ -220,6 +220,8 @@ export type Database = {
           email: string
           id: string
           invited_at: string | null
+          marketing_consent: boolean
+          marketing_consent_at: string | null
           reason: string | null
           site_url: string | null
           status: string
@@ -229,6 +231,8 @@ export type Database = {
           email: string
           id?: string
           invited_at?: string | null
+          marketing_consent?: boolean
+          marketing_consent_at?: string | null
           reason?: string | null
           site_url?: string | null
           status?: string
@@ -238,6 +242,8 @@ export type Database = {
           email?: string
           id?: string
           invited_at?: string | null
+          marketing_consent?: boolean
+          marketing_consent_at?: string | null
           reason?: string | null
           site_url?: string | null
           status?: string
