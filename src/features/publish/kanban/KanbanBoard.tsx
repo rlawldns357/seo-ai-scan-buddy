@@ -1,13 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
@@ -19,9 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Archive } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
-import KanbanColumn from "./KanbanColumn";
 import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
 import AutopublishControl from "@/features/publish/AutopublishControl";
@@ -46,19 +35,13 @@ export default function KanbanBoard() {
   const { site, loading: siteLoading } = useUserSite();
   const navigate = useNavigate();
   const requireAuth = useRequireAuthAction();
-  const isMobile = useIsMobile();
 
   const [posts, setPosts] = useState<KanbanPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState<string | null>(null);
-  const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [openPost, setOpenPost] = useState<KanbanPost | null>(null);
-  
-  const [activeTab, setActiveTab] = useState<KanbanStatus>("scheduled");
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-  );
+  const [activeTab, setActiveTab] = useState<KanbanStatus>("scheduled");
 
   const load = useCallback(async () => {
     if (!site) {
@@ -172,16 +155,7 @@ export default function KanbanBoard() {
     [load, posts, site?.site_url, site?.site_slug, user, navigate],
   );
 
-  const onDragStart = (e: DragStartEvent) => setActiveDragId(String(e.active.id));
-  const onDragEnd = (e: DragEndEvent) => {
-    setActiveDragId(null);
-    const id = String(e.active.id);
-    const post = posts.find((p) => p.id === id);
-    const to = e.over?.id as KanbanStatus | undefined;
-    if (!post || !to || !COLUMN_ORDER.includes(to)) return;
-    if (post.status === to) return;
-    performTransition(post, to);
-  };
+  // (Drag-and-drop removed — board is now a simple 2-tab list.)
 
   const handleSave = async (
     id: string,
@@ -307,7 +281,7 @@ export default function KanbanBoard() {
     return <div className="text-sm text-muted-foreground py-12 text-center">불러오는 중…</div>;
   }
 
-  const activePost = activeDragId ? posts.find((p) => p.id === activeDragId) : null;
+  // (drag overlay removed)
 
   const handleSetSchedule = async (post: KanbanPost, iso: string) => {
     const isChange = !!post.published_at;
@@ -419,59 +393,34 @@ export default function KanbanBoard() {
         </div>
       </div>
 
-      {/* Mobile tabs: 2 cols (scheduled / published) */}
-
-      {isMobile ? (
-        // Mobile: tabs (no drag UX on small screens)
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as KanbanStatus)}>
-          <TabsList className="grid grid-cols-2 w-full">
-            {COLUMN_ORDER.map((s) => (
-              <TabsTrigger key={s} value={s} className="text-[11px]">
-                {COLUMN_META[s].emoji} {grouped[s].length}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      {/* Unified 2-tab layout (예약 / 발행됨) */}
+      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as KanbanStatus)}>
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
           {COLUMN_ORDER.map((s) => (
-            <TabsContent key={s} value={s} className="mt-3 space-y-2">
-              <p className="text-[11px] text-muted-foreground px-1">{COLUMN_META[s].description}</p>
-              {grouped[s].length === 0 ? (
-                <div className="text-[11px] text-muted-foreground text-center py-8 border border-dashed border-border/40 rounded-xl">
-                  아직 항목이 없어요
-                </div>
-              ) : (
-                renderColumnContent(s)
-              )}
-            </TabsContent>
+            <TabsTrigger key={s} value={s} className="text-xs">
+              <span className="mr-1">{COLUMN_META[s].emoji}</span>
+              {COLUMN_META[s].label}
+              <span className="ml-1.5 text-[11px] font-mono text-muted-foreground tabular-nums">
+                {s === "published" ? totalPublishedHistory : grouped[s].length}
+              </span>
+            </TabsTrigger>
           ))}
-        </Tabs>
-      ) : (
-        <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-2 gap-3">
-            {COLUMN_ORDER.map((s) => (
-              <KanbanColumn
-                key={s}
-                status={s}
-                count={s === "published" ? totalPublishedHistory : grouped[s].length}
-                isEmpty={grouped[s].length === 0}
-                posts={grouped[s]}
-              >
-                {renderColumnContent(s)}
-              </KanbanColumn>
-            ))}
-          </div>
-          <DragOverlay>
-            {activePost ? (
-              <div className="opacity-90 rotate-1">
-                <KanbanCard
-                  post={activePost}
-                  onOpen={() => {}}
-                  nextStatus={NEXT_STATUS[activePost.status]}
-                />
+        </TabsList>
+        {COLUMN_ORDER.map((s) => (
+          <TabsContent key={s} value={s} className="mt-3 space-y-2">
+            <p className="text-[11px] text-muted-foreground px-1">{COLUMN_META[s].description}</p>
+            {grouped[s].length === 0 ? (
+              <div className="text-[11px] text-muted-foreground text-center py-12 border border-dashed border-border/40 rounded-xl">
+                {s === "scheduled"
+                  ? "‘AI로 새 글 추가’를 눌러 발행 대기 큐를 채우세요"
+                  : "아직 발행된 글이 없어요"}
               </div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      )}
+            ) : (
+              renderColumnContent(s)
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
 
       <PostDetailPanel
         post={openPost}
