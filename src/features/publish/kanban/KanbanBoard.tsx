@@ -447,7 +447,7 @@ export default function KanbanBoard() {
         </Tabs>
       ) : (
         <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd}>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {COLUMN_ORDER.map((s) => (
               <KanbanColumn
                 key={s}
