@@ -540,6 +540,15 @@ export default function DashboardProducts() {
           최대 {MAX_PRODUCTS}개까지 등록할 수 있어요.
         </p>
       )}
+
+      <CopyCatalogModal
+        open={copyOpen}
+        onClose={() => setCopyOpen(false)}
+        sourceSiteId={site.id}
+        sourceSiteTitle={site.title}
+        selectedProducts={items.filter((p) => selectedIds.has(p.id))}
+        allProducts={items}
+      />
     </>
   );
 }
