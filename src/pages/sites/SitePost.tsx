@@ -224,12 +224,12 @@ export default function SitePost() {
                           alt=""
                           loading="lazy"
                           className={`rounded-lg object-cover shrink-0 bg-muted ${
-                            isHero ? "h-40 w-full sm:h-40 sm:w-40" : "h-20 w-20"
+                            isHero ? "h-48 w-full sm:h-52 sm:w-52" : "h-20 w-20"
                           }`}
                         />
                       ) : (
                         <div className={`rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground/50 text-xs ${
-                          isHero ? "h-40 w-full sm:h-40 sm:w-40" : "h-20 w-20"
+                          isHero ? "h-48 w-full sm:h-52 sm:w-52" : "h-20 w-20"
                         }`}>
                           제품
                         </div>
