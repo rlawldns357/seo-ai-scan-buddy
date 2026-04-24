@@ -333,6 +333,7 @@ export default function KanbanBoard() {
       onSchedule={handleSetSchedule}
       onCancelSchedule={handleCancelSchedule}
       onPublishNow={handlePublishNow}
+      onDelete={(post) => handleDelete(post.id)}
       scheduledSiblings={scheduledList}
     />
   );
