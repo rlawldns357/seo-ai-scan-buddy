@@ -145,28 +145,9 @@ export default function KanbanBoard() {
       setBusyId(post.id);
       const rollback = optimisticMove(post.id, to);
       try {
-        if (to === "draft" && post.status === "idea") {
-          const { data, error } = await supabase.functions.invoke("generate-content-draft", {
-            body: { topic: post.title, targetAxis: post.source_axis || "SEO", siteUrl: site?.site_url },
-          });
-          if (error) throw error;
-          if (data?.error) throw new Error(data.error);
-          const { error: upErr } = await supabase
-            .from("site_posts")
-            .update({
-              status: "draft",
-              title: data.title || post.title,
-              excerpt: data.excerpt || post.excerpt,
-              content: data.content || post.content || "",
-              keywords: Array.isArray(data.keywords) ? data.keywords : (post.keywords ?? []),
-              faq: Array.isArray(data.faq) ? data.faq : [],
-            } as any)
-            .eq("id", post.id);
-          if (upErr) throw upErr;
-          toast({ title: "AI가 초안을 생성했어요" });
-        } else if (to === "published") {
+        if (to === "published") {
           if (!post.content || post.content.trim().length < 30) {
-            throw new Error("본문이 비어 있어 발행할 수 없어요. 카드를 열어 초안부터 작성해주세요.");
+            throw new Error("본문이 비어 있어 발행할 수 없어요. 카드를 열어 ‘AI로 본문 생성’ 후 다시 시도해주세요.");
           }
           const { data, error } = await supabase.functions.invoke("publish-site-post", {
             body: { postId: post.id },
@@ -186,7 +167,7 @@ export default function KanbanBoard() {
           toast({ title: "발행 취소 — 초안으로 이동" });
         } else {
           const patch: { status: KanbanStatus; published_at?: string | null } = { status: to };
-          if (to === "scheduled" || to === "idea") patch.published_at = null;
+          if (to === "scheduled" || to === "draft") patch.published_at = null;
           const { error } = await supabase.from("site_posts").update(patch).eq("id", post.id);
           if (error) throw error;
           toast({ title: `${COLUMN_META[to].label}(으)로 이동` });
