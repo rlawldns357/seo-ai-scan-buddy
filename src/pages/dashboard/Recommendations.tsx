@@ -238,12 +238,12 @@ export default function Recommendations() {
               variant="default"
               className="rounded-full h-9 px-3 gap-1.5"
               disabled={topupLoading || isFull}
-              onClick={() => topup(stockCount + 5)}
+              onClick={() => topup(stockCount + 10)}
               title={isFull ? "재고가 충분해요" : undefined}
             >
               {topupLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
               <span className="text-xs font-semibold">
-                {isFull ? "재고 충분" : "블로그 5개 더 받기"}
+                {isFull ? "재고 충분" : "블로그 10개 더 받기"}
               </span>
             </Button>
           </div>
