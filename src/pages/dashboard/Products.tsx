@@ -330,6 +330,14 @@ function ProductForm({
     }
   };
 
+  // 빈 카탈로그에서 URL을 붙여넣고 들어온 경우 마운트 직후 1회 자동 실행
+  useEffect(() => {
+    if (autoFillOnMount && (prefillUrl ?? "").trim()) {
+      void handleAutofill();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !url.trim()) {
