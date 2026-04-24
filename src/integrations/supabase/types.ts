@@ -786,6 +786,57 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          canceled_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          environment: string
+          id: string
+          paddle_customer_id: string | null
+          paddle_subscription_id: string
+          price_id: string | null
+          product_id: string | null
+          raw: Json | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id: string
+          price_id?: string | null
+          product_id?: string | null
+          raw?: Json | null
+          status: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          canceled_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          environment?: string
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string
+          price_id?: string | null
+          product_id?: string | null
+          raw?: Json | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       suppressed_emails: {
         Row: {
           created_at: string
@@ -886,6 +937,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["app_role"]
       }
       grant_beta_by_email: { Args: { _email: string }; Returns: boolean }
+      has_active_subscription: {
+        Args: { _env?: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
