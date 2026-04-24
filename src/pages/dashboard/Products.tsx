@@ -1,6 +1,6 @@
 import { useEffect, useState, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -64,6 +64,42 @@ export default function DashboardProducts() {
     }
     setItems((prev) => prev.filter((p) => p.id !== id));
     toast.success("삭제했어요");
+  };
+
+  const [refillingId, setRefillingId] = useState<string | null>(null);
+
+  const handleRefillSale = async (p: Product) => {
+    setRefillingId(p.id);
+    try {
+      const { data, error } = await supabase.functions.invoke("scrape-product-info", {
+        body: { url: p.url },
+      });
+      if (error) throw error;
+      const info = (data as any)?.data ?? {};
+      const updates: Record<string, string | null> = {};
+      if (info.compare_at_price) updates.compare_at_price = info.compare_at_price;
+      if (info.sale_label) updates.sale_label = info.sale_label;
+      if (info.price && !p.price) updates.price = info.price;
+      if (info.image_url && !p.image_url) updates.image_url = info.image_url;
+
+      if (Object.keys(updates).length === 0) {
+        toast.info("이 페이지에서 할인 정보를 못 찾았어요. 직접 입력해보세요.");
+        return;
+      }
+      const { data: updated, error: upErr } = await (supabase as any)
+        .from("site_products")
+        .update(updates)
+        .eq("id", p.id)
+        .select()
+        .single();
+      if (upErr) throw upErr;
+      setItems((prev) => prev.map((x) => (x.id === p.id ? (updated as Product) : x)));
+      toast.success("할인 정보를 채웠어요");
+    } catch (err: any) {
+      toast.error(err?.message ?? "할인 정보 가져오기에 실패했어요");
+    } finally {
+      setRefillingId(null);
+    }
   };
 
   const handleToggle = async (id: string, next: boolean) => {
