@@ -361,18 +361,12 @@ export default function KanbanBoard() {
   return (
     <>
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-2 mb-4">
-        <div className="text-[11px] text-muted-foreground">
-          작업 큐 <span className="text-foreground font-semibold tabular-nums">{posts.length - archivedCount}</span>건
-          {COLUMN_ORDER.map((s) => (
-            <span key={s}>
-              {" · "}
-              {COLUMN_META[s].label}{" "}
-              <span className="font-semibold text-foreground tabular-nums">{grouped[s].length}</span>
-            </span>
-          ))}
+      <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
+        <div className="text-[12px] text-muted-foreground">
+          발행 대기 <span className="text-foreground font-semibold tabular-nums">{grouped.scheduled.length}</span>편
+          {" · "}발행됨 <span className="text-foreground font-semibold tabular-nums">{totalPublishedHistory}</span>편
           {archivedCount > 0 && (
-            <span> · 보관 <span className="font-semibold text-foreground tabular-nums">{archivedCount}</span></span>
+            <span className="text-muted-foreground/70"> (보관 {archivedCount})</span>
           )}
         </div>
         <div className="flex items-center gap-1.5">
@@ -395,10 +389,9 @@ export default function KanbanBoard() {
 
       {/* Unified 2-tab layout (예약 / 발행됨) */}
       <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as KanbanStatus)}>
-        <TabsList className="grid grid-cols-2 w-full max-w-md">
+        <TabsList className="inline-flex h-9">
           {COLUMN_ORDER.map((s) => (
-            <TabsTrigger key={s} value={s} className="text-xs">
-              <span className="mr-1">{COLUMN_META[s].emoji}</span>
+            <TabsTrigger key={s} value={s} className="text-xs px-4">
               {COLUMN_META[s].label}
               <span className="ml-1.5 text-[11px] font-mono text-muted-foreground tabular-nums">
                 {s === "published" ? totalPublishedHistory : grouped[s].length}
@@ -408,9 +401,8 @@ export default function KanbanBoard() {
         </TabsList>
         {COLUMN_ORDER.map((s) => (
           <TabsContent key={s} value={s} className="mt-3 space-y-2">
-            <p className="text-[11px] text-muted-foreground px-1">{COLUMN_META[s].description}</p>
             {grouped[s].length === 0 ? (
-              <div className="text-[11px] text-muted-foreground text-center py-12 border border-dashed border-border/40 rounded-xl">
+              <div className="text-[12px] text-muted-foreground text-center py-12 border border-dashed border-border/40 rounded-xl">
                 {s === "scheduled"
                   ? "‘AI로 새 글 추가’를 눌러 발행 대기 큐를 채우세요"
                   : "아직 발행된 글이 없어요"}

@@ -148,8 +148,8 @@ export default function KanbanCard({
               {scheduleStatus === "none" ? (
                 <Button
                   size="sm"
-                  variant="default"
-                  className="h-7 text-[11px] px-2.5 rounded-full flex-1 min-w-0"
+                  variant="outline"
+                  className="h-7 text-[11px] px-2.5 rounded-full"
                   onClick={(e) => { e.stopPropagation(); setScheduleOpen(true); }}
                 >
                   <CalendarClock className="h-3 w-3" /> 자동 발행 예약

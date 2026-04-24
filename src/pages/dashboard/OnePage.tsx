@@ -181,7 +181,7 @@ const SECTIONS: SectionMeta[] = [
     index: 3,
     chip: "Workflow",
     title: "콘텐츠 워크플로우",
-    subtitle: "아이디어 → 초안 → 발행 대기 → 발행됨. 카드를 다음 칸으로 드래그하면 상태가 바뀝니다.",
+    subtitle: "AI가 본문을 만들어 ‘발행 대기’에 쌓아둡니다. 시간을 정해 자동 발행하거나 즉시 발행하세요.",
     icon: KanbanSquare,
     tone: "accent",
   },
