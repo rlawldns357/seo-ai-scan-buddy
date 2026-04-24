@@ -24,6 +24,7 @@ const DashboardWorkflow = lazy(() => import("./pages/dashboard/Workflow.tsx"));
 const DashboardRecommendationsPage = lazy(() => import("./pages/dashboard/RecommendationsPage.tsx"));
 const DashboardArchivePage = lazy(() => import("./pages/dashboard/ArchivePage.tsx"));
 const DashboardReportsPage = lazy(() => import("./pages/dashboard/ReportsPage.tsx"));
+const DashboardProducts = lazy(() => import("./pages/dashboard/Products.tsx"));
 const DashboardDemo = lazy(() => import("./pages/dashboard/Demo.tsx"));
 const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
 const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
@@ -72,6 +73,7 @@ const App = () => (
               <Route path="workflow" element={<DashboardWorkflow />} />
               <Route path="archive" element={<DashboardArchivePage />} />
               <Route path="reports" element={<DashboardReportsPage />} />
+              <Route path="products" element={<DashboardProducts />} />
               {/* legacy redirects */}
               <Route path="content" element={<Navigate to="/dashboard/workflow" replace />} />
               <Route path="auto-publish" element={<Navigate to="/dashboard/workflow" replace />} />
