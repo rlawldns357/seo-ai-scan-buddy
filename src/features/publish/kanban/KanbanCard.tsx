@@ -88,7 +88,7 @@ export default function KanbanCard({
                     <CheckCircle2 className="h-2.5 w-2.5" /> 발행됨
                   </span>
                 )}
-                {isPublishedCol && post.published_at && false && (
+                {isPublishedCol && post.published_at && (
                   <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
                     <Calendar className="h-2.5 w-2.5" />
                     {new Date(post.published_at).toLocaleString("ko-KR", { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
