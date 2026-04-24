@@ -1,6 +1,6 @@
 import { useEffect, useState, FormEvent } from "react";
 import { Helmet } from "react-helmet-async";
-import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame } from "lucide-react";
+import { Plus, Trash2, ExternalLink, ShoppingBag, Eye, EyeOff, Edit2, X, Sparkles, Loader2, RefreshCw, Flame, CheckSquare, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -37,6 +37,69 @@ export default function DashboardProducts() {
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
   const [prefillUrl, setPrefillUrl] = useState<string | null>(null);
   const [quickUrl, setQuickUrl] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const selectAll = () => setSelectedIds(new Set(items.map((i) => i.id)));
+
+  /** 긴 URL을 도메인 + 마지막 경로 한 조각으로 축약 */
+  const shortenUrl = (raw: string): string => {
+    try {
+      const u = new URL(raw);
+      const segs = u.pathname.split("/").filter(Boolean);
+      if (segs.length === 0) return u.host;
+      const last = decodeURIComponent(segs[segs.length - 1]);
+      const trimmed = last.length > 28 ? last.slice(0, 26) + "…" : last;
+      return segs.length > 1 ? `${u.host}/…/${trimmed}` : `${u.host}/${trimmed}`;
+    } catch {
+      return raw.length > 50 ? raw.slice(0, 48) + "…" : raw;
+    }
+  };
+
+  const handleBulkToggle = async (next: boolean) => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    const ids = Array.from(selectedIds);
+    const { error } = await (supabase as any)
+      .from("site_products")
+      .update({ is_active: next })
+      .in("id", ids);
+    setBulkBusy(false);
+    if (error) {
+      toast.error("일괄 변경에 실패했어요");
+      return;
+    }
+    setItems((prev) => prev.map((p) => (selectedIds.has(p.id) ? { ...p, is_active: next } : p)));
+    toast.success(`${ids.length}개 제품을 ${next ? "노출" : "숨김"} 처리했어요`);
+    clearSelection();
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedIds.size === 0) return;
+    if (!confirm(`선택한 ${selectedIds.size}개 제품을 삭제할까요? 되돌릴 수 없어요.`)) return;
+    setBulkBusy(true);
+    const ids = Array.from(selectedIds);
+    const { error } = await (supabase as any).from("site_products").delete().in("id", ids);
+    setBulkBusy(false);
+    if (error) {
+      toast.error("일괄 삭제에 실패했어요");
+      return;
+    }
+    setItems((prev) => prev.filter((p) => !selectedIds.has(p.id)));
+    toast.success(`${ids.length}개 제품을 삭제했어요`);
+    clearSelection();
+  };
 
   const load = async (siteId: string) => {
     setLoading(true);
@@ -215,9 +278,67 @@ export default function DashboardProducts() {
         </Card>
       )}
 
+      {/* 일괄 액션 바 */}
+      {!loading && items.length > 0 && (
+        <div className="flex items-center justify-between gap-2 mt-4 px-1">
+          <button
+            type="button"
+            onClick={selectedIds.size === items.length ? clearSelection : selectAll}
+            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          >
+            {selectedIds.size === items.length ? (
+              <CheckSquare className="w-3.5 h-3.5 text-primary" />
+            ) : (
+              <Square className="w-3.5 h-3.5" />
+            )}
+            {selectedIds.size > 0 ? `${selectedIds.size}개 선택됨` : "전체 선택"}
+          </button>
+          {selectedIds.size > 0 && (
+            <div className="flex items-center gap-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11px] gap-1 rounded-full"
+                disabled={bulkBusy}
+                onClick={() => void handleBulkToggle(true)}
+              >
+                <Eye className="w-3 h-3" /> 노출
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11px] gap-1 rounded-full"
+                disabled={bulkBusy}
+                onClick={() => void handleBulkToggle(false)}
+              >
+                <EyeOff className="w-3 h-3" /> 숨김
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[11px] gap-1 rounded-full text-destructive hover:text-destructive"
+                disabled={bulkBusy}
+                onClick={() => void handleBulkDelete()}
+              >
+                <Trash2 className="w-3 h-3" /> 삭제
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 w-7 p-0"
+                onClick={clearSelection}
+                aria-label="선택 해제"
+              >
+                <X className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* 목록 */}
       {!loading && items.length > 0 && (
-        <div className="grid gap-3 mt-4">
+        <div className="grid gap-3 mt-2">
           {items.map((p) =>
             editingId === p.id ? (
               <ProductForm
@@ -233,9 +354,23 @@ export default function DashboardProducts() {
             ) : (
               <Card
                 key={p.id}
-                className={`p-4 rounded-2xl border-border/60 bg-card transition ${!p.is_active ? "opacity-60" : ""}`}
+                className={`p-4 rounded-2xl transition ${
+                  selectedIds.has(p.id) ? "border-primary/60 bg-primary/[0.03]" : "border-border/60 bg-card"
+                } ${!p.is_active ? "opacity-60" : ""}`}
               >
                 <div className="flex gap-3 items-start">
+                  <button
+                    type="button"
+                    onClick={() => toggleSelect(p.id)}
+                    className="mt-0.5 shrink-0 text-muted-foreground hover:text-foreground"
+                    aria-label={selectedIds.has(p.id) ? "선택 해제" : "선택"}
+                  >
+                    {selectedIds.has(p.id) ? (
+                      <CheckSquare className="w-4 h-4 text-primary" />
+                    ) : (
+                      <Square className="w-4 h-4" />
+                    )}
+                  </button>
                   {p.image_url ? (
                     <img src={p.image_url} alt="" className="h-14 w-14 rounded-lg object-cover bg-muted shrink-0" />
                   ) : (
@@ -254,9 +389,11 @@ export default function DashboardProducts() {
                       href={p.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mt-0.5 line-clamp-1"
+                      title={p.url}
+                      className="text-[11px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 mt-0.5 max-w-full"
                     >
-                      {p.url} <ExternalLink className="w-3 h-3 shrink-0" />
+                      <span className="truncate">{shortenUrl(p.url)}</span>
+                      <ExternalLink className="w-3 h-3 shrink-0" />
                     </a>
                     {p.description && (
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{p.description}</p>
