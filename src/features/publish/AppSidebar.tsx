@@ -82,7 +82,7 @@ const overviewItems: RouteSection[] = [
 ];
 
 const workflowItems: RouteSection[] = [
-  { title: "콘텐츠 추천", url: "/dashboard/recommendations", index: 2, icon: Lightbulb, tone: "warning" },
+  { title: "블로그 재고", url: "/dashboard/recommendations", index: 2, icon: Lightbulb, tone: "warning" },
   { title: "자동 발행", url: "/dashboard/workflow", index: 3, icon: KanbanSquare, tone: "accent" },
   { title: "제품 카탈로그", url: "/dashboard/products", index: 4, icon: ShoppingBag, tone: "primary" },
   { title: "발행 아카이브", url: "/dashboard/archive", index: 5, icon: Archive, tone: "neutral" },
