@@ -132,34 +132,48 @@ function json(b: unknown, status = 200) {
 }
 
 function extractIdeasFromSse(raw: string): Array<{ topic: string; axis?: string; reason?: string }> {
-  const ideas: Array<{ topic: string; axis?: string; reason?: string }> = [];
-  const seen = new Set<string>();
-
+  // 1) Concatenate all delta.content chunks across the SSE stream first.
+  let full = "";
   for (const line of raw.split("\n")) {
     const trimmed = line.trim();
     if (!trimmed.startsWith("data:")) continue;
-
     const payload = trimmed.slice(5).trim();
     if (!payload || payload === "[DONE]") continue;
-
     try {
       const parsed = JSON.parse(payload);
-      const chunk = parsed?.choices?.[0]?.delta?.content;
-      if (!chunk || typeof chunk !== "string") continue;
-
-      for (const match of chunk.matchAll(/\{[^\n]*"axis"\s*:\s*"(SEO|AEO|GEO)"[^\n]*"title"\s*:\s*"([^"]{1,200})"[^\n]*"reason"\s*:\s*"([^"]{1,280})"[^\n]*\}/g)) {
-        const axis = match[1];
-        const topic = match[2]?.trim();
-        const reason = match[3]?.trim();
-        const key = `${axis}:${topic}`.toLowerCase();
-        if (!topic || seen.has(key)) continue;
-        seen.add(key);
-        ideas.push({ axis, topic, reason });
-      }
+      const chunk =
+        parsed?.choices?.[0]?.delta?.content ??
+        parsed?.choices?.[0]?.message?.content ??
+        "";
+      if (typeof chunk === "string") full += chunk;
     } catch {
       continue;
     }
   }
 
+  // 2) Extract JSON-line ideas. Be permissive about key order and whitespace.
+  const ideas: Array<{ topic: string; axis?: string; reason?: string }> = [];
+  const seen = new Set<string>();
+
+  // Match anything that looks like a JSON object on its own area.
+  const objectRe = /\{[^{}]{10,600}\}/g;
+  for (const m of full.matchAll(objectRe)) {
+    const raw = m[0];
+    try {
+      const obj = JSON.parse(raw);
+      const axis = String(obj.axis ?? obj.target ?? "SEO").toUpperCase();
+      const topic = String(obj.title ?? obj.topic ?? "").trim();
+      const reason = obj.reason ? String(obj.reason).trim() : undefined;
+      if (!topic || !["SEO", "AEO", "GEO"].includes(axis)) continue;
+      const key = `${axis}:${topic}`.toLowerCase();
+      if (seen.has(key)) continue;
+      seen.add(key);
+      ideas.push({ axis, topic, reason });
+    } catch {
+      continue;
+    }
+  }
+
+  console.log("extractIdeasFromSse", { fullLen: full.length, ideas: ideas.length });
   return ideas;
 }
