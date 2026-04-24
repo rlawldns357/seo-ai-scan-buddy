@@ -41,9 +41,9 @@ export const COLUMN_META: Record<
     accent: "border-l-blue-400/60",
   },
   scheduled: {
-    label: "발행 대기",
+    label: "발행 예약",
     emoji: "⏳",
-    description: "AI가 본문을 생성한 글들이 대기 중. 발행됨으로 옮기면 라이브",
+    description: "AI가 본문을 생성한 글들이 예약 중. 발행됨으로 옮기면 라이브",
     accent: "border-l-violet-400/60",
   },
   published: {
