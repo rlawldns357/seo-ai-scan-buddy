@@ -122,46 +122,8 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
           </DialogDescription>
         </DialogHeader>
 
-        {/* 추천 발행 시각 */}
-        <div className="px-5 pt-4">
-          <div className="text-[11px] font-semibold text-muted-foreground mb-2 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-primary" />
-            추천 발행 시각
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            {recommendations.map((r) => {
-              const active =
-                combined &&
-                Math.abs(combined.getTime() - r.date.getTime()) < 60_000;
-              return (
-                <button
-                  key={r.key}
-                  type="button"
-                  onClick={() => {
-                    setDate(r.date);
-                    setTime(`${pad(r.date.getHours())}:${pad(r.date.getMinutes())}`);
-                  }}
-                  className={cn(
-                    "rounded-lg border p-3 text-left transition-all",
-                    active
-                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                      : "border-border/60 bg-background hover:bg-muted hover:border-border"
-                  )}
-                >
-                  <div className="text-sm font-semibold text-foreground">
-                    {r.label}
-                  </div>
-                  <div className="text-[11px] text-muted-foreground mt-0.5">
-                    {r.sublabel}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* STEP 1 — 날짜 선택 */}
-        <div className="px-5 pt-5">
+        <div className="px-5 pt-4">
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] font-semibold text-muted-foreground">
               1. 날짜 선택
@@ -189,6 +151,35 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
             </div>
             <div className="text-[11px] font-medium text-foreground">{time}</div>
           </div>
+
+          {/* 추천 시간 2개 */}
+          <div className="grid grid-cols-2 gap-2 mb-2">
+            {TIME_RECOMMENDATIONS.map((r) => {
+              const active = time === r.time;
+              return (
+                <button
+                  key={r.key}
+                  type="button"
+                  onClick={() => setTime(r.time)}
+                  className={cn(
+                    "rounded-lg border p-2.5 text-left transition-all",
+                    active
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border/60 bg-background hover:bg-muted hover:border-border"
+                  )}
+                >
+                  <div className="flex items-center gap-1 text-sm font-semibold text-foreground">
+                    <Sparkles className="w-3 h-3 text-primary" />
+                    {r.label}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground mt-0.5">
+                    {r.sublabel}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
           <div className="grid grid-cols-6 gap-1.5 mb-2">
             {TIME_PRESETS.map((t) => (
               <button
