@@ -481,6 +481,27 @@ export default function KanbanBoard() {
         onSave={(patch) => openPost ? handleSave(openPost.id, patch) : Promise.resolve()}
         onDelete={() => openPost ? handleDelete(openPost.id) : Promise.resolve()}
         onArchive={(archive) => openPost ? handleArchive(openPost.id, archive) : Promise.resolve()}
+        onGenerateBody={async (title) => {
+          if (!openPost) return;
+          const { data, error } = await supabase.functions.invoke("generate-content-draft", {
+            body: { topic: title, targetAxis: openPost.source_axis || "SEO", siteUrl: site?.site_url },
+          });
+          if (error) throw error;
+          if (data?.error) throw new Error(data.error);
+          await supabase
+            .from("site_posts")
+            .update({
+              title: data.title || title,
+              excerpt: data.excerpt || openPost.excerpt,
+              content: data.content || "",
+              keywords: Array.isArray(data.keywords) ? data.keywords : (openPost.keywords ?? []),
+              faq: Array.isArray(data.faq) ? data.faq : [],
+            } as any)
+            .eq("id", openPost.id);
+          toast({ title: "AI가 본문을 생성했어요" });
+          await load();
+          return { title: data.title, excerpt: data.excerpt, content: data.content };
+        }}
       />
 
     </>
