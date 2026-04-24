@@ -82,7 +82,14 @@ const TIME_RECOMMENDATIONS = [
 
 const TIME_PRESETS = ["09:00", "12:00", "15:00", "18:00", "20:00", "22:00"];
 
-export default function ScheduleModal({ open, initialIso, onClose, onSave }: Props) {
+export default function ScheduleModal({
+  open,
+  initialIso,
+  onClose,
+  onSave,
+  existingSchedules = [],
+  currentPostId,
+}: Props) {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string>("09:00");
   const [saving, setSaving] = useState(false);
