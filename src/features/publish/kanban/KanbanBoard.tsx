@@ -1,13 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  DndContext,
-  DragEndEvent,
-  DragOverlay,
-  DragStartEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
@@ -19,9 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Archive } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
 
-import KanbanColumn from "./KanbanColumn";
 import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
 import AutopublishControl from "@/features/publish/AutopublishControl";
