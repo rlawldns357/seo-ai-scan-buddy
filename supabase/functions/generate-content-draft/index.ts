@@ -188,9 +188,24 @@ ${analysisSummary ? `분석 컨텍스트:\n${analysisSummary}` : ""}
     }
 
     const data = await resp.json();
-    const args = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
-    if (!args) throw new Error("No tool call");
-    const parsed = JSON.parse(args);
+    const msg = data.choices?.[0]?.message;
+    const args = msg?.tool_calls?.[0]?.function?.arguments;
+    let parsed: any;
+    if (args) {
+      parsed = JSON.parse(args);
+    } else if (typeof msg?.content === "string" && msg.content.trim()) {
+      // Fallback: model returned JSON as plain text instead of tool call
+      const text = msg.content.trim().replace(/^```json\s*/i, "").replace(/```$/, "").trim();
+      try {
+        parsed = JSON.parse(text);
+      } catch (_) {
+        const match = text.match(/\{[\s\S]*\}/);
+        if (!match) throw new Error("AI returned no usable content");
+        parsed = JSON.parse(match[0]);
+      }
+    } else {
+      throw new Error("AI returned no tool call or content");
+    }
 
     parsed.keywords = Array.isArray(parsed.keywords) ? parsed.keywords.slice(0, 8) : [];
     parsed.faq = Array.isArray(parsed.faq) ? parsed.faq.slice(0, 8) : [];
