@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
       .from("site_posts")
       .select("id", { count: "exact", head: true })
       .eq("site_id", siteId)
-      .in("status", ["idea", "draft", "scheduled"]);
+      .eq("status", "idea");
 
     const need = Math.max(0, target - (depth ?? 0));
     if (need === 0) return json({ inserted: 0, depth: depth ?? 0, target });
