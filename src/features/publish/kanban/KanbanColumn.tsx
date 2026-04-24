@@ -7,7 +7,7 @@ import { isToday } from "./scheduleUtils";
 const EMPTY_HINTS: Record<KanbanStatus, string> = {
   idea: "아직 아이디어가 없어요",
   draft: "아직 초안이 없어요",
-  scheduled: "아직 발행 대기 글이 없어요",
+  scheduled: "‘AI로 새 글 추가’를 눌러 발행 대기 큐를 채우세요",
   published: "아직 발행된 글이 없어요",
   archived: "보관된 글이 없어요",
 };
