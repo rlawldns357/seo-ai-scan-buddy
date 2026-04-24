@@ -338,13 +338,7 @@ export default function KanbanBoard() {
 
   /** For published column we cap the visible items and show a "전체 보기" link. */
   const renderColumnContent = (s: KanbanStatus) => {
-    if (grouped[s].length === 0) {
-      return (
-        <div className="text-[11px] text-muted-foreground text-center py-8 border border-dashed border-border/40 rounded-xl">
-          여기로 드롭
-        </div>
-      );
-    }
+    if (grouped[s].length === 0) return null;
     if (s === "published" && grouped.published.length > PUBLISHED_VISIBLE_LIMIT) {
       const visible = grouped.published.slice(0, PUBLISHED_VISIBLE_LIMIT);
       const hidden = grouped.published.length - visible.length;
@@ -417,7 +411,13 @@ export default function KanbanBoard() {
           {COLUMN_ORDER.map((s) => (
             <TabsContent key={s} value={s} className="mt-3 space-y-2">
               <p className="text-[11px] text-muted-foreground px-1">{COLUMN_META[s].description}</p>
-              {renderColumnContent(s)}
+              {grouped[s].length === 0 ? (
+                <div className="text-[11px] text-muted-foreground text-center py-8 border border-dashed border-border/40 rounded-xl">
+                  아직 항목이 없어요
+                </div>
+              ) : (
+                renderColumnContent(s)
+              )}
             </TabsContent>
           ))}
         </Tabs>
@@ -429,6 +429,7 @@ export default function KanbanBoard() {
                 key={s}
                 status={s}
                 count={s === "published" ? totalPublishedHistory : grouped[s].length}
+                isEmpty={grouped[s].length === 0}
               >
                 {renderColumnContent(s)}
               </KanbanColumn>
