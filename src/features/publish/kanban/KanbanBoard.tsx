@@ -18,7 +18,7 @@ import { onWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Sparkles, Archive } from "lucide-react";
+import { Plus, Archive } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 import KanbanColumn from "./KanbanColumn";
