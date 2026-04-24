@@ -25,19 +25,19 @@ const axisColor: Record<Axis, string> = {
 
 const AXES: Axis[] = ["SEO", "AEO", "GEO"];
 
-const IDEA_BUILDERS: Record<Axis, (seed: string) => string> = {
-  SEO: (seed) => `${seed} 검색 유입을 위한 핵심 가이드`,
-  AEO: (seed) => `${seed} 관련 자주 묻는 질문 정리`,
-  GEO: (seed) => `${seed} 선택 기준과 비교 포인트 정리`,
+// Fallback templates (used only if AI fails) — kept simple/neutral
+const FALLBACK_BUILDERS: Record<Axis, (seed: string) => string> = {
+  SEO: (seed) => `${seed} 핵심 가이드`,
+  AEO: (seed) => `${seed} 자주 묻는 질문`,
+  GEO: (seed) => `${seed} 비교와 선택 기준`,
 };
 
-function buildIdeasFromSeed(seed: string, orderedAxes: Axis[]): Idea[] {
+function buildFallbackIdeas(seed: string, orderedAxes: Axis[]): Idea[] {
   const cleanSeed = seed.trim();
   if (!cleanSeed) return [];
-
   return orderedAxes.map((axis) => ({
     id: `${axis}-${cleanSeed}`,
-    topic: IDEA_BUILDERS[axis](cleanSeed),
+    topic: FALLBACK_BUILDERS[axis](cleanSeed),
     axis,
     reason: `${cleanSeed} 중심 ${axis} 아이디어`,
   }));
