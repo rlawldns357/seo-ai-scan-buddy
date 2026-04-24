@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Sparkles, CheckCircle2, X, ArrowRight } from "lucide-react";
+import { Sparkles, CheckCircle2, X, ArrowRight, Wand2, Send, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
