@@ -36,6 +36,8 @@ const MAX_PRODUCTS = 50;
 
 export default function DashboardProducts() {
   const { site, loading: siteLoading } = useUserSite();
+  const { tier, productLimit, loading: tierLoading } = useUserTier();
+  const navigate = useNavigate();
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
@@ -43,6 +45,11 @@ export default function DashboardProducts() {
   const [quickUrl, setQuickUrl] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkBusy, setBulkBusy] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
+
+  const effectiveLimit = Math.min(MAX_PRODUCTS, productLimit);
+  const isLocked = !tierLoading && productLimit === 0;
+  const atLimit = items.length >= effectiveLimit;
 
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
