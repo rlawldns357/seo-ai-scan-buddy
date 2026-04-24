@@ -117,11 +117,9 @@ export default function Recommendations() {
     }
   };
 
-  const promoteIdea = async (idea: IdeaRow) => {
-    if (authLoading) return;
-    if (!user || !site) return;
-    if (promotingId) return;
-    setPromotingId(idea.id);
+  /** Core promotion logic. Returns true on success, false on failure. */
+  const promoteIdeaCore = async (idea: IdeaRow): Promise<boolean> => {
+    if (!user || !site) return false;
     try {
       const axis = (idea.source_axis as Axis) || "SEO";
       const { data: gen, error: genErr } = await supabase.functions.invoke(
@@ -131,7 +129,7 @@ export default function Recommendations() {
       if (genErr) throw genErr;
       if (gen?.error) throw new Error(gen.error);
       if (!gen?.content || gen.content.length < 200) {
-        throw new Error("AI가 본문을 만들지 못했어요. 잠시 후 다시 시도해주세요.");
+        throw new Error("AI가 본문을 만들지 못했어요.");
       }
 
       const rand = Math.random().toString(36).slice(2, 6);
@@ -139,7 +137,6 @@ export default function Recommendations() {
         ? `${gen.slug}-${Date.now().toString(36)}`
         : `idea-${slugify(idea.title).slice(0, 24)}-${Date.now().toString(36)}-${rand}`;
 
-      // Update the existing idea row → promote to scheduled with full content
       const { error } = await (supabase as any)
         .from("site_posts")
         .update({
@@ -156,16 +153,75 @@ export default function Recommendations() {
       if (error) throw error;
 
       emitWorkflowChanged({ siteId: site.id, postId: idea.id, source: "recommendations" });
+      return true;
+    } catch (e) {
+      console.error("[promoteIdea]", idea.title, e);
+      return false;
+    }
+  };
+
+  const promoteIdea = async (idea: IdeaRow) => {
+    if (authLoading) return;
+    if (!user || !site) return;
+    if (promotingId || bulkRunning) return;
+    setPromotingId(idea.id);
+    const ok = await promoteIdeaCore(idea);
+    setPromotingId(null);
+    if (ok) {
       toast({ title: "✨ 본문 생성 완료", description: "발행 대기 칸으로 이동합니다." });
       setIdeas((prev) => prev.filter((i) => i.id !== idea.id));
-    } catch (e) {
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(idea.id);
+        return next;
+      });
+    } else {
       toast({
         title: "본문 생성 실패",
-        description: e instanceof Error ? e.message : "다시 시도해주세요",
+        description: "잠시 후 다시 시도해주세요.",
         variant: "destructive",
       });
-    } finally {
-      setPromotingId(null);
+    }
+  };
+
+  const promoteSelected = async () => {
+    if (authLoading || !user || !site) return;
+    if (bulkRunning || promotingId) return;
+    const targets = ideas.filter((i) => selected.has(i.id));
+    if (targets.length === 0) return;
+    setBulkRunning(true);
+    setBulkProgress({ done: 0, total: targets.length, failed: 0 });
+    let failed = 0;
+    for (let i = 0; i < targets.length; i++) {
+      const idea = targets[i];
+      const ok = await promoteIdeaCore(idea);
+      if (ok) {
+        setIdeas((prev) => prev.filter((x) => x.id !== idea.id));
+        setSelected((prev) => {
+          const next = new Set(prev);
+          next.delete(idea.id);
+          return next;
+        });
+      } else {
+        failed += 1;
+      }
+      setBulkProgress({ done: i + 1, total: targets.length, failed });
+    }
+    setBulkRunning(false);
+    const succeeded = targets.length - failed;
+    if (succeeded > 0 && failed === 0) {
+      toast({ title: `✨ ${succeeded}개 발행 대기로 보냄`, description: "본문 생성이 완료됐어요." });
+    } else if (succeeded > 0 && failed > 0) {
+      toast({
+        title: `${succeeded}개 성공, ${failed}개 실패`,
+        description: "실패한 항목은 다시 시도해주세요.",
+      });
+    } else {
+      toast({
+        title: "전부 실패했어요",
+        description: "잠시 후 다시 시도해주세요.",
+        variant: "destructive",
+      });
     }
   };
 
