@@ -29,7 +29,6 @@ import { useUserSite } from "./useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
 import { useUserTier, type AppRole } from "@/features/auth/useUserTier";
 import SiteSwitcher from "./SiteSwitcher";
-import { useScrollSpy } from "./useScrollSpy";
 import { cn } from "@/lib/utils";
 
 type Tone = "primary" | "warning" | "accent" | "neutral" | "success";
@@ -127,28 +126,19 @@ export default function AppSidebar() {
     navigate("/", { replace: true });
   };
 
-  const isRouteActive = (url: string, end?: boolean) =>
-    end ? location.pathname === url : location.pathname === url || location.pathname.startsWith(url + "/");
-
-  const renderSection = (item: SectionItem) => {
-    const active = onDashboardOnePage && activeSection === item.section;
+  const renderSection = (item: RouteSection) => {
+    const active = item.end
+      ? location.pathname === item.url
+      : location.pathname === item.url || location.pathname.startsWith(item.url + "/");
     const tone = TONE[item.tone];
     return (
-      <SidebarMenuItem key={item.section}>
+      <SidebarMenuItem key={item.url}>
         <SidebarMenuButton
           asChild
           isActive={active}
-          className={cn(
-            "group/sec relative h-9 transition-colors",
-            active && tone.activeBg,
-          )}
+          className={cn("group/sec relative h-9 transition-colors", active && tone.activeBg)}
         >
-          <NavLink
-            to={`/dashboard#${item.section}`}
-            onClick={(e) => handleSectionClick(e, item.section)}
-            className="flex items-center gap-2 w-full"
-          >
-            {/* 활성 시 좌측 컬러 레일 (OnePage 본문 레일과 동일 언어) */}
+          <NavLink to={item.url} end={item.end} className="flex items-center gap-2 w-full">
             {active && !collapsed && (
               <span
                 className={cn("absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full", tone.dot)}
@@ -162,18 +152,13 @@ export default function AppSidebar() {
                 <span
                   className={cn(
                     "inline-flex items-center justify-center w-5 h-5 rounded-md text-[9px] font-mono font-bold tabular-nums shrink-0 transition",
-                    active
-                      ? tone.badgeBg
-                      : "bg-muted/60 text-muted-foreground/70 group-hover/sec:bg-muted",
+                    active ? tone.badgeBg : "bg-muted/60 text-muted-foreground/70 group-hover/sec:bg-muted",
                   )}
                 >
                   {String(item.index).padStart(2, "0")}
                 </span>
                 <item.icon
-                  className={cn(
-                    "h-3.5 w-3.5 shrink-0 transition",
-                    active ? tone.text : "text-muted-foreground",
-                  )}
+                  className={cn("h-3.5 w-3.5 shrink-0 transition", active ? tone.text : "text-muted-foreground")}
                 />
                 <span
                   className={cn(
