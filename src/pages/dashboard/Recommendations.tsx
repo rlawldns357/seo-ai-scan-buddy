@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
+import { useAutopublishSettings } from "@/features/publish/useAutopublishSettings";
 import LockedFeature from "@/features/publish/LockedFeature";
 import { emitWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
