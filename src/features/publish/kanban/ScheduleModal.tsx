@@ -100,7 +100,6 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
   }, [open, initialIso]);
 
   const now = Date.now();
-  const recommendations = useMemo(() => buildRecommendations(new Date()), [open]);
   const combined = combineDateTime(date, time);
   const isPast = combined ? combined.getTime() <= now : false;
   const canSave = !!combined && !isPast && !saving;
