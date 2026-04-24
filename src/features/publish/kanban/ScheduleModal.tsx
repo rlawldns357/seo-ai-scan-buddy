@@ -12,11 +12,17 @@ import { Calendar } from "@/components/ui/calendar";
 import { CalendarClock, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+type ScheduleItem = { id: string; title: string; iso: string };
+
 type Props = {
   open: boolean;
   initialIso: string | null;
   onClose: () => void;
   onSave: (iso: string) => Promise<void> | void;
+  /** Other already-scheduled posts in this site (for 7-day timeline). */
+  existingSchedules?: ScheduleItem[];
+  /** Exclude this post id from timeline (it's the one being scheduled). */
+  currentPostId?: string;
 };
 
 const WEEKDAY = ["일", "월", "화", "수", "목", "금", "토"];
@@ -76,7 +82,181 @@ const TIME_RECOMMENDATIONS = [
 
 const TIME_PRESETS = ["09:00", "12:00", "15:00", "18:00", "20:00", "22:00"];
 
-export default function ScheduleModal({ open, initialIso, onClose, onSave }: Props) {
+/** 7일 발행 타임라인 — 각 날짜 column에 시간순 도트 표시 */
+function ScheduleTimeline({
+  schedules,
+  selectedDate,
+  selectedIso,
+  onPickDay,
+}: {
+  schedules: ScheduleItem[];
+  selectedDate?: Date;
+  selectedIso: string | null;
+  onPickDay: (d: Date) => void;
+}) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  const byDay = new Map<string, { iso: string; title: string }[]>();
+  for (const s of schedules) {
+    const d = new Date(s.iso);
+    if (Number.isNaN(d.getTime())) continue;
+    const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    const arr = byDay.get(key) ?? [];
+    arr.push({ iso: s.iso, title: s.title });
+    byDay.set(key, arr);
+  }
+
+  const selectedKey = selectedDate
+    ? `${selectedDate.getFullYear()}-${selectedDate.getMonth()}-${selectedDate.getDate()}`
+    : null;
+
+  const selectedTime = selectedIso ? new Date(selectedIso) : null;
+
+  return (
+    <div className="px-5 pt-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+          <CalendarClock className="w-3 h-3 text-primary" />
+          앞으로 7일 발행 일정
+        </div>
+        <div className="text-[10px] text-muted-foreground">
+          {schedules.length === 0 ? "예약된 글 없음" : `예약 ${schedules.length}건`}
+        </div>
+      </div>
+      <div className="rounded-lg border border-border/60 bg-muted/10 p-2">
+        <div className="grid grid-cols-7 gap-1">
+          {days.map((d, idx) => {
+            const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            const items = (byDay.get(key) ?? []).sort(
+              (a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime(),
+            );
+            const isSelected = selectedKey === key;
+            const isToday = idx === 0;
+            const showSelectedDot = isSelected && selectedTime;
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onPickDay(d)}
+                className={cn(
+                  "rounded-md py-1.5 px-1 text-center transition-all border",
+                  isSelected
+                    ? "border-primary bg-primary/10"
+                    : "border-transparent hover:bg-background hover:border-border/60",
+                )}
+                title={
+                  items.length
+                    ? items.map((i) => `${pad(new Date(i.iso).getHours())}:${pad(new Date(i.iso).getMinutes())} · ${i.title}`).join("\n")
+                    : "예약 없음"
+                }
+              >
+                <div
+                  className={cn(
+                    "text-[10px] font-medium",
+                    isSelected ? "text-primary" : "text-muted-foreground",
+                  )}
+                >
+                  {WEEKDAY[d.getDay()]}
+                </div>
+                <div
+                  className={cn(
+                    "text-sm font-semibold mt-0.5",
+                    isSelected ? "text-primary" : isToday ? "text-foreground" : "text-foreground/80",
+                  )}
+                >
+                  {d.getDate()}
+                </div>
+                {/* 도트 영역 — 최대 4개 + N */}
+                <div className="flex items-center justify-center gap-0.5 mt-1 min-h-[8px]">
+                  {items.slice(0, 4).map((i) => (
+                    <span
+                      key={i.iso}
+                      className="w-1 h-1 rounded-full bg-primary/60"
+                    />
+                  ))}
+                  {items.length > 4 && (
+                    <span className="text-[8px] text-muted-foreground ml-0.5">
+                      +{items.length - 4}
+                    </span>
+                  )}
+                  {showSelectedDot && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-score-warning ring-2 ring-score-warning/20 ml-0.5" />
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+        {/* 선택일 상세 리스트 */}
+        {selectedKey && (
+          <div className="mt-2 pt-2 border-t border-border/60">
+            <div className="text-[10px] text-muted-foreground mb-1">
+              {selectedDate && `${selectedDate.getMonth() + 1}월 ${selectedDate.getDate()}일 (${WEEKDAY[selectedDate.getDay()]}) 일정`}
+            </div>
+            <div className="flex flex-col gap-1 max-h-24 overflow-y-auto">
+              {(byDay.get(selectedKey) ?? [])
+                .sort((a, b) => new Date(a.iso).getTime() - new Date(b.iso).getTime())
+                .map((i) => {
+                  const d = new Date(i.iso);
+                  return (
+                    <div
+                      key={i.iso}
+                      className="flex items-center gap-2 text-[11px] text-foreground/80"
+                    >
+                      <span className="font-mono text-primary tabular-nums">
+                        {pad(d.getHours())}:{pad(d.getMinutes())}
+                      </span>
+                      <span className="truncate flex-1">{i.title}</span>
+                    </div>
+                  );
+                })}
+              {showSelectedDotPreview(byDay.get(selectedKey), selectedTime) && (
+                <div className="flex items-center gap-2 text-[11px]">
+                  <span className="font-mono text-score-warning tabular-nums">
+                    {selectedTime && `${pad(selectedTime.getHours())}:${pad(selectedTime.getMinutes())}`}
+                  </span>
+                  <span className="truncate flex-1 text-score-warning font-medium">
+                    이 글 (예약 예정)
+                  </span>
+                </div>
+              )}
+              {(byDay.get(selectedKey) ?? []).length === 0 && !selectedTime && (
+                <div className="text-[11px] text-muted-foreground">예약 없음</div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function showSelectedDotPreview(
+  existing: { iso: string; title: string }[] | undefined,
+  selectedTime: Date | null,
+): boolean {
+  if (!selectedTime) return false;
+  if (!existing) return true;
+  // Always show preview row for the post being edited.
+  return true;
+}
+
+
+export default function ScheduleModal({
+  open,
+  initialIso,
+  onClose,
+  onSave,
+  existingSchedules = [],
+  currentPostId,
+}: Props) {
   const [date, setDate] = useState<Date | undefined>(undefined);
   const [time, setTime] = useState<string>("09:00");
   const [saving, setSaving] = useState(false);
@@ -121,6 +301,14 @@ export default function ScheduleModal({ open, initialIso, onClose, onSave }: Pro
             지정한 시각이 되면 자동으로 발행됩니다. 기본 시간대: KST
           </DialogDescription>
         </DialogHeader>
+
+        {/* 7일 발행 타임라인 미리보기 */}
+        <ScheduleTimeline
+          schedules={existingSchedules.filter((s) => s.id !== currentPostId)}
+          selectedDate={date}
+          selectedIso={combined && !isPast ? combined.toISOString() : null}
+          onPickDay={(d) => setDate(d)}
+        />
 
         {/* STEP 1 — 날짜 선택 */}
         <div className="px-5 pt-4">

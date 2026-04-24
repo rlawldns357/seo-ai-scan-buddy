@@ -26,6 +26,8 @@ type Props = {
   onCancelSchedule?: (p: KanbanPost) => Promise<void> | void;
   /** Publish immediately (skip schedule). */
   onPublishNow?: (p: KanbanPost) => Promise<void> | void;
+  /** Other already-scheduled posts in this site, for the modal's 7-day timeline. */
+  scheduledSiblings?: { id: string; title: string; iso: string }[];
 };
 
 export default function KanbanCard({
@@ -37,6 +39,7 @@ export default function KanbanCard({
   onSchedule,
   onCancelSchedule,
   onPublishNow,
+  scheduledSiblings,
 }: Props) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: post.id,
@@ -217,6 +220,8 @@ export default function KanbanCard({
         <ScheduleModal
           open={scheduleOpen}
           initialIso={post.published_at}
+          currentPostId={post.id}
+          existingSchedules={scheduledSiblings ?? []}
           onClose={() => setScheduleOpen(false)}
           onSave={async (iso) => {
             await onSchedule(post, iso);
