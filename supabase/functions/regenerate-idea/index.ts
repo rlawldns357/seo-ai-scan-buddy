@@ -146,6 +146,90 @@ ${avoidSeeds.length ? `[이미 제안한 키워드(중복 금지)] ${avoidSeeds.
       return json({ ok: true, seed: seedOut });
     }
 
+    // Topup mode: 무료(크레딧 미차감) — 사이트 소유 검증 후 idea 재고를 target까지 채움
+    if (mode === "topup") {
+      const siteId: string = body.siteId;
+      const target: number = Math.min(Math.max(Number(body.target ?? 5), 1), 30);
+      if (!siteId) return json({ error: "siteId가 필요합니다." }, 400);
+
+      // 사이트 소유 검증
+      const { data: site } = await admin
+        .from("user_sites")
+        .select("id, site_url, title, user_id")
+        .eq("id", siteId)
+        .maybeSingle();
+      if (!site) return json({ error: "사이트를 찾을 수 없어요." }, 404);
+      if (site.user_id && site.user_id !== userId) {
+        return json({ error: "사이트 권한이 없어요." }, 403);
+      }
+
+      const { count: depth } = await admin
+        .from("site_posts")
+        .select("id", { count: "exact", head: true })
+        .eq("site_id", siteId)
+        .in("status", ["idea", "draft", "scheduled"]);
+
+      const need = Math.max(0, target - (depth ?? 0));
+      if (need === 0) return json({ inserted: 0, depth: depth ?? 0, target });
+
+      // 중복 회피 — 최근 60개 제목 수집
+      const { data: existingPosts } = await admin
+        .from("site_posts")
+        .select("title")
+        .eq("site_id", siteId)
+        .order("created_at", { ascending: false })
+        .limit(60);
+      const existingTitles = new Set(
+        (existingPosts ?? []).map((r: any) => (r.title ?? "").trim().toLowerCase()),
+      );
+
+      const wantHere = Math.min(need, 5);
+      const recRes = await fetch(`${supabaseUrl}/functions/v1/demo-stream-content`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${serviceKey}`,
+        },
+        body: JSON.stringify({
+          mode: "recommend",
+          url: site.site_url,
+          siteTitle: site.title,
+          seed: (body.seed ?? "").toString().slice(0, 200) || undefined,
+        }),
+      });
+      if (!recRes.ok) {
+        const t = await recRes.text();
+        console.error("topup recommend failed", recRes.status, t.slice(0, 200));
+        return json({ error: "추천 생성에 실패했어요." }, 500);
+      }
+      const recBody = await recRes.json().catch(() => ({}));
+      const ideas: Array<{ topic: string; axis?: string; reason?: string }> =
+        Array.isArray(recBody?.ideas) ? recBody.ideas : [];
+
+      const fresh = ideas
+        .filter((i) => i?.topic && !existingTitles.has(i.topic.trim().toLowerCase()))
+        .slice(0, wantHere);
+
+      let inserted = 0;
+      for (const idea of fresh) {
+        const slug = `idea-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+        const { error } = await admin.from("site_posts").insert({
+          site_id: siteId,
+          slug,
+          title: idea.topic.slice(0, 200),
+          excerpt: idea.reason?.slice(0, 280) ?? null,
+          content: `# ${idea.topic}\n\n(추천 — 발행 대기로 보내면 AI가 본문을 생성합니다)`,
+          status: "idea",
+          source_axis: (idea.axis || "SEO").toUpperCase(),
+          is_auto_generated: true,
+        } as any);
+        if (!error) inserted += 1;
+        else console.warn("topup insert error", error);
+      }
+
+      return json({ inserted, depth: depth ?? 0, target, attempted: fresh.length });
+    }
+
     // 1. Ensure credits row & charge
     const { data: existing } = await admin
       .from("regeneration_credits")
