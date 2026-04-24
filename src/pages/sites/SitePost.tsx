@@ -224,17 +224,17 @@ export default function SitePost() {
                           alt=""
                           loading="lazy"
                           className={`rounded-lg object-cover shrink-0 bg-muted ${
-                            isHero ? "h-40 w-full sm:h-44 sm:w-44" : "h-20 w-20"
+                            isHero ? "h-40 w-full sm:h-40 sm:w-40" : "h-20 w-20"
                           }`}
                         />
                       ) : (
                         <div className={`rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground/50 text-xs ${
-                          isHero ? "h-40 w-full sm:h-44 sm:w-44" : "h-20 w-20"
+                          isHero ? "h-40 w-full sm:h-40 sm:w-40" : "h-20 w-20"
                         }`}>
                           제품
                         </div>
                       )}
-                      <div className="min-w-0 flex-1 flex flex-col">
+                      <div className={`min-w-0 flex-1 flex flex-col ${isHero ? "sm:py-1 justify-between" : ""}`}>
                         {/* 세일 라벨 + 카운트다운 — 작은 텍스트 톤 */}
                         {(p.sale_label || countdown) && (
                           <div className={`flex items-center gap-2 flex-wrap text-xs text-muted-foreground ${isHero ? "mb-1.5" : "mb-1"}`}>
