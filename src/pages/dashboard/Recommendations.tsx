@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite, slugify } from "@/features/publish/useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
+import { useAutopublishSettings } from "@/features/publish/useAutopublishSettings";
 import LockedFeature from "@/features/publish/LockedFeature";
 import { emitWorkflowChanged } from "@/features/publish/workflowEvents";
 import { toast } from "@/hooks/use-toast";
@@ -29,6 +30,7 @@ const axisColor: Record<string, string> = {
 export default function Recommendations() {
   const { site } = useUserSite();
   const { user, loading: authLoading } = useAuth();
+  const { settings: autopubSettings } = useAutopublishSettings(site?.id);
   const navigate = useNavigate();
 
   const [ideas, setIdeas] = useState<IdeaRow[]>([]);
@@ -189,6 +191,15 @@ export default function Recommendations() {
   }
 
   const stockCount = ideas.length;
+  const targetStock = Math.max(autopubSettings?.min_queue ?? 5, 5);
+  const isFull = stockCount >= targetStock;
+  const stockPct = Math.min(100, Math.round((stockCount / targetStock) * 100));
+  const stockTone =
+    stockCount === 0
+      ? "bg-destructive"
+      : stockCount < targetStock
+        ? "bg-score-warning"
+        : "bg-score-good";
 
   return (
     <div className="space-y-4">
@@ -196,15 +207,29 @@ export default function Recommendations() {
       <Card className="p-4 rounded-2xl border-border/50 shadow-card bg-card">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-foreground">아이디어 재고</h2>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h2 className="text-base font-bold text-foreground">블로그 재고</h2>
               <span className="px-2 py-0.5 rounded-full bg-muted text-foreground/80 text-xs font-semibold tabular-nums">
-                {stockCount}
+                {stockCount} / {targetStock}
               </span>
+              {isFull && (
+                <span className="px-2 py-0.5 rounded-full bg-score-good/10 text-score-good text-[10px] font-bold uppercase tracking-wider">
+                  충분
+                </span>
+              )}
             </div>
             <p className="text-[12px] text-muted-foreground mt-0.5 break-keep">
-              사이트 컨텍스트로 자동 생성된 글 아이디어가 쌓입니다. 발행 대기로 보내면 본문이 생성돼요.
+              {isFull
+                ? "재고가 목표치를 채웠어요. 발행 대기로 보내면 본문이 생성돼요."
+                : `목표까지 ${targetStock - stockCount}개 남았어요. 발행 대기로 보내면 본문이 생성돼요.`}
             </p>
+            {/* Progress bar */}
+            <div className="mt-2 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div
+                className={`h-full ${stockTone} transition-all`}
+                style={{ width: `${stockPct}%` }}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             <Button
@@ -212,11 +237,14 @@ export default function Recommendations() {
               size="sm"
               variant="default"
               className="rounded-full h-9 px-3 gap-1.5"
-              disabled={topupLoading}
+              disabled={topupLoading || isFull}
               onClick={() => topup(stockCount + 5)}
+              title={isFull ? "재고가 충분해요" : undefined}
             >
               {topupLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Plus className="w-3.5 h-3.5" />}
-              <span className="text-xs font-semibold">아이디어 5개 더 받기</span>
+              <span className="text-xs font-semibold">
+                {isFull ? "재고 충분" : "블로그 5개 더 받기"}
+              </span>
             </Button>
           </div>
         </div>
@@ -267,11 +295,11 @@ export default function Recommendations() {
         <Card className="px-4 py-8 border-dashed border-border/60 bg-muted/20 text-center">
           <Sparkles className="w-6 h-6 text-muted-foreground/60 mx-auto mb-2" />
           <p className="text-sm font-medium text-foreground">
-            {ideas.length === 0 ? "아직 재고가 없어요" : "필터에 맞는 아이디어가 없어요"}
+            {ideas.length === 0 ? "아직 재고가 없어요" : "필터에 맞는 블로그가 없어요"}
           </p>
           <p className="text-[12px] text-muted-foreground mt-1 break-keep">
             {ideas.length === 0
-              ? "위 ‘아이디어 5개 더 받기’를 눌러 재고를 채워보세요."
+              ? "위 ‘블로그 5개 더 받기’를 눌러 재고를 채워보세요."
               : "키워드를 비우거나 더 받아보세요."}
           </p>
         </Card>
