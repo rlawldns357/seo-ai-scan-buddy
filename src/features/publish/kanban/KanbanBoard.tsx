@@ -26,6 +26,7 @@ import KanbanCard from "./KanbanCard";
 import PostDetailPanel from "./PostDetailPanel";
 import AutopublishControl from "@/features/publish/AutopublishControl";
 import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_LIMIT } from "./types";
+import { sortScheduledColumn, isToday } from "./scheduleUtils";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
   idea: "draft",
@@ -322,6 +323,47 @@ export default function KanbanBoard() {
 
   const activePost = activeDragId ? posts.find((p) => p.id === activeDragId) : null;
 
+  const handleSetSchedule = useCallback(
+    async (post: KanbanPost, iso: string) => {
+      const isChange = !!post.published_at;
+      const { error } = await supabase
+        .from("site_posts")
+        .update({ status: "scheduled", published_at: iso } as any)
+        .eq("id", post.id);
+      if (error) {
+        toast({ title: "예약 실패", description: error.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: isChange ? "예약 발행 시간이 변경되었어요" : "예약 발행이 설정되었어요" });
+      await load();
+    },
+    [load],
+  );
+
+  const handleCancelSchedule = useCallback(
+    async (post: KanbanPost) => {
+      const { error } = await supabase
+        .from("site_posts")
+        .update({ status: "draft", published_at: null } as any)
+        .eq("id", post.id);
+      if (error) {
+        toast({ title: "취소 실패", description: error.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: "예약 발행이 취소되었어요" });
+      await load();
+    },
+    [load],
+  );
+
+  const handlePublishNow = useCallback(
+    (post: KanbanPost) => {
+      toast({ title: "지금 바로 발행을 시작해요" });
+      void performTransition(post, "published");
+    },
+    [performTransition],
+  );
+
   const renderCard = (p: KanbanPost) => (
     <KanbanCard
       key={p.id}
@@ -333,15 +375,19 @@ export default function KanbanBoard() {
         if (next) performTransition(post, next);
       }}
       nextStatus={NEXT_STATUS[p.status]}
+      onSchedule={handleSetSchedule}
+      onCancelSchedule={handleCancelSchedule}
+      onPublishNow={handlePublishNow}
     />
   );
 
   /** For published column we cap the visible items and show a "전체 보기" link. */
   const renderColumnContent = (s: KanbanStatus) => {
     if (grouped[s].length === 0) return null;
-    if (s === "published" && grouped.published.length > PUBLISHED_VISIBLE_LIMIT) {
-      const visible = grouped.published.slice(0, PUBLISHED_VISIBLE_LIMIT);
-      const hidden = grouped.published.length - visible.length;
+    const list = s === "scheduled" ? sortScheduledColumn(grouped[s]) : grouped[s];
+    if (s === "published" && list.length > PUBLISHED_VISIBLE_LIMIT) {
+      const visible = list.slice(0, PUBLISHED_VISIBLE_LIMIT);
+      const hidden = list.length - visible.length;
       return (
         <>
           {visible.map(renderCard)}
@@ -354,7 +400,7 @@ export default function KanbanBoard() {
         </>
       );
     }
-    return grouped[s].map(renderCard);
+    return list.map(renderCard);
   };
   return (
     <>
