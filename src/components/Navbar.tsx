@@ -89,15 +89,30 @@ export default function Navbar() {
           </div>
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <Link
-              to={user ? "/dashboard" : "/autoblog"}
+              to="/autoblog"
               className="inline-flex items-center gap-1 sm:gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium whitespace-nowrap"
             >
-              {!user && <LogIn className="w-3.5 h-3.5 hidden sm:inline-block" />}
               <span>AutoBlog</span>
               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-primary to-accent text-primary-foreground leading-none shadow-sm">
                 <Sparkles className="w-2.5 h-2.5" /> NEW
               </span>
             </Link>
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 h-8 rounded-full bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition-colors whitespace-nowrap"
+              >
+                대시보드
+              </Link>
+            ) : (
+              <Link
+                to="/auth?next=/dashboard"
+                className="inline-flex items-center gap-1 sm:gap-1.5 px-3 h-8 rounded-full border border-border bg-card text-foreground text-xs font-semibold hover:bg-muted transition-colors whitespace-nowrap"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                로그인
+              </Link>
+            )}
             <Link
               to="/blog"
               className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
