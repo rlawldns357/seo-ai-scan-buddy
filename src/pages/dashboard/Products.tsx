@@ -275,16 +275,20 @@ export default function DashboardProducts() {
 function ProductForm({
   siteId,
   initial,
+  prefillUrl,
+  autoFillOnMount,
   onSaved,
   onClose,
 }: {
   siteId: string;
   initial?: Product;
+  prefillUrl?: string;
+  autoFillOnMount?: boolean;
   onSaved: (p: Product) => void;
   onClose: () => void;
 }) {
   const [title, setTitle] = useState(initial?.title ?? "");
-  const [url, setUrl] = useState(initial?.url ?? "");
+  const [url, setUrl] = useState(initial?.url ?? prefillUrl ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
   const [imageUrl, setImageUrl] = useState(initial?.image_url ?? "");
