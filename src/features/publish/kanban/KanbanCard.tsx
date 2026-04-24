@@ -131,12 +131,12 @@ export default function KanbanCard({
                     <span>예약: {formatScheduleKST(post.published_at)}</span>
                   )}
                   {scheduleStatus === "due_soon" && (
-                    <span className="text-orange-600 dark:text-orange-400">
+                    <span className="text-score-warning font-medium">
                       곧 발행 · {formatScheduleKST(post.published_at)}
                     </span>
                   )}
                   {scheduleStatus === "overdue" && (
-                    <span className="text-red-600 dark:text-red-400">
+                    <span className="text-destructive font-medium">
                       예약 지남 · {formatScheduleKST(post.published_at)}
                     </span>
                   )}

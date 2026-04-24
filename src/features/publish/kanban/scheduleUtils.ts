@@ -117,18 +117,18 @@ export const SCHEDULE_BADGE: Record<
   },
   scheduled: {
     label: "예약됨",
-    className: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+    className: "bg-primary/10 text-primary",
   },
   due_soon: {
     label: "곧 발행",
-    className: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+    className: "bg-score-warning/15 text-score-warning",
   },
   overdue: {
     label: "예약 지남",
-    className: "bg-red-500/15 text-red-600 dark:text-red-400",
+    className: "bg-destructive/10 text-destructive",
   },
   published: {
     label: "발행 완료",
-    className: "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400",
+    className: "bg-score-good/15 text-score-good",
   },
 };
