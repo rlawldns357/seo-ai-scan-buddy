@@ -17,23 +17,94 @@ const TIER_MONTHLY_LIMIT: Record<string, number> = {
   admin: 9999,
 };
 
-type SitePostRow = {
-  id: string;
-  site_id: string;
-  status: string;
-  title: string;
-  content: string;
-  slug: string;
-  keywords: string[] | null;
-  faq: { q: string; a: string }[] | null;
-};
-
 type Candidate = {
   id: string;
   title: string;
   slug: string;
   keywords: string[];
 };
+
+type ProductCandidate = {
+  id: string;
+  title: string;
+  url: string;
+  description: string | null;
+  keywords: string[];
+  price: string | null;
+  image_url: string | null;
+};
+
+type ProductMatch = {
+  id: string;
+  title: string;
+  url: string;
+  description: string | null;
+  price: string | null;
+  image_url: string | null;
+  matched_keywords: string[];
+  score: number;
+};
+
+/**
+ * 글 본문/제목/키워드를 보고 사이트 제품 카탈로그에서 가장 관련성 높은 제품
+ * 최대 3개를 골라 반환. 키워드 겹침 가중치 + 본문 등장 횟수.
+ */
+function matchProducts(
+  content: string,
+  postKeywords: string[],
+  postTitle: string,
+  products: ProductCandidate[],
+): ProductMatch[] {
+  if (!products.length) return [];
+  const haystack = (postTitle + "\n" + content).toLowerCase();
+  const postKwSet = new Set(postKeywords.map((k) => k.trim().toLowerCase()).filter(Boolean));
+
+  const scored: ProductMatch[] = products.map((p) => {
+    const matched = new Set<string>();
+    let score = 0;
+    for (const rawKw of p.keywords || []) {
+      const kw = rawKw.trim().toLowerCase();
+      if (!kw) continue;
+      if (postKwSet.has(kw)) {
+        matched.add(rawKw);
+        score += 5; // 글의 핵심 키워드와 정확히 겹침 = 강한 신호
+      }
+      // 본문 등장 횟수 (최대 3회까지 가산)
+      const occ = haystack.split(kw).length - 1;
+      if (occ > 0) {
+        matched.add(rawKw);
+        score += Math.min(occ, 3) * 2;
+      }
+    }
+    return {
+      id: p.id,
+      title: p.title,
+      url: p.url,
+      description: p.description,
+      price: p.price,
+      image_url: p.image_url,
+      matched_keywords: Array.from(matched),
+      score,
+    };
+  });
+
+  const ranked = scored.filter((p) => p.score > 0).sort((a, b) => b.score - a.score).slice(0, 3);
+  // 매칭 0개일 때도 최신 제품 1개는 노출 (모든 글 끝 CTA 보장)
+  if (ranked.length === 0 && products.length > 0) {
+    const fallback = products[0];
+    ranked.push({
+      id: fallback.id,
+      title: fallback.title,
+      url: fallback.url,
+      description: fallback.description,
+      price: fallback.price,
+      image_url: fallback.image_url,
+      matched_keywords: [],
+      score: 0,
+    });
+  }
+  return ranked;
+}
 
 /**
  * 같은 사이트 내 다른 발행글에서 키워드 매칭으로 internal link 후보를 찾고,
@@ -297,6 +368,33 @@ serve(async (req) => {
       ? injectInternalLinks(post.content, candidates, siteSlug)
       : { newContent: post.content, injected: [] };
 
+    // ── 제품 카탈로그 매칭 (사이트 단위 등록 → AI 키워드 매칭) ──
+    const { data: productRows } = await supabase
+      .from("site_products")
+      .select("id, title, url, description, keywords, price, image_url")
+      .eq("site_id", post.site_id)
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true })
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    const productCandidates: ProductCandidate[] = (productRows || []).map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      url: p.url,
+      description: p.description,
+      keywords: Array.isArray(p.keywords) ? p.keywords : [],
+      price: p.price,
+      image_url: p.image_url,
+    }));
+
+    const matchedProducts = matchProducts(
+      newContent,
+      Array.isArray(post.keywords) ? post.keywords : [],
+      post.title,
+      productCandidates,
+    );
+
     // ── 발행 후 3축 자동 채점 ──
     const faqArr = Array.isArray(post.faq) ? post.faq : [];
     const kwArr = Array.isArray(post.keywords) ? post.keywords : [];
@@ -317,6 +415,7 @@ serve(async (req) => {
         published_at: nowIso,
         content: newContent,
         internal_links: injected,
+        product_links: matchedProducts,
         seo_score: scores.seo,
         aeo_score: scores.aeo,
         geo_score: scores.geo,
@@ -330,6 +429,7 @@ serve(async (req) => {
       JSON.stringify({
         ok: true,
         injectedLinks: injected.length,
+        productLinks: matchedProducts.length,
         scores,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } },

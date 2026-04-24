@@ -6,6 +6,15 @@ import JsonLd from "@/components/JsonLd";
 
 type Site = { id: string; title: string; site_slug: string };
 type FaqItem = { q: string; a: string };
+type ProductLink = {
+  id: string;
+  title: string;
+  url: string;
+  description: string | null;
+  price: string | null;
+  image_url: string | null;
+  matched_keywords?: string[];
+};
 type Post = {
   id: string;
   title: string;
@@ -14,6 +23,7 @@ type Post = {
   published_at: string | null;
   og_image: string | null;
   faq: FaqItem[] | null;
+  product_links: ProductLink[] | null;
 };
 
 function mdToHtml(md: string): string {
@@ -71,7 +81,7 @@ export default function SitePost() {
 
       const { data: p } = await (supabase as any)
         .from("site_posts")
-        .select("id, title, excerpt, content, published_at, og_image, faq")
+        .select("id, title, excerpt, content, published_at, og_image, faq, product_links")
         .eq("site_id", s.id)
         .eq("slug", postSlug)
         .eq("status", "published")
@@ -105,6 +115,9 @@ export default function SitePost() {
 
   const url = `https://searchtuneos.com/sites/${site.site_slug}/${postSlug}`;
   const faqItems: FaqItem[] = Array.isArray(post.faq) ? post.faq.filter((f) => f?.q && f?.a) : [];
+  const products: ProductLink[] = Array.isArray(post.product_links)
+    ? post.product_links.filter((p) => p?.id && p?.title && p?.url)
+    : [];
 
   // BlogPosting JSON-LD (보강: author/dateModified/image/wordCount)
   const wordCount = post.content.replace(/\s+/g, " ").trim().split(" ").length;
@@ -175,6 +188,56 @@ export default function SitePost() {
                     </summary>
                     <p className="mt-3 text-sm text-foreground/80 leading-relaxed">{f.a}</p>
                   </details>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* 제품 CTA 섹션 — 글 끝 추천. 모든 글 100% 노출 (전환 핵심) */}
+          {products.length > 0 && (
+            <section className="mt-12 pt-8 border-t" aria-label="이 글과 관련된 제품">
+              <h2 className="text-xl font-bold text-foreground mb-1">이 글과 관련된 제품</h2>
+              <p className="text-xs text-muted-foreground mb-4">
+                글 내용과 가장 잘 맞는 제품을 골라드렸어요.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {products.map((p) => (
+                  <a
+                    key={p.id}
+                    href={p.url}
+                    target="_blank"
+                    rel="sponsored noopener"
+                    onClick={() => {
+                      void (supabase as any).rpc("increment_site_product_click", { _product_id: p.id });
+                    }}
+                    className="group flex gap-3 rounded-xl border border-border bg-card p-3 hover:border-primary/40 hover:shadow-sm transition no-underline"
+                  >
+                    {p.image_url ? (
+                      <img
+                        src={p.image_url}
+                        alt=""
+                        loading="lazy"
+                        className="h-16 w-16 rounded-lg object-cover shrink-0 bg-muted"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 rounded-lg bg-muted shrink-0 flex items-center justify-center text-muted-foreground/50 text-xs">
+                        제품
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition">
+                        {p.title}
+                      </p>
+                      {p.price && (
+                        <p className="text-xs font-mono text-primary mt-0.5 tabular-nums">{p.price}</p>
+                      )}
+                      {p.description && (
+                        <p className="text-[11px] text-muted-foreground line-clamp-2 mt-1">
+                          {p.description}
+                        </p>
+                      )}
+                    </div>
+                  </a>
                 ))}
               </div>
             </section>
