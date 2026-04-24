@@ -457,16 +457,32 @@ export default function Recommendations() {
           {visibleIdeas.map((idea) => {
             const isPromoting = promotingId === idea.id;
             const isDeleting = deletingId === idea.id;
+            const isSelected = selected.has(idea.id);
             const axis = (idea.source_axis as Axis) || "SEO";
             return (
               <Card
                 key={idea.id}
                 className={`px-3 py-3 transition-colors ${
                   isPromoting || isDeleting ? "opacity-60" : "hover:border-primary/50"
-                }`}
+                } ${isSelected ? "border-primary/60 bg-primary/5" : ""}`}
               >
                 <div className="flex items-center justify-between gap-3 flex-wrap">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      disabled={bulkRunning || isPromoting || isDeleting}
+                      onChange={() => {
+                        setSelected((prev) => {
+                          const next = new Set(prev);
+                          if (next.has(idea.id)) next.delete(idea.id);
+                          else next.add(idea.id);
+                          return next;
+                        });
+                      }}
+                      className="h-4 w-4 shrink-0 rounded border-border accent-primary cursor-pointer"
+                      aria-label="선택"
+                    />
                     <span
                       className={`px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 ${
                         axisColor[axis] ?? "bg-muted text-foreground"
@@ -490,7 +506,7 @@ export default function Recommendations() {
                       size="sm"
                       variant="default"
                       className="rounded-full h-8 text-xs gap-1"
-                      disabled={isPromoting || !!promotingId}
+                      disabled={isPromoting || !!promotingId || bulkRunning}
                       onClick={() => promoteIdea(idea)}
                     >
                       {isPromoting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Send className="w-3 h-3" />}
@@ -500,7 +516,7 @@ export default function Recommendations() {
                       size="sm"
                       variant="ghost"
                       className="rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                      disabled={isDeleting}
+                      disabled={isDeleting || bulkRunning}
                       onClick={() => deleteIdea(idea)}
                       aria-label="아이디어 삭제"
                     >
