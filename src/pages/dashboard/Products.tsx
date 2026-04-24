@@ -42,7 +42,7 @@ export default function DashboardProducts() {
     setLoading(true);
     const { data, error } = await (supabase as any)
       .from("site_products")
-      .select("id, title, url, description, keywords, price, image_url, is_active, click_count, sort_order")
+      .select("id, title, url, description, keywords, price, image_url, compare_at_price, sale_label, sale_ends_at, is_active, click_count, sort_order")
       .eq("site_id", siteId)
       .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
