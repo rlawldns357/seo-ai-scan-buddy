@@ -29,20 +29,18 @@ import { useUserSite } from "./useUserSite";
 import { useAuth } from "@/features/auth/useAuth";
 import { useUserTier, type AppRole } from "@/features/auth/useUserTier";
 import SiteSwitcher from "./SiteSwitcher";
-import { useScrollSpy } from "./useScrollSpy";
 import { cn } from "@/lib/utils";
 
 type Tone = "primary" | "warning" | "accent" | "neutral" | "success";
-type SectionItem = {
+type RouteSection = {
   title: string;
-  section: string;
+  url: string;
   index: number;
   icon: LucideIcon;
   tone: Tone;
+  end?: boolean;
 };
 type RouteItem = { title: string; url: string; icon: LucideIcon; end?: boolean };
-
-const SECTION_IDS = ["overview", "recommendations", "workflow", "archive", "reports"];
 
 /** OnePage 의 SectionShell 톤과 1:1 매칭 — 색만 사이드바 컨텍스트에 맞게 정리 */
 const TONE: Record<Tone, { dot: string; text: string; badgeBg: string; activeBg: string }> = {
@@ -78,18 +76,18 @@ const TONE: Record<Tone, { dot: string; text: string; badgeBg: string; activeBg:
   },
 };
 
-const overviewItems: SectionItem[] = [
-  { title: "오늘의 운영", section: "overview", index: 1, icon: LayoutDashboard, tone: "primary" },
+const overviewItems: RouteSection[] = [
+  { title: "대시보드", url: "/dashboard", index: 1, icon: LayoutDashboard, tone: "primary", end: true },
 ];
 
-const workflowItems: SectionItem[] = [
-  { title: "콘텐츠 추천", section: "recommendations", index: 2, icon: Lightbulb, tone: "warning" },
-  { title: "워크플로우", section: "workflow", index: 3, icon: KanbanSquare, tone: "accent" },
-  { title: "발행 아카이브", section: "archive", index: 4, icon: Archive, tone: "neutral" },
+const workflowItems: RouteSection[] = [
+  { title: "콘텐츠 추천", url: "/dashboard/recommendations", index: 2, icon: Lightbulb, tone: "warning" },
+  { title: "워크플로우", url: "/dashboard/workflow", index: 3, icon: KanbanSquare, tone: "accent" },
+  { title: "발행 아카이브", url: "/dashboard/archive", index: 4, icon: Archive, tone: "neutral" },
 ];
 
-const analyticsItems: SectionItem[] = [
-  { title: "성과 리포트", section: "reports", index: 5, icon: BarChart3, tone: "success" },
+const analyticsItems: RouteSection[] = [
+  { title: "성과 리포트", url: "/dashboard/reports", index: 5, icon: BarChart3, tone: "success" },
 ];
 
 const internalItems: RouteItem[] = [
@@ -123,45 +121,24 @@ export default function AppSidebar() {
   const { user, signOut } = useAuth();
   const { tier } = useUserTier();
 
-  const onDashboardOnePage =
-    location.pathname === "/dashboard" || location.pathname === "/dashboard/";
-  const activeSection = useScrollSpy(onDashboardOnePage ? SECTION_IDS : []);
-
   const handleSignOut = async () => {
     await signOut();
     navigate("/", { replace: true });
   };
 
-  const handleSectionClick = (e: React.MouseEvent, section: string) => {
-    if (onDashboardOnePage) {
-      e.preventDefault();
-      const el = document.getElementById(section);
-      if (el) {
-        window.history.replaceState(null, "", `/dashboard#${section}`);
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }
-  };
-
-  const renderSection = (item: SectionItem) => {
-    const active = onDashboardOnePage && activeSection === item.section;
+  const renderSection = (item: RouteSection) => {
+    const active = item.end
+      ? location.pathname === item.url
+      : location.pathname === item.url || location.pathname.startsWith(item.url + "/");
     const tone = TONE[item.tone];
     return (
-      <SidebarMenuItem key={item.section}>
+      <SidebarMenuItem key={item.url}>
         <SidebarMenuButton
           asChild
           isActive={active}
-          className={cn(
-            "group/sec relative h-9 transition-colors",
-            active && tone.activeBg,
-          )}
+          className={cn("group/sec relative h-9 transition-colors", active && tone.activeBg)}
         >
-          <NavLink
-            to={`/dashboard#${item.section}`}
-            onClick={(e) => handleSectionClick(e, item.section)}
-            className="flex items-center gap-2 w-full"
-          >
-            {/* 활성 시 좌측 컬러 레일 (OnePage 본문 레일과 동일 언어) */}
+          <NavLink to={item.url} end={item.end} className="flex items-center gap-2 w-full">
             {active && !collapsed && (
               <span
                 className={cn("absolute left-0 top-1.5 bottom-1.5 w-[2px] rounded-full", tone.dot)}
@@ -175,18 +152,13 @@ export default function AppSidebar() {
                 <span
                   className={cn(
                     "inline-flex items-center justify-center w-5 h-5 rounded-md text-[9px] font-mono font-bold tabular-nums shrink-0 transition",
-                    active
-                      ? tone.badgeBg
-                      : "bg-muted/60 text-muted-foreground/70 group-hover/sec:bg-muted",
+                    active ? tone.badgeBg : "bg-muted/60 text-muted-foreground/70 group-hover/sec:bg-muted",
                   )}
                 >
                   {String(item.index).padStart(2, "0")}
                 </span>
                 <item.icon
-                  className={cn(
-                    "h-3.5 w-3.5 shrink-0 transition",
-                    active ? tone.text : "text-muted-foreground",
-                  )}
+                  className={cn("h-3.5 w-3.5 shrink-0 transition", active ? tone.text : "text-muted-foreground")}
                 />
                 <span
                   className={cn(

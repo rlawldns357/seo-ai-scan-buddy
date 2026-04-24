@@ -371,18 +371,14 @@ export default function DashboardIndex() {
                   : "추천 주제에서 고르거나 직접 주제를 입력해 시작하세요."}
               </p>
             </div>
-            <Button
-              className="relative rounded-full shrink-0"
-              onClick={() => {
-                const target = queueCounts.queued.length > 0 ? "workflow" : "recommendations";
-                document.getElementById(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
-              }}
-            >
-              {queueCounts.queued.length > 0 ? (
-                <><Send className="w-4 h-4" /> 워크플로우 열기</>
-              ) : (
-                <><Plus className="w-4 h-4" /> 추천 보기</>
-              )}
+            <Button asChild className="relative rounded-full shrink-0">
+              <Link to={queueCounts.queued.length > 0 ? "/dashboard/workflow" : "/dashboard/recommendations"}>
+                {queueCounts.queued.length > 0 ? (
+                  <><Send className="w-4 h-4" /> 워크플로우 열기</>
+                ) : (
+                  <><Plus className="w-4 h-4" /> 추천 보기</>
+                )}
+              </Link>
             </Button>
           </div>
 
