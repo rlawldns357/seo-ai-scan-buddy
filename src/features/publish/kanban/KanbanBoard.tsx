@@ -425,7 +425,7 @@ export default function KanbanBoard() {
       {isMobile ? (
         // Mobile: tabs (no drag UX on small screens)
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as KanbanStatus)}>
-          <TabsList className="grid grid-cols-4 w-full">
+          <TabsList className="grid grid-cols-3 w-full">
             {COLUMN_ORDER.map((s) => (
               <TabsTrigger key={s} value={s} className="text-[11px]">
                 {COLUMN_META[s].emoji} {grouped[s].length}
