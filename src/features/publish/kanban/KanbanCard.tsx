@@ -59,6 +59,20 @@ export default function KanbanCard({
         onClick={() => onOpen(post)}
         className={`group relative cursor-pointer hover:border-primary/40 transition-colors border-l-2 ${meta.accent} ${busy ? "opacity-60 pointer-events-none" : ""}`}
       >
+        {onDelete && (
+          <Button
+            size="sm"
+            variant="ghost"
+            className="absolute top-1 right-1 h-6 w-6 p-0 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity z-10"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (confirm(`"${post.title}"을(를) 영구 삭제할까요?`)) onDelete(post);
+            }}
+            title="삭제"
+          >
+            <Trash2 className="h-3 w-3" />
+          </Button>
+        )}
         <div className="px-3 py-2.5">
           <div className="flex items-start gap-2">
             <div className="min-w-0 flex-1">
