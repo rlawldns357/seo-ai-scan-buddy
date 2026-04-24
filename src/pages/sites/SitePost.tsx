@@ -6,6 +6,15 @@ import JsonLd from "@/components/JsonLd";
 
 type Site = { id: string; title: string; site_slug: string };
 type FaqItem = { q: string; a: string };
+type ProductLink = {
+  id: string;
+  title: string;
+  url: string;
+  description: string | null;
+  price: string | null;
+  image_url: string | null;
+  matched_keywords?: string[];
+};
 type Post = {
   id: string;
   title: string;
@@ -14,6 +23,7 @@ type Post = {
   published_at: string | null;
   og_image: string | null;
   faq: FaqItem[] | null;
+  product_links: ProductLink[] | null;
 };
 
 function mdToHtml(md: string): string {
@@ -71,7 +81,7 @@ export default function SitePost() {
 
       const { data: p } = await (supabase as any)
         .from("site_posts")
-        .select("id, title, excerpt, content, published_at, og_image, faq")
+        .select("id, title, excerpt, content, published_at, og_image, faq, product_links")
         .eq("site_id", s.id)
         .eq("slug", postSlug)
         .eq("status", "published")
