@@ -69,7 +69,7 @@ export function useAutopublishSettings(siteId: string | null | undefined) {
       if (next.weekdays.length === 0) next.weekdays = [1, 2, 3, 4, 5];
       if (next.hours_kst.length === 0) next.hours_kst = [9];
       next.daily_limit = Math.min(Math.max(next.daily_limit, 1), 10);
-      next.min_queue = Math.min(Math.max(next.min_queue, 0), 50);
+      next.min_queue = Math.min(Math.max(next.min_queue, 0), 200);
 
       const { error } = await supabase
         .from("autopublish_settings" as any)

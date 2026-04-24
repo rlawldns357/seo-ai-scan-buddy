@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
@@ -18,19 +17,10 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useEffect(() => {
-    if (location.pathname !== "/dashboard" || !location.hash) return;
-
-    const hashRouteMap: Record<string, string> = {
-      "#recommendations": "/dashboard/recommendations",
-      "#workflow": "/dashboard/workflow",
-      "#archive": "/dashboard/archive",
-      "#reports": "/dashboard/reports",
-    };
-
-    const next = hashRouteMap[location.hash];
-    if (next) navigate(next, { replace: true });
-  }, [location.hash, location.pathname, navigate]);
+  // No automatic redirect on page access. Guests can browse /dashboard/* in
+  // read-only mode; auth is enforced ONLY at the action layer via
+  // `useRequireAuthAction` (form submit, publish, queue, archive, edit, save).
+  // Sub-pages render LockedFeature placeholders when no site is linked.
 
   return (
     <SidebarProvider>
@@ -62,4 +52,3 @@ export default function DashboardLayout() {
     </SidebarProvider>
   );
 }
-

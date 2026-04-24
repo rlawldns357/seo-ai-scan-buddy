@@ -41,7 +41,9 @@ export default function Reports() {
         title="먼저 블로그 허브를 만들어주세요"
         description="블로그 허브에 발행된 글의 성과를 추적합니다."
         ctaLabel="블로그 허브 만들기"
-        onCta={() => navigate("/dashboard")}
+        onCta={() => {
+          document.getElementById("overview")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }}
       />
     );
   }
