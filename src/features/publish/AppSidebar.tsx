@@ -79,13 +79,13 @@ const TONE: Record<Tone, { dot: string; text: string; badgeBg: string; activeBg:
 };
 
 const overviewItems: SectionItem[] = [
-  { title: "오늘의 운영", section: "overview", index: 1, icon: LayoutDashboard, tone: "primary" },
+  { title: "대시보드", section: "overview", index: 1, icon: LayoutDashboard, tone: "primary" },
 ];
 
 const workflowItems: SectionItem[] = [
-  { title: "콘텐츠 추천", section: "recommendations", index: 2, icon: Lightbulb, tone: "warning" },
-  { title: "워크플로우", section: "workflow", index: 3, icon: KanbanSquare, tone: "accent" },
-  { title: "발행 아카이브", section: "archive", index: 4, icon: Archive, tone: "neutral" },
+  { title: "블로그 재고", section: "recommendations", index: 2, icon: Lightbulb, tone: "warning" },
+  { title: "자동 발행", section: "workflow", index: 3, icon: KanbanSquare, tone: "accent" },
+  { title: "제품 카탈로그", section: "archive", index: 4, icon: Archive, tone: "neutral" },
 ];
 
 const analyticsItems: SectionItem[] = [
@@ -132,12 +132,20 @@ export default function AppSidebar() {
     navigate("/", { replace: true });
   };
 
+  const routeBySection: Record<string, string> = {
+    overview: "/dashboard",
+    recommendations: "/dashboard#recommendations",
+    workflow: "/dashboard#workflow",
+    archive: "/dashboard#archive",
+    reports: "/dashboard#reports",
+  };
+
   const handleSectionClick = (e: React.MouseEvent, section: string) => {
     if (onDashboardOnePage) {
       e.preventDefault();
       const el = document.getElementById(section);
       if (el) {
-        window.history.replaceState(null, "", `/dashboard#${section}`);
+        window.history.replaceState(null, "", routeBySection[section] ?? `/dashboard#${section}`);
         el.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     }
@@ -157,7 +165,7 @@ export default function AppSidebar() {
           )}
         >
           <NavLink
-            to={`/dashboard#${item.section}`}
+            to={routeBySection[item.section] ?? `/dashboard#${item.section}`}
             onClick={(e) => handleSectionClick(e, item.section)}
             className="flex items-center gap-2 w-full"
           >
