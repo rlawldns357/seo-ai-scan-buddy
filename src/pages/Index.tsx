@@ -332,10 +332,19 @@ const Index = () => {
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               무료 베타 서비스
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl text-foreground leading-snug sm:leading-[1.45] mb-6 tracking-tight">
-              <span className="font-light">내 사이트,</span><br className="hidden sm:block" />
-              <span className="font-extrabold">검색엔진과 AI</span>가{" "}
-              <span className="font-extrabold">제대로 이해</span><span className="font-light">하고 있을까?</span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl text-foreground leading-[1.15] sm:leading-[1.1] mb-6 tracking-tight">
+              <span className="block font-light text-muted-foreground text-2xl sm:text-3xl md:text-4xl mb-3">
+                내 사이트,
+              </span>
+              <span className="block font-extrabold">
+                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  검색엔진과 AI
+                </span>
+                <span>가</span>
+              </span>
+              <span className="block font-extrabold mt-1">
+                제대로 이해<span className="font-light text-muted-foreground">하고 있을까?</span>
+              </span>
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg mb-10 leading-relaxed">
               URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
