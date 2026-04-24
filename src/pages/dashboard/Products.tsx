@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserSite } from "@/features/publish/useUserSite";
 import PageHeader from "@/features/publish/ui/PageHeader";
+import { cleanProductUrl } from "@/lib/cleanProductUrl";
 
 type Product = {
   id: string;
