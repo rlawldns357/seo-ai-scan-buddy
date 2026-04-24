@@ -176,19 +176,33 @@ export default function Recommendations() {
 
     setQueueingIdeaId(idea.id);
     try {
+      // 1) AI 엔진으로 본문 생성 (페르소나 v3 적용)
+      const { data: gen, error: genErr } = await supabase.functions.invoke(
+        "generate-content-draft",
+        { body: { topic: idea.topic, targetAxis: idea.axis, siteUrl: site.site_url } },
+      );
+      if (genErr) throw genErr;
+      if (gen?.error) throw new Error(gen.error);
+      if (!gen?.content || gen.content.length < 200) {
+        throw new Error("AI가 본문을 만들지 못했어요. 잠시 후 다시 시도해주세요.");
+      }
+
       const rand = Math.random().toString(36).slice(2, 6);
-      const slug = `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}-${rand}`;
+      const slug = gen?.slug
+        ? `${gen.slug}-${Date.now().toString(36)}`
+        : `idea-${slugify(idea.topic).slice(0, 24)}-${Date.now().toString(36)}-${rand}`;
       const { data, error } = await (supabase as any)
         .from("site_posts")
         .insert({
           site_id: site.id,
           slug,
-          title: idea.topic,
-          // RLS는 content 길이 ≥ 1을 요구함. 아이디어 단계에서는 placeholder를 채워두고
-          // draft로 옮길 때 AI가 본문을 덮어씁니다.
-          content: `# ${idea.topic}\n\n(아이디어 단계 — 초안으로 옮기면 AI가 본문을 생성합니다)`,
-          status: "idea",
+          title: gen?.title || idea.topic,
+          excerpt: gen?.excerpt ?? null,
+          content: gen.content,
+          status: "scheduled",
           source_axis: idea.axis,
+          keywords: Array.isArray(gen?.keywords) ? gen.keywords : [],
+          faq: Array.isArray(gen?.faq) ? gen.faq : [],
         })
         .select("id")
         .single();
@@ -201,7 +215,7 @@ export default function Recommendations() {
         return next;
       });
       emitWorkflowChanged({ siteId: site.id, postId: data?.id, source: "recommendations" });
-      toast({ title: "워크플로우에 추가됐어요", description: "아이디어 칸으로 이동합니다." });
+      toast({ title: "✨ 본문 생성 완료", description: "발행 대기 칸으로 이동합니다." });
     } catch (error) {
       toast({
         title: "추가 실패",
