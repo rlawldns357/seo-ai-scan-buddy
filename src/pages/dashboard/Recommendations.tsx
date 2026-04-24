@@ -73,10 +73,47 @@ export default function Recommendations() {
     void loadCredits();
   }, [loadCredits]);
 
+  // Generate ideas via AI when seed/axes change (debounced for typing)
   useEffect(() => {
-    setIdeas(buildIdeasFromSeed(seed, orderedAxes));
     setQueuedIdeaIds(new Set());
-  }, [seed, orderedAxes]);
+    const cleanSeed = seed.trim();
+    if (!cleanSeed || !site) {
+      setIdeas([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("regenerate-idea", {
+          body: {
+            mode: "ideas3",
+            seed: cleanSeed,
+            siteUrl: site.site_url,
+            siteTitle: site.title,
+          },
+        });
+        if (cancelled) return;
+        if (error || data?.error || !data?.ideas) {
+          // Fallback to neutral templates
+          setIdeas(buildFallbackIdeas(cleanSeed, orderedAxes));
+          return;
+        }
+        const next: Idea[] = orderedAxes.map((axis) => ({
+          id: `${axis}-${cleanSeed}`,
+          topic: data.ideas[axis]?.topic ?? FALLBACK_BUILDERS[axis](cleanSeed),
+          axis,
+          reason: data.ideas[axis]?.reason ?? `${cleanSeed} 중심 ${axis} 아이디어`,
+        }));
+        setIdeas(next);
+      } catch {
+        if (!cancelled) setIdeas(buildFallbackIdeas(cleanSeed, orderedAxes));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [seed, orderedAxes, site]);
 
   // Load score order only; don't show generic recommendations without a real topic
   useEffect(() => {
