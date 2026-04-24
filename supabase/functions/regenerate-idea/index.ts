@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     const userId = userData.user.id;
 
     const body = await req.json().catch(() => ({}));
-    const mode: "topic" | "seed" = body.mode === "seed" ? "seed" : "topic";
+    const mode: "topic" | "seed" | "ideas3" = body.mode === "seed" ? "seed" : body.mode === "ideas3" ? "ideas3" : "topic";
     const siteUrl: string = body.siteUrl ?? "";
     const siteTitle: string = body.siteTitle ?? "";
     const axis: Axis = (body.axis as Axis) || "SEO";
@@ -73,6 +73,112 @@ Deno.serve(async (req) => {
     const avoidSeeds: string[] = Array.isArray(body.avoidSeeds) ? body.avoidSeeds.slice(0, 20) : [];
 
     const admin = createClient(supabaseUrl, serviceKey);
+
+    // ideas3 mode: 무료 — 시드 1개로 SEO/AEO/GEO 3축 주제를 한 번에 생성
+    if (mode === "ideas3") {
+      const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+      if (!lovableKey) return json({ error: "AI 키가 설정되지 않았습니다." }, 500);
+      if (!seed) return json({ error: "관심 주제(seed)가 필요합니다." }, 400);
+
+      const brandContext = await scrapeBrandContext(siteUrl);
+      const ideas3Prompt = `당신은 한국어 SEO/AEO/GEO 콘텐츠 전략가입니다. 아래 사이트의 "${seed}" 관심 주제로 SEO·AEO·GEO 각 1개씩 총 3개의 콘텐츠 주제를 제안하세요.
+
+[사이트] ${siteTitle || "(제목 없음)"} — ${siteUrl || "N/A"}
+${brandContext ? `[사이트 컨텍스트]\n${brandContext}\n` : ""}
+[관심 주제] ${seed}
+
+축별 가이드:
+- SEO: 검색 유입(Google/Naver). "어떻게/방법/가이드/추천" 등 검색 의도 단어 활용
+- AEO: AI 답변 채택. 구체적 질문형(누가/언제/왜/얼마/차이) 또는 FAQ 톤
+- GEO: 생성형 AI 인용·비교. 비교/기준/리스트/체크리스트 형태
+
+요구사항:
+- 각 주제는 한국어, 25~45자, 자연스러운 콘텐츠 제목 (블로그 글 제목처럼)
+- "${seed}" 또는 사이트 컨텍스트의 브랜드/제품/카테고리 단어가 자연스럽게 등장
+- 광고성/과장 금지, 일반론 금지, 정보형 톤
+- "이유"는 왜 이 사이트·축에 효과적인지 1문장(60자 이내)
+- 어색한 조사·문장 부호 금지 (예: "X 검색 유입을 위한 핵심 가이드" 같은 기계적 패턴 회피)`;
+
+      const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${lovableKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [{ role: "user", content: ideas3Prompt }],
+          temperature: 0.9,
+          tools: [{
+            type: "function",
+            function: {
+              name: "suggest_ideas3",
+              description: "SEO/AEO/GEO 3축 주제 각 1개",
+              parameters: {
+                type: "object",
+                properties: {
+                  seo: {
+                    type: "object",
+                    properties: {
+                      topic: { type: "string" },
+                      reason: { type: "string" },
+                    },
+                    required: ["topic", "reason"],
+                    additionalProperties: false,
+                  },
+                  aeo: {
+                    type: "object",
+                    properties: {
+                      topic: { type: "string" },
+                      reason: { type: "string" },
+                    },
+                    required: ["topic", "reason"],
+                    additionalProperties: false,
+                  },
+                  geo: {
+                    type: "object",
+                    properties: {
+                      topic: { type: "string" },
+                      reason: { type: "string" },
+                    },
+                    required: ["topic", "reason"],
+                    additionalProperties: false,
+                  },
+                },
+                required: ["seo", "aeo", "geo"],
+                additionalProperties: false,
+              },
+            },
+          }],
+          tool_choice: { type: "function", function: { name: "suggest_ideas3" } },
+        }),
+      });
+
+      if (!aiRes.ok) {
+        if (aiRes.status === 429) return json({ error: "AI 호출량이 초과됐어요. 잠시 후 다시 시도해주세요." }, 429);
+        if (aiRes.status === 402) return json({ error: "AI 크레딧이 부족해요." }, 402);
+        const t = await aiRes.text();
+        console.error("ideas3 AI error", aiRes.status, t);
+        return json({ error: "AI 생성에 실패했습니다." }, 500);
+      }
+
+      const aiJson = await aiRes.json();
+      const tc = aiJson.choices?.[0]?.message?.tool_calls?.[0];
+      let parsed: any = null;
+      if (tc?.function?.arguments) {
+        try { parsed = JSON.parse(tc.function.arguments); } catch { /* ignore */ }
+      }
+      if (!parsed?.seo?.topic || !parsed?.aeo?.topic || !parsed?.geo?.topic) {
+        return json({ error: "AI 응답을 해석할 수 없어요." }, 500);
+      }
+
+      return json({
+        ok: true,
+        ideas: {
+          SEO: { topic: String(parsed.seo.topic).slice(0, 120), reason: String(parsed.seo.reason ?? "").slice(0, 120) },
+          AEO: { topic: String(parsed.aeo.topic).slice(0, 120), reason: String(parsed.aeo.reason ?? "").slice(0, 120) },
+          GEO: { topic: String(parsed.geo.topic).slice(0, 120), reason: String(parsed.geo.reason ?? "").slice(0, 120) },
+        },
+      });
+    }
+
 
     // Seed mode: 무료(크레딧 미차감) — 사이트 컨텍스트 기반 관심 주제 키워드 1개 제안
     if (mode === "seed") {

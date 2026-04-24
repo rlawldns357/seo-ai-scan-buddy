@@ -25,19 +25,19 @@ const axisColor: Record<Axis, string> = {
 
 const AXES: Axis[] = ["SEO", "AEO", "GEO"];
 
-const IDEA_BUILDERS: Record<Axis, (seed: string) => string> = {
-  SEO: (seed) => `${seed} 검색 유입을 위한 핵심 가이드`,
-  AEO: (seed) => `${seed} 관련 자주 묻는 질문 정리`,
-  GEO: (seed) => `${seed} 선택 기준과 비교 포인트 정리`,
+// Fallback templates (used only if AI fails) — kept simple/neutral
+const FALLBACK_BUILDERS: Record<Axis, (seed: string) => string> = {
+  SEO: (seed) => `${seed} 핵심 가이드`,
+  AEO: (seed) => `${seed} 자주 묻는 질문`,
+  GEO: (seed) => `${seed} 비교와 선택 기준`,
 };
 
-function buildIdeasFromSeed(seed: string, orderedAxes: Axis[]): Idea[] {
+function buildFallbackIdeas(seed: string, orderedAxes: Axis[]): Idea[] {
   const cleanSeed = seed.trim();
   if (!cleanSeed) return [];
-
   return orderedAxes.map((axis) => ({
     id: `${axis}-${cleanSeed}`,
-    topic: IDEA_BUILDERS[axis](cleanSeed),
+    topic: FALLBACK_BUILDERS[axis](cleanSeed),
     axis,
     reason: `${cleanSeed} 중심 ${axis} 아이디어`,
   }));
@@ -73,10 +73,47 @@ export default function Recommendations() {
     void loadCredits();
   }, [loadCredits]);
 
+  // Generate ideas via AI when seed/axes change (debounced for typing)
   useEffect(() => {
-    setIdeas(buildIdeasFromSeed(seed, orderedAxes));
     setQueuedIdeaIds(new Set());
-  }, [seed, orderedAxes]);
+    const cleanSeed = seed.trim();
+    if (!cleanSeed || !site) {
+      setIdeas([]);
+      return;
+    }
+    let cancelled = false;
+    setLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("regenerate-idea", {
+          body: {
+            mode: "ideas3",
+            seed: cleanSeed,
+            siteUrl: site.site_url,
+            siteTitle: site.title,
+          },
+        });
+        if (cancelled) return;
+        if (error || data?.error || !data?.ideas) {
+          // Fallback to neutral templates
+          setIdeas(buildFallbackIdeas(cleanSeed, orderedAxes));
+          return;
+        }
+        const next: Idea[] = orderedAxes.map((axis) => ({
+          id: `${axis}-${cleanSeed}`,
+          topic: data.ideas[axis]?.topic ?? FALLBACK_BUILDERS[axis](cleanSeed),
+          axis,
+          reason: data.ideas[axis]?.reason ?? `${cleanSeed} 중심 ${axis} 아이디어`,
+        }));
+        setIdeas(next);
+      } catch {
+        if (!cancelled) setIdeas(buildFallbackIdeas(cleanSeed, orderedAxes));
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }, 600);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [seed, orderedAxes, site]);
 
   // Load score order only; don't show generic recommendations without a real topic
   useEffect(() => {
@@ -285,7 +322,7 @@ export default function Recommendations() {
           </div>
         </div>
          <p className="text-[11px] text-muted-foreground mt-2">
-           <span className="font-semibold text-foreground">🎲 주사위</span>로 사이트에 맞는 관심 주제를 먼저 받고, 직접 입력해도 아래 아이디어가 갱신됩니다.
+           <span className="font-semibold text-foreground">🎲 주사위</span>로 사이트 맞춤 관심 주제를 받거나 직접 입력하면, AI가 SEO·AEO·GEO 3축 아이디어를 만들어드려요.
         </p>
       </Card>
 
