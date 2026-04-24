@@ -235,51 +235,53 @@ export default function SitePost() {
                         </div>
                       )}
                       <div className={`min-w-0 flex-1 flex flex-col ${isHero ? "sm:py-1 justify-between" : ""}`}>
-                        {/* 세일 라벨 + 카운트다운 — 작은 텍스트 톤 */}
-                        {(p.sale_label || countdown) && (
-                          <div className={`flex items-center gap-2 flex-wrap text-xs text-muted-foreground ${isHero ? "mb-1.5" : "mb-1"}`}>
-                            {p.sale_label && <span className="font-medium text-foreground/70">{p.sale_label}</span>}
-                            {p.sale_label && countdown && <span className="text-border">·</span>}
-                            {countdown && (
-                              <span className="inline-flex items-center gap-1">
-                                <Clock className="w-3 h-3" aria-hidden /> {countdown}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                        <p className={`font-semibold text-foreground group-hover:text-primary transition ${
-                          isHero ? "text-base sm:text-lg line-clamp-2" : "text-sm line-clamp-2"
-                        }`}>
-                          {p.title}
-                        </p>
-                        {/* 가격: 원가 취소선 + 판매가 강조 */}
-                        {p.price && (
-                          <div className={`flex items-baseline gap-2 flex-wrap ${isHero ? "mt-2" : "mt-1.5"}`}>
-                            {p.compare_at_price && discount && (
-                              <span className={`text-muted-foreground line-through tabular-nums ${
-                                isHero ? "text-sm" : "text-[11px]"
-                              }`}>
-                                {p.compare_at_price}
-                              </span>
-                            )}
-                            <span
-                              className={`font-bold tabular-nums ${
-                                discount
-                                  ? isHero ? "text-destructive text-xl" : "text-destructive text-base"
-                                  : isHero ? "text-foreground text-lg" : "text-foreground text-sm"
-                              }`}
-                            >
-                              {p.price}
-                            </span>
-                          </div>
-                        )}
-                        {p.description && (
-                          <p className={`text-muted-foreground mt-1.5 ${
-                            isHero ? "text-sm line-clamp-2" : "text-[11px] line-clamp-2 mt-1"
+                        <div>
+                          {/* 세일 라벨 + 카운트다운 — 작은 텍스트 톤 */}
+                          {(p.sale_label || countdown) && (
+                            <div className={`flex items-center gap-2 flex-wrap text-xs text-muted-foreground ${isHero ? "mb-1.5" : "mb-1"}`}>
+                              {p.sale_label && <span className="font-medium text-foreground/70">{p.sale_label}</span>}
+                              {p.sale_label && countdown && <span className="text-border">·</span>}
+                              {countdown && (
+                                <span className="inline-flex items-center gap-1">
+                                  <Clock className="w-3 h-3" aria-hidden /> {countdown}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <p className={`font-semibold text-foreground group-hover:text-primary transition ${
+                            isHero ? "text-base sm:text-lg line-clamp-2" : "text-sm line-clamp-2"
                           }`}>
-                            {p.description}
+                            {p.title}
                           </p>
-                        )}
+                          {/* 가격: 원가 취소선 + 판매가 강조 */}
+                          {p.price && (
+                            <div className={`flex items-baseline gap-2 flex-wrap ${isHero ? "mt-1.5" : "mt-1.5"}`}>
+                              {p.compare_at_price && discount && (
+                                <span className={`text-muted-foreground line-through tabular-nums ${
+                                  isHero ? "text-sm" : "text-[11px]"
+                                }`}>
+                                  {p.compare_at_price}
+                                </span>
+                              )}
+                              <span
+                                className={`font-bold tabular-nums ${
+                                  discount
+                                    ? isHero ? "text-destructive text-xl" : "text-destructive text-base"
+                                    : isHero ? "text-foreground text-lg" : "text-foreground text-sm"
+                                }`}
+                              >
+                                {p.price}
+                              </span>
+                            </div>
+                          )}
+                          {p.description && (
+                            <p className={`text-muted-foreground ${
+                              isHero ? "text-sm line-clamp-2 mt-1.5" : "text-[11px] line-clamp-2 mt-1"
+                            }`}>
+                              {p.description}
+                            </p>
+                          )}
+                        </div>
                         {isHero && (
                           <div className="mt-auto pt-3 flex flex-wrap gap-2">
                             <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-foreground text-background text-sm font-medium group-hover:opacity-90 transition">
