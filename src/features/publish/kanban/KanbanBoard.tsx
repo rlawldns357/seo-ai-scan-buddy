@@ -29,16 +29,16 @@ import { COLUMN_META, COLUMN_ORDER, KanbanPost, KanbanStatus, PUBLISHED_VISIBLE_
 import { sortScheduledColumn } from "./scheduleUtils";
 
 const NEXT_STATUS: Record<KanbanStatus, KanbanStatus | null> = {
-  idea: "draft", // legacy rows
-  draft: "scheduled",
+  idea: "scheduled", // legacy rows
+  draft: "scheduled", // legacy rows — treat as scheduled
   scheduled: "published",
   published: null,
   archived: null,
 };
 
-/** Normalize legacy 'idea' rows to 'draft' for grouping/UI. */
+/** Normalize legacy 'idea'/'draft' rows to 'scheduled' for grouping/UI. */
 function normalizeStatus(s: KanbanStatus): KanbanStatus {
-  return s === "idea" ? "draft" : s;
+  return s === "idea" || s === "draft" ? "scheduled" : s;
 }
 
 export default function KanbanBoard() {
@@ -54,7 +54,7 @@ export default function KanbanBoard() {
   const [activeDragId, setActiveDragId] = useState<string | null>(null);
   const [openPost, setOpenPost] = useState<KanbanPost | null>(null);
   
-  const [activeTab, setActiveTab] = useState<KanbanStatus>("draft");
+  const [activeTab, setActiveTab] = useState<KanbanStatus>("scheduled");
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -88,7 +88,7 @@ export default function KanbanBoard() {
 
     return onWorkflowChanged((detail) => {
       if (detail.siteId !== site.id) return;
-      setActiveTab("draft");
+      setActiveTab("scheduled");
       void load();
     });
   }, [site, load]);
