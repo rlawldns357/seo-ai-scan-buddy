@@ -31,6 +31,8 @@ export default function DashboardProducts() {
   const [items, setItems] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
+  const [prefillUrl, setPrefillUrl] = useState<string | null>(null);
+  const [quickUrl, setQuickUrl] = useState("");
 
   const load = async (siteId: string) => {
     setLoading(true);
