@@ -71,7 +71,7 @@ export default function AutoPublishTeaser() {
                   {item.title}
                 </span>
                 {item.tone === "success" && (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-accent shrink-0" />
                 )}
                 {item.tone === "info" && (
                   <CalendarClock className="w-3.5 h-3.5 text-primary shrink-0" />
