@@ -3,7 +3,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
 import Navbar from "@/components/Navbar";
 import { useAuth } from "@/features/auth/useAuth";
-import { LogOut } from "lucide-react";
 
 /**
  * Dashboard layout — operations console for Autoblog.
@@ -14,7 +13,7 @@ import { LogOut } from "lucide-react";
  * via `useRequireAuthAction`. Public marketing lives at /autoblog.
  */
 export default function DashboardLayout() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,11 +21,6 @@ export default function DashboardLayout() {
   // read-only mode; auth is enforced ONLY at the action layer via
   // `useRequireAuthAction` (form submit, publish, queue, archive, edit, save).
   // Sub-pages render LockedFeature placeholders when no site is linked.
-
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/", { replace: true });
-  };
 
   return (
     <SidebarProvider>
@@ -40,16 +34,7 @@ export default function DashboardLayout() {
                 <SidebarTrigger />
                 <span className="ml-3 text-sm font-semibold tracking-tight">AutoBlog</span>
               </div>
-              {user ? (
-                <button
-                  onClick={handleSignOut}
-                  className="inline-flex items-center gap-1.5 rounded-full text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1.5"
-                  aria-label="로그아웃"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">로그아웃</span>
-                </button>
-              ) : (
+              {!user && (
                 <button
                   onClick={() => navigate(`/auth?next=${encodeURIComponent(location.pathname + location.search)}`)}
                   className="inline-flex items-center gap-1.5 rounded-full border border-border/50 bg-card px-3 py-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:border-border transition-colors"

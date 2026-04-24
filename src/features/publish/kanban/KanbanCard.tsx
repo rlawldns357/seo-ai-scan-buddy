@@ -47,7 +47,18 @@ export default function KanbanCard({ post, busy, onOpen, onAdvance, onRollDice, 
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
               {post.source_axis && (
-                <span className="text-[9px] font-bold text-muted-foreground tracking-wider">
+                <span
+                  className="text-[9px] font-bold text-muted-foreground tracking-wider cursor-help"
+                  title={
+                    post.source_axis === "SEO"
+                      ? "SEO — 검색 엔진 최적화 콘텐츠"
+                      : post.source_axis === "AEO"
+                      ? "AEO — AI 답변 엔진 최적화 콘텐츠"
+                      : post.source_axis === "GEO"
+                      ? "GEO — 생성형 AI 인용 최적화 콘텐츠"
+                      : post.source_axis
+                  }
+                >
                   {post.source_axis}
                 </span>
               )}
@@ -57,7 +68,7 @@ export default function KanbanCard({ post, busy, onOpen, onAdvance, onRollDice, 
                   {new Date(post.published_at).toLocaleDateString("ko-KR", { month: "numeric", day: "numeric" })}
                 </span>
               )}
-              {post.status === "published" && (
+              {post.status === "published" && post.view_count > 0 && (
                 <span className="text-[10px] text-muted-foreground inline-flex items-center gap-0.5">
                   <Eye className="h-2.5 w-2.5" />
                   {post.view_count}
@@ -84,7 +95,7 @@ export default function KanbanCard({ post, busy, onOpen, onAdvance, onRollDice, 
               className="h-6 text-[10px] px-2 rounded-full"
               onClick={(e) => { e.stopPropagation(); onAdvance(post); }}
             >
-              {COLUMN_META[nextStatus].label}로 ▶
+              {COLUMN_META[nextStatus].label}(으)로 ▶
             </Button>
           )}
         </div>
