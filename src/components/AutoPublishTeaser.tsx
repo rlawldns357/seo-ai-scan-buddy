@@ -3,21 +3,21 @@ import { Link } from "react-router-dom";
 import {
   ArrowRight,
   Sparkles,
-  CheckCircle2,
+  Layers3,
   CalendarClock,
-  FileText,
+  TrendingUp,
   Tag,
+  Bookmark,
 } from "lucide-react";
 import BetaSignupModal from "@/components/BetaSignupModal";
 import { trackEvent } from "@/lib/analytics";
 
 /**
- * Compact "new product launch" teaser for AutoBlog on the home screen.
- * Light card style, condensed height, structured to explain at a glance:
- *   1) New product badge + 50% promo
- *   2) Headline + one-line value
- *   3) 3-step "what it does" mini queue
- *   4) Beta CTA (opens modal) + secondary "how it works"
+ * Compact, bookmark-shaped "AutoBlog" launch teaser on the home screen.
+ * Wide & short ratio (no tall stacked layout). Brand-forward:
+ *   - AutoBlog wordmark left
+ *   - 3 brand pillars: 블로그 재고 · 자동 발행 · 최적화 노출
+ *   - Beta CTA + 50% promo on the right
  */
 export default function AutoPublishTeaser() {
   const [betaOpen, setBetaOpen] = useState(false);
@@ -27,120 +27,108 @@ export default function AutoPublishTeaser() {
     setBetaOpen(true);
   };
 
+  const pillars = [
+    { Icon: Layers3, label: "블로그 재고", desc: "큐에 쌓아두기" },
+    { Icon: CalendarClock, label: "자동 발행", desc: "예약 운영" },
+    { Icon: TrendingUp, label: "최적화 노출", desc: "SEO·AEO·GEO" },
+  ];
+
   return (
-    <section className="mt-14 max-w-lg mx-auto text-left">
-      <div className="relative overflow-hidden rounded-3xl border border-primary/20 bg-gradient-to-br from-primary/[0.06] via-card to-accent/[0.05] p-5 sm:p-6 shadow-sm">
-        {/* soft glow */}
-        <div className="pointer-events-none absolute -top-16 -right-16 w-44 h-44 rounded-full bg-primary/15 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 -left-12 w-40 h-40 rounded-full bg-accent/15 blur-3xl" />
+    <section className="mt-12 max-w-2xl mx-auto">
+      <div className="relative">
+        {/* Bookmark ribbon — wide, short */}
+        <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-r from-[hsl(232_47%_14%)] via-[hsl(232_47%_18%)] to-[hsl(232_47%_14%)] text-white shadow-lg">
+          {/* notch tab on the left to evoke a bookmark */}
+          <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-primary to-accent" />
+          {/* soft glow */}
+          <div className="pointer-events-none absolute -top-16 -right-10 w-40 h-40 rounded-full bg-primary/30 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-16 left-1/3 w-32 h-32 rounded-full bg-accent/25 blur-3xl" />
 
-        <div className="relative">
-          {/* 1. Badges */}
-          <div className="flex items-center gap-1.5 mb-3 flex-wrap">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground text-[10px] font-extrabold tracking-widest uppercase shadow-sm">
-              <Sparkles className="w-3 h-3" /> NEW
-            </span>
-            <span className="text-[11px] font-bold text-muted-foreground tracking-wide">
-              AutoBlog · 콘텐츠 운영 자동화
-            </span>
-            <span className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-accent/15 text-accent text-[10px] font-extrabold tracking-wide">
-              <Tag className="w-3 h-3" /> 평생 50%
-            </span>
-          </div>
-
-          {/* 2. Headline + one-line value */}
-          <h2 className="text-xl sm:text-2xl font-extrabold text-foreground leading-tight tracking-tight">
-            진단했다면, 이제{" "}
-            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              한 달치 콘텐츠
-            </span>
-            를 큐에 쌓아두세요
-          </h2>
-          <p className="text-[13px] text-muted-foreground mt-1.5 leading-relaxed break-keep">
-            주제 한 줄이면 SEO·AEO·GEO 3축 최적화된 글이{" "}
-            <span className="text-foreground font-semibold">자동 생성·예약·발행</span>
-            됩니다.
-          </p>
-
-          {/* 3. Mini queue — compact, structured */}
-          <div className="mt-4 rounded-2xl border border-border/50 bg-background/60 backdrop-blur-sm p-2 space-y-1.5">
-            <div className="flex items-center justify-between px-1.5 pt-1 pb-0.5">
-              <span className="text-[10px] font-bold text-muted-foreground tracking-wide uppercase">
-                발행 큐 미리보기
-              </span>
-              <span className="text-[10px] font-bold text-accent">자동 보충</span>
-            </div>
-            {[
-              {
-                tone: "success" as const,
-                Icon: CheckCircle2,
-                state: "발행됨",
-                title: "가을 신상품 코디 가이드",
-              },
-              {
-                tone: "info" as const,
-                Icon: CalendarClock,
-                state: "예약",
-                title: "주말 세일 — 토요일 09:00",
-              },
-              {
-                tone: "muted" as const,
-                Icon: FileText,
-                state: "초안",
-                title: "리뷰 베스트 5 큐레이션",
-              },
-            ].map(({ tone, Icon, state, title }) => {
-              const stateClass =
-                tone === "success"
-                  ? "bg-accent/15 text-accent"
-                  : tone === "info"
-                    ? "bg-primary/10 text-primary"
-                    : "bg-muted text-muted-foreground";
-              const iconClass =
-                tone === "success"
-                  ? "text-accent"
-                  : tone === "info"
-                    ? "text-primary"
-                    : "text-muted-foreground";
-              return (
-                <div
-                  key={title}
-                  className="flex items-center gap-2 px-2 py-1.5 rounded-xl bg-card border border-border/40"
-                >
-                  <span
-                    className={`shrink-0 inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${stateClass}`}
-                  >
-                    {state}
-                  </span>
-                  <span className="text-[12px] text-foreground truncate flex-1">
-                    {title}
-                  </span>
-                  <Icon className={`w-3.5 h-3.5 shrink-0 ${iconClass}`} />
+          <div className="relative grid grid-cols-1 sm:grid-cols-[1fr_auto] items-center gap-4 px-4 sm:px-5 py-4">
+            {/* LEFT: brand + pillars */}
+            <div className="flex items-center gap-4 min-w-0">
+              {/* Wordmark block */}
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-accent shadow-md">
+                  <Bookmark className="w-4 h-4 text-primary-foreground" fill="currentColor" />
                 </div>
-              );
-            })}
+                <div className="leading-tight">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base font-extrabold tracking-tight">
+                      Auto<span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Blog</span>
+                    </span>
+                    <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-white/15 text-white ring-1 ring-white/20 leading-none">
+                      <Sparkles className="w-2.5 h-2.5" /> NEW
+                    </span>
+                  </div>
+                  <div className="text-[10px] text-white/55 font-medium tracking-wide">
+                    by SearchTune OS
+                  </div>
+                </div>
+              </div>
+
+              {/* divider */}
+              <div className="hidden md:block w-px h-10 bg-white/10 shrink-0" />
+
+              {/* Pillars */}
+              <ul className="hidden md:flex items-center gap-3 min-w-0">
+                {pillars.map(({ Icon, label, desc }) => (
+                  <li key={label} className="flex items-center gap-1.5 min-w-0">
+                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-white/10 text-white shrink-0">
+                      <Icon className="w-3 h-3" />
+                    </span>
+                    <span className="leading-tight min-w-0">
+                      <span className="block text-[11px] font-bold text-white truncate">
+                        {label}
+                      </span>
+                      <span className="block text-[9px] text-white/55 truncate">
+                        {desc}
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Mobile: condensed pillar chips */}
+              <ul className="flex md:hidden items-center gap-1.5 flex-wrap">
+                {pillars.map(({ label }) => (
+                  <li
+                    key={label}
+                    className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-white/10 text-white text-[10px] font-bold ring-1 ring-white/10"
+                  >
+                    {label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* RIGHT: CTA stack */}
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded-full bg-accent/20 text-accent text-[10px] font-extrabold tracking-wider uppercase ring-1 ring-accent/30">
+                <Tag className="w-3 h-3" /> 평생 50%
+              </span>
+              <button
+                onClick={openBeta}
+                className="inline-flex items-center justify-center gap-1 h-9 px-4 rounded-full bg-white text-[hsl(232_47%_14%)] text-xs font-extrabold hover:bg-white/90 transition-colors shadow-md whitespace-nowrap"
+              >
+                베타 신청 <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
 
-          {/* 4. CTAs */}
-          <div className="mt-4 flex flex-col sm:flex-row gap-2">
-            <button
-              onClick={openBeta}
-              className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground text-sm font-extrabold hover:opacity-90 transition-opacity shadow-sm"
-            >
-              <Sparkles className="w-4 h-4" /> 베타 신청하기{" "}
-              <ArrowRight className="w-4 h-4" />
-            </button>
+          {/* slim bottom strip with promo + secondary link */}
+          <div className="relative border-t border-white/10 px-4 sm:px-5 py-2 flex items-center justify-between gap-3">
+            <p className="text-[11px] text-white/65 truncate">
+              초대 사용자 무료 ·{" "}
+              <span className="font-bold text-white">정식 출시 시 Pro 평생 50% 자동 적용</span>
+            </p>
             <Link
               to="/autoblog"
-              className="inline-flex items-center justify-center gap-1.5 h-10 px-5 rounded-full border border-border bg-card text-foreground text-sm font-bold hover:bg-muted/50 transition-colors"
+              className="text-[11px] font-bold text-white/80 hover:text-white transition-colors whitespace-nowrap inline-flex items-center gap-0.5 shrink-0"
             >
-              어떻게 작동하나요?
+              자세히 <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-
-          <p className="text-[11px] text-muted-foreground mt-2.5">
-            초대 사용자 무료 · 정식 출시 시 <span className="font-bold text-foreground">Pro 평생 50%</span> 자동 적용
-          </p>
         </div>
       </div>
 
