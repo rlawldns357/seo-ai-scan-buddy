@@ -21,22 +21,23 @@ export type KanbanPost = {
   keywords: string[] | null;
 };
 
-export const COLUMN_ORDER: KanbanStatus[] = ["idea", "draft", "scheduled", "published"];
+export const COLUMN_ORDER: KanbanStatus[] = ["draft", "scheduled", "published"];
 
 export const COLUMN_META: Record<
   KanbanStatus,
   { label: string; emoji: string; description: string; accent: string }
 > = {
   idea: {
-    label: "아이디어",
-    emoji: "💡",
-    description: "초안으로 끌어오면 AI가 본문을 생성합니다",
-    accent: "border-l-amber-400/60",
+    // legacy — older rows may still have status='idea'. Treated as draft in UI.
+    label: "초안",
+    emoji: "✍️",
+    description: "검토 후 발행 대기로 옮기세요",
+    accent: "border-l-blue-400/60",
   },
   draft: {
     label: "초안",
     emoji: "✍️",
-    description: "검토 후 발행 대기로 옮기세요",
+    description: "AI로 본문을 생성하고 검토한 뒤 발행 대기로 옮기세요",
     accent: "border-l-blue-400/60",
   },
   scheduled: {
