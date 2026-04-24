@@ -135,6 +135,14 @@ export default function ScheduleModal({
           </DialogDescription>
         </DialogHeader>
 
+        {/* 7일 발행 타임라인 미리보기 */}
+        <ScheduleTimeline
+          schedules={existingSchedules.filter((s) => s.id !== currentPostId)}
+          selectedDate={date}
+          selectedIso={combined && !isPast ? combined.toISOString() : null}
+          onPickDay={(d) => setDate(d)}
+        />
+
         {/* STEP 1 — 날짜 선택 */}
         <div className="px-5 pt-4">
           <div className="flex items-center justify-between mb-2">
