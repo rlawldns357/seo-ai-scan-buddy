@@ -42,12 +42,13 @@ function localInputToIso(local: string): string | null {
   return d.toISOString();
 }
 
-export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDelete, onArchive }: Props) {
+export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDelete, onArchive, onGenerateBody }: Props) {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [content, setContent] = useState("");
   const [scheduledLocal, setScheduledLocal] = useState("");
   const [saving, setSaving] = useState(false);
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (post) {
@@ -58,7 +59,8 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
     }
   }, [post]);
 
-  const showScheduler = post && (post.status === "draft" || post.status === "scheduled");
+  const isDraftLike = post && (post.status === "draft" || post.status === "idea");
+  const showScheduler = post && (post.status === "draft" || post.status === "scheduled" || post.status === "idea");
   const isPastDue = useMemo(() => {
     if (!scheduledLocal) return false;
     const t = new Date(scheduledLocal).getTime();
@@ -67,6 +69,7 @@ export default function PostDetailPanel({ post, siteSlug, onClose, onSave, onDel
 
   if (!post) return null;
   const meta = COLUMN_META[post.status];
+  const hasBody = (content?.trim().length ?? 0) >= 30;
 
   return (
     <Sheet open={!!post} onOpenChange={(o) => !o && onClose()}>
