@@ -155,64 +155,67 @@ export default function KanbanCard({
             </div>
           </div>
 
-          {/* Action row — schedule actions (scheduled column) + advance */}
-          <div className="flex items-center flex-wrap gap-1 mt-2 pt-2 border-t border-border/40 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-            {showScheduleArea && onSchedule && (
-              <>
-                {scheduleStatus === "none" ? (
+          {/* Action row — schedule actions (scheduled column) + advance.
+              Schedule actions are ALWAYS visible (high discoverability);
+              the generic "다음 단계" advance button stays hover-only. */}
+          {showScheduleArea && onSchedule ? (
+            <div className="flex items-center flex-wrap gap-1 mt-2 pt-2 border-t border-border/40">
+              {scheduleStatus === "none" ? (
+                <Button
+                  size="sm"
+                  variant="default"
+                  className="h-7 text-[11px] px-2.5 rounded-full flex-1 min-w-0"
+                  onClick={(e) => { e.stopPropagation(); setScheduleOpen(true); }}
+                >
+                  <CalendarClock className="h-3 w-3" /> 자동 발행 예약
+                </Button>
+              ) : (
+                <>
                   <Button
                     size="sm"
-                    variant="ghost"
-                    className="h-6 text-[10px] px-2 rounded-full"
+                    variant="outline"
+                    className="h-7 text-[11px] px-2.5 rounded-full"
                     onClick={(e) => { e.stopPropagation(); setScheduleOpen(true); }}
                   >
-                    <CalendarClock className="h-3 w-3" /> 예약 설정
+                    <CalendarClock className="h-3 w-3" /> 시간 변경
                   </Button>
-                ) : (
-                  <>
+                  {onCancelSchedule && (
                     <Button
                       size="sm"
                       variant="ghost"
-                      className="h-6 text-[10px] px-2 rounded-full"
-                      onClick={(e) => { e.stopPropagation(); setScheduleOpen(true); }}
+                      className="h-7 text-[11px] px-2 rounded-full text-muted-foreground hover:text-foreground"
+                      onClick={(e) => { e.stopPropagation(); onCancelSchedule(post); }}
                     >
-                      <CalendarClock className="h-3 w-3" /> 예약 변경
+                      <X className="h-3 w-3" /> 취소
                     </Button>
-                    {onCancelSchedule && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 text-[10px] px-2 rounded-full text-muted-foreground hover:text-foreground"
-                        onClick={(e) => { e.stopPropagation(); onCancelSchedule(post); }}
-                      >
-                        <X className="h-3 w-3" /> 예약 취소
-                      </Button>
-                    )}
-                  </>
-                )}
-                {onPublishNow && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 text-[10px] px-2 rounded-full"
-                    onClick={(e) => { e.stopPropagation(); onPublishNow(post); }}
-                  >
-                    <Send className="h-3 w-3" /> 즉시 발행
-                  </Button>
-                )}
-              </>
-            )}
-            {!showScheduleArea && nextStatus && onAdvance && (
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-6 text-[10px] px-2 rounded-full"
-                onClick={(e) => { e.stopPropagation(); onAdvance(post); }}
-              >
-                {COLUMN_META[nextStatus].label}(으)로 ▶
-              </Button>
-            )}
-          </div>
+                  )}
+                </>
+              )}
+              {onPublishNow && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-[11px] px-2 rounded-full ml-auto"
+                  onClick={(e) => { e.stopPropagation(); onPublishNow(post); }}
+                >
+                  <Send className="h-3 w-3" /> 즉시
+                </Button>
+              )}
+            </div>
+          ) : (
+            nextStatus && onAdvance && (
+              <div className="flex items-center flex-wrap gap-1 mt-2 pt-2 border-t border-border/40 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 text-[10px] px-2 rounded-full"
+                  onClick={(e) => { e.stopPropagation(); onAdvance(post); }}
+                >
+                  {COLUMN_META[nextStatus].label}(으)로 ▶
+                </Button>
+              </div>
+            )
+          )}
         </div>
       </Card>
 
