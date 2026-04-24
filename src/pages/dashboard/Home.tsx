@@ -145,7 +145,7 @@ function NextActionCard({ queuedCount }: { queuedCount: number }) {
         </h2>
         <p className="text-sm text-muted-foreground mt-0.5">
           {hasQueue
-            ? "자동 발행 칸반에서 카드를 드래그해 발행할 수 있어요."
+            ? "자동 발행 페이지에서 카드를 드래그해 발행할 수 있어요."
             : "추천 주제에서 고르거나 직접 주제를 입력해 시작하세요."}
         </p>
       </div>
