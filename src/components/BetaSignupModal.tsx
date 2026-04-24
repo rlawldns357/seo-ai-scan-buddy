@@ -240,7 +240,7 @@ export default function BetaSignupModal({ open, onClose }: BetaSignupModalProps)
               <Button
                 type="submit"
                 disabled={submitting}
-                className="w-full rounded-full h-12 text-sm font-extrabold group"
+                className="w-full rounded-full h-12 text-sm font-extrabold group mt-1"
               >
                 {submitting ? (
                   "신청 중..."
@@ -252,7 +252,7 @@ export default function BetaSignupModal({ open, onClose }: BetaSignupModalProps)
                 )}
               </Button>
               <p className="text-[11px] text-muted-foreground text-center break-keep">
-                개인정보는 베타 초대 안내 외 용도로 사용되지 않습니다.
+                <span className="font-semibold text-foreground">신용카드 불필요</span> · 베타 기간 무료 · 언제든 자동 발행 정지 가능
               </p>
             </form>
           )}
