@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, FileText, Sparkles, Search, MessageSquareQuote, Quote, LayoutDashboard, LogIn } from "lucide-react";
+import { ArrowRight, FileText, Sparkles, Search, MessageSquareQuote, Quote, LogIn } from "lucide-react";
 import { useAuth } from "@/features/auth/useAuth";
 import { useState } from "react";
 import BetaSignupModal from "@/components/BetaSignupModal";
@@ -47,18 +47,11 @@ export default function Hero() {
 
           <div className="flex flex-wrap gap-3 mt-8">
             {!loading && user ? (
-              <>
-                <Link to="/dashboard">
-                  <Button size="lg" className="rounded-full h-12 px-6 gap-2">
-                    <LayoutDashboard className="w-4 h-4" /> 대시보드로 가기
-                  </Button>
-                </Link>
-                <a href="#how">
-                  <Button size="lg" variant="outline" className="rounded-full h-12 px-6">
-                    작동 방식 보기
-                  </Button>
-                </a>
-              </>
+              <a href="#how">
+                <Button size="lg" className="rounded-full h-12 px-6 gap-2">
+                  작동 방식 보기 <ArrowRight className="w-4 h-4" />
+                </Button>
+              </a>
             ) : (
               <>
                 <Button
