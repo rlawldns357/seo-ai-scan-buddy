@@ -9,7 +9,7 @@ export default function DashboardArchivePage() {
   return (
     <>
       <Helmet>
-        <title>발행 아카이브 | AutoBlog</title>
+        <title>발행 아카이브 | Auto Blog</title>
       </Helmet>
       <PageHeader
         icon={Archive}
