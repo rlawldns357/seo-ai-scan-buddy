@@ -211,7 +211,7 @@ const Sidebar = React.forwardRef<
       >
         <div
           className={cn(
-            "duration-200 relative h-full w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
+            "duration-200 relative h-full shrink-0 w-[--sidebar-width] bg-transparent transition-[width] ease-linear",
             "group-data-[collapsible=offcanvas]:w-0",
             "group-data-[side=right]:rotate-180",
             variant === "floating" || variant === "inset"

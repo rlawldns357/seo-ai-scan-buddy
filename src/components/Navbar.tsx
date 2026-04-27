@@ -66,7 +66,7 @@ export default function Navbar() {
 
   return (
     <>
-      <nav className="w-full bg-background sticky top-0 z-50">
+      <nav className="w-full bg-background sticky z-50" style={{ top: "var(--payment-test-banner-height, 0px)" }}>
         <div className="container flex items-center justify-between h-16 gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Link to="/" className="flex items-center gap-2 min-w-0">
