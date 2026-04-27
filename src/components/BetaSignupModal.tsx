@@ -106,7 +106,7 @@ export default function BetaSignupModal({ open, onClose }: BetaSignupModalProps)
 
           {/* 제품 정체성 */}
           <p className="mt-3 text-[12px] font-bold tracking-wider uppercase text-muted-foreground">
-            완전 자동화 블로그 운영 · AutoBlog
+            완전 자동화 블로그 운영 · Auto Blog
           </p>
 
           <h3 className="mt-1.5 text-[22px] font-extrabold leading-[1.22] tracking-tight text-foreground break-keep">
