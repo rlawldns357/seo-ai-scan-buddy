@@ -31,7 +31,7 @@ export function PaymentTestModeBanner() {
 
   if (!isSandbox) return null;
   return (
-    <div ref={bannerRef} className="w-full bg-warning/10 border-b border-warning/30 px-4 py-1.5 text-center text-[11px] font-medium text-warning-foreground">
+    <div ref={bannerRef} className="sticky top-0 z-[60] w-full bg-warning/10 border-b border-warning/30 px-4 py-1.5 text-center text-[11px] font-medium text-warning-foreground">
       🧪 미리보기 결제는 테스트 모드입니다. 실제 카드는 청구되지 않아요.
     </div>
   );
