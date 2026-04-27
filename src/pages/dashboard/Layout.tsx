@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import AppSidebar from "@/features/publish/AppSidebar";
@@ -16,6 +17,10 @@ export default function DashboardLayout() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // No automatic redirect on page access. Guests can browse /dashboard/* in
   // read-only mode; auth is enforced ONLY at the action layer via
