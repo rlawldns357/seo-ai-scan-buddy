@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles, CheckCircle2, LayoutDashboard, LogIn } from "lucide-react";
+import { ArrowRight, Sparkles, CheckCircle2, LogIn } from "lucide-react";
 import { useState } from "react";
 import BetaSignupModal from "@/components/BetaSignupModal";
 import { useAuth } from "@/features/auth/useAuth";
@@ -72,14 +72,14 @@ export default function FinalCta() {
         {/* CTAs */}
         <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-3">
           {!loading && user ? (
-            <Link to="/dashboard" className="w-full sm:w-auto order-1 sm:order-2">
+            <a href="#pricing" className="w-full sm:w-auto order-1 sm:order-2">
               <Button
                 size="lg"
                 className="rounded-full h-16 px-12 gap-2 w-full sm:w-auto justify-center text-base md:text-lg font-semibold shadow-2xl shadow-primary/30 hover:shadow-primary/40 hover:scale-[1.02] transition-all"
               >
-                <LayoutDashboard className="w-5 h-5" /> 대시보드로 가기
+                요금제 보기 <ArrowRight className="w-5 h-5" />
               </Button>
-            </Link>
+            </a>
           ) : (
             <>
               <Button
@@ -99,17 +99,6 @@ export default function FinalCta() {
                 </Button>
               </Link>
             </>
-          )}
-          {!loading && user && (
-            <a href="#pricing" className="w-full sm:w-auto order-2 sm:order-1">
-              <Button
-                size="lg"
-                variant="ghost"
-                className="rounded-full h-16 px-10 w-full sm:w-auto justify-center text-base md:text-lg hover:bg-card/60"
-              >
-                요금제 보기
-              </Button>
-            </a>
           )}
         </div>
 
