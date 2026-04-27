@@ -26,10 +26,10 @@ export default function DashboardLayout() {
     <SidebarProvider>
       <div className="min-h-[calc(100svh-var(--payment-test-banner-height,0px))] flex flex-col w-full bg-background overflow-x-hidden">
         <Navbar />
-        <div className="flex flex-1 w-full min-w-0">
+        <div className="flex flex-1 w-full min-w-0 pt-[var(--dash-subheader-h,3.75rem)]">
           <AppSidebar />
           <div className="flex-1 min-w-0 flex flex-col">
-            <header className="h-[var(--dash-subheader-h,3.75rem)] flex items-center justify-between border-b px-2 sticky top-[calc(4rem+var(--payment-test-banner-height,0px))] bg-background/95 backdrop-blur z-40 gap-3">
+            <header className="fixed left-0 right-0 top-[calc(4rem+var(--payment-test-banner-height,0px))] h-[var(--dash-subheader-h,3.75rem)] flex items-center justify-between border-b bg-background/95 backdrop-blur z-40 gap-3 pl-2 pr-3 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] transition-[left] duration-200 ease-linear">
               <div className="flex items-center min-w-0">
                 <SidebarTrigger />
                 <span className="ml-3 text-sm font-semibold tracking-tight">AutoBlog</span>
