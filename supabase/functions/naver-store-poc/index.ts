@@ -11,7 +11,11 @@
  * Input:  POST { url: "https://brand.naver.com/mujikorea" | "https://smartstore.naver.com/modern_m" }
  * Output: a diagnostic JSON the team can eyeball to decide if data is rich enough.
  */
-import { corsHeaders } from "@supabase/supabase-js/cors";
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type",
+};
 
 const NAVER_CLIENT_ID = Deno.env.get("NAVER_CLIENT_ID");
 const NAVER_CLIENT_SECRET = Deno.env.get("NAVER_CLIENT_SECRET");
