@@ -106,9 +106,9 @@ export default function Navbar() {
             {user ? (
               <Link
                 to="/dashboard"
-                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 h-8 rounded-full bg-foreground text-background text-xs font-semibold hover:bg-foreground/85 transition-all shadow-sm hover:shadow-md whitespace-nowrap"
+                className="hidden sm:inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium whitespace-nowrap"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-score-excellent" />
+                <span className="w-1 h-1 rounded-full bg-score-excellent" />
                 대시보드
               </Link>
             ) : (
