@@ -68,7 +68,7 @@ export default function DashboardHome() {
   return (
     <>
       <Helmet>
-        <title>대시보드 | AutoBlog</title>
+        <title>대시보드 | Auto Blog</title>
       </Helmet>
       <WorkspaceHeader />
       <ConnectedHome siteId={site.id} />
