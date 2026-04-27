@@ -6,8 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { HelpCircle, MessageCircle, ArrowRight, LayoutDashboard } from "lucide-react";
+import { HelpCircle, MessageCircle, ArrowRight } from "lucide-react";
 import BetaSignupModal from "@/components/BetaSignupModal";
 import { useAuth } from "@/features/auth/useAuth";
 
@@ -105,14 +104,14 @@ export default function LandingFaq() {
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
             {!loading && user ? (
-              <Link to="/dashboard" className="w-full sm:w-auto">
+              <a href="#pricing" className="w-full sm:w-auto">
                 <Button
                   size="sm"
                   className="rounded-full h-10 px-5 gap-1.5 w-full sm:w-auto"
                 >
-                  <LayoutDashboard className="w-3.5 h-3.5" /> 대시보드로 가기
+                  요금제 보기 <ArrowRight className="w-3.5 h-3.5" />
                 </Button>
-              </Link>
+              </a>
             ) : (
               <Button
                 size="sm"
