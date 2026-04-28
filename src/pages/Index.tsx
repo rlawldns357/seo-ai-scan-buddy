@@ -139,10 +139,10 @@ const Index = () => {
       setAnalyzeError(null);
       setPsiRetryError(null);
       setCompletedPhases(new Set());
-      setLighthouseSkipped(skipLighthouse);
+      setLighthouseSkipped(effectiveSkipLighthouse);
       setIndexingResult(null);
       setIndexingLoading(true);
-      trackEvent("analysis_start", { skipLighthouse }, finalUrl);
+      trackEvent("analysis_start", { skipLighthouse: effectiveSkipLighthouse, isNaverStore: isStoreUrl }, finalUrl);
 
       const addPhase = (phase: AnalysisPhase) => {
         if (!isLatest()) return;
@@ -150,7 +150,7 @@ const Index = () => {
       };
 
       // Run PSI and Firecrawl+AI analysis in parallel
-      const psiPromise = skipLighthouse
+      const psiPromise = effectiveSkipLighthouse
         ? Promise.resolve([{ data: null, error: undefined }, { data: null, error: undefined }] as const)
         : Promise.all([
             fetchPsi(finalUrl, "mobile"),
