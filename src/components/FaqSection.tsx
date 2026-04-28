@@ -62,7 +62,7 @@ interface FaqSectionProps {
 }
 
 export default function FaqSection({ compact = false, expanded = false }: FaqSectionProps) {
-  const items = compact ? faqs.slice(0, 3) : faqs;
+  const items = compact ? faqs.slice(0, 5) : faqs;
 
   return (
     <section className={compact ? "" : "mt-10 mb-6"}>
