@@ -270,6 +270,143 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
           </InfoToggle>
         </div>
       </div>
+
+      {/* 액션 플랜 — 데이터 기반 우선순위 개선안 */}
+      <ActionPlan context={context} />
+    </div>
+  );
+}
+
+/* ──────────────────────────────────────────────────────────────────
+ * 액션 플랜: 진단 데이터를 우선순위 개선안으로 변환
+ * ────────────────────────────────────────────────────────────────── */
+function ActionPlan({ context }: { context: NaverStoreContext }) {
+  const leakagePct = Math.round(context.authorityLeakageRatio * 100);
+  const totalMentions =
+    context.externalSurfaces.blog +
+    context.externalSurfaces.cafe +
+    context.externalSurfaces.kin +
+    context.externalSurfaces.webkr;
+  const hasReview = context.externalSurfaces.blog >= 50;
+  const hasQA = context.externalSurfaces.kin >= 10;
+
+  const actions: { rank: number; tag: string; title: string; why: string; how: string; impact: string; tone: "critical" | "warning" | "neutral" }[] = [];
+
+  actions.push({
+    rank: 1,
+    tag: "권위 회수",
+    title: "자체 도메인 + 콘텐츠 허브 구축",
+    why: `검색 권위의 ${leakagePct}%가 naver.com에 적립되고 있어요. 자사 도메인 없이는 누적된 권위를 회수할 수 없어요.`,
+    how: "Cafe24·Imweb·Shopify 등으로 자사몰을 두고, 블로그형 콘텐츠 허브에서 스토어로 트래픽을 흘려보내는 구조가 표준이에요.",
+    impact: "Google·Bing 검색 노출 확보 + AI 봇 인용 가능 채널 확보",
+    tone: "critical",
+  });
+
+  if (!hasReview) {
+    actions.push({
+      rank: 2,
+      tag: "리뷰 신호",
+      title: "블로그 리뷰 콘텐츠 시드 50건 확보",
+      why: `브랜드 블로그 언급 ${context.externalSurfaces.blog.toLocaleString()}건 — AI 답변 엔진이 참고할 리뷰성 신호가 부족해요.`,
+      how: "체험단·앰배서더·자체 운영 블로그로 리뷰 콘텐츠 50건을 우선 확보하세요. 질보다 다양성과 정형성이 핵심이에요.",
+      impact: "AEO 리뷰 신호 점수 +15~25",
+      tone: "warning",
+    });
+  } else if (!hasQA) {
+    actions.push({
+      rank: 2,
+      tag: "Q&A 구조",
+      title: "지식인·FAQ형 콘텐츠 보강",
+      why: `지식인 Q&A 언급 ${context.externalSurfaces.kin.toLocaleString()}건 — 질문형 AI 답변에 채택될 채널이 약해요.`,
+      how: "고객 자주 묻는 질문 10개를 추출해 자사 채널에 FAQ JSON-LD로 게시하고, 일부는 지식인에 답변자로 등록하세요.",
+      impact: "AEO Q&A 구조 점수 +10~20",
+      tone: "warning",
+    });
+  } else {
+    actions.push({
+      rank: 2,
+      tag: "AI 인용 자산",
+      title: "AI 인용 친화 가이드 콘텐츠 제작",
+      why: `외부 언급 ${totalMentions.toLocaleString()}건은 충분 — 다만 AI가 인용할 정형화된 자사 콘텐츠가 부재해요.`,
+      how: "제품 가이드·비교표·FAQ를 자사 도메인에 구조화 데이터(JSON-LD)와 함께 게시하세요. AutoBlog로 자동화 가능해요.",
+      impact: "GEO 인용 가능성 점수 +15~25",
+      tone: "neutral",
+    });
+  }
+
+  actions.push({
+    rank: 3,
+    tag: "운영 자동화",
+    title: "콘텐츠 발행 루프 자동화",
+    why: "위 두 액션은 모두 '꾸준한 발행'이 전제 — 수동으로는 30편 이상 누적이 어려워요.",
+    how: "AutoBlog로 자사 도메인에 블로그 허브를 두고 SEO/AEO/GEO 3축 최적화된 콘텐츠를 자동 발행하세요.",
+    impact: "월 30편 발행 시 6개월 누적 180편 콘텐츠 자산",
+    tone: "neutral",
+  });
+
+  const toneStyles = {
+    critical: { ring: "ring-destructive/40", badge: "bg-destructive/10 text-destructive", num: "bg-destructive text-destructive-foreground" },
+    warning: { ring: "ring-amber-500/40", badge: "bg-amber-500/10 text-amber-700 dark:text-amber-500", num: "bg-amber-500 text-white" },
+    neutral: { ring: "ring-border", badge: "bg-muted text-muted-foreground", num: "bg-foreground text-background" },
+  } as const;
+
+  return (
+    <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5">
+      <div className="flex items-center gap-2 mb-1">
+        <Target className="w-4 h-4 text-primary" strokeWidth={2.5} />
+        <span className="text-[10px] font-bold tracking-wider uppercase text-primary">
+          개선 우선순위
+        </span>
+      </div>
+      <h3 className="text-base sm:text-lg font-extrabold text-foreground mb-1">
+        지금 해야 할 일 — 우선순위 {actions.length}가지
+      </h3>
+      <p className="text-xs text-muted-foreground mb-4">
+        진단 데이터를 기반으로 임팩트 순서대로 정리했어요.
+      </p>
+
+      <div className="space-y-3">
+        {actions.map((a) => {
+          const t = toneStyles[a.tone];
+          return (
+            <div
+              key={a.rank}
+              className={`rounded-xl bg-card border border-border/60 ring-1 ${t.ring} p-4`}
+            >
+              <div className="flex items-start gap-3">
+                <div className={`w-7 h-7 rounded-full ${t.num} flex items-center justify-center text-xs font-extrabold flex-shrink-0`}>
+                  {a.rank}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${t.badge}`}>
+                      {a.tag}
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-foreground mb-2">{a.title}</h4>
+                  <div className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
+                    <p>
+                      <span className="font-semibold text-foreground">왜:</span> {a.why}
+                    </p>
+                    <p>
+                      <span className="font-semibold text-foreground">어떻게:</span> {a.how}
+                    </p>
+                    <p className="inline-flex items-center gap-1 text-primary font-semibold">
+                      <Sparkles className="w-3 h-3" />
+                      예상 효과: {a.impact}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="mt-4 text-[11px] text-muted-foreground text-center">
+        세부 실행 가이드는 하단 무료 진단 리포트에서 받아보실 수 있어요
+        <ArrowRight className="inline w-3 h-3 ml-1" />
+      </p>
     </div>
   );
 }
