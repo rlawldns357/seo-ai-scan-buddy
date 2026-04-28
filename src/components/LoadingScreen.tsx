@@ -158,7 +158,7 @@ export default function LoadingScreen({ completedPhases = new Set(), skipLightho
 
         {/* Subtle hint */}
         <p className="text-[11px] text-muted-foreground/60">
-          {skipLighthouse ? "AI 분석만 실행 · 평균 3~10초" : "모바일 + 데스크톱 동시 측정 · 평균 15~30초"}
+          {skipLighthouse ? "AI 분석만 실행 · 평균 3~5초" : "모바일 + 데스크톱 동시 측정 · 평균 30초~1분"}
         </p>
 
         {/* FAQ */}
