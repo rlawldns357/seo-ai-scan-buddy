@@ -4,7 +4,9 @@ import { Zap, Loader2 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import SubpageWarning from "@/components/SubpageWarning";
+import NaverStoreDetectedBanner from "@/components/NaverStoreDetectedBanner";
 import RateLimitBanner from "@/components/RateLimitBanner";
+import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
 import AutoPublishTeaser from "@/components/AutoPublishTeaser";
 
@@ -415,6 +417,12 @@ const Index = () => {
             {urlError && (
               <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
             )}
+            {!subpageWarning && !urlError && url.trim() && (() => {
+              const storeInfo = parseNaverStoreUrl(
+                /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
+              );
+              return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
+            })()}
             {subpageWarning && (
               <SubpageWarning
                 inputUrl={subpageWarning.inputUrl}
