@@ -31,6 +31,7 @@ const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
 const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Autoblog = lazy(() => import("./pages/Autoblog.tsx"));
+const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
 
 const queryClient = new QueryClient();
 
