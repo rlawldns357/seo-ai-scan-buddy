@@ -476,7 +476,6 @@ const Index = () => {
                 }}
               />
             )}
-            <AutoPublishTeaser />
             <NaverStoreTeaser />
             <WhatIsThis />
             <div className="mt-12 max-w-lg mx-auto text-left">
