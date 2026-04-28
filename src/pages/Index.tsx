@@ -64,7 +64,7 @@ const Index = () => {
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
   const [normalizedUrl, setNormalizedUrl] = useState("");
-  const [result, setResult] = useState<DemoResult | null>(null);
+  const [result, setResult] = useState<ExtendedDemoResult | null>(null);
 
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
