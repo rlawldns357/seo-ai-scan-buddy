@@ -296,7 +296,10 @@ const Index = () => {
       }
     }
 
-    if (validation.isSubpage) {
+    // 네이버 스토어는 슬러그 자체가 스토어 루트라 상/하위 페이지 분기 무의미 → 바로 분석
+    const isStore = !!parseNaverStoreUrl(validation.finalUrl);
+
+    if (validation.isSubpage && !isStore) {
       setSubpageWarning({ inputUrl: validation.finalUrl, rootUrl: validation.rootUrl });
       return;
     }
