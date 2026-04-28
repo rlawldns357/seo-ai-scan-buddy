@@ -224,23 +224,29 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
         </InfoToggle>
       </div>
 
-      {/* 하드 블로커 배지 */}
-      <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" strokeWidth={2.5} />
-        <div className="flex-1 text-sm">
-          <p className="font-bold text-destructive mb-1">구조적 한계 (점수 상한 적용 중)</p>
-          <ul className="text-muted-foreground space-y-1 list-disc list-inside marker:text-destructive/60">
-            <li>
-              <span className="font-semibold text-foreground">자체 도메인 부재</span> — Google·Bing 검색결과 노출 거의 없음
-            </li>
-            <li>
-              <span className="font-semibold text-foreground">robots.txt 차단</span> — ChatGPT·Claude 등 AI 봇이 스토어 페이지를 못 읽어요
-            </li>
-            <li>
-              <span className="font-semibold text-foreground">템플릿 고정</span> — 메타·구조화 데이터(JSON-LD) 등 SEO 요소를 통제할 수 없어요
-            </li>
-          </ul>
-          <InfoToggle title="용어 풀이 · 점수 상한이란?">
+      {/* 하드 블로커 */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2.5 mb-3">
+          <AlertTriangle className="w-4 h-4 text-destructive" strokeWidth={2.5} />
+          <span className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+            구조적 한계 · 점수 상한 적용
+          </span>
+        </div>
+        <ul className="text-sm text-muted-foreground space-y-2">
+          <li className="flex gap-2">
+            <span className="text-destructive/60 mt-[5px] w-1 h-1 rounded-full bg-current flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">자체 도메인 부재</span> — Google·Bing 검색결과 노출이 거의 없어요</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-destructive/60 mt-[5px] w-1 h-1 rounded-full bg-current flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">robots.txt 차단</span> — ChatGPT·Claude 등 AI 봇이 페이지를 못 읽어요</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-destructive/60 mt-[5px] w-1 h-1 rounded-full bg-current flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">템플릿 고정</span> — 메타·구조화 데이터를 직접 통제할 수 없어요</span>
+          </li>
+        </ul>
+        <InfoToggle title="용어 풀이 · 점수 상한이란?">
             <p>
               <span className="font-semibold text-foreground">robots.txt:</span> 사이트가 검색·AI 봇에게 "어디까지 읽어가도 돼요"라고 알려주는 파일이에요.
               네이버 스토어는 외부 AI 봇 접근을 막아두고 있습니다.
