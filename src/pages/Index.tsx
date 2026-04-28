@@ -483,7 +483,7 @@ const Index = () => {
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
                 FAQ
               </h2>
-              <FaqSection compact hideHeader />
+              <FaqSection compact />
             </section>
           </div>
           <StickyBottomCTA />
