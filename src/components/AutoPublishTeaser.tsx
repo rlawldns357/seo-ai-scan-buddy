@@ -16,7 +16,7 @@ export default function AutoPublishTeaser() {
   };
 
   return (
-    <section className="mt-3 max-w-2xl mx-auto">
+    <section className="mt-3 max-w-4xl mx-auto">
       <button
         onClick={openBeta}
         className="group w-full text-left rounded-2xl border border-border bg-card hover:border-foreground/20 hover:shadow-elevated transition-all duration-300"
