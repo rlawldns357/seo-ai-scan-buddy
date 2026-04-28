@@ -1,4 +1,4 @@
-import { useState, useRef, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Zap, Loader2 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
@@ -96,6 +96,23 @@ const Index = () => {
   // Synchronous re-entry lock. setIsAnalyzing(true) is async (state update),
   // so rapid clicks/Enter presses can slip past it. A ref flips immediately.
   const analyzingRef = useRef(false);
+
+  // /naver-store 등에서 redirect로 들어올 때 ?url=...&autorun=1 처리
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const incomingUrl = params.get("url");
+    const autorun = params.get("autorun");
+    if (incomingUrl && autorun === "1" && !analyzingRef.current) {
+      setUrl(incomingUrl);
+      // url state 반영 후 다음 tick에 분석 실행
+      setTimeout(() => {
+        runAnalysis(incomingUrl);
+        // URL 쿼리스트링 정리 (back 버튼 영향 방지)
+        window.history.replaceState({}, "", "/");
+      }, 50);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const runAnalysis = async (finalUrl: string) => {
     // Synchronous guard — blocks duplicate entry in the same tick.
