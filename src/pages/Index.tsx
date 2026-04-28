@@ -476,11 +476,12 @@ const Index = () => {
                 }}
               />
             )}
-            <div className="mt-14 max-w-lg mx-auto text-left">
-              <FaqSection compact />
-            </div>
             <AutoPublishTeaser />
             <NaverStoreTeaser />
+            <WhatIsThis />
+            <div className="mt-12 max-w-lg mx-auto text-left">
+              <FaqSection compact />
+            </div>
           </div>
           <StickyBottomCTA />
         </main>
