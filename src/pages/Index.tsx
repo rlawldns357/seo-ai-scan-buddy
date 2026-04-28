@@ -296,7 +296,10 @@ const Index = () => {
       }
     }
 
-    if (validation.isSubpage) {
+    // 네이버 스토어는 슬러그 자체가 스토어 루트라 상/하위 페이지 분기 무의미 → 바로 분석
+    const isStore = !!parseNaverStoreUrl(validation.finalUrl);
+
+    if (validation.isSubpage && !isStore) {
       setSubpageWarning({ inputUrl: validation.finalUrl, rootUrl: validation.rootUrl });
       return;
     }
@@ -397,23 +400,46 @@ const Index = () => {
                 무료로 분석하기
               </button>
             </div>
-            <label className="flex items-center gap-2 justify-center mt-3 cursor-pointer select-none group">
-              <input
-                type="checkbox"
-                checked={skipLighthouse}
-                onChange={(e) => setSkipLighthouse(e.target.checked)}
-                className="sr-only peer"
-              />
-              <div className="w-4 h-4 rounded border border-muted-foreground/30 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
-                {skipLighthouse && <Zap className="w-3 h-3 text-primary-foreground" />}
-              </div>
-              <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                ⚡ 빠른 분석 <span className="text-muted-foreground/60">(Lighthouse 건너뛰기)</span>
-              </span>
-            </label>
-            <p className="text-xs text-muted-foreground mt-2 font-medium">
-              {skipLighthouse ? "AI 분석만 실행 · 약 10초 완료" : "모바일 + 데스크톱 동시 측정 · 약 30초 소요"}
-            </p>
+            {(() => {
+              const trimmed = url.trim();
+              const storeInfoForCheckbox = trimmed
+                ? parseNaverStoreUrl(/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`)
+                : null;
+              const forced = !!storeInfoForCheckbox;
+              const effectiveChecked = forced || skipLighthouse;
+              return (
+                <>
+                  <label
+                    className={`flex items-center gap-2 justify-center mt-3 select-none group ${
+                      forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"
+                    }`}
+                    title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={effectiveChecked}
+                      disabled={forced}
+                      onChange={(e) => setSkipLighthouse(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-4 h-4 rounded border border-muted-foreground/30 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
+                      {effectiveChecked && <Zap className="w-3 h-3 text-primary-foreground" />}
+                    </div>
+                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                      ⚡ 빠른 분석 <span className="text-muted-foreground/60">(Lighthouse 건너뛰기)</span>
+                      {forced && <span className="ml-1 text-primary font-medium">· 네이버 자동 적용</span>}
+                    </span>
+                  </label>
+                  <p className="text-xs text-muted-foreground mt-2 font-medium">
+                    {forced
+                      ? "네이버 스토어 전용 진단 · 약 10초 완료"
+                      : effectiveChecked
+                      ? "AI 분석만 실행 · 약 10초 완료"
+                      : "모바일 + 데스크톱 동시 측정 · 약 30초 소요"}
+                  </p>
+                </>
+              );
+            })()}
             {urlError && (
               <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
             )}
