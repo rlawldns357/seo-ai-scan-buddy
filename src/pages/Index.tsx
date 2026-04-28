@@ -10,6 +10,7 @@ import AutoPublishTeaser from "@/components/AutoPublishTeaser";
 
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
+import type { ExtendedDemoResult } from "@/lib/analyze";
 import { type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
