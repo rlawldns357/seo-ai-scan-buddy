@@ -10,7 +10,7 @@ import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
 import AutoPublishTeaser from "@/components/AutoPublishTeaser";
 import NaverStoreTeaser from "@/components/NaverStoreTeaser";
-import WhatIsThis from "@/components/WhatIsThis";
+
 
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
