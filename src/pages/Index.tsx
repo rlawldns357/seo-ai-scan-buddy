@@ -583,6 +583,9 @@ const Index = () => {
 
               <EmailForm onSubmitted={() => {}} />
 
+              {/* 후속 퍼널: 분석 후 자연스러운 다음 단계로 AutoBlog 제안 */}
+              <AutoPublishTeaser />
+
               <FaqSection expanded />
               <div className="h-24" />
             </div>
