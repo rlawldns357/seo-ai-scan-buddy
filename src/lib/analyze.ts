@@ -1,15 +1,50 @@
 import type { DemoResult } from "@/data/demoResults";
+import { isNaverStoreUrl } from "@/lib/naverStore";
 
 export interface AnalyzeError {
   message: string;
 }
 
-export async function analyzeSite(url: string): Promise<{ data?: DemoResult; error?: AnalyzeError }> {
-  const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyze-site`;
+/**
+ * 네이버 스토어 분석 결과는 일반 결과 위에 storeContext 메타가 추가됨.
+ * UI에서 권위 누수 도넛/외부 점유율 바 등 스토어 전용 섹션 렌더링에 사용.
+ */
+export interface NaverStoreContext {
+  type: "brand" | "smartstore";
+  slug: string;
+  storeUrl: string;
+  authorityLeakageRatio: number; // 0~1
+  ownContentRatio: number;       // 0~1
+  externalSurfaces: {
+    shop: number;
+    blog: number;
+    cafe: number;
+    kin: number;
+    webkr: number;
+  };
+  sampleTitles: {
+    shop: string[];
+    blog: string[];
+    webkr: string[];
+  };
+}
+
+export type ExtendedDemoResult = DemoResult & {
+  storeContext?: NaverStoreContext;
+};
+
+export async function analyzeSite(
+  url: string,
+): Promise<{ data?: ExtendedDemoResult; error?: AnalyzeError }> {
+  // 네이버 스토어 URL이면 전용 함수로 분기 (별도 점수체계가 아니라 같은 SEO/AEO/GEO 형태로 반환)
+  const isNaverStore = isNaverStoreUrl(url);
+  const functionName = isNaverStore ? "analyze-naver-store" : "analyze-site";
+  const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${functionName}`;
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 120000);
+    // 네이버 스토어 분석은 가벼우므로 30초로도 충분, 일반 분석은 120초 유지
+    const timeout = setTimeout(() => controller.abort(), isNaverStore ? 30000 : 120000);
 
     const res = await fetch(functionUrl, {
       method: "POST",
@@ -33,7 +68,7 @@ export async function analyzeSite(url: string): Promise<{ data?: DemoResult; err
       return { error: { message: json.error || "분석에 실패했어요." } };
     }
 
-    return { data: json.data as DemoResult };
+    return { data: json.data as ExtendedDemoResult };
   } catch (err: any) {
     if (err.name === "AbortError") {
       return { error: { message: "분석 시간이 초과되었어요. 다시 시도해 주세요." } };
