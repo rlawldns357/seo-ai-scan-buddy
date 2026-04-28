@@ -65,7 +65,7 @@ export default function NaverStore() {
                   내 스토어가 검색에서 안 보이는 이유,
                 </span>
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  30초 만에 알려드려요
+                  10초 만에 알려드려요
                 </span>
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
