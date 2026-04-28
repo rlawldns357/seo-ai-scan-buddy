@@ -479,6 +479,7 @@ const Index = () => {
               <FaqSection compact />
             </div>
             <AutoPublishTeaser />
+            <NaverStoreTeaser />
           </div>
           <StickyBottomCTA />
         </main>
