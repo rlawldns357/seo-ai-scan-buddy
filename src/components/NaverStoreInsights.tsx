@@ -339,65 +339,61 @@ function ActionPlan({ context }: { context: NaverStoreContext }) {
   });
 
   const toneStyles = {
-    critical: { ring: "ring-destructive/40", badge: "bg-destructive/10 text-destructive", num: "bg-destructive text-destructive-foreground" },
-    warning: { ring: "ring-amber-500/40", badge: "bg-amber-500/10 text-amber-700 dark:text-amber-500", num: "bg-amber-500 text-white" },
-    neutral: { ring: "ring-border", badge: "bg-muted text-muted-foreground", num: "bg-foreground text-background" },
+    critical: { num: "bg-destructive text-destructive-foreground", accent: "text-destructive" },
+    warning: { num: "bg-amber-500 text-white", accent: "text-amber-600 dark:text-amber-500" },
+    neutral: { num: "bg-foreground text-background", accent: "text-muted-foreground" },
   } as const;
 
   return (
-    <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-center gap-2.5 mb-4">
         <Target className="w-4 h-4 text-primary" strokeWidth={2.5} />
-        <span className="text-[10px] font-bold tracking-wider uppercase text-primary">
-          개선 우선순위
+        <span className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+          개선 우선순위 {actions.length}가지
         </span>
       </div>
-      <h3 className="text-base sm:text-lg font-extrabold text-foreground mb-1">
-        지금 해야 할 일 — 우선순위 {actions.length}가지
-      </h3>
-      <p className="text-xs text-muted-foreground mb-4">
-        진단 데이터를 기반으로 임팩트 순서대로 정리했어요.
-      </p>
 
-      <div className="space-y-3">
-        {actions.map((a) => {
+      <ol className="space-y-4">
+        {actions.map((a, idx) => {
           const t = toneStyles[a.tone];
           return (
-            <div
-              key={a.rank}
-              className={`rounded-xl bg-card border border-border/60 ring-1 ${t.ring} p-4`}
-            >
+            <li key={a.rank} className={idx > 0 ? "pt-4 border-t border-border/60" : ""}>
               <div className="flex items-start gap-3">
-                <div className={`w-7 h-7 rounded-full ${t.num} flex items-center justify-center text-xs font-extrabold flex-shrink-0`}>
+                <div className={`w-6 h-6 rounded-full ${t.num} flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5`}>
                   {a.rank}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${t.badge}`}>
+                  <div className="flex items-baseline gap-2 mb-1.5">
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${t.accent}`}>
                       {a.tag}
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-foreground mb-2">{a.title}</h4>
-                  <div className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
-                    <p>
-                      <span className="font-semibold text-foreground">왜:</span> {a.why}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-foreground">어떻게:</span> {a.how}
-                    </p>
-                    <p className="inline-flex items-center gap-1 text-primary font-semibold">
-                      <Sparkles className="w-3 h-3" />
-                      예상 효과: {a.impact}
-                    </p>
-                  </div>
+                  <h4 className="text-sm font-semibold text-foreground mb-2 leading-snug">{a.title}</h4>
+                  <dl className="space-y-1 text-xs text-muted-foreground leading-relaxed">
+                    <div className="flex gap-2">
+                      <dt className="font-medium text-foreground/80 flex-shrink-0 w-7">왜</dt>
+                      <dd>{a.why}</dd>
+                    </div>
+                    <div className="flex gap-2">
+                      <dt className="font-medium text-foreground/80 flex-shrink-0 w-7">방법</dt>
+                      <dd>{a.how}</dd>
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <dt className="font-medium text-foreground/80 flex-shrink-0 w-7">효과</dt>
+                      <dd className="text-foreground font-medium inline-flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-primary" />
+                        {a.impact}
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
               </div>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ol>
 
-      <p className="mt-4 text-[11px] text-muted-foreground text-center">
+      <p className="mt-4 pt-4 border-t border-border/60 text-[11px] text-muted-foreground text-center">
         세부 실행 가이드는 하단 무료 진단 리포트에서 받아보실 수 있어요
         <ArrowRight className="inline w-3 h-3 ml-1" />
       </p>
