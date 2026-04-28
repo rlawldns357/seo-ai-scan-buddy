@@ -262,8 +262,7 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
             <p className="text-foreground">
               <span className="font-semibold">우리 기준 상한:</span> SEO ≤ 45 · AEO ≤ 50 · GEO ≤ 60
             </p>
-          </InfoToggle>
-        </div>
+        </InfoToggle>
       </div>
 
       {/* 액션 플랜 — 데이터 기반 우선순위 개선안 */}
