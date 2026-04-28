@@ -28,6 +28,7 @@ const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
 const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
 const ScoreComparison = lazy(() => import("@/components/ScoreComparison"));
 const IndexingStatus = lazy(() => import("@/components/IndexingStatus"));
+const NaverStoreInsights = lazy(() => import("@/components/NaverStoreInsights"));
 
 
 type Screen = "home" | "loading" | "result";
