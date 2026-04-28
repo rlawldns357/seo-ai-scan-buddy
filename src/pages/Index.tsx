@@ -433,10 +433,10 @@ const Index = () => {
                   </label>
                   <p className="text-xs text-muted-foreground mt-2 font-medium">
                     {forced
-                      ? "네이버 스토어 전용 진단 · 약 10초 완료"
+                      ? "네이버 스토어 전용 진단 · 평균 3~5초"
                       : effectiveChecked
-                      ? "AI 분석만 실행 · 약 10초 완료"
-                      : "모바일 + 데스크톱 동시 측정 · 약 30초 소요"}
+                      ? "AI 분석만 실행 · 평균 3~10초"
+                      : "모바일 + 데스크톱 동시 측정 · 평균 15~30초"}
                   </p>
                 </>
               );
