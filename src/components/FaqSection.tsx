@@ -7,6 +7,14 @@ import {
 
 export const faqs = [
   {
+    q: "이게 뭐하는 도구예요?",
+    a: "URL 한 줄로 Google 검색(SEO), ChatGPT·Perplexity 답변(AEO), 생성형 검색 인용(GEO) — 3개 축의 점수와 약점을 10초 안에 보여주는 무료 진단 도구예요.",
+  },
+  {
+    q: "분석한 다음엔 뭘 할 수 있어요?",
+    a: "점수만 주는 게 아니라, 효과 큰 개선 항목을 우선순위로 정렬해 왜·어떻게·예상 효과까지 알려줘요. 회원가입 없이 바로 써볼 수 있어요.",
+  },
+  {
     q: "SEO, AEO, GEO가 뭔가요?",
     a: "세 가지 모두 검색에서 발견되기 위한 전략이지만 대상이 다릅니다. SEO(검색엔진 최적화)는 Google·Naver 등 전통 검색엔진 상위 노출, AEO(AI 답변 최적화)는 ChatGPT·Perplexity·뤼튼·클로바X·Gemini 같은 AI가 내 콘텐츠를 답변으로 인용하도록 최적화, GEO(생성형 검색 최적화)는 Google SGE·Naver Cue:·Bing Copilot 등 AI 검색 결과에 출처로 선택되도록 하는 전략입니다.",
   },
