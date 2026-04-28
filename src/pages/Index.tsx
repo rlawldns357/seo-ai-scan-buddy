@@ -167,23 +167,28 @@ const Index = () => {
       });
 
       // Check indexing status in parallel (fire-and-forget, but guarded by requestId).
-      import("@/lib/checkIndexing")
-        .then(({ checkIndexing }) =>
-          checkIndexing(finalUrl)
-            .then((r) => {
-              if (!isLatest()) return; // stale — newer request superseded us
-              setIndexingResult(r);
-              setIndexingLoading(false);
-            })
-            .catch(() => {
-              if (!isLatest()) return;
-              setIndexingLoading(false);
-            }),
-        )
-        .catch(() => {
-          if (!isLatest()) return;
-          setIndexingLoading(false);
-        });
+      // Check indexing status in parallel (fire-and-forget). 네이버 스토어는 검색엔진 인덱싱 자체가 차단돼 있어 의미 없음 → 스킵.
+      if (isStoreUrl) {
+        setIndexingLoading(false);
+      } else {
+        import("@/lib/checkIndexing")
+          .then(({ checkIndexing }) =>
+            checkIndexing(finalUrl)
+              .then((r) => {
+                if (!isLatest()) return; // stale — newer request superseded us
+                setIndexingResult(r);
+                setIndexingLoading(false);
+              })
+              .catch(() => {
+                if (!isLatest()) return;
+                setIndexingLoading(false);
+              }),
+          )
+          .catch(() => {
+            if (!isLatest()) return;
+            setIndexingLoading(false);
+          });
+      }
 
       const [psiResults, analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
 
