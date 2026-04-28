@@ -479,9 +479,12 @@ const Index = () => {
             <NaverStoreTeaser />
             <AutoPublishTeaser />
             <WhatIsThis />
-            <div className="mt-12 max-w-lg mx-auto text-left">
-              <FaqSection compact />
-            </div>
+            <section className="mt-6 max-w-lg mx-auto text-left">
+              <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
+                FAQ
+              </h2>
+              <FaqSection compact hideHeader />
+            </section>
           </div>
           <StickyBottomCTA />
         </main>
