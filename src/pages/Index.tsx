@@ -476,7 +476,6 @@ const Index = () => {
                 }}
               />
             )}
-            <AutoPublishTeaser />
             <NaverStoreTeaser />
             <WhatIsThis />
             <div className="mt-12 max-w-lg mx-auto text-left">
@@ -583,6 +582,9 @@ const Index = () => {
               <FunnelCTAs result={result} url={normalizedUrl} />
 
               <EmailForm onSubmitted={() => {}} />
+
+              {/* 후속 퍼널: 분석 후 자연스러운 다음 단계로 AutoBlog 제안 */}
+              <AutoPublishTeaser />
 
               <FaqSection expanded />
               <div className="h-24" />
