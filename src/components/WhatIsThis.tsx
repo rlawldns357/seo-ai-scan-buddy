@@ -1,55 +1,48 @@
-import { Search, Sparkles } from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 /**
- * '이 제품이 뭐하는 제품인지'를 첫 방문자에게 30초 안에 설명하는 섹션.
- * FAQ 위에 배치해 "왜 분석해야 하지?" → "이 도구가 무엇을 해주지?" 흐름을 잡음.
- *
- * 2가지 핵심 질문에 답함:
- *  1) 이게 뭐하는 도구야? (What)
- *  2) 분석한 다음엔 뭘 할 수 있어? (So what)
+ * '이 제품이 뭐하는 도구인지'를 첫 방문자에게 짧게 설명하는 섹션.
+ * FAQ 위에 배치하며, FAQ와 동일한 토글(아코디언) 스타일을 사용해
+ * 시각적 위계를 가볍게 유지함.
  */
+const items = [
+  {
+    q: "이게 뭐하는 도구예요?",
+    a: "URL 한 줄로 Google 검색(SEO), ChatGPT·Perplexity 답변(AEO), 생성형 검색 인용(GEO) — 3개 축의 점수와 약점을 10초 안에 보여주는 무료 진단 도구예요.",
+  },
+  {
+    q: "분석한 다음엔 뭘 할 수 있어요?",
+    a: "점수만 주는 게 아니라, 효과 큰 개선 항목을 우선순위로 정렬해 왜·어떻게·예상 효과까지 알려줘요. 회원가입 없이 바로 써볼 수 있어요.",
+  },
+];
+
 export default function WhatIsThis() {
   return (
-    <section className="mt-12 max-w-2xl mx-auto text-left">
-      <div className="px-1 mb-3">
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
-          About
-        </h2>
-      </div>
-
-      <div className="grid sm:grid-cols-2 gap-2.5">
-        {/* What */}
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Search className="w-3 h-3 text-primary" strokeWidth={2.5} />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-primary">
-              What
-            </span>
-          </div>
-          <h3 className="text-[13px] font-semibold text-foreground mb-1 leading-snug">
-            검색·AI가 내 사이트를 어떻게 보는지
-          </h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            URL 하나로 SEO·AEO·GEO 3개 축 점수와 약점을 10초 안에.
-          </p>
-        </div>
-
-        {/* So what */}
-        <div className="rounded-xl border border-border bg-card p-4">
-          <div className="flex items-center gap-1.5 mb-2">
-            <Sparkles className="w-3 h-3 text-accent" strokeWidth={2.5} />
-            <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-accent">
-              So what
-            </span>
-          </div>
-          <h3 className="text-[13px] font-semibold text-foreground mb-1 leading-snug">
-            뭘 고쳐야 하는지 우선순위까지
-          </h3>
-          <p className="text-xs text-muted-foreground leading-relaxed">
-            왜·어떻게·예상 효과를 함께. 무료, 회원가입 없음.
-          </p>
-        </div>
-      </div>
+    <section className="mt-10 max-w-2xl mx-auto">
+      <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
+        About
+      </h2>
+      <Accordion type="single" collapsible className="w-full space-y-1.5">
+        {items.map((it, i) => (
+          <AccordionItem
+            key={i}
+            value={`about-${i}`}
+            className="border-0 border-b border-border/50 px-1"
+          >
+            <AccordionTrigger className="text-xs font-medium text-muted-foreground hover:text-foreground hover:no-underline py-2.5">
+              {it.q}
+            </AccordionTrigger>
+            <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
+              {it.a}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
     </section>
   );
 }
