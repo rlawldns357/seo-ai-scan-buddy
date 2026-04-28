@@ -396,7 +396,7 @@ const Index = () => {
               />
               <button
                 onClick={handleAnalyze}
-                className="h-14 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl gradient-primary text-primary-foreground font-semibold text-base sm:text-base hover:opacity-90 transition-opacity whitespace-nowrap"
+                className="h-14 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl gradient-primary text-primary-foreground font-semibold text-base sm:text-base whitespace-nowrap shadow-md hover:shadow-lg hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none"
               >
                 무료로 분석하기
               </button>
