@@ -491,15 +491,23 @@ const Index = () => {
                 </div>
               )}
 
+              {/* 스토어 전용 인사이트: 권위 누수 도넛 + 외부 채널 점유율 + 하드 블로커 */}
+              {result?.storeContext && (
+                <NaverStoreInsights context={result.storeContext} />
+              )}
+
               {result && <ScoreDashboard result={result} url={normalizedUrl} />}
 
-              {result && <ScoreComparison url={normalizedUrl} currentResult={result} />}
+              {/* 일반 사이트 전용 섹션: 스토어 결과일 땐 의미 없으므로 숨김 */}
+              {result && !result.storeContext && (
+                <ScoreComparison url={normalizedUrl} currentResult={result} />
+              )}
 
+              {!result?.storeContext && (
+                <IndexingStatus result={indexingResult} loading={indexingLoading} url={normalizedUrl} />
+              )}
 
-
-              <IndexingStatus result={indexingResult} loading={indexingLoading} url={normalizedUrl} />
-
-              <VerificationLinks url={normalizedUrl} />
+              {!result?.storeContext && <VerificationLinks url={normalizedUrl} />}
 
               <FunnelCTAs result={result} url={normalizedUrl} />
 
