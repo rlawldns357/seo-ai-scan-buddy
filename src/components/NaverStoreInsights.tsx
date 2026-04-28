@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Store, AlertTriangle, ExternalLink, Info, ChevronDown } from "lucide-react";
+import { Store, AlertTriangle, ExternalLink, Info, ChevronDown, Sparkles, Target, ArrowRight, Search } from "lucide-react";
 import type { NaverStoreContext } from "@/lib/analyze";
 
 interface NaverStoreInsightsProps {
