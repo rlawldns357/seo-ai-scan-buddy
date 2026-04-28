@@ -27,17 +27,17 @@ export default function WhatIsThis() {
       <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
         About
       </h2>
-      <Accordion type="single" collapsible className="w-full space-y-1.5">
+      <Accordion type="single" collapsible className="w-full">
         {items.map((it, i) => (
           <AccordionItem
             key={i}
             value={`about-${i}`}
-            className="border-0 border-b border-border/50 px-1"
+            className="border-b border-border/60 last:border-b-0"
           >
-            <AccordionTrigger className="text-xs font-medium text-muted-foreground hover:text-foreground hover:no-underline py-2.5">
+            <AccordionTrigger className="text-sm font-medium text-foreground hover:no-underline py-3.5 text-left">
               {it.q}
             </AccordionTrigger>
-            <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
+            <AccordionContent className="text-sm text-muted-foreground leading-relaxed pb-4 pt-0">
               {it.a}
             </AccordionContent>
           </AccordionItem>
