@@ -1,0 +1,165 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { Store, AlertTriangle, TrendingDown, Search, Bot } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import { isNaverStoreUrl } from "@/lib/naverStore";
+
+/**
+ * /naver-store — 네이버 스마트/브랜드 스토어 발자 타겟 마케팅 랜딩.
+ * 입력 후 메인(/)으로 redirect하면 자동 분기 로직이 analyze-naver-store로 연결.
+ *
+ * mem://logic/naver-store-handling 의 메시지 톤 따름:
+ * "구조적으로 점수 회수 불가" → 위기감 → 진단 신청.
+ */
+export default function NaverStore() {
+  const navigate = useNavigate();
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    const trimmed = url.trim();
+    if (!trimmed) {
+      setError("URL을 입력해 주세요.");
+      return;
+    }
+    let normalized = trimmed;
+    if (!/^https?:\/\//i.test(normalized)) {
+      normalized = `https://${normalized}`;
+    }
+    if (!isNaverStoreUrl(normalized)) {
+      setError("brand.naver.com 또는 smartstore.naver.com URL만 입력 가능해요.");
+      return;
+    }
+    // 메인의 자동 분기 로직 활용 — query string으로 URL 전달
+    navigate(`/?url=${encodeURIComponent(normalized)}&autorun=1`);
+  };
+
+  return (
+    <>
+      <Helmet>
+        <title>네이버 스토어 SEO/AEO/GEO 진단 | SearchTune OS</title>
+        <meta
+          name="description"
+          content="브랜드 스토어·스마트스토어의 검색 권위 누수율, AI 답변 인용 가능성, 외부 콘텐츠 점유율을 무료로 진단해 보세요."
+        />
+        <meta name="robots" content="index, follow" />
+        <link rel="canonical" href="https://searchtuneos.com/naver-store" />
+      </Helmet>
+
+      <div className="min-h-screen flex flex-col bg-background">
+        <Navbar />
+
+        <main className="flex-1 px-4 sm:px-6 py-12 sm:py-16">
+          <div className="max-w-3xl mx-auto">
+            {/* 히어로 */}
+            <div className="text-center mb-10">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold mb-6">
+                <Store className="w-3.5 h-3.5" />
+                네이버 스토어 전용 진단
+              </div>
+              <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground leading-tight tracking-tight mb-5">
+                <span className="block text-muted-foreground text-lg sm:text-2xl font-light mb-3">
+                  내 스토어가 검색에서 안 보이는 이유,
+                </span>
+                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  3분 만에 알려드려요
+                </span>
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
+                브랜드 스토어·스마트스토어는 구조적으로 검색 권위가 naver.com에 적립돼요.
+                <br className="hidden sm:block" />
+                얼마나 누수되는지, 어디서 회수 가능한지 무료로 확인하세요.
+              </p>
+            </div>
+
+            {/* 입력 폼 */}
+            <form
+              onSubmit={handleSubmit}
+              className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-sm mb-12"
+            >
+              <label htmlFor="store-url" className="block text-sm font-bold text-foreground mb-2">
+                네이버 스토어 URL
+              </label>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  id="store-url"
+                  type="text"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="brand.naver.com/내브랜드"
+                  className="flex-1 h-12 px-4 rounded-full border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <button
+                  type="submit"
+                  className="h-12 px-6 rounded-full bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity"
+                >
+                  무료 진단 시작
+                </button>
+              </div>
+              {error && <p className="mt-2 text-xs text-destructive font-medium">{error}</p>}
+              <p className="mt-3 text-xs text-muted-foreground">
+                예: <code className="px-1.5 py-0.5 bg-muted rounded">brand.naver.com/mujikorea</code> ·{" "}
+                <code className="px-1.5 py-0.5 bg-muted rounded">smartstore.naver.com/오늘의집</code>
+              </p>
+            </form>
+
+            {/* 진단 항목 3개 */}
+            <div className="grid sm:grid-cols-3 gap-3 mb-10">
+              {[
+                {
+                  icon: <TrendingDown className="w-5 h-5" />,
+                  title: "권위 누수율",
+                  desc: "검색 권위 중 naver.com에 적립돼 회수 불가능한 비율",
+                  color: "text-rose-600 bg-rose-50",
+                },
+                {
+                  icon: <Bot className="w-5 h-5" />,
+                  title: "AI 인용 가능성",
+                  desc: "ChatGPT·Perplexity가 내 브랜드를 답변에 인용할 준비도",
+                  color: "text-violet-600 bg-violet-50",
+                },
+                {
+                  icon: <Search className="w-5 h-5" />,
+                  title: "외부 채널 점유율",
+                  desc: "블로그·카페·웹문서 등 외부 채널의 브랜드 언급 분포",
+                  color: "text-blue-600 bg-blue-50",
+                },
+              ].map((item) => (
+                <div
+                  key={item.title}
+                  className="rounded-2xl border border-border bg-card p-4"
+                >
+                  <div className={`inline-flex w-9 h-9 rounded-xl items-center justify-center mb-2 ${item.color}`}>
+                    {item.icon}
+                  </div>
+                  <h3 className="text-sm font-bold text-foreground mb-1">{item.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* 왜 일반 SEO 진단으로는 부족한가 */}
+            <div className="rounded-2xl bg-amber-50 border border-amber-200 p-5">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-amber-700 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                <div className="text-sm">
+                  <p className="font-bold text-amber-900 mb-2">
+                    일반 SEO 진단으로는 네이버 스토어를 정확히 볼 수 없어요
+                  </p>
+                  <ul className="text-amber-900/80 space-y-1.5 list-disc list-inside marker:text-amber-700">
+                    <li>스토어는 robots.txt로 외부 크롤러를 차단해요 → 일반 진단은 빈 화면을 보게 됩니다</li>
+                    <li>자체 도메인이 없어 Lighthouse·메타 태그 분석이 무의미해요</li>
+                    <li>검색 권위가 어디로 새고 있는지는 네이버 Search API로만 측정 가능해요</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}

@@ -31,6 +31,7 @@ const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
 const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
 const Autoblog = lazy(() => import("./pages/Autoblog.tsx"));
+const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,8 @@ const App = () => (
             <Route path="/" element={<Index />} />
             {/* /autoblog → AutoBlog 제품 소개 (공개 마케팅 랜딩) */}
             <Route path="/autoblog" element={<Autoblog />} />
+            {/* /naver-store → 네이버 스토어 발자 타겟 전용 진단 랜딩 (분리 BM) */}
+            <Route path="/naver-store" element={<NaverStore />} />
             {/* 기타 공개 페이지 */}
             <Route path="/about" element={<About />} />
             <Route path="/blog" element={<Blog />} />

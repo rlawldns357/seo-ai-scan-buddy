@@ -1,4 +1,4 @@
-import { useState, useRef, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Zap, Loader2 } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
@@ -10,6 +10,7 @@ import AutoPublishTeaser from "@/components/AutoPublishTeaser";
 
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
+import type { ExtendedDemoResult } from "@/lib/analyze";
 import { type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
@@ -28,6 +29,7 @@ const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
 const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
 const ScoreComparison = lazy(() => import("@/components/ScoreComparison"));
 const IndexingStatus = lazy(() => import("@/components/IndexingStatus"));
+const NaverStoreInsights = lazy(() => import("@/components/NaverStoreInsights"));
 
 
 type Screen = "home" | "loading" | "result";
@@ -62,7 +64,7 @@ const Index = () => {
   const [url, setUrl] = useState("");
   const [urlError, setUrlError] = useState("");
   const [normalizedUrl, setNormalizedUrl] = useState("");
-  const [result, setResult] = useState<DemoResult | null>(null);
+  const [result, setResult] = useState<ExtendedDemoResult | null>(null);
 
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
@@ -95,6 +97,23 @@ const Index = () => {
   // so rapid clicks/Enter presses can slip past it. A ref flips immediately.
   const analyzingRef = useRef(false);
 
+  // /naver-store 등에서 redirect로 들어올 때 ?url=...&autorun=1 처리
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const incomingUrl = params.get("url");
+    const autorun = params.get("autorun");
+    if (incomingUrl && autorun === "1" && !analyzingRef.current) {
+      setUrl(incomingUrl);
+      // url state 반영 후 다음 tick에 분석 실행
+      setTimeout(() => {
+        runAnalysis(incomingUrl);
+        // URL 쿼리스트링 정리 (back 버튼 영향 방지)
+        window.history.replaceState({}, "", "/");
+      }, 50);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const runAnalysis = async (finalUrl: string) => {
     // Synchronous guard — blocks duplicate entry in the same tick.
     if (analyzingRef.current) return;
@@ -107,11 +126,17 @@ const Index = () => {
 
     try {
       // Dynamic imports for heavy analysis modules
-      const [{ incrementUsage }, { fetchPsi }, { analyzeSite }] = await Promise.all([
+      const [{ incrementUsage }, { fetchPsi }, { analyzeSite }, { isNaverStoreUrl }] = await Promise.all([
         import("@/lib/rateLimit"),
         import("@/lib/psi"),
         import("@/lib/analyze"),
+        import("@/lib/naverStore"),
       ]);
+
+      // 네이버 스토어 URL은 PSI 측정이 의미 없음(스토어 자체가 네이버 인프라).
+      // PSI를 강제로 스킵해서 측정 시간을 단축하고 Lighthouse UI가 안 뜨도록 함.
+      const isStoreUrl = isNaverStoreUrl(finalUrl);
+      const effectiveSkipLighthouse = skipLighthouse || isStoreUrl;
 
       if (!isAdmin) {
         const usage = await incrementUsage();
@@ -133,10 +158,10 @@ const Index = () => {
       setAnalyzeError(null);
       setPsiRetryError(null);
       setCompletedPhases(new Set());
-      setLighthouseSkipped(skipLighthouse);
+      setLighthouseSkipped(effectiveSkipLighthouse);
       setIndexingResult(null);
       setIndexingLoading(true);
-      trackEvent("analysis_start", { skipLighthouse }, finalUrl);
+      trackEvent("analysis_start", { skipLighthouse: effectiveSkipLighthouse, isNaverStore: isStoreUrl }, finalUrl);
 
       const addPhase = (phase: AnalysisPhase) => {
         if (!isLatest()) return;
@@ -144,7 +169,7 @@ const Index = () => {
       };
 
       // Run PSI and Firecrawl+AI analysis in parallel
-      const psiPromise = skipLighthouse
+      const psiPromise = effectiveSkipLighthouse
         ? Promise.resolve([{ data: null, error: undefined }, { data: null, error: undefined }] as const)
         : Promise.all([
             fetchPsi(finalUrl, "mobile"),
@@ -161,23 +186,28 @@ const Index = () => {
       });
 
       // Check indexing status in parallel (fire-and-forget, but guarded by requestId).
-      import("@/lib/checkIndexing")
-        .then(({ checkIndexing }) =>
-          checkIndexing(finalUrl)
-            .then((r) => {
-              if (!isLatest()) return; // stale — newer request superseded us
-              setIndexingResult(r);
-              setIndexingLoading(false);
-            })
-            .catch(() => {
-              if (!isLatest()) return;
-              setIndexingLoading(false);
-            }),
-        )
-        .catch(() => {
-          if (!isLatest()) return;
-          setIndexingLoading(false);
-        });
+      // Check indexing status in parallel (fire-and-forget). 네이버 스토어는 검색엔진 인덱싱 자체가 차단돼 있어 의미 없음 → 스킵.
+      if (isStoreUrl) {
+        setIndexingLoading(false);
+      } else {
+        import("@/lib/checkIndexing")
+          .then(({ checkIndexing }) =>
+            checkIndexing(finalUrl)
+              .then((r) => {
+                if (!isLatest()) return; // stale — newer request superseded us
+                setIndexingResult(r);
+                setIndexingLoading(false);
+              })
+              .catch(() => {
+                if (!isLatest()) return;
+                setIndexingLoading(false);
+              }),
+          )
+          .catch(() => {
+            if (!isLatest()) return;
+            setIndexingLoading(false);
+          });
+      }
 
       const [psiResults, analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
 
@@ -479,15 +509,23 @@ const Index = () => {
                 </div>
               )}
 
+              {/* 스토어 전용 인사이트: 권위 누수 도넛 + 외부 채널 점유율 + 하드 블로커 */}
+              {result?.storeContext && (
+                <NaverStoreInsights context={result.storeContext} />
+              )}
+
               {result && <ScoreDashboard result={result} url={normalizedUrl} />}
 
-              {result && <ScoreComparison url={normalizedUrl} currentResult={result} />}
+              {/* 일반 사이트 전용 섹션: 스토어 결과일 땐 의미 없으므로 숨김 */}
+              {result && !result.storeContext && (
+                <ScoreComparison url={normalizedUrl} currentResult={result} />
+              )}
 
+              {!result?.storeContext && (
+                <IndexingStatus result={indexingResult} loading={indexingLoading} url={normalizedUrl} />
+              )}
 
-
-              <IndexingStatus result={indexingResult} loading={indexingLoading} url={normalizedUrl} />
-
-              <VerificationLinks url={normalizedUrl} />
+              {!result?.storeContext && <VerificationLinks url={normalizedUrl} />}
 
               <FunnelCTAs result={result} url={normalizedUrl} />
 
