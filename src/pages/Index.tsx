@@ -417,6 +417,12 @@ const Index = () => {
             {urlError && (
               <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
             )}
+            {!subpageWarning && !urlError && url.trim() && (() => {
+              const storeInfo = parseNaverStoreUrl(
+                /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
+              );
+              return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
+            })()}
             {subpageWarning && (
               <SubpageWarning
                 inputUrl={subpageWarning.inputUrl}
