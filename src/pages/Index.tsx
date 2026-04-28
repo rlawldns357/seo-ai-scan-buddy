@@ -107,11 +107,17 @@ const Index = () => {
 
     try {
       // Dynamic imports for heavy analysis modules
-      const [{ incrementUsage }, { fetchPsi }, { analyzeSite }] = await Promise.all([
+      const [{ incrementUsage }, { fetchPsi }, { analyzeSite }, { isNaverStoreUrl }] = await Promise.all([
         import("@/lib/rateLimit"),
         import("@/lib/psi"),
         import("@/lib/analyze"),
+        import("@/lib/naverStore"),
       ]);
+
+      // 네이버 스토어 URL은 PSI 측정이 의미 없음(스토어 자체가 네이버 인프라).
+      // PSI를 강제로 스킵해서 측정 시간을 단축하고 Lighthouse UI가 안 뜨도록 함.
+      const isStoreUrl = isNaverStoreUrl(finalUrl);
+      const effectiveSkipLighthouse = skipLighthouse || isStoreUrl;
 
       if (!isAdmin) {
         const usage = await incrementUsage();
