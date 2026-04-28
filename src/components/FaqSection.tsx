@@ -8,7 +8,7 @@ import {
 export const faqs = [
   {
     q: "이게 뭐하는 도구예요?",
-    a: "URL 한 줄로 Google 검색(SEO), ChatGPT·Perplexity 답변(AEO), 생성형 검색 인용(GEO) — 3개 축의 점수와 약점을 10초 안에 보여주는 무료 진단 도구예요.",
+    a: "URL 한 줄만 입력하면 Google 검색(SEO), ChatGPT·Perplexity 답변(AEO), 생성형 검색 인용(GEO) — 3개 축의 점수와 약점을 빠르게 진단해 주는 무료 도구예요. 빠른 분석(Lighthouse 스킵)은 평균 3~10초, 전체 분석은 15~30초 정도 걸려요.",
   },
   {
     q: "분석한 다음엔 뭘 할 수 있어요?",
