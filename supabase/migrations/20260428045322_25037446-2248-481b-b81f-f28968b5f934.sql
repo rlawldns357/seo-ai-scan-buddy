@@ -1,0 +1,1 @@
+DELETE FROM public.analysis_usage WHERE used_date = CURRENT_DATE;
