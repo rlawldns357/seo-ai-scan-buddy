@@ -514,7 +514,14 @@ const Index = () => {
                 <NaverStoreInsights context={result.storeContext} />
               )}
 
-              {result && <ScoreDashboard result={result} url={normalizedUrl} />}
+              {result && (
+                <ScoreDashboard
+                  result={result}
+                  url={normalizedUrl}
+                  disabledMode={!!result.storeContext}
+                  disabledReason={result.storeContext ? "네이버 스토어는 일반 사이트 기준의 SEO·AEO·GEO 점수가 적용되지 않아요. 위 스토어 전용 진단 근거를 참고해 주세요." : undefined}
+                />
+              )}
 
               {/* 일반 사이트 전용 섹션: 스토어 결과일 땐 의미 없으므로 숨김 */}
               {result && !result.storeContext && (
