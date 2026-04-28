@@ -58,80 +58,69 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
   const totalMentions = surfaces.reduce((sum, s) => sum + s.count, 0);
 
   return (
-    <div className="space-y-4">
-      {/* 1) 브랜드 인식 카드 — "우리는 이 URL을 이렇게 봤어요" */}
-      <div className="rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-500/5 to-emerald-500/0 p-5">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-            <Store className="w-5 h-5 text-emerald-600" strokeWidth={2.5} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold tracking-wider uppercase text-emerald-700 dark:text-emerald-500">
-              URL 인식 결과
-            </p>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              입력하신 주소를 다음과 같이 분석했어요
-            </p>
-          </div>
+    <div className="space-y-3">
+      {/* 1) 브랜드 인식 카드 */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2.5 mb-4">
+          <Store className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+          <span className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+            URL 인식 결과
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-          <div className="rounded-lg bg-background/60 border border-border/60 px-3 py-2">
+        <div className="grid grid-cols-3 gap-px bg-border rounded-xl overflow-hidden mb-3">
+          <div className="bg-card px-3 py-2.5">
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">플랫폼</p>
-            <p className="text-sm font-bold text-foreground mt-0.5">
+            <p className="text-sm font-semibold text-foreground mt-1">
               {context.type === "brand" ? "브랜드스토어" : "스마트스토어"}
             </p>
           </div>
-          <div className="rounded-lg bg-background/60 border border-border/60 px-3 py-2">
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">스토어 식별자</p>
-            <p className="text-sm font-bold text-foreground mt-0.5 font-mono truncate" title={context.slug}>
+          <div className="bg-card px-3 py-2.5">
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">스토어 ID</p>
+            <p className="text-sm font-semibold text-foreground mt-1 font-mono truncate" title={context.slug}>
               {context.slug}
             </p>
           </div>
-          <div className="rounded-lg bg-background/60 border border-border/60 px-3 py-2 col-span-2 sm:col-span-1">
+          <div className="bg-card px-3 py-2.5">
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">검색 키워드</p>
-            <p className="text-sm font-bold text-foreground mt-0.5 truncate" title={context.slug}>
-              "{context.slug}"
+            <p className="text-sm font-semibold text-foreground mt-1 truncate" title={context.slug}>
+              {context.slug}
             </p>
           </div>
         </div>
 
-        <div className="flex items-start gap-2 text-xs text-muted-foreground bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2">
-          <Info className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            스토어 슬러그(<span className="font-mono font-semibold text-foreground">{context.slug}</span>)를
-            브랜드명으로 간주하고 네이버 5개 채널에서 검색·집계했어요.
-            슬러그가 실제 브랜드명과 다르거나 일반 단어와 겹칠 경우 결과가 부정확할 수 있어요.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          스토어 슬러그를 브랜드명으로 간주해 네이버 5개 채널에서 검색·집계했어요.
+          실제 브랜드명과 다르거나 일반 단어와 겹치면 결과가 부정확할 수 있어요.
+        </p>
 
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/60 text-xs">
           <a
             href={context.storeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 truncate"
           >
-            <ExternalLink className="w-3 h-3" />
-            {context.storeUrl.replace(/^https?:\/\//, "")}
+            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{context.storeUrl.replace(/^https?:\/\//, "")}</span>
           </a>
           <a
             href={`https://search.naver.com/search.naver?query=${encodeURIComponent(context.slug)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-emerald-700 dark:text-emerald-500 hover:underline inline-flex items-center gap-1 font-semibold"
+            className="text-foreground hover:underline inline-flex items-center gap-1.5 font-medium flex-shrink-0 ml-3"
           >
             <Search className="w-3 h-3" />
-            네이버에서 직접 확인
+            네이버에서 확인
           </a>
         </div>
       </div>
 
-      {/* 헤더 */}
-      <div className="flex items-center gap-2 px-1 pt-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-          📊 스토어 전용 진단 근거
-        </span>
+      {/* 섹션 헤더 */}
+      <div className="px-1 pt-3 pb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          스토어 전용 진단 근거
+        </h2>
       </div>
 
       {/* 권위 누수 도넛 + 요약 */}
@@ -235,23 +224,29 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
         </InfoToggle>
       </div>
 
-      {/* 하드 블로커 배지 */}
-      <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-destructive flex-shrink-0 mt-0.5" strokeWidth={2.5} />
-        <div className="flex-1 text-sm">
-          <p className="font-bold text-destructive mb-1">구조적 한계 (점수 상한 적용 중)</p>
-          <ul className="text-muted-foreground space-y-1 list-disc list-inside marker:text-destructive/60">
-            <li>
-              <span className="font-semibold text-foreground">자체 도메인 부재</span> — Google·Bing 검색결과 노출 거의 없음
-            </li>
-            <li>
-              <span className="font-semibold text-foreground">robots.txt 차단</span> — ChatGPT·Claude 등 AI 봇이 스토어 페이지를 못 읽어요
-            </li>
-            <li>
-              <span className="font-semibold text-foreground">템플릿 고정</span> — 메타·구조화 데이터(JSON-LD) 등 SEO 요소를 통제할 수 없어요
-            </li>
-          </ul>
-          <InfoToggle title="용어 풀이 · 점수 상한이란?">
+      {/* 하드 블로커 */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2.5 mb-3">
+          <AlertTriangle className="w-4 h-4 text-destructive" strokeWidth={2.5} />
+          <span className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+            구조적 한계 · 점수 상한 적용
+          </span>
+        </div>
+        <ul className="text-sm text-muted-foreground space-y-2">
+          <li className="flex gap-2">
+            <span className="text-destructive/60 mt-[5px] w-1 h-1 rounded-full bg-current flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">자체 도메인 부재</span> — Google·Bing 검색결과 노출이 거의 없어요</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-destructive/60 mt-[5px] w-1 h-1 rounded-full bg-current flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">robots.txt 차단</span> — ChatGPT·Claude 등 AI 봇이 페이지를 못 읽어요</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-destructive/60 mt-[5px] w-1 h-1 rounded-full bg-current flex-shrink-0" />
+            <span><span className="font-semibold text-foreground">템플릿 고정</span> — 메타·구조화 데이터를 직접 통제할 수 없어요</span>
+          </li>
+        </ul>
+        <InfoToggle title="용어 풀이 · 점수 상한이란?">
             <p>
               <span className="font-semibold text-foreground">robots.txt:</span> 사이트가 검색·AI 봇에게 "어디까지 읽어가도 돼요"라고 알려주는 파일이에요.
               네이버 스토어는 외부 AI 봇 접근을 막아두고 있습니다.
@@ -267,8 +262,7 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
             <p className="text-foreground">
               <span className="font-semibold">우리 기준 상한:</span> SEO ≤ 45 · AEO ≤ 50 · GEO ≤ 60
             </p>
-          </InfoToggle>
-        </div>
+        </InfoToggle>
       </div>
 
       {/* 액션 플랜 — 데이터 기반 우선순위 개선안 */}
@@ -345,65 +339,61 @@ function ActionPlan({ context }: { context: NaverStoreContext }) {
   });
 
   const toneStyles = {
-    critical: { ring: "ring-destructive/40", badge: "bg-destructive/10 text-destructive", num: "bg-destructive text-destructive-foreground" },
-    warning: { ring: "ring-amber-500/40", badge: "bg-amber-500/10 text-amber-700 dark:text-amber-500", num: "bg-amber-500 text-white" },
-    neutral: { ring: "ring-border", badge: "bg-muted text-muted-foreground", num: "bg-foreground text-background" },
+    critical: { num: "bg-destructive text-destructive-foreground", accent: "text-destructive" },
+    warning: { num: "bg-amber-500 text-white", accent: "text-amber-600 dark:text-amber-500" },
+    neutral: { num: "bg-foreground text-background", accent: "text-muted-foreground" },
   } as const;
 
   return (
-    <div className="rounded-2xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 to-transparent p-5">
-      <div className="flex items-center gap-2 mb-1">
+    <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="flex items-center gap-2.5 mb-4">
         <Target className="w-4 h-4 text-primary" strokeWidth={2.5} />
-        <span className="text-[10px] font-bold tracking-wider uppercase text-primary">
-          개선 우선순위
+        <span className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+          개선 우선순위 {actions.length}가지
         </span>
       </div>
-      <h3 className="text-base sm:text-lg font-extrabold text-foreground mb-1">
-        지금 해야 할 일 — 우선순위 {actions.length}가지
-      </h3>
-      <p className="text-xs text-muted-foreground mb-4">
-        진단 데이터를 기반으로 임팩트 순서대로 정리했어요.
-      </p>
 
-      <div className="space-y-3">
-        {actions.map((a) => {
+      <ol className="space-y-4">
+        {actions.map((a, idx) => {
           const t = toneStyles[a.tone];
           return (
-            <div
-              key={a.rank}
-              className={`rounded-xl bg-card border border-border/60 ring-1 ${t.ring} p-4`}
-            >
+            <li key={a.rank} className={idx > 0 ? "pt-4 border-t border-border/60" : ""}>
               <div className="flex items-start gap-3">
-                <div className={`w-7 h-7 rounded-full ${t.num} flex items-center justify-center text-xs font-extrabold flex-shrink-0`}>
+                <div className={`w-6 h-6 rounded-full ${t.num} flex items-center justify-center text-[11px] font-bold flex-shrink-0 mt-0.5`}>
                   {a.rank}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1">
-                    <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${t.badge}`}>
+                  <div className="flex items-baseline gap-2 mb-1.5">
+                    <span className={`text-[10px] font-semibold uppercase tracking-wider ${t.accent}`}>
                       {a.tag}
                     </span>
                   </div>
-                  <h4 className="text-sm font-bold text-foreground mb-2">{a.title}</h4>
-                  <div className="space-y-1.5 text-xs text-muted-foreground leading-relaxed">
-                    <p>
-                      <span className="font-semibold text-foreground">왜:</span> {a.why}
-                    </p>
-                    <p>
-                      <span className="font-semibold text-foreground">어떻게:</span> {a.how}
-                    </p>
-                    <p className="inline-flex items-center gap-1 text-primary font-semibold">
-                      <Sparkles className="w-3 h-3" />
-                      예상 효과: {a.impact}
-                    </p>
-                  </div>
+                  <h4 className="text-sm font-semibold text-foreground mb-2 leading-snug">{a.title}</h4>
+                  <dl className="space-y-1 text-xs text-muted-foreground leading-relaxed">
+                    <div className="flex gap-2">
+                      <dt className="font-medium text-foreground/80 flex-shrink-0 w-7">왜</dt>
+                      <dd>{a.why}</dd>
+                    </div>
+                    <div className="flex gap-2">
+                      <dt className="font-medium text-foreground/80 flex-shrink-0 w-7">방법</dt>
+                      <dd>{a.how}</dd>
+                    </div>
+                    <div className="flex gap-2 pt-1">
+                      <dt className="font-medium text-foreground/80 flex-shrink-0 w-7">효과</dt>
+                      <dd className="text-foreground font-medium inline-flex items-center gap-1">
+                        <Sparkles className="w-3 h-3 text-primary" />
+                        {a.impact}
+                      </dd>
+                    </div>
+                  </dl>
                 </div>
               </div>
-            </div>
+            </li>
           );
         })}
-      </div>
+      </ol>
 
-      <p className="mt-4 text-[11px] text-muted-foreground text-center">
+      <p className="mt-4 pt-4 border-t border-border/60 text-[11px] text-muted-foreground text-center">
         세부 실행 가이드는 하단 무료 진단 리포트에서 받아보실 수 있어요
         <ArrowRight className="inline w-3 h-3 ml-1" />
       </p>
