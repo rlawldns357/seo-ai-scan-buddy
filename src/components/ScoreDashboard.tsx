@@ -15,6 +15,12 @@ import {
 interface ScoreDashboardProps {
   result: DemoResult;
   url?: string;
+  /**
+   * true면 점수 카드를 회색(비활성) 처리하고 verdict / CTA / 긴급배지를 숨김.
+   * 네이버 스토어처럼 일반 점수체계 적용이 부적절한 경우 사용.
+   */
+  disabledMode?: boolean;
+  disabledReason?: string;
 }
 
 const axisConfig = {
