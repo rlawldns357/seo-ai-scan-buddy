@@ -344,10 +344,11 @@ function ActionPlan({ context }: { context: NaverStoreContext }) {
   } as const;
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
-      <div className="flex items-center gap-2.5 mb-4">
-        <Target className="w-4 h-4 text-primary" strokeWidth={2.5} />
-        <span className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+    <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/[0.04] to-transparent p-6">
+      <div className="flex items-center gap-2 mb-5">
+        <span className="inline-block w-1 h-4 bg-primary rounded-full" />
+        <Target className="w-3.5 h-3.5 text-primary" strokeWidth={2.5} />
+        <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-primary">
           개선 우선순위 {actions.length}가지
         </span>
       </div>
