@@ -10,6 +10,7 @@ import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
 import AutoPublishTeaser from "@/components/AutoPublishTeaser";
 import NaverStoreTeaser from "@/components/NaverStoreTeaser";
+import WhatIsThis from "@/components/WhatIsThis";
 
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
@@ -475,11 +476,12 @@ const Index = () => {
                 }}
               />
             )}
-            <div className="mt-14 max-w-lg mx-auto text-left">
-              <FaqSection compact />
-            </div>
             <AutoPublishTeaser />
             <NaverStoreTeaser />
+            <WhatIsThis />
+            <div className="mt-12 max-w-lg mx-auto text-left">
+              <FaqSection compact />
+            </div>
           </div>
           <StickyBottomCTA />
         </main>
