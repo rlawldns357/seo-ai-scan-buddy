@@ -9,6 +9,7 @@ import RateLimitBanner from "@/components/RateLimitBanner";
 import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
 import AutoPublishTeaser from "@/components/AutoPublishTeaser";
+import NaverStoreTeaser from "@/components/NaverStoreTeaser";
 
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
@@ -478,6 +479,7 @@ const Index = () => {
               <FaqSection compact />
             </div>
             <AutoPublishTeaser />
+            <NaverStoreTeaser />
           </div>
           <StickyBottomCTA />
         </main>
