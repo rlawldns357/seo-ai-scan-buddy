@@ -477,10 +477,18 @@ const Index = () => {
                 result={result ?? undefined}
               />
 
-              {psiError && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
+              {psiError && !result?.storeContext && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
 
-              {(psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />}
-              {lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && (
+              {result?.storeContext ? (
+                <div className="rounded-2xl border border-border/60 bg-muted/30 p-4 text-center">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
+                    네이버 스토어는 페이지 구조를 직접 수정할 수 없어요. Lighthouse(성능·접근성) 측정은 생략됐어요 — 아래 <span className="font-semibold text-foreground">스토어 전용 진단</span>을 확인해 주세요.
+                  </p>
+                </div>
+              ) : (
+                (psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />
+              )}
+              {!result?.storeContext && lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && (
                 <div className="flex flex-col items-center gap-2">
                   <button
                     onClick={handleRetryPsi}
