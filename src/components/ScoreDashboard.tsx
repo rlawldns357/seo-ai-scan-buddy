@@ -733,7 +733,7 @@ function countIssues(axes: { axis: AxisAnalysis; score: number }[]) {
 }
 
 /* ── Main ── */
-export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
+export default function ScoreDashboard({ result, url, disabledMode, disabledReason }: ScoreDashboardProps) {
   const axes: { axis: AxisAnalysis; score: number; key: AxisLabel }[] = [
     { axis: result.seoAxis, score: result.seoScore, key: "SEO" },
     { axis: result.aeoAxis, score: result.aeoScore, key: "AEO" },
@@ -746,7 +746,7 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
   const [selected, setSelected] = useState<AxisLabel | null>(() => {
     // SSR-safe: check window width immediately to avoid flash
     if (typeof window !== "undefined" && window.innerWidth < 768) return null;
-    return worstKey;
+    return disabledMode ? null : worstKey;
   });
 
   const selectedEntry = axes.find((a) => a.key === selected);
@@ -755,56 +755,68 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
 
   return (
     <div className="space-y-5">
-      {/* One-line verdict */}
-      <div className="rounded-xl bg-card shadow-card px-5 py-4 animate-fade-up text-center space-y-2" style={{ animationDelay: "0.1s" }}>
-        <p className="text-base sm:text-lg font-bold text-foreground">{verdict}</p>
-        {(critical > 0 || recommended > 0) && (
-          <div className="flex items-center justify-center gap-3 flex-wrap">
-            {critical > 0 && (
+      {/* Disabled-mode notice (네이버 스토어 등) */}
+      {disabledMode && (
+        <div className="rounded-xl bg-muted/40 border border-border px-4 py-3 text-center animate-fade-up">
+          <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+            <Lock className="inline w-3.5 h-3.5 mr-1 -mt-0.5 text-muted-foreground" />
+            {disabledReason || "이 플랫폼은 일반 점수 기준 적용이 어려워, 아래 점수는 참고용으로만 회색 처리되어 있어요."}
+          </p>
+        </div>
+      )}
+
+      {/* One-line verdict — disabled 모드일 땐 숨김 */}
+      {!disabledMode && (
+        <div className="rounded-xl bg-card shadow-card px-5 py-4 animate-fade-up text-center space-y-2" style={{ animationDelay: "0.1s" }}>
+          <p className="text-base sm:text-lg font-bold text-foreground">{verdict}</p>
+          {(critical > 0 || recommended > 0) && (
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              {critical > 0 && (
+                <button
+                  onClick={() => {
+                    const criticalAxis = axes.find(a => a.score < 40);
+                    if (criticalAxis) {
+                      setSelected(criticalAxis.key);
+                      setTimeout(() => document.getElementById(`detail-${criticalAxis.key}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/10 text-score-poor border border-score-poor/20 hover:bg-score-poor/20 transition-colors cursor-pointer"
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  긴급 수정 {critical}개
+                </button>
+              )}
+              {recommended > 0 && (
+                <button
+                  onClick={() => {
+                    const recAxis = axes.find(a => a.score >= 40 && a.score < 75);
+                    if (recAxis) {
+                      setSelected(recAxis.key);
+                      setTimeout(() => document.getElementById(`detail-${recAxis.key}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20 hover:bg-score-warning/20 transition-colors cursor-pointer"
+                >
+                  <AlertTriangle className="w-3.5 h-3.5" />
+                  권장 개선 {recommended}개
+                </button>
+              )}
               <button
                 onClick={() => {
-                  const criticalAxis = axes.find(a => a.score < 40);
-                  if (criticalAxis) {
-                    setSelected(criticalAxis.key);
-                    setTimeout(() => document.getElementById(`detail-${criticalAxis.key}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
-                  }
+                  document.getElementById("inline-cta-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
                 }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/10 text-score-poor border border-score-poor/20 hover:bg-score-poor/20 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
               >
-                <AlertCircle className="w-3.5 h-3.5" />
-                긴급 수정 {critical}개
+                <Search className="w-3.5 h-3.5" />
+                개선하기
               </button>
-            )}
-            {recommended > 0 && (
-              <button
-                onClick={() => {
-                  const recAxis = axes.find(a => a.score >= 40 && a.score < 75);
-                  if (recAxis) {
-                    setSelected(recAxis.key);
-                    setTimeout(() => document.getElementById(`detail-${recAxis.key}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
-                  }
-                }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20 hover:bg-score-warning/20 transition-colors cursor-pointer"
-              >
-                <AlertTriangle className="w-3.5 h-3.5" />
-                권장 개선 {recommended}개
-              </button>
-            )}
-            <button
-              onClick={() => {
-                document.getElementById("inline-cta-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
-              }}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
-            >
-              <Search className="w-3.5 h-3.5" />
-              개선하기
-            </button>
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Mobile: card + inline detail for each axis */}
-      <div className="sm:hidden space-y-2">
+      <div className={`sm:hidden space-y-2 ${disabledMode ? "grayscale opacity-60 pointer-events-none select-none" : ""}`}>
          {axes.map(({ axis, score, key }, i) => (
             <SummaryCard
               key={key}
@@ -820,7 +832,7 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
 
       {/* Desktop: 3-column grid + shared detail panel */}
       <div className="hidden sm:block space-y-5">
-        <div className="grid gap-4 sm:grid-cols-3 sm:items-stretch">
+        <div className={`grid gap-4 sm:grid-cols-3 sm:items-stretch ${disabledMode ? "grayscale opacity-60 pointer-events-none select-none" : ""}`}>
           {axes.map(({ axis, score, key }, i) => (
             <SummaryCard
               key={key}
@@ -832,15 +844,17 @@ export default function ScoreDashboard({ result, url }: ScoreDashboardProps) {
             />
           ))}
         </div>
-        {selectedEntry && (
+        {!disabledMode && selectedEntry && (
           <div id={`detail-${selected}`}>
             <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
           </div>
         )}
       </div>
 
-      {/* CTA */}
-      <InlineCTA avgScore={Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3)} url={url} result={result} />
+      {/* CTA — disabled 모드일 땐 숨김 (네이버 스토어는 별도 funnel) */}
+      {!disabledMode && (
+        <InlineCTA avgScore={Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3)} url={url} result={result} />
+      )}
     </div>
   );
 }
