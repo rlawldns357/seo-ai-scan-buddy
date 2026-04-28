@@ -58,80 +58,69 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
   const totalMentions = surfaces.reduce((sum, s) => sum + s.count, 0);
 
   return (
-    <div className="space-y-4">
-      {/* 1) 브랜드 인식 카드 — "우리는 이 URL을 이렇게 봤어요" */}
-      <div className="rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-500/5 to-emerald-500/0 p-5">
-        <div className="flex items-start gap-3 mb-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-            <Store className="w-5 h-5 text-emerald-600" strokeWidth={2.5} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[10px] font-bold tracking-wider uppercase text-emerald-700 dark:text-emerald-500">
-              URL 인식 결과
-            </p>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              입력하신 주소를 다음과 같이 분석했어요
-            </p>
-          </div>
+    <div className="space-y-3">
+      {/* 1) 브랜드 인식 카드 */}
+      <div className="rounded-2xl border border-border bg-card p-5">
+        <div className="flex items-center gap-2.5 mb-4">
+          <Store className="w-4 h-4 text-emerald-600" strokeWidth={2.5} />
+          <span className="text-[11px] font-semibold tracking-wider uppercase text-muted-foreground">
+            URL 인식 결과
+          </span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
-          <div className="rounded-lg bg-background/60 border border-border/60 px-3 py-2">
+        <div className="grid grid-cols-3 gap-px bg-border rounded-xl overflow-hidden mb-3">
+          <div className="bg-card px-3 py-2.5">
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">플랫폼</p>
-            <p className="text-sm font-bold text-foreground mt-0.5">
+            <p className="text-sm font-semibold text-foreground mt-1">
               {context.type === "brand" ? "브랜드스토어" : "스마트스토어"}
             </p>
           </div>
-          <div className="rounded-lg bg-background/60 border border-border/60 px-3 py-2">
-            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">스토어 식별자</p>
-            <p className="text-sm font-bold text-foreground mt-0.5 font-mono truncate" title={context.slug}>
+          <div className="bg-card px-3 py-2.5">
+            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">스토어 ID</p>
+            <p className="text-sm font-semibold text-foreground mt-1 font-mono truncate" title={context.slug}>
               {context.slug}
             </p>
           </div>
-          <div className="rounded-lg bg-background/60 border border-border/60 px-3 py-2 col-span-2 sm:col-span-1">
+          <div className="bg-card px-3 py-2.5">
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">검색 키워드</p>
-            <p className="text-sm font-bold text-foreground mt-0.5 truncate" title={context.slug}>
-              "{context.slug}"
+            <p className="text-sm font-semibold text-foreground mt-1 truncate" title={context.slug}>
+              {context.slug}
             </p>
           </div>
         </div>
 
-        <div className="flex items-start gap-2 text-xs text-muted-foreground bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2">
-          <Info className="w-3.5 h-3.5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="leading-relaxed">
-            스토어 슬러그(<span className="font-mono font-semibold text-foreground">{context.slug}</span>)를
-            브랜드명으로 간주하고 네이버 5개 채널에서 검색·집계했어요.
-            슬러그가 실제 브랜드명과 다르거나 일반 단어와 겹칠 경우 결과가 부정확할 수 있어요.
-          </p>
-        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          스토어 슬러그를 브랜드명으로 간주해 네이버 5개 채널에서 검색·집계했어요.
+          실제 브랜드명과 다르거나 일반 단어와 겹치면 결과가 부정확할 수 있어요.
+        </p>
 
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/40">
+        <div className="flex items-center justify-between mt-3 pt-3 border-t border-border/60 text-xs">
           <a
             href={context.storeUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+            className="text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5 truncate"
           >
-            <ExternalLink className="w-3 h-3" />
-            {context.storeUrl.replace(/^https?:\/\//, "")}
+            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+            <span className="truncate">{context.storeUrl.replace(/^https?:\/\//, "")}</span>
           </a>
           <a
             href={`https://search.naver.com/search.naver?query=${encodeURIComponent(context.slug)}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-emerald-700 dark:text-emerald-500 hover:underline inline-flex items-center gap-1 font-semibold"
+            className="text-foreground hover:underline inline-flex items-center gap-1.5 font-medium flex-shrink-0 ml-3"
           >
             <Search className="w-3 h-3" />
-            네이버에서 직접 확인
+            네이버에서 확인
           </a>
         </div>
       </div>
 
-      {/* 헤더 */}
-      <div className="flex items-center gap-2 px-1 pt-2">
-        <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-          📊 스토어 전용 진단 근거
-        </span>
+      {/* 섹션 헤더 */}
+      <div className="px-1 pt-3 pb-1">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          스토어 전용 진단 근거
+        </h2>
       </div>
 
       {/* 권위 누수 도넛 + 요약 */}
