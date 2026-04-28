@@ -434,9 +434,9 @@ const Index = () => {
                   </label>
                   <p className="text-xs text-muted-foreground mt-2 font-medium">
                     {forced
-                      ? "네이버 스토어 전용 진단 · 평균 3~5초"
+                      ? "네이버 스토어 전용 진단 · 약 3초"
                       : effectiveChecked
-                      ? "AI 분석만 실행 · 평균 3~5초"
+                      ? "AI 분석만 실행 · 약 3초"
                       : "모바일 + 데스크톱 동시 측정 · 평균 30초~1분"}
                   </p>
                 </>
