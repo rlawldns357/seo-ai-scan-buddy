@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, ShieldCheck, Bell, MessageSquare, Briefcase, LogIn, Sparkles } from "lucide-react";
+import { Search, ShieldCheck, Bell, MessageSquare, Briefcase, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link, useLocation } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
@@ -73,7 +73,7 @@ export default function Navbar() {
               <div className="gradient-primary rounded-xl p-2 shrink-0">
                 <Search className="w-4 h-4 text-primary-foreground" />
               </div>
-              <div className="flex flex-col min-w-0 gap-0.5">
+              <div className="flex flex-col min-w-0 gap-1 sm:gap-0.5 sm:leading-none">
                 <span className="text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap leading-none">
                   SearchTune <span className="font-extrabold">OS</span>
                 </span>
@@ -105,15 +105,6 @@ export default function Navbar() {
                 <Sparkles className="w-2.5 h-2.5" /> NEW
               </span>
             </a>
-            {!user && (
-              <Link
-                to={`/auth?next=${nextParam}`}
-                className="inline-flex items-center gap-1 sm:gap-1.5 px-3 h-8 rounded-full border border-border bg-card text-foreground text-xs font-semibold hover:bg-muted transition-colors whitespace-nowrap"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                로그인
-              </Link>
-            )}
             <Link
               to="/blog"
               className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
