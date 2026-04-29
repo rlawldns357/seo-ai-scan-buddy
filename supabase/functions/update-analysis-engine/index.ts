@@ -246,7 +246,7 @@ IMPORTANT RULES:
       await supabase.from("engine_update_log").insert({
         version: newVersion,
         changes_summary: args.changes_summary,
-        trends_found: args.trends_found,
+        trends_found: { trends: args.trends_found, citations: trendCitations, source: trendCitations.length > 0 ? "perplexity" : "fallback" },
         previous_prompt: currentPrompt,
         new_prompt: args.updated_prompt,
         status: "success",
