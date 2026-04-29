@@ -9,7 +9,7 @@ export default function DashboardWorkflow() {
   return (
     <>
       <Helmet>
-        <title>자동 발행 | AutoBlog</title>
+        <title>자동 발행 | Auto-Blog</title>
       </Helmet>
       <PageHeader
         icon={KanbanSquare}

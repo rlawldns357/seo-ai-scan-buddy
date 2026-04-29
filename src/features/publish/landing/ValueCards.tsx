@@ -24,7 +24,7 @@ export default function ValueCards() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-8 md:mb-14 max-w-2xl mx-auto">
           <h2 className="text-[24px] leading-[1.3] md:text-4xl md:leading-tight font-bold tracking-tight text-foreground break-keep">
-            왜 <span className="text-primary">AutoBlog</span>인가요?
+            왜 <span className="text-primary">Auto-Blog</span>인가요?
           </h2>
           <p className="text-[15px] leading-[1.7] md:text-base md:leading-relaxed text-muted-foreground mt-4 break-keep">
             검색엔진과 AI가 헷갈리지 않게 글을 정리하는 작업을, 매번 직접 챙기지 않아도 됩니다.

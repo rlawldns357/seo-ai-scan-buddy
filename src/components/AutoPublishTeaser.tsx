@@ -4,7 +4,7 @@ import { trackEvent } from "@/lib/analytics";
 const AUTOBLOG_URL = "https://auto-blog-hive.lovable.app";
 
 /**
- * AutoBlog teaser — links to the standalone product with a value-prop summary.
+ * Auto-Blog teaser — links to the standalone product with a value-prop summary.
  * Frame: 재고(큐) 모델 — "속도가 아닌 재고" (mem://strategy/inventory-frame-positioning)
  */
 export default function AutoPublishTeaser() {
@@ -38,7 +38,7 @@ export default function AutoPublishTeaser() {
               SEO·AEO·GEO 3축으로 자동 발행되는 콘텐츠 엔진
             </p>
             <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-foreground leading-tight">
-              AutoBlog<span className="text-muted-foreground font-medium"> — 진단을 넘어, 자동 발행까지</span>
+              Auto-Blog<span className="text-muted-foreground font-medium"> — 진단을 넘어, 자동 발행까지</span>
             </h3>
           </div>
 

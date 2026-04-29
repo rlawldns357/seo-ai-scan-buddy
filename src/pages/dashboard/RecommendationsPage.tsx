@@ -9,7 +9,7 @@ export default function DashboardRecommendationsPage() {
   return (
     <>
       <Helmet>
-        <title>블로그 재고 | AutoBlog</title>
+        <title>블로그 재고 | Auto-Blog</title>
       </Helmet>
       <PageHeader
         icon={Lightbulb}
