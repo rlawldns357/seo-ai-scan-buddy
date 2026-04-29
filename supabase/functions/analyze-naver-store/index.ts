@@ -180,46 +180,42 @@ interface AxisInputs {
 }
 
 function buildSeoAxis(x: AxisInputs) {
-  // 권위 누수율 = 1 - shopShare (shop에서 자사가 안 보이면 권위 누수 100%)
-  const leakageRatio = 1 - x.shopShare;
+  // x.shopShare = storeShare (스토어 자체 점유)
+  // x.webkrOwnRatio = ownSiteShare (자사 외부 도메인 점유)
+  const recovered = Math.min(1, x.shopShare * 0.6 + x.webkrOwnRatio * 0.4);
+  const leakageRatio = Math.max(0.05, Math.min(0.95, 1 - recovered));
   const leakagePct = Math.round(leakageRatio * 100);
+  const ownAuthority = Math.round(recovered * 100);
 
-  // 권위 회복 가능성 (자체 콘텐츠 점유율 기반)
-  const ownAuthority = Math.round((x.shopShare * 0.6 + x.webkrOwnRatio * 0.4) * 100);
-
-  // sub-signals
-  const crawlability = 10; // robots.txt가 strict — 사실상 차단
-  const indexability = Math.min(50, x.shopTotal > 0 ? 40 + Math.min(10, Math.log10(x.shopTotal) * 5) : 20);
-  const ownDomain = 0; // 자체 도메인 없음
-  const snippet = x.shopShare > 0 ? Math.round(x.shopShare * 60) : 15;
+  // sub-signals — 멀티 신호 반영
+  const crawlability = 10; // robots.txt strict
+  // 인덱싱 준비도: shop 결과 총량(로그) + storeShare 가산
+  const indexability = Math.min(60, (x.shopTotal > 0 ? Math.log10(x.shopTotal + 1) * 12 : 0) + x.shopShare * 30);
+  // 자체 도메인 권위: ownSiteShare 직접 반영 (자사몰 있으면 가산)
+  const ownDomain = Math.round(x.webkrOwnRatio * 80);
+  // 스니펫: storeShare 직접 반영
+  const snippet = Math.round(x.shopShare * 70 + 10);
   const structured = 5; // 네이버 템플릿 — 구조화 데이터 통제 불가
 
-  // 가중평균
-  const raw = Math.round(
-    crawlability * 0.20 +
-    indexability * 0.20 +
-    ownDomain * 0.25 +
-    snippet * 0.15 +
-    structured * 0.20
-  );
-
-  // Score cap: 자체 도메인 부재로 SEO 최대 45
-  const SEO_CAP = 45;
-  const score = Math.min(raw, SEO_CAP);
-
   const issues: string[] = [];
-  if (leakageRatio >= 0.8) {
-    issues.push(`검색 권위의 ${leakagePct}%가 naver.com에 적립되고 있어요. 자사 도메인이 없어 회수 불가능한 구조예요.`);
+  if (leakagePct >= 70) {
+    issues.push(`브랜드 검색 권위의 ${leakagePct}%가 naver.com에 적립되고 있어요. 자사 외부 채널 없이는 회수가 어려운 상태예요.`);
+  } else if (leakagePct >= 40) {
+    issues.push(`권위의 ${leakagePct}% 정도가 누수 중이에요. 자사 채널을 더 강화하면 회수 가능한 구간이에요.`);
   }
-  if (x.shopTotal === 0) {
-    issues.push("브랜드명으로 네이버 쇼핑 검색 시 노출이 거의 없어요. 슬러그가 일반 키워드와 충돌할 가능성이 있어요.");
+  if (x.shopShare === 0 && x.shopTotal > 0) {
+    issues.push("쇼핑 검색결과 상위에 본인 스토어가 거의 안 잡혀요. 슬러그가 일반 키워드와 충돌하거나 상품 노출이 약할 가능성이 있어요.");
   }
   issues.push("네이버 스토어는 robots.txt로 외부 검색엔진 크롤을 차단하고 있어요. Google·Bing 검색결과에서는 거의 노출되지 않아요.");
 
   const strengths: string[] = [];
+  if (x.webkrOwnRatio >= 0.3) {
+    strengths.push("자사 외부 도메인(자사몰·공식 채널) 노출이 확보돼 있어 권위 회수 기반이 있어요.");
+  }
   if (x.shopShare >= 0.3) {
-    strengths.push("쇼핑 검색결과에서 자사 스토어 노출 비중이 일정 수준 확보돼 있어요.");
-  } else {
+    strengths.push("쇼핑 검색결과에서 자사 스토어 노출 비중이 일정 수준 이상이에요.");
+  }
+  if (strengths.length === 0) {
     strengths.push("네이버 쇼핑 채널 자체는 활성 상태로 운영되고 있어요.");
   }
 
@@ -233,16 +229,17 @@ function buildSeoAxis(x: AxisInputs) {
       { name: "스니펫·메타 품질 (룰북 §2)", score: snippet, weight: 15 },
       { name: "구조화 데이터 (룰북 §5)", score: structured, weight: 20 },
     ],
-    scoreRationale: `브랜드 검색 권위의 ${leakagePct}%가 naver.com 도메인에 귀속됩니다. 자체 도메인이 없어 권위를 회수할 구조적 수단이 없습니다.`,
+    scoreRationale: `브랜드 검색 권위의 약 ${leakagePct}%가 naver.com 도메인에 귀속됩니다. 자사 외부 채널 점유율을 높여야 권위 회수가 가능합니다.`,
     issues: issues.slice(0, 3),
     strengths: strengths.slice(0, 2),
-    priorityFix: { label: "외부 콘텐츠 허브 구축으로 검색 권위 회수 시작", pointRange: "+15~+30" },
+    priorityFix: { label: "자사 외부 콘텐츠 허브 강화로 권위 회수", pointRange: "+15~+30" },
     quickFix: { label: "스토어 외 자사 채널(블로그·자사몰) 진단 받기", pointRange: "+3~+5" },
     additionalFixes: [
       { label: "구조화된 외부 콘텐츠로 브랜드 신호 강화", pointRange: "+5~+10" },
     ],
-    scoreCap: `네이버 스토어는 자체 도메인이 없어 SEO 점수가 ${SEO_CAP}점을 넘기 어려워요.`,
-    // 스토어 전용 메타
+    scoreCap: x.webkrOwnRatio >= 0.3
+      ? `자사 외부 도메인 신호가 있어 SEO 캡이 60점까지 완화돼요.`
+      : `네이버 스토어는 자체 도메인이 없어 SEO 점수가 45~50점을 넘기 어려워요.`,
     _storeMeta: {
       authorityLeakageRatio: leakageRatio,
       ownAuthority,
