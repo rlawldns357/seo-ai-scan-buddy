@@ -116,7 +116,7 @@ ${analysisSummary ? `분석 컨텍스트:\n${analysisSummary}` : ""}
               type: "object",
               properties: {
                 title: { type: "string", description: "60자 이내, 주 키워드 포함 SEO 제목" },
-                slug: { type: "string", description: "url-friendly english slug, lowercase, hyphens" },
+                slug: { type: "string", description: "URL slug in ENGLISH ONLY — lowercase ASCII letters/digits/hyphens. NO Korean, NO spaces. 3-7 meaningful tokens (translate KO→EN: 네이버→naver, 카페24→cafe24, 검색최적화→seo, 가이드→guide). Length 15-60. Pattern ^[a-z0-9]+(-[a-z0-9]+)*$", pattern: "^[a-z0-9]+(-[a-z0-9]+)*$" },
                 excerpt: { type: "string", description: "150자 이내 메타 설명형 요약" },
                 content: { type: "string", description: "마크다운 본문 (FAQ 섹션 + 권위 외부 링크 포함)" },
                 keywords: {

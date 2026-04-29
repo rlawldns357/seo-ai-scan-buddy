@@ -95,15 +95,45 @@ function getKSTDateString(): string {
   return kst.toISOString().slice(0, 10);
 }
 
-function slugify(text: string): string {
+/**
+ * Build URL-safe ASCII slug. Naver Webmaster guideline: ASCII-only URLs.
+ * Korean chars in URLs cause percent-encoding issues, broken share previews,
+ * and Naver indexing failures. AI is now responsible for generating slug_en;
+ * this fn validates / sanitizes / falls back.
+ */
+function buildSafeSlug(slugEn: string | undefined, fallbackTitle: string): string {
   const date = getKSTDateString().replace(/-/g, "");
-  const base = text
+  // 1) Sanitize AI-provided slug_en (strip non-ASCII just in case)
+  const cleaned = (slugEn || "")
     .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s-]/g, "")
+    .normalize("NFKD")
+    .replace(/[^a-z0-9\s-]/g, "")  // ASCII letters/digits/space/hyphen only
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
     .slice(0, 60);
-  return `${base}-${date}`;
+
+  // 2) Accept if has >=2 meaningful tokens (avoid single-word junk)
+  const tokens = cleaned.split("-").filter((t) => t.length >= 2);
+  if (tokens.length >= 2) {
+    return `${tokens.join("-")}-${date}`;
+  }
+
+  // 3) Fallback: try extract ASCII tokens from title (e.g. "Gemini 3 가이드" → "gemini-3")
+  const titleAscii = (fallbackTitle || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  const titleTokens = titleAscii.split("-").filter((t) => t.length >= 2);
+  if (titleTokens.length >= 2) {
+    return `${titleTokens.slice(0, 6).join("-")}-${date}`;
+  }
+
+  // 4) Last resort: post-{date}-{6-char hash}
+  const hash = Math.random().toString(36).slice(2, 8);
+  return `post-${date}-${hash}`;
 }
 
 /** Remove FAQ-like sections from AI-generated content to prevent duplication */
@@ -446,6 +476,11 @@ ${naverRulebook}
                     type: "object",
                     properties: {
                       title: { type: "string", description: "Blog post title in Korean" },
+                      slug_en: {
+                        type: "string",
+                        description: "URL slug in ENGLISH ONLY — lowercase ASCII letters, digits, hyphens. NO Korean, NO spaces, NO underscores. 3-7 meaningful tokens that summarize the topic in English (translate Korean concepts: '네이버'→'naver', '카페24'→'cafe24', '아임웹'→'imweb', '구글'→'google', '검색최적화'→'seo', '답변최적화'→'aeo', '생성형'→'generative', '가이드'→'guide', '전략'→'strategy', '비교'→'comparison', '체크리스트'→'checklist'). Examples: 'naver-seo-checklist-2026', 'cafe24-aeo-strategy', 'gemini-vs-chatgpt-content'. Length 15-60 chars.",
+                        pattern: "^[a-z0-9]+(-[a-z0-9]+)*$",
+                      },
                       excerpt: { type: "string", description: "2-3 sentence summary in Korean, max 160 chars" },
                       readTime: { type: "string", enum: ["3분", "4분", "5분"], description: "Read time" },
                       content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section. MUST include table, numbered list, code/quote, internal link." },
@@ -476,7 +511,7 @@ ${naverRulebook}
                         },
                       },
                     },
-                    required: ["title", "excerpt", "readTime", "content", "faqs", "faqs_short"],
+                    required: ["title", "slug_en", "excerpt", "readTime", "content", "faqs", "faqs_short"],
                     additionalProperties: false,
                   },
                 },
@@ -683,7 +718,7 @@ ${naverRulebook}
     }
 
     const titleForSlug = args?.title || `failed-${theme}`;
-    const slug = slugify(titleForSlug) + (isFailed ? `-failed-${Date.now().toString(36)}` : "");
+    const slug = buildSafeSlug(args?.slug_en, titleForSlug) + (isFailed ? `-failed-${Date.now().toString(36)}` : "");
 
     const scoreSummary = qualityScore
       ? `[자체점수 SEO ${qualityScore.seo} / AEO ${qualityScore.aeo} / GEO ${qualityScore.geo} / 평균 ${qualityScore.avg}]`
