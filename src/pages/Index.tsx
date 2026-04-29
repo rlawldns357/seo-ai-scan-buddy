@@ -414,10 +414,10 @@ const Index = () => {
                 제대로 이해<span className="font-light text-muted-foreground">하고 있을까?</span>
               </span>
             </h1>
-            <p className="text-muted-foreground text-base sm:text-lg mb-10 leading-relaxed">
+            <p className="text-muted-foreground text-base sm:text-lg mb-14 sm:mb-16 leading-relaxed">
               URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
             </p>
-            <div className="relative max-w-xl mx-auto group">
+            <div className="relative max-w-xl mx-auto group mb-10 sm:mb-12">
               {/* Soft glow halo — focus 시 강화 */}
               <div
                 aria-hidden="true"
