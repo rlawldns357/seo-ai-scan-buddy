@@ -56,6 +56,11 @@ export default {
           warning: "hsl(var(--score-warning))",
           poor: "hsl(var(--score-poor))",
         },
+        naver: {
+          DEFAULT: "hsl(var(--naver))",
+          foreground: "hsl(var(--naver-foreground))",
+          deep: "hsl(var(--naver-deep))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
