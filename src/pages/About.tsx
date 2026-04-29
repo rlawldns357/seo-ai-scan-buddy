@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import { SoftwareApplicationJsonLd } from "@/components/JsonLd";
 import FunnelCTAs from "@/components/FunnelCTAs";
-import { Search, BarChart3, Shield, Zap, ArrowRight, Target, TrendingUp, MousePointerClick, Store, Sparkles } from "lucide-react";
+import { Search, BarChart3, Shield, Zap, ArrowRight, Store, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const analyticFeatures = [
@@ -28,28 +28,6 @@ const analyticFeatures = [
   },
 ];
 
-const performanceFeatures = [
-  {
-    icon: Target,
-    title: "네이버 검색광고",
-    desc: "키워드 분석부터 입찰 전략, 품질지수 관리까지 네이버 SA의 ROAS를 극대화합니다.",
-  },
-  {
-    icon: MousePointerClick,
-    title: "Google Ads",
-    desc: "검색·디스플레이·쇼핑·영상 캠페인을 통합 운영하여 전환 단가를 최적화합니다.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Meta 광고",
-    desc: "Facebook·Instagram 타겟팅과 크리에이티브 최적화로 효율적인 리드 및 매출을 확보합니다.",
-  },
-  {
-    icon: BarChart3,
-    title: "데이터 분석 & GA",
-    desc: "GA4, GTM 세팅부터 전환 퍼널 분석, 어트리뷰션 모델링까지 데이터 기반 의사결정을 지원합니다.",
-  },
-];
 
 export default function About() {
   return (
@@ -66,7 +44,7 @@ export default function About() {
             URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다.
           </p>
           <p className="text-center text-muted-foreground text-sm mb-12 leading-relaxed">
-            검색 최적화부터 퍼포먼스 마케팅까지, 데이터 기반으로 성장을 설계합니다.
+            SEO·AEO·GEO 3개 축을 데이터 기반으로 함께 점검합니다.
             <br />
             <span className="text-xs text-muted-foreground/60">마지막 엔진 업데이트: 2026년 4월 · Google Lighthouse v12 기준 · Schema.org 2024 표준 기반</span>
           </p>
@@ -125,32 +103,7 @@ export default function About() {
             </div>
           </Link>
 
-          <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-primary" />
-            퍼포먼스 마케팅
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-            검색 최적화로 유입을 만들고, 퍼포먼스 마케팅으로 전환을 극대화합니다.
-            담당 광고 전문가가 매체별 캠페인을 직접 운영하고 성과를 관리합니다.
-          </p>
-          <div className="grid sm:grid-cols-2 gap-4 mb-16">
-            {performanceFeatures.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-border/50 bg-muted/20 p-6 space-y-3"
-              >
-                <div className="rounded-xl p-2.5 w-fit bg-accent/20">
-                  <f.icon className="w-5 h-5 text-accent" />
-                </div>
-                <h3 className="text-sm font-bold text-foreground">{f.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <section className="space-y-6 text-sm text-muted-foreground leading-relaxed">
+          <section className="mt-12 space-y-6 text-sm text-muted-foreground leading-relaxed">
             <div>
               <h2 className="text-base font-bold text-foreground mb-2">
                 왜 SEO만으로는 부족한가요?
