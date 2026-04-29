@@ -56,58 +56,10 @@ export default function Admin() {
   const [engineConfig, setEngineConfig] = useState<{ version: number; updated_at: string } | null>(null);
   const [engineLogs, setEngineLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
   const [engineUpdating, setEngineUpdating] = useState(false);
-  const [autoblogConfig, setAutoblogConfig] = useState<{ version: number; updated_at: string } | null>(null);
-  const [autoblogLogs, setAutoblogLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
-  const [autoblogUpdating, setAutoblogUpdating] = useState(false);
   const [failedPosts, setFailedPosts] = useState<{ id: string; title: string; slug: string; category: string; author: string; failure_reason: string; failure_attempts: number; created_at: string; contentLength: number }[]>([]);
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string>("");
-  // faq_short backfill state
-  const [backfillSlug, setBackfillSlug] = useState("");
-  const [backfillLimit, setBackfillLimit] = useState(5);
-  const [backfillOverwrite, setBackfillOverwrite] = useState(false);
-  const [backfillRunning, setBackfillRunning] = useState(false);
-  const [backfillResult, setBackfillResult] = useState<{
-    processed: number;
-    success: number;
-    results: { slug: string; status: string; reason?: string; error?: string; count?: number }[];
-  } | null>(null);
-  const [backfillError, setBackfillError] = useState("");
-
-  const runBackfill = async (mode: "single" | "batch") => {
-    setBackfillRunning(true);
-    setBackfillError("");
-    setBackfillResult(null);
-    const pw = sessionStorage.getItem("admin_pw") || password;
-    const body: Record<string, unknown> = { password: pw, overwrite: backfillOverwrite };
-    if (mode === "single") {
-      const s = backfillSlug.trim();
-      if (!s) {
-        setBackfillError("slug를 입력하세요");
-        setBackfillRunning(false);
-        return;
-      }
-      body.slug = s;
-    } else {
-      body.all = true;
-      body.limit = Math.max(1, Math.min(50, backfillLimit));
-    }
-    try {
-      const { data: res, error: err } = await supabase.functions.invoke("backfill-faq-short", { body });
-      if (err) throw err;
-      if (res?.error) {
-        setBackfillError(typeof res.error === "string" ? res.error : JSON.stringify(res.error));
-      } else {
-        setBackfillResult({
-          processed: res?.processed ?? 0,
-          success: res?.success ?? 0,
-          results: res?.results ?? [],
-        });
-      }
-    } catch (e: any) {
-      setBackfillError(e?.message || "호출 실패");
-    }
     setBackfillRunning(false);
   };
 
