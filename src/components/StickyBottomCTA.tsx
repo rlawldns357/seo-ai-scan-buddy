@@ -1,128 +1,65 @@
-import { useState } from "react";
-import { Search, CheckCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
-import ConsultationModal from "@/components/ConsultationModal";
 
+const AUTOBLOG_URL = "https://auto-blog-hive.lovable.app";
+
+/**
+ * 최하단 sticky CTA — Auto-Blog (분리 SaaS)로 유도.
+ * 진단 후 자연스럽게 "이제 발행도 자동화하세요" 흐름.
+ */
 export default function StickyBottomCTA() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
-  const [showConsult, setShowConsult] = useState(false);
-
-  const handleSubmit = async () => {
-    const trimmed = email.trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) return;
-
-    setStatus("loading");
-    try {
-      const { error } = await supabase.from("email_leads").insert({
-        email: trimmed,
-        source: "sticky_cta",
-      });
-
-      if (!error || error.code === "23505") {
-        setStatus("done");
-        trackEvent("sticky_email_submit", { email: trimmed });
-        if (!error) {
-          supabase.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "lead-confirmation",
-              recipientEmail: trimmed,
-              idempotencyKey: `lead-confirm-${trimmed}`,
-            },
-          });
-        }
-      } else {
-        setStatus("idle");
-      }
-    } catch {
-      setStatus("idle");
-    }
+  const handleClick = () => {
+    trackEvent("autoblog_beta_modal_open", { source: "sticky_cta" });
   };
 
-  // Step 2: after email registered, show consultation prompt
-  if (status === "done") {
-    return (
-      <>
-        <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border">
-          <div className="container max-w-4xl mx-auto flex items-center justify-center gap-3 px-3 py-2.5 sm:py-3">
-            <div className="flex items-center gap-1.5">
-              <CheckCircle className="w-3.5 h-3.5 text-score-excellent shrink-0" />
-              <p className="text-xs sm:text-sm font-medium text-foreground">등록 완료!</p>
-            </div>
-            <div className="w-px h-4 bg-border" />
-            <p className="text-xs sm:text-sm text-muted-foreground">전문가 상담도 받아보시겠어요?</p>
-            <button
-              onClick={() => setShowConsult(true)}
-              className="shrink-0 h-8 px-4 rounded-lg gradient-primary text-primary-foreground font-bold text-xs hover:opacity-90 transition-opacity whitespace-nowrap"
-            >
-              무료 상담 신청 →
-            </button>
-          </div>
-        </div>
-        <ConsultationModal open={showConsult} onClose={() => setShowConsult(false)} />
-      </>
-    );
-  }
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border">
+    <div className="fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-md border-t border-border">
       {/* Desktop layout */}
-      <div className="hidden sm:flex container max-w-4xl mx-auto items-center gap-3 px-4 py-3">
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="gradient-primary rounded-lg p-1.5">
-              <Search className="w-3 h-3 text-primary-foreground" />
-            </div>
-            <span className="text-sm font-bold text-foreground">SearchTune <span className="font-extrabold">OS</span></span>
-          </div>
-          <div className="w-px h-6 bg-border" />
-          <p className="text-xs text-muted-foreground">
-            정식 출시되면 가장 먼저 알려드릴게요
+      <a
+        href={AUTOBLOG_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleClick}
+        className="hidden sm:flex container max-w-4xl mx-auto items-center gap-4 px-4 py-3 group"
+      >
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-sm">
+          <Sparkles className="w-2.5 h-2.5" /> NEW
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-bold text-foreground leading-tight">
+            진단했다면, 이제 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">발행도 자동화</span>하세요
+          </p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Auto-Blog — SEO·AEO·GEO 3축 콘텐츠 30편을 큐에 쌓아 자동 발행
           </p>
         </div>
-        <div className="flex-1 flex gap-2 justify-end">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            placeholder="you@company.com"
-            className="flex-1 max-w-[240px] min-w-0 h-9 px-3 rounded-lg border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={status === "loading"}
-            className="shrink-0 h-9 px-4 rounded-lg gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-50"
-          >
-            {status === "loading" ? "..." : "알림 받기"}
-          </button>
-        </div>
-      </div>
+        <span className="shrink-0 inline-flex items-center gap-1.5 h-9 px-4 rounded-full gradient-primary text-primary-foreground text-sm font-bold whitespace-nowrap group-hover:opacity-90 transition-opacity">
+          Auto-Blog 보기
+          <ArrowUpRight className="w-3.5 h-3.5" />
+        </span>
+      </a>
 
       {/* Mobile layout */}
-      <div className="sm:hidden px-3 py-2.5 space-y-2">
-        <p className="text-center text-[11px] font-medium text-muted-foreground">
-          🚀 <span className="font-bold text-foreground">서치튠OS(SearchTune OS)</span> 정식 출시 알림을 받아보세요
-        </p>
-        <div className="flex gap-1.5">
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-            placeholder="you@company.com"
-            className="flex-1 min-w-0 h-10 px-3 rounded-full border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary text-sm transition-all"
-          />
-          <button
-            onClick={handleSubmit}
-            disabled={status === "loading"}
-            className="shrink-0 h-10 px-5 rounded-full gradient-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity whitespace-nowrap disabled:opacity-50"
-          >
-            {status === "loading" ? "..." : "알림 받기"}
-          </button>
+      <a
+        href={AUTOBLOG_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleClick}
+        className="sm:hidden block px-3 py-2.5 active:opacity-80 transition-opacity"
+      >
+        <div className="flex items-center justify-center gap-1.5 mb-2">
+          <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-primary to-accent text-primary-foreground leading-none">
+            <Sparkles className="w-2.5 h-2.5" /> NEW
+          </span>
+          <p className="text-[11px] font-medium text-muted-foreground leading-none">
+            진단 다음 단계는 <span className="font-bold text-foreground">자동 발행</span>이에요
+          </p>
         </div>
-      </div>
+        <div className="flex items-center justify-between gap-2 h-10 px-4 rounded-full gradient-primary text-primary-foreground">
+          <span className="text-sm font-bold">Auto-Blog로 자동 발행 시작</span>
+          <ArrowUpRight className="w-4 h-4 shrink-0" />
+        </div>
+      </a>
     </div>
   );
 }
