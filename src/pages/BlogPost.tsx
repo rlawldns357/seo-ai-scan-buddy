@@ -222,13 +222,46 @@ function renderMarkdown(md: string) {
   return html.join("\n");
 }
 
+/** Naver Rulebook: derive meaningful alt from image src filename */
+function deriveAltFromSrc(src: string): string {
+  try {
+    const path = src.split("?")[0].split("#")[0];
+    const filename = path.substring(path.lastIndexOf("/") + 1);
+    const stem = filename.replace(/\.(png|jpe?g|gif|webp|svg|avif)$/i, "");
+    const cleaned = stem.replace(/[-_+]+/g, " ").replace(/\s+/g, " ").trim();
+    return cleaned || "본문 이미지";
+  } catch {
+    return "본문 이미지";
+  }
+}
+
+/** Naver Rulebook: detect meaningless anchor text and enrich for context */
+const MEANINGLESS_ANCHORS = /^(여기|이곳|클릭|더보기|링크|here|click here|click|read more|more|link)$/i;
+function enrichAnchorText(text: string, url: string): string {
+  if (!MEANINGLESS_ANCHORS.test(text.trim())) return text;
+  try {
+    const u = new URL(url);
+    const host = u.hostname.replace(/^www\./, "");
+    return `${text} (${host})`;
+  } catch {
+    return text;
+  }
+}
+
 function inline(text: string) {
-  // images ![alt](src)
+  // images ![alt](src) — alt fallback from filename (Naver rule)
   let s = text.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
-    '<img src="$2" alt="$1" class="inline-block max-w-full rounded my-2" loading="lazy" />');
-  // links [text](url)
+    (_m, alt: string, src: string) => {
+      const safeAlt = (alt && alt.trim()) ? alt : deriveAltFromSrc(src);
+      const escaped = safeAlt.replace(/"/g, "&quot;");
+      return `<img src="${src}" alt="${escaped}" class="inline-block max-w-full rounded my-2" loading="lazy" decoding="async" />`;
+    });
+  // links [text](url) — meaningless anchor enrichment (Naver rule)
   s = s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
-    '<a href="$2" class="text-primary underline underline-offset-2 hover:text-primary/80" target="_blank" rel="noopener noreferrer">$1</a>');
+    (_m, label: string, url: string) => {
+      const enriched = enrichAnchorText(label, url);
+      return `<a href="${url}" class="text-primary underline underline-offset-2 hover:text-primary/80" target="_blank" rel="noopener noreferrer">${enriched}</a>`;
+    });
   // bold + italic
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>');
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
