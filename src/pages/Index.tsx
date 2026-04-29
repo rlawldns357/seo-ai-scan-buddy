@@ -476,7 +476,7 @@ const Index = () => {
               return (
                 <>
                   <label
-                    className={`flex items-center gap-2 justify-center mt-3 select-none group ${
+                    className={`flex items-center gap-2 justify-center mt-6 select-none group ${
                       forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"
                     }`}
                     title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
@@ -496,7 +496,7 @@ const Index = () => {
                       {forced && <span className="ml-1 text-primary font-medium">· 네이버 자동 적용</span>}
                     </span>
                   </label>
-                  <p className="text-xs text-muted-foreground mt-2 font-medium">
+                  <p className="text-xs text-muted-foreground mt-2.5 font-medium">
                     {forced
                       ? "네이버 스토어 전용 진단 · 약 10초"
                       : effectiveChecked
@@ -506,40 +506,42 @@ const Index = () => {
                 </>
               );
             })()}
-            {urlError && (
-              <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
-            )}
-            {!subpageWarning && !urlError && url.trim() && (() => {
-              const storeInfo = parseNaverStoreUrl(
-                /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
-              );
-              return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
-            })()}
-            {subpageWarning && (
-              <SubpageWarning
-                inputUrl={subpageWarning.inputUrl}
-                rootUrl={subpageWarning.rootUrl}
-                onAnalyzeRoot={() => {
-                  setSubpageWarning(null);
-                  runAnalysis(subpageWarning.rootUrl);
-                }}
-                onAnalyzeCurrent={() => {
-                  setSubpageWarning(null);
-                  runAnalysis(subpageWarning.inputUrl);
-                }}
-              />
-            )}
-            {rateLimit && !rateLimit.allowed && (
-              <RateLimitBanner
-                remaining={rateLimit.remaining}
-                emailUnlocked={rateLimit.emailUnlocked}
-                onUnlocked={async () => {
-                  const { checkRateLimit } = await import("@/lib/rateLimit");
-                  const updated = await checkRateLimit();
-                  setRateLimit(updated);
-                }}
-              />
-            )}
+            <div className="mt-6 space-y-4">
+              {urlError && (
+                <p className="text-sm text-destructive font-medium">{urlError}</p>
+              )}
+              {!subpageWarning && !urlError && url.trim() && (() => {
+                const storeInfo = parseNaverStoreUrl(
+                  /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
+                );
+                return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
+              })()}
+              {subpageWarning && (
+                <SubpageWarning
+                  inputUrl={subpageWarning.inputUrl}
+                  rootUrl={subpageWarning.rootUrl}
+                  onAnalyzeRoot={() => {
+                    setSubpageWarning(null);
+                    runAnalysis(subpageWarning.rootUrl);
+                  }}
+                  onAnalyzeCurrent={() => {
+                    setSubpageWarning(null);
+                    runAnalysis(subpageWarning.inputUrl);
+                  }}
+                />
+              )}
+              {rateLimit && !rateLimit.allowed && (
+                <RateLimitBanner
+                  remaining={rateLimit.remaining}
+                  emailUnlocked={rateLimit.emailUnlocked}
+                  onUnlocked={async () => {
+                    const { checkRateLimit } = await import("@/lib/rateLimit");
+                    const updated = await checkRateLimit();
+                    setRateLimit(updated);
+                  }}
+                />
+              )}
+            </div>
             <NaverStoreTeaser />
             <AutoPublishTeaser />
             <section className="mt-10 max-w-2xl mx-auto text-left">
