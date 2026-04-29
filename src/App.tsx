@@ -19,19 +19,12 @@ const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
-const DashboardLayout = lazy(() => import("./pages/dashboard/Layout.tsx"));
-const DashboardHome = lazy(() => import("./pages/dashboard/Home.tsx"));
-const DashboardWorkflow = lazy(() => import("./pages/dashboard/Workflow.tsx"));
-const DashboardRecommendationsPage = lazy(() => import("./pages/dashboard/RecommendationsPage.tsx"));
-const DashboardArchivePage = lazy(() => import("./pages/dashboard/ArchivePage.tsx"));
-const DashboardReportsPage = lazy(() => import("./pages/dashboard/ReportsPage.tsx"));
-const DashboardProducts = lazy(() => import("./pages/dashboard/Products.tsx"));
-const DashboardDemo = lazy(() => import("./pages/dashboard/Demo.tsx"));
-const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
-const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
-const Autoblog = lazy(() => import("./pages/Autoblog.tsx"));
 const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
+
+// AutoBlog routes moved to standalone product: https://auto-blog-hive.lovable.app
+// Source code kept under src/pages/dashboard, src/pages/sites, src/pages/Autoblog.tsx
+// for easy restoration if needed.
 
 const queryClient = new QueryClient();
 
