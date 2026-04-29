@@ -127,25 +127,44 @@ function slugTitleMatch(items: any[], slug: string): number {
 
 /** webkr 결과 중 자사 외부 도메인(자사몰/공식 SNS) 비율
  *  네이버/쇼핑/카페/블로그/지식인을 제외한 URL = 자사 통제 가능 후보.
- *  슬러그 토큰이 호스트네임에 포함되면 자사로 본다. */
-function externalOwnedRatio(items: any[], slug: string): number {
+ *  슬러그 토큰이 호스트네임에 포함되거나, 사용자가 입력한 ownDomain과 일치하면 자사로 본다. */
+function externalOwnedRatio(items: any[], slug: string, ownDomain?: string | null): number {
   if (!items || items.length === 0) return 0;
   const token = normalizeSlug(slug);
-  if (!token) return 0;
+  const ownHost = ownDomain ? ownDomain.toLowerCase().replace(/^www\./, "") : "";
+  if (!token && !ownHost) return 0;
   let owned = 0;
   let externalCount = 0;
   for (const it of items) {
     let host = "";
-    try { host = new URL(String(it?.link ?? "")).hostname.toLowerCase(); } catch { continue; }
-    // 네이버 자체 surface 제외
+    try { host = new URL(String(it?.link ?? "")).hostname.toLowerCase().replace(/^www\./, ""); } catch { continue; }
     if (host.endsWith("naver.com") || host.endsWith("naver.net")) continue;
-    // 위키/사전류는 자사 통제 불가
     if (host.includes("wiki") || host.includes("namu.")) continue;
     externalCount++;
-    if (host.replace(/[^a-z0-9]/g, "").includes(token.replace(/[^a-z0-9]/g, ""))) owned++;
+    const tokenMatch = token && host.replace(/[^a-z0-9]/g, "").includes(token.replace(/[^a-z0-9]/g, ""));
+    const domainMatch = ownHost && (host === ownHost || host.endsWith("." + ownHost));
+    if (tokenMatch || domainMatch) owned++;
   }
   return externalCount === 0 ? 0 : owned / externalCount;
 }
+
+/** 자체 도메인 후보 자동 추출 — webkr/blog 결과에서 가장 많이 등장하는 비-naver 호스트 */
+function inferOwnDomain(items: any[], slug: string): string | null {
+  const token = normalizeSlug(slug).replace(/[^a-z0-9]/g, "");
+  if (!items || items.length === 0 || !token) return null;
+  const counts = new Map<string, number>();
+  for (const it of items) {
+    let host = "";
+    try { host = new URL(String(it?.link ?? "")).hostname.toLowerCase().replace(/^www\./, ""); } catch { continue; }
+    if (host.endsWith("naver.com") || host.endsWith("naver.net")) continue;
+    if (host.includes("wiki") || host.includes("namu.") || host.includes("youtube") || host.includes("instagram") || host.includes("facebook")) continue;
+    if (!host.replace(/[^a-z0-9]/g, "").includes(token)) continue;
+    counts.set(host, (counts.get(host) ?? 0) + 1);
+  }
+  if (counts.size === 0) return null;
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+}
+
 
 /**
  * 외부 surface(blog/cafe/kin/webkr) 점유 다양성 점수 (0~100)
