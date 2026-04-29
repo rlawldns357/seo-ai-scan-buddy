@@ -446,6 +446,11 @@ ${naverRulebook}
                     type: "object",
                     properties: {
                       title: { type: "string", description: "Blog post title in Korean" },
+                      slug_en: {
+                        type: "string",
+                        description: "URL slug in ENGLISH ONLY — lowercase ASCII letters, digits, hyphens. NO Korean, NO spaces, NO underscores. 3-7 meaningful tokens that summarize the topic in English (translate Korean concepts: '네이버'→'naver', '카페24'→'cafe24', '아임웹'→'imweb', '구글'→'google', '검색최적화'→'seo', '답변최적화'→'aeo', '생성형'→'generative', '가이드'→'guide', '전략'→'strategy', '비교'→'comparison', '체크리스트'→'checklist'). Examples: 'naver-seo-checklist-2026', 'cafe24-aeo-strategy', 'gemini-vs-chatgpt-content'. Length 15-60 chars.",
+                        pattern: "^[a-z0-9]+(-[a-z0-9]+)*$",
+                      },
                       excerpt: { type: "string", description: "2-3 sentence summary in Korean, max 160 chars" },
                       readTime: { type: "string", enum: ["3분", "4분", "5분"], description: "Read time" },
                       content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section. MUST include table, numbered list, code/quote, internal link." },
@@ -476,7 +481,7 @@ ${naverRulebook}
                         },
                       },
                     },
-                    required: ["title", "excerpt", "readTime", "content", "faqs", "faqs_short"],
+                    required: ["title", "slug_en", "excerpt", "readTime", "content", "faqs", "faqs_short"],
                     additionalProperties: false,
                   },
                 },
