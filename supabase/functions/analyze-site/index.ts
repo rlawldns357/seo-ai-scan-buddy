@@ -122,6 +122,7 @@ serve(async (req) => {
 
     // Load analysis prompt from DB (with fallback to hardcoded)
     let ANALYSIS_PROMPT = FALLBACK_ANALYSIS_PROMPT;
+    let naverRulebook = "";
     try {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -135,6 +136,7 @@ serve(async (req) => {
         ANALYSIS_PROMPT = configRow.config_value;
         console.log("Using dynamic analysis prompt from DB");
       }
+      naverRulebook = await loadNaverRulebook(supabase);
     } catch (e) {
       console.warn("Failed to load prompt from DB, using fallback:", e);
     }
