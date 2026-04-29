@@ -1,6 +1,14 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+
+function ExternalRedirect({ to }: { to: string }) {
+  useEffect(() => {
+    window.location.replace(to);
+  }, [to]);
+  return null;
+}
+
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -19,19 +27,12 @@ const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
-const DashboardLayout = lazy(() => import("./pages/dashboard/Layout.tsx"));
-const DashboardHome = lazy(() => import("./pages/dashboard/Home.tsx"));
-const DashboardWorkflow = lazy(() => import("./pages/dashboard/Workflow.tsx"));
-const DashboardRecommendationsPage = lazy(() => import("./pages/dashboard/RecommendationsPage.tsx"));
-const DashboardArchivePage = lazy(() => import("./pages/dashboard/ArchivePage.tsx"));
-const DashboardReportsPage = lazy(() => import("./pages/dashboard/ReportsPage.tsx"));
-const DashboardProducts = lazy(() => import("./pages/dashboard/Products.tsx"));
-const DashboardDemo = lazy(() => import("./pages/dashboard/Demo.tsx"));
-const SiteHub = lazy(() => import("./pages/sites/SiteHub.tsx"));
-const SitePost = lazy(() => import("./pages/sites/SitePost.tsx"));
 const Auth = lazy(() => import("./pages/Auth.tsx"));
-const Autoblog = lazy(() => import("./pages/Autoblog.tsx"));
 const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
+
+// AutoBlog routes moved to standalone product: https://auto-blog-hive.lovable.app
+// Source code kept under src/pages/dashboard, src/pages/sites, src/pages/Autoblog.tsx
+// for easy restoration if needed.
 
 const queryClient = new QueryClient();
 
@@ -50,8 +51,6 @@ const App = () => (
             {/* ───── 공개 라우트 (Public) ─────────────────────────────── */}
             {/* /         → 진단 소개 + 무료 사이트 진단 (공개 메인, 고정) */}
             <Route path="/" element={<Index />} />
-            {/* /autoblog → AutoBlog 제품 소개 (공개 마케팅 랜딩) */}
-            <Route path="/autoblog" element={<Autoblog />} />
             {/* /naver-store → 네이버 스토어 발자 타겟 전용 진단 랜딩 (분리 BM) */}
             <Route path="/naver-store" element={<NaverStore />} />
             {/* 기타 공개 페이지 */}
@@ -61,30 +60,16 @@ const App = () => (
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
-            <Route path="/sites/:siteSlug" element={<SiteHub />} />
-            <Route path="/sites/:siteSlug/:postSlug" element={<SitePost />} />
             <Route path="/design-test" element={<DesignTest />} />
 
             {/* ───── 인증 ─────────────────────────────────────────────── */}
             <Route path="/auth" element={<Auth />} />
 
-            {/* ───── 내부 작업 공간 (읽기 전용 접근 허용, 액션만 가드) ── */}
-            {/* /dashboard/* → 로그인 사용자의 AutoBlog 운영 콘솔.        */}
-            {/* 게스트 접근 시 /auth로 자동 이동하지 않음.               */}
-            {/* 인증은 useRequireAuthAction을 통한 액션 클릭 시점에만.   */}
-            <Route path="/dashboard" element={<DashboardLayout />}>
-              <Route index element={<DashboardHome />} />
-              <Route path="recommendations" element={<DashboardRecommendationsPage />} />
-              <Route path="workflow" element={<DashboardWorkflow />} />
-              <Route path="archive" element={<DashboardArchivePage />} />
-              <Route path="reports" element={<DashboardReportsPage />} />
-              <Route path="products" element={<DashboardProducts />} />
-              {/* legacy redirects */}
-              <Route path="content" element={<Navigate to="/dashboard/workflow" replace />} />
-              <Route path="auto-publish" element={<Navigate to="/dashboard/workflow" replace />} />
-              <Route path="posts" element={<Navigate to="/dashboard/workflow" replace />} />
-              <Route path="demo" element={<DashboardDemo />} />
-            </Route>
+            {/* ───── AutoBlog → 독립 SaaS로 분리 ──────────────────────── */}
+            {/* /autoblog, /dashboard/*, /sites/* 모두 auto-blog-hive로 외부 리다이렉트 */}
+            <Route path="/autoblog" element={<ExternalRedirect to="https://auto-blog-hive.lovable.app" />} />
+            <Route path="/dashboard/*" element={<ExternalRedirect to="https://auto-blog-hive.lovable.app/dashboard" />} />
+            <Route path="/sites/*" element={<ExternalRedirect to="https://auto-blog-hive.lovable.app" />} />
 
             {/* ───── 관리자 ───────────────────────────────────────────── */}
             <Route path="/admin" element={<Admin />} />
