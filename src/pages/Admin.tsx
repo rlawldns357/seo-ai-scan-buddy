@@ -60,6 +60,10 @@ export default function Admin() {
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string>("");
+  const [clarity, setClarity] = useState<{ summary: Record<string, number>; numOfDays: number; fetchedAt: string } | null>(null);
+  const [clarityErr, setClarityErr] = useState<string>("");
+  const [clarityLoading, setClarityLoading] = useState(false);
+  const [clarityDays, setClarityDays] = useState(1);
 
   const handleLogin = async () => {
     setLoading(true);
