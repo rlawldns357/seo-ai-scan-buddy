@@ -1,19 +1,11 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-
-function ExternalRedirect({ to }: { to: string }) {
-  useEffect(() => {
-    window.location.replace(to);
-  }, [to]);
-  return null;
-}
 
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { PaymentTestModeBanner } from "@/components/PaymentTestModeBanner";
 import ScrollToTop from "@/components/ScrollToTop";
 import GAListener from "@/components/GAListener";
 import Index from "./pages/Index.tsx";
@@ -27,12 +19,7 @@ const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
-const Auth = lazy(() => import("./pages/Auth.tsx"));
 const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
-
-// AutoBlog routes moved to standalone product: https://auto-blog-hive.lovable.app
-// Source code kept under src/pages/dashboard, src/pages/sites, src/pages/Autoblog.tsx
-// for easy restoration if needed.
 
 const queryClient = new QueryClient();
 
@@ -45,7 +32,6 @@ const App = () => (
       <BrowserRouter>
         <ScrollToTop />
         <GAListener />
-        <PaymentTestModeBanner />
         <Suspense fallback={null}>
           <Routes>
             {/* ───── 공개 라우트 (Public) ─────────────────────────────── */}
@@ -61,15 +47,6 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/design-test" element={<DesignTest />} />
-
-            {/* ───── 인증 ─────────────────────────────────────────────── */}
-            <Route path="/auth" element={<Auth />} />
-
-            {/* ───── AutoBlog → 독립 SaaS로 분리 ──────────────────────── */}
-            {/* /autoblog, /dashboard/*, /sites/* 모두 auto-blog-hive로 외부 리다이렉트 */}
-            <Route path="/autoblog" element={<ExternalRedirect to="https://auto-blog-hive.lovable.app" />} />
-            <Route path="/dashboard/*" element={<ExternalRedirect to="https://auto-blog-hive.lovable.app/dashboard" />} />
-            <Route path="/sites/*" element={<ExternalRedirect to="https://auto-blog-hive.lovable.app" />} />
 
             {/* ───── 관리자 ───────────────────────────────────────────── */}
             <Route path="/admin" element={<Admin />} />
