@@ -15,6 +15,9 @@ export interface NaverStoreContext {
   storeUrl: string;
   authorityLeakageRatio: number; // 0~1
   ownContentRatio: number;       // 0~1
+  ownDomain?: string | null;
+  ownDomainSource?: "user" | "inferred" | "none";
+  ownDomainDominant?: boolean;
   externalSurfaces: {
     shop: number;
     blog: number;
