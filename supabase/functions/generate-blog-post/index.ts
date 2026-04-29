@@ -299,6 +299,9 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 네이버 웹마스터 공식 룰북 로드 (모든 자동 생성 글에 강제 주입)
+    const naverRulebook = await loadNaverRulebook(supabase);
+
     const systemPrompt = `당신은 "${author.name}" (${author.title})입니다. ${author.style}
 SearchTune OS라는 SEO/AEO/GEO 분석 도구의 블로그에 게시될 전문적인 콘텐츠를 생성하세요.
 
