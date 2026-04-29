@@ -83,20 +83,68 @@ function stripTags(s: string): string {
   return (s ?? "").replace(/<[^>]*>/g, "");
 }
 
-/**
- * 자사 도메인이 검색결과에 포함된 비율 (0~1)
- * 브랜드/스마트스토어 도메인 + 슬러그를 호스트네임으로 가진 결과 카운트.
- */
-function ownDomainShare(items: any[], slug: string): number {
+/* ────────────────────────────────────────────────────────────────────
+ * 시그널 계산 — 누수율의 진짜 의미를 살리기 위한 멀티 신호
+ *
+ * 네이버 쇼핑 결과는 link가 보통 smartstore.naver.com/main/products/...
+ * 또는 shopping.naver.com/... 형태라 brand.naver.com/{slug} 매칭이 거의
+ * 안 됩니다. 그래서 다음 4개 신호를 합산해 권위 누수를 산출합니다:
+ *  1) storeShare — shop 결과의 mallName/link 호스트 일치 비율
+ *  2) ownSiteShare — webkr 결과 중 자사 외부 도메인(.kr/.com 등) 비율
+ *  3) slugAuthority — shop 결과 title에 슬러그 토큰 포함 비율 (충돌 감지)
+ *  4) brandPresence — webkr 상위 결과의 자사 위키/공식 채널 존재
+ * ──────────────────────────────────────────────────────────────────── */
+
+/** 슬러그를 검색 비교용 토큰으로 정규화 */
+function normalizeSlug(slug: string): string {
+  return slug.toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+}
+
+/** shop 결과 link/mallName이 본인 스토어인지 */
+function isOwnStoreItem(item: any, slug: string): boolean {
+  const link = String(item?.link ?? "").toLowerCase();
+  const mall = String(item?.mallName ?? "").toLowerCase();
+  const s = slug.toLowerCase();
+  if (link.includes(`brand.naver.com/${s}`)) return true;
+  if (link.includes(`smartstore.naver.com/${s}`)) return true;
+  // mallName 직접 일치 (네이버 쇼핑 검색의 표준 필드)
+  if (mall && (mall === s || mall.replace(/[^a-z0-9가-힣]/g, "") === normalizeSlug(slug))) return true;
+  return false;
+}
+
+/** title에 슬러그 토큰이 포함되는 비율 → 슬러그 충돌(노이즈) 감지 */
+function slugTitleMatch(items: any[], slug: string): number {
   if (!items || items.length === 0) return 0;
-  let own = 0;
+  const token = normalizeSlug(slug);
+  if (!token) return 0;
+  let hit = 0;
   for (const it of items) {
-    const link = String(it?.link ?? "");
-    if (link.includes(`brand.naver.com/${slug}`) || link.includes(`smartstore.naver.com/${slug}`)) {
-      own++;
-    }
+    const t = stripTags(String(it?.title ?? "")).toLowerCase().replace(/\s/g, "");
+    if (t.includes(token)) hit++;
   }
-  return own / items.length;
+  return hit / items.length;
+}
+
+/** webkr 결과 중 자사 외부 도메인(자사몰/공식 SNS) 비율
+ *  네이버/쇼핑/카페/블로그/지식인을 제외한 URL = 자사 통제 가능 후보.
+ *  슬러그 토큰이 호스트네임에 포함되면 자사로 본다. */
+function externalOwnedRatio(items: any[], slug: string): number {
+  if (!items || items.length === 0) return 0;
+  const token = normalizeSlug(slug);
+  if (!token) return 0;
+  let owned = 0;
+  let externalCount = 0;
+  for (const it of items) {
+    let host = "";
+    try { host = new URL(String(it?.link ?? "")).hostname.toLowerCase(); } catch { continue; }
+    // 네이버 자체 surface 제외
+    if (host.endsWith("naver.com") || host.endsWith("naver.net")) continue;
+    // 위키/사전류는 자사 통제 불가
+    if (host.includes("wiki") || host.includes("namu.")) continue;
+    externalCount++;
+    if (host.replace(/[^a-z0-9]/g, "").includes(token.replace(/[^a-z0-9]/g, ""))) owned++;
+  }
+  return externalCount === 0 ? 0 : owned / externalCount;
 }
 
 /**
