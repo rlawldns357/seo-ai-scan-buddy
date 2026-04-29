@@ -44,7 +44,7 @@ export default function About() {
             URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다.
           </p>
           <p className="text-center text-muted-foreground text-sm mb-12 leading-relaxed">
-            검색 최적화부터 퍼포먼스 마케팅까지, 데이터 기반으로 성장을 설계합니다.
+            SEO·AEO·GEO 3개 축을 데이터 기반으로 함께 점검합니다.
             <br />
             <span className="text-xs text-muted-foreground/60">마지막 엔진 업데이트: 2026년 4월 · Google Lighthouse v12 기준 · Schema.org 2024 표준 기반</span>
           </p>
