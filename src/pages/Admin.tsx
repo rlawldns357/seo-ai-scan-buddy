@@ -60,8 +60,6 @@ export default function Admin() {
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string>("");
-    setBackfillRunning(false);
-  };
 
   const handleLogin = async () => {
     setLoading(true);
