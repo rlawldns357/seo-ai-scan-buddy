@@ -513,35 +513,47 @@ const Index = () => {
               const storeInfo = parseNaverStoreUrl(
                 /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
               );
-              return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
+              return storeInfo ? (
+                <div className="mt-8 sm:mt-10">
+                  <NaverStoreDetectedBanner info={storeInfo} />
+                </div>
+              ) : null;
             })()}
             {subpageWarning && (
-              <SubpageWarning
-                inputUrl={subpageWarning.inputUrl}
-                rootUrl={subpageWarning.rootUrl}
-                onAnalyzeRoot={() => {
-                  setSubpageWarning(null);
-                  runAnalysis(subpageWarning.rootUrl);
-                }}
-                onAnalyzeCurrent={() => {
-                  setSubpageWarning(null);
-                  runAnalysis(subpageWarning.inputUrl);
-                }}
-              />
+              <div className="mt-8 sm:mt-10">
+                <SubpageWarning
+                  inputUrl={subpageWarning.inputUrl}
+                  rootUrl={subpageWarning.rootUrl}
+                  onAnalyzeRoot={() => {
+                    setSubpageWarning(null);
+                    runAnalysis(subpageWarning.rootUrl);
+                  }}
+                  onAnalyzeCurrent={() => {
+                    setSubpageWarning(null);
+                    runAnalysis(subpageWarning.inputUrl);
+                  }}
+                />
+              </div>
             )}
             {rateLimit && !rateLimit.allowed && (
-              <RateLimitBanner
-                remaining={rateLimit.remaining}
-                emailUnlocked={rateLimit.emailUnlocked}
-                onUnlocked={async () => {
-                  const { checkRateLimit } = await import("@/lib/rateLimit");
-                  const updated = await checkRateLimit();
-                  setRateLimit(updated);
-                }}
-              />
+              <div className="mt-8 sm:mt-10">
+                <RateLimitBanner
+                  remaining={rateLimit.remaining}
+                  emailUnlocked={rateLimit.emailUnlocked}
+                  onUnlocked={async () => {
+                    const { checkRateLimit } = await import("@/lib/rateLimit");
+                    const updated = await checkRateLimit();
+                    setRateLimit(updated);
+                  }}
+                />
+              </div>
             )}
-            <NaverStoreTeaser />
-            <AutoPublishTeaser />
+            <div className="mt-10 sm:mt-12">
+              <NaverStoreTeaser />
+            </div>
+            <div className="mt-6 sm:mt-8">
+              <AutoPublishTeaser />
+            </div>
             <section className="mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
                 FAQ
