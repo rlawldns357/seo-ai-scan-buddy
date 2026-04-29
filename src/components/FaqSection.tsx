@@ -7,8 +7,8 @@ import {
 
 export const faqs = [
   {
-    q: "이게 뭐하는 도구예요?",
-    a: "URL 한 줄만 입력하면 Google 검색(SEO), ChatGPT·Perplexity 답변(AEO), 생성형 검색 인용(GEO) — 3개 축의 점수와 약점을 즉시 진단해 주는 무료 도구예요. 빠른 분석(Lighthouse 스킵)은 30초 이내, 전체 분석도 1분 안에 끝나요.",
+    q: "서치튠OS(SearchTune OS)는 어떤 서비스인가요?",
+    a: "URL만 입력하면 SEO·AEO·GEO 3개 축 점수를 즉시 분석하는 무료 AI 검색 진단 도구입니다. 서치튠OS(SearchTune OS)는 2026년 출시되어, 항목별 개선 포인트와 우선순위를 자동으로 알려줍니다. Google Lighthouse v12 실측 데이터와 AI 기반 콘텐츠 분석을 결합한 하이브리드 방식을 사용합니다.",
   },
   {
     q: "분석한 다음엔 뭘 할 수 있어요?",
@@ -17,10 +17,6 @@ export const faqs = [
   {
     q: "SEO, AEO, GEO가 뭔가요?",
     a: "세 가지 모두 검색에서 발견되기 위한 전략이지만 대상이 다릅니다. SEO(검색엔진 최적화)는 Google·Naver 등 전통 검색엔진 상위 노출, AEO(AI 답변 최적화)는 ChatGPT·Perplexity·뤼튼·클로바X·Gemini 같은 AI가 내 콘텐츠를 답변으로 인용하도록 최적화, GEO(생성형 검색 최적화)는 Google SGE·Naver Cue:·Bing Copilot 등 AI 검색 결과에 출처로 선택되도록 하는 전략입니다.",
-  },
-  {
-    q: "서치튠OS(SearchTune OS)는 어떤 서비스인가요?",
-    a: "URL만 입력하면 SEO·AEO·GEO 3개 축 점수를 즉시 분석하는 무료 AI 검색 진단 도구입니다. 서치튠OS(SearchTune OS)는 2026년 출시되어, 항목별 개선 포인트와 우선순위를 자동으로 알려줍니다. Google Lighthouse v12 실측 데이터와 AI 기반 콘텐츠 분석을 결합한 하이브리드 방식을 사용합니다.",
   },
   {
     q: "분석에 비용이 드나요?",
