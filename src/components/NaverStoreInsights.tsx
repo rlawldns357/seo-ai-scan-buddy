@@ -226,12 +226,9 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
       </section>
 
       {/* ─────────────────────────────────────────────
-          L2 SUPPORT + L1 ACTION: 토글로 접기 (기본 접힘)
+          L2 SUPPORT + L1 ACTION: 항상 펼쳐서 표시
           ───────────────────────────────────────────── */}
-      <DetailsToggleSection
-        leftLabel="자세한 진단 데이터 + 액션 플랜 보기"
-        rightLabel={`보조 지표 2 · 액션 ${3}`}
-      >
+      <div className="space-y-6">
         <section>
         <div className="flex items-baseline justify-between px-1 mb-2.5">
           <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
@@ -343,45 +340,11 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
         </div>
         <ActionPlan context={context} />
       </section>
-      </DetailsToggleSection>
+      </div>
     </div>
   );
 }
 
-/* ── 접기/펼치기 섹션 래퍼 (기본 접힘) ── */
-function DetailsToggleSection({
-  leftLabel,
-  rightLabel,
-  children,
-}: {
-  leftLabel: string;
-  rightLabel?: string;
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(true);
-  return (
-    <div className="space-y-3">
-      <button
-        onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between gap-3 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors px-4 py-3.5 text-left"
-        aria-expanded={open}
-      >
-        <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
-          <ChevronDown
-            className={`w-4 h-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
-          />
-          {leftLabel}
-        </span>
-        {rightLabel && (
-          <span className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground">
-            {rightLabel}
-          </span>
-        )}
-      </button>
-      {open && <div className="space-y-6 animate-fade-up">{children}</div>}
-    </div>
-  );
-}
 
 /* ──────────────────────────────────────────────────────────────────
  * 액션 플랜: 진단 데이터를 우선순위 개선안으로 변환
