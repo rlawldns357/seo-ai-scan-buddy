@@ -103,7 +103,7 @@ export default function NaverStore() {
               </div>
               <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground leading-tight tracking-tight mb-5">
                 <span className="block text-muted-foreground text-lg sm:text-2xl font-light mb-3">
-                  내 스토어가 검색에서 안 보이는 이유,
+                  내 스토어가 검색에서 얼마나 보이는지,
                 </span>
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   10초 만에 알려드려요
