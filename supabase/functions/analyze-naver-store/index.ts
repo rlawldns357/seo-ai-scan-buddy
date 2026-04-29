@@ -498,6 +498,12 @@ Deno.serve(async (req) => {
         webkr: webkrItems.slice(0, 3).map((i: any) => stripTags(i.title)),
       },
     },
+    engineMeta: {
+      rulebook: "naver-webmaster-bible",
+      rulebookLoaded: !!rulebook,
+      rulebookHash: rulebook ? rulebook.length : 0,
+      caps: { seo: seoCap, aeo: aeoCap, geo: geoCap },
+    },
   };
 
   return new Response(
