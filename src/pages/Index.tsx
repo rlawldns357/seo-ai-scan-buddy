@@ -86,6 +86,17 @@ const Index = () => {
   const [normalizedUrl, setNormalizedUrl] = useState("");
   const [result, setResult] = useState<ExtendedDemoResult | null>(null);
 
+  // Hero 입력창 placeholder 로테이션 (3.5초 간격, 빈 입력일 때만)
+  const [placeholderIdx, setPlaceholderIdx] = useState(0);
+  useEffect(() => {
+    if (url) return;
+    const id = setInterval(() => {
+      setPlaceholderIdx((i) => (i + 1) % PLACEHOLDER_ROTATION.length);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [url]);
+  const rotatingPlaceholder = PLACEHOLDER_ROTATION[placeholderIdx];
+
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
