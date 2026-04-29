@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
-import { Zap, Loader2 } from "lucide-react";
+import { Zap, Loader2, Search } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
