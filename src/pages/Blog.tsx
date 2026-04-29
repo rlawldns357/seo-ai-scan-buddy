@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import BlogScanDemo from "@/components/blog/BlogScanDemo";
 
 
 const categoryColor: Record<string, string> = {
@@ -305,6 +306,8 @@ export default function Blog() {
             SEO · AEO · GEO에 대해 알아야 할 모든 것. 실전 가이드와 인사이트를 공유합니다.
           </p>
         </div>
+
+        <BlogScanDemo />
 
         {featured && (
           <div className="mb-12">
