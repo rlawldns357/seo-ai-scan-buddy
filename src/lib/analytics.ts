@@ -14,8 +14,6 @@ type EventName =
   | "result_email_submit"
   | "report_email_sent"
   | "share_click"
-  | "autoblog_beta_signup"
-  | "autoblog_beta_modal_open"
   | "naver_store_teaser_click";
 
 let sessionId: string | null = null;

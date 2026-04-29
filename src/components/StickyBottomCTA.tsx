@@ -9,7 +9,7 @@ const AUTOBLOG_URL = "https://auto-blog-hive.lovable.app";
  */
 export default function StickyBottomCTA() {
   const handleClick = () => {
-    trackEvent("autoblog_beta_modal_open", { source: "sticky_cta" });
+    trackEvent("cta_click", { source: "sticky_cta", target: "autoblog" });
   };
 
   return (
