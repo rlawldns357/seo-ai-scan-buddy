@@ -71,7 +71,7 @@ export default function StickyBottomCTA() {
             진단 다음 단계는 <span className="font-bold text-white">자동 발행</span>
           </p>
         </div>
-        <div className="flex items-center justify-between gap-2 h-11 pl-4 pr-3 rounded-full bg-white text-[hsl(220_15%_10%)] shadow-lg">
+        <div className="flex items-center justify-between gap-2 h-11 pl-4 pr-3 rounded-full bg-white text-[hsl(225_28%_22%)] shadow-lg">
           <span className="inline-flex items-center gap-2 text-sm font-extrabold">
             <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-gradient-to-br from-primary to-accent">
               <Sparkles className="w-3 h-3 text-primary-foreground" />
