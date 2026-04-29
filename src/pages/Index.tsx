@@ -62,6 +62,22 @@ const formatAnalyzeError = (err: unknown): string => {
   return "분석 중 알 수 없는 오류가 발생했어요. 잠시 후 다시 시도해 주세요.";
 };
 
+// 예시 URL chip — 클릭 시 자동 입력 (다양성: 글로벌/한국/네이버 스토어/도메인 우세 브랜드)
+const EXAMPLE_URLS: { label: string; url: string }[] = [
+  { label: "토스", url: "toss.im" },
+  { label: "무신사", url: "musinsa.com" },
+  { label: "네이버 스토어", url: "brand.naver.com/lge" },
+  { label: "올리브영", url: "oliveyoung.co.kr" },
+];
+
+// placeholder 로테이션 후보 — 사용자 시선을 끌 수 있는 다양한 형식 예시
+const PLACEHOLDER_ROTATION = [
+  "https://your-brand.com",
+  "musinsa.com",
+  "brand.naver.com/lge",
+  "https://oliveyoung.co.kr",
+];
+
 const Index = () => {
 
   const [screen, setScreen] = useState<Screen>("home");
