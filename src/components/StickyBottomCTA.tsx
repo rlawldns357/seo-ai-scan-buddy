@@ -72,13 +72,13 @@ export default function StickyBottomCTA() {
         className="sm:hidden block bg-[hsl(225_22%_32%)] active:bg-[hsl(225_24%_24%)] px-3 py-2.5 transition-colors"
       >
         <div className="flex items-center justify-center gap-1.5 mb-2">
+          <p className="text-[11px] font-medium text-white/70 leading-none">
+            진단 다음 단계는 <span className="font-bold text-white">자동 발행</span>
+          </p>
           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-white/15 text-white border border-white/25 leading-none">
             <ExternalLink className="w-2.5 h-2.5" />
             새 서비스
           </span>
-          <p className="text-[11px] font-medium text-white/70 leading-none">
-            진단 다음 단계는 <span className="font-bold text-white">자동 발행</span>
-          </p>
         </div>
         <div className="flex items-center justify-between gap-2 h-11 pl-2 pr-3 rounded-full bg-white text-[hsl(225_28%_22%)] shadow-lg">
           <span className="inline-flex items-center gap-2 text-sm font-extrabold">
