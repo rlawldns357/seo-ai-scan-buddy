@@ -60,7 +60,7 @@ export default function StickyBottomCTA() {
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="sm:hidden block bg-[hsl(220_15%_10%)] active:bg-[hsl(220_15%_6%)] px-3 py-2.5 transition-colors"
+        className="sm:hidden block bg-[hsl(225_28%_22%)] active:bg-[hsl(225_28%_16%)] px-3 py-2.5 transition-colors"
       >
         <div className="flex items-center justify-center gap-1.5 mb-2">
           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-white/10 text-white border border-white/20 leading-none">
