@@ -417,7 +417,7 @@ const Index = () => {
             <p className="text-muted-foreground text-base sm:text-lg mb-14 sm:mb-16 leading-relaxed">
               URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
             </p>
-            <div className="relative max-w-xl mx-auto group mb-10 sm:mb-12">
+            <div className="relative max-w-xl mx-auto group">
               {/* Soft glow halo — focus 시 강화 */}
               <div
                 aria-hidden="true"
@@ -513,35 +513,47 @@ const Index = () => {
               const storeInfo = parseNaverStoreUrl(
                 /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
               );
-              return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
+              return storeInfo ? (
+                <div className="mt-8 sm:mt-10">
+                  <NaverStoreDetectedBanner info={storeInfo} />
+                </div>
+              ) : null;
             })()}
             {subpageWarning && (
-              <SubpageWarning
-                inputUrl={subpageWarning.inputUrl}
-                rootUrl={subpageWarning.rootUrl}
-                onAnalyzeRoot={() => {
-                  setSubpageWarning(null);
-                  runAnalysis(subpageWarning.rootUrl);
-                }}
-                onAnalyzeCurrent={() => {
-                  setSubpageWarning(null);
-                  runAnalysis(subpageWarning.inputUrl);
-                }}
-              />
+              <div className="mt-8 sm:mt-10">
+                <SubpageWarning
+                  inputUrl={subpageWarning.inputUrl}
+                  rootUrl={subpageWarning.rootUrl}
+                  onAnalyzeRoot={() => {
+                    setSubpageWarning(null);
+                    runAnalysis(subpageWarning.rootUrl);
+                  }}
+                  onAnalyzeCurrent={() => {
+                    setSubpageWarning(null);
+                    runAnalysis(subpageWarning.inputUrl);
+                  }}
+                />
+              </div>
             )}
             {rateLimit && !rateLimit.allowed && (
-              <RateLimitBanner
-                remaining={rateLimit.remaining}
-                emailUnlocked={rateLimit.emailUnlocked}
-                onUnlocked={async () => {
-                  const { checkRateLimit } = await import("@/lib/rateLimit");
-                  const updated = await checkRateLimit();
-                  setRateLimit(updated);
-                }}
-              />
+              <div className="mt-8 sm:mt-10">
+                <RateLimitBanner
+                  remaining={rateLimit.remaining}
+                  emailUnlocked={rateLimit.emailUnlocked}
+                  onUnlocked={async () => {
+                    const { checkRateLimit } = await import("@/lib/rateLimit");
+                    const updated = await checkRateLimit();
+                    setRateLimit(updated);
+                  }}
+                />
+              </div>
             )}
-            <NaverStoreTeaser />
-            <AutoPublishTeaser />
+            <div className="mt-10 sm:mt-12">
+              <NaverStoreTeaser />
+            </div>
+            <div className="mt-6 sm:mt-8">
+              <AutoPublishTeaser />
+            </div>
             <section className="mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
                 FAQ
