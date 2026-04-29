@@ -95,15 +95,45 @@ function getKSTDateString(): string {
   return kst.toISOString().slice(0, 10);
 }
 
-function slugify(text: string): string {
+/**
+ * Build URL-safe ASCII slug. Naver Webmaster guideline: ASCII-only URLs.
+ * Korean chars in URLs cause percent-encoding issues, broken share previews,
+ * and Naver indexing failures. AI is now responsible for generating slug_en;
+ * this fn validates / sanitizes / falls back.
+ */
+function buildSafeSlug(slugEn: string | undefined, fallbackTitle: string): string {
   const date = getKSTDateString().replace(/-/g, "");
-  const base = text
+  // 1) Sanitize AI-provided slug_en (strip non-ASCII just in case)
+  const cleaned = (slugEn || "")
     .toLowerCase()
-    .replace(/[^a-z0-9가-힣\s-]/g, "")
+    .normalize("NFKD")
+    .replace(/[^a-z0-9\s-]/g, "")  // ASCII letters/digits/space/hyphen only
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "")
     .slice(0, 60);
-  return `${base}-${date}`;
+
+  // 2) Accept if has >=2 meaningful tokens (avoid single-word junk)
+  const tokens = cleaned.split("-").filter((t) => t.length >= 2);
+  if (tokens.length >= 2) {
+    return `${tokens.join("-")}-${date}`;
+  }
+
+  // 3) Fallback: try extract ASCII tokens from title (e.g. "Gemini 3 가이드" → "gemini-3")
+  const titleAscii = (fallbackTitle || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  const titleTokens = titleAscii.split("-").filter((t) => t.length >= 2);
+  if (titleTokens.length >= 2) {
+    return `${titleTokens.slice(0, 6).join("-")}-${date}`;
+  }
+
+  // 4) Last resort: post-{date}-{6-char hash}
+  const hash = Math.random().toString(36).slice(2, 8);
+  return `post-${date}-${hash}`;
 }
 
 /** Remove FAQ-like sections from AI-generated content to prevent duplication */
