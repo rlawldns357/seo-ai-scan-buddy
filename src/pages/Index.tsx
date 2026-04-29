@@ -8,7 +8,7 @@ import NaverStoreDetectedBanner from "@/components/NaverStoreDetectedBanner";
 import RateLimitBanner from "@/components/RateLimitBanner";
 import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
-import AutoPublishTeaser from "@/components/AutoPublishTeaser";
+
 import NaverStoreTeaser from "@/components/NaverStoreTeaser";
 
 
@@ -542,7 +542,6 @@ const Index = () => {
                 />
               )}
               <NaverStoreTeaser />
-              <AutoPublishTeaser />
             </div>
             <section className="mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
@@ -652,8 +651,6 @@ const Index = () => {
 
               <EmailForm onSubmitted={() => {}} />
 
-              {/* 후속 퍼널: 분석 후 자연스러운 다음 단계로 AutoBlog 제안 */}
-              <AutoPublishTeaser />
 
               <FaqSection expanded />
               <div className="h-24" />
