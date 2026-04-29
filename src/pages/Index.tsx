@@ -646,10 +646,6 @@ const Index = () => {
                 />
               )}
 
-              {/* 점수 카드 SNS 공유 */}
-              {result && (
-                <ShareButtons result={result} url={normalizedUrl} />
-              )}
 
               {/* 일반 사이트 전용 섹션: 스토어 결과일 땐 의미 없으므로 숨김 */}
               {result && !result.storeContext && (
