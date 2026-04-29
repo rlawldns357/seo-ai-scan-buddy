@@ -183,7 +183,11 @@ const Index = () => {
             return res;
           });
 
-      const analyzePromise = analyzeSite(finalUrl).then((res) => {
+      // 네이버 스토어 전용: querystring의 ownDomain을 함께 전달
+      const ownDomainParam = isStoreUrl
+        ? new URLSearchParams(window.location.search).get("ownDomain") ?? undefined
+        : undefined;
+      const analyzePromise = analyzeSite(finalUrl, ownDomainParam ? { ownDomain: ownDomainParam } : undefined).then((res) => {
         addPhase("crawling");
         addPhase("ai-analyzing");
         return res;
