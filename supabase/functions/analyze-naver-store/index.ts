@@ -481,28 +481,42 @@ Deno.serve(async (req) => {
     );
   }
 
-  // 자사 점유율 계산
+  // ── 시그널 계산 (멀티 신호로 누수율 산출) ──
   const shopItems = shop.body?.items ?? [];
   const webkrItems = webkr.body?.items ?? [];
-  const shopShare = ownDomainShare(shopItems, store.slug);
-  const webkrOwnRatio = ownDomainShare(webkrItems, store.slug);
+
+  // 1) shop 결과 중 본인 스토어(mallName/link 호스트) 비율
+  const storeShare = shopItems.length === 0 ? 0
+    : shopItems.filter((it: any) => isOwnStoreItem(it, store.slug)).length / shopItems.length;
+  // 2) webkr 결과 중 자사 외부 도메인 비율 (자사몰/공식 SNS)
+  const ownSiteShare = externalOwnedRatio(webkrItems, store.slug);
+  // 3) shop 결과 title의 슬러그 토큰 매칭 → 1.0이면 충돌 없음, 낮으면 슬러그 노이즈
+  const slugMatch = slugTitleMatch(shopItems, store.slug);
+
+  // 권위 회수율 = 자사가 통제 가능한 노출 비중
+  //  storeShare(스토어 노출) 가중 0.6 + ownSiteShare(자사몰/SNS) 가중 0.4
+  //  단, slugMatch < 0.3이면 슬러그 충돌로 보고 storeShare 신뢰도 60% 할인
+  const trust = slugMatch < 0.3 ? 0.6 : 1;
+  const recovered = Math.min(1, storeShare * 0.6 * trust + ownSiteShare * 0.4);
+  // 누수율 = 1 - 회수율, 단 0%/100% 끝값 방지 위해 [5%, 95%]로 클램프
+  const rawLeakage = 1 - recovered;
+  const leakageRatio = Math.max(0.05, Math.min(0.95, rawLeakage));
 
   const inputs: AxisInputs = {
     store,
-    shopShare,
+    shopShare: storeShare,
     shopTotal: shop.body?.total ?? 0,
     blogTotal: blog.body?.total ?? 0,
     cafeTotal: cafe.body?.total ?? 0,
     kinTotal: kin.body?.total ?? 0,
     webkrTotal: webkr.body?.total ?? 0,
-    webkrOwnRatio,
+    webkrOwnRatio: ownSiteShare,
   };
 
   const seoAxis = buildSeoAxis(inputs);
   const aeoAxis = buildAeoAxis(inputs);
   const geoAxis = buildGeoAxis(inputs);
 
-  // 가중평균으로 최종 점수 계산
   const calcScore = (axis: any) =>
     Math.round(
       axis.subSignals.reduce(
@@ -511,9 +525,10 @@ Deno.serve(async (req) => {
       ),
     );
 
-  const seoCap = 45;
-  const aeoCap = 50;
-  const geoCap = webkrOwnRatio === 0 ? 40 : 60;
+  // ── 동적 캡: 자사몰(ownSiteShare)/스토어 점유에 따라 캡 완화 ──
+  const seoCap = ownSiteShare >= 0.3 ? 60 : ownSiteShare > 0 ? 50 : 45;
+  const aeoCap = storeShare >= 0.3 ? 60 : 50;
+  const geoCap = ownSiteShare >= 0.3 ? 70 : ownSiteShare > 0 ? 55 : 40;
 
   const seoScore = Math.min(calcScore(seoAxis), seoCap);
   const aeoScore = Math.min(calcScore(aeoAxis), aeoCap);
@@ -526,13 +541,18 @@ Deno.serve(async (req) => {
     seoAxis,
     aeoAxis,
     geoAxis,
-    // 스토어 전용 추가 메타 (UI에서 권위 누수 도넛/외부 점유율 바 그릴 때 사용)
     storeContext: {
       type: store.type,
       slug: store.slug,
       storeUrl: store.storeUrl,
-      authorityLeakageRatio: 1 - shopShare,
-      ownContentRatio: shopShare,
+      authorityLeakageRatio: leakageRatio,
+      ownContentRatio: recovered,
+      signalBreakdown: {
+        storeShare,
+        ownSiteShare,
+        slugMatch,
+        trustAdjusted: trust < 1,
+      },
       externalSurfaces: {
         shop: shop.body?.total ?? 0,
         blog: blog.body?.total ?? 0,
@@ -551,6 +571,7 @@ Deno.serve(async (req) => {
       rulebookLoaded: !!rulebook,
       rulebookHash: rulebook ? rulebook.length : 0,
       caps: { seo: seoCap, aeo: aeoCap, geo: geoCap },
+      signals: { storeShare, ownSiteShare, slugMatch, leakageRatio, recovered },
     },
   };
 
