@@ -27,8 +27,12 @@ export default function StickyBottomCTA() {
         className="hidden sm:flex relative items-center px-6 py-3 group bg-[hsl(225_22%_32%)] hover:bg-[hsl(225_24%_28%)] transition-colors"
       >
         <div className="container max-w-4xl mx-auto flex items-center gap-4">
-          {/* 브랜드 로고 칩 */}
+          {/* 브랜드 로고 칩 — 뱃지가 좌측, 로고가 우측 */}
           <div className="shrink-0 flex items-center gap-2.5">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest bg-white/15 text-white border border-white/25">
+              <ExternalLink className="w-2.5 h-2.5" />
+              새 서비스
+            </span>
             <span className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-white shadow-lg shadow-black/20 ring-1 ring-white/40">
               <img
                 src={autoblogLogo}
@@ -37,10 +41,6 @@ export default function StickyBottomCTA() {
                 loading="lazy"
                 decoding="async"
               />
-            </span>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest bg-white/15 text-white border border-white/25">
-              <ExternalLink className="w-2.5 h-2.5" />
-              새 서비스
             </span>
           </div>
 
@@ -72,13 +72,13 @@ export default function StickyBottomCTA() {
         className="sm:hidden block bg-[hsl(225_22%_32%)] active:bg-[hsl(225_24%_24%)] px-3 py-2.5 transition-colors"
       >
         <div className="flex items-center justify-center gap-1.5 mb-2">
+          <p className="text-[11px] font-medium text-white/70 leading-none">
+            진단 다음 단계는 <span className="font-bold text-white">자동 발행</span>
+          </p>
           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-white/15 text-white border border-white/25 leading-none">
             <ExternalLink className="w-2.5 h-2.5" />
             새 서비스
           </span>
-          <p className="text-[11px] font-medium text-white/70 leading-none">
-            진단 다음 단계는 <span className="font-bold text-white">자동 발행</span>
-          </p>
         </div>
         <div className="flex items-center justify-between gap-2 h-11 pl-2 pr-3 rounded-full bg-white text-[hsl(225_28%_22%)] shadow-lg">
           <span className="inline-flex items-center gap-2 text-sm font-extrabold">
