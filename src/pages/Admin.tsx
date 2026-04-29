@@ -498,6 +498,92 @@ export default function Admin() {
               </CardContent>
             </Card>
 
+            {/* Microsoft Clarity insights */}
+            <Card>
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Activity className="w-4 h-4" />
+                    Clarity 행동 분석
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
+                      최근 {clarity?.numOfDays ?? clarityDays}일
+                    </span>
+                  </CardTitle>
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3].map((n) => (
+                      <Button
+                        key={n}
+                        variant={clarityDays === n ? "default" : "outline"}
+                        size="sm"
+                        className="h-7 px-2.5 text-xs"
+                        onClick={() => { setClarityDays(n); fetchClarity(n); }}
+                        disabled={clarityLoading}
+                      >
+                        {n}일
+                      </Button>
+                    ))}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2.5 text-xs gap-1"
+                      onClick={() => fetchClarity()}
+                      disabled={clarityLoading}
+                    >
+                      <RefreshCw className={`w-3 h-3 ${clarityLoading ? "animate-spin" : ""}`} />
+                      새로고침
+                    </Button>
+                    <a
+                      href="https://clarity.microsoft.com/projects/view/wj4ish1rye"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-xs text-primary hover:underline px-2"
+                    >
+                      대시보드 <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                </div>
+                {clarity?.fetchedAt && (
+                  <p className="text-xs text-muted-foreground">
+                    조회: {new Date(clarity.fetchedAt).toLocaleString("ko-KR")} · 히트맵·세션 영상은 대시보드에서 확인
+                  </p>
+                )}
+              </CardHeader>
+              <CardContent>
+                {clarityErr ? (
+                  <div className="text-sm text-destructive bg-destructive/5 border border-destructive/20 rounded-lg p-3">
+                    {clarityErr}
+                    {clarityErr.includes("429") && " — 무료 플랜은 하루 10회 호출 제한이 있어요."}
+                  </div>
+                ) : !clarity ? (
+                  <p className="text-sm text-muted-foreground">불러오는 중...</p>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                    {[
+                      { key: "totalSessions", label: "세션", fmt: (v: number) => v.toLocaleString() },
+                      { key: "distinctUsers", label: "고유 사용자", fmt: (v: number) => v.toLocaleString() },
+                      { key: "pagesPerSession", label: "세션당 페이지", fmt: (v: number) => v.toFixed(2) },
+                      { key: "botSessions", label: "봇 세션", fmt: (v: number) => v.toLocaleString() },
+                      { key: "deadClicks", label: "죽은 클릭", fmt: (v: number) => v.toLocaleString() },
+                      { key: "rageClicks", label: "격분 클릭", fmt: (v: number) => v.toLocaleString() },
+                      { key: "quickbackClicks", label: "퀵백 클릭", fmt: (v: number) => v.toLocaleString() },
+                      { key: "scriptErrors", label: "스크립트 에러", fmt: (v: number) => v.toLocaleString() },
+                    ].map(({ key, label, fmt }) => {
+                      const v = clarity.summary[key];
+                      const has = typeof v === "number" && !isNaN(v);
+                      return (
+                        <div key={key} className="border border-border rounded-lg p-3">
+                          <div className="text-xs text-muted-foreground">{label}</div>
+                          <div className="text-lg font-bold text-foreground mt-0.5">
+                            {has ? fmt(v) : "—"}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Event breakdown & Recent leads */}
             <div className="grid md:grid-cols-2 gap-4">
               <Card>
