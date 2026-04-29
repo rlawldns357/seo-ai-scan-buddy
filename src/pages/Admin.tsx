@@ -202,7 +202,6 @@ export default function Admin() {
       fetchInsights(days);
       fetchBlogPosts();
       fetchEngineStatus();
-      fetchAutoblogStatus();
       fetchFailedPosts();
     }
   }, [authed, days]);
