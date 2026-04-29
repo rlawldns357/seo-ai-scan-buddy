@@ -23,7 +23,7 @@ export default function StickyBottomCTA() {
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="hidden sm:flex relative items-center gap-4 px-6 py-3.5 group bg-[hsl(220_15%_10%)] hover:bg-[hsl(220_15%_8%)] transition-colors"
+        className="hidden sm:flex relative items-center gap-4 px-6 py-3.5 group bg-[hsl(225_28%_22%)] hover:bg-[hsl(225_28%_18%)] transition-colors"
       >
         <div className="container max-w-4xl mx-auto flex items-center gap-4">
           {/* 외부 서비스 뱃지 */}
