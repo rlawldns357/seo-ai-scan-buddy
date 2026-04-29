@@ -66,7 +66,7 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
   };
 
   return (
-    <div id="email-form-section" ref={formRef} className="bg-primary/[0.03] rounded-2xl shadow-card border border-border p-6 sm:p-8 animate-fade-up" style={{ animationDelay: "0.4s" }}>
+    <div id="email-form-section" ref={formRef} className="bg-primary/[0.03] rounded-2xl shadow-card border border-border px-5 py-7 sm:p-8 animate-fade-up" style={{ animationDelay: "0.4s" }}>
       <h2 className="text-lg font-bold text-foreground mb-1">맞춤 개선 리포트 받기</h2>
       <p className="text-sm text-muted-foreground mb-6">
         내 사이트 맞춤 개선 우선순위를 이메일로 받아보세요.
@@ -78,16 +78,16 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
           <p className="text-sm text-muted-foreground mt-1">업데이트가 준비되면 이메일로 알려드릴게요.</p>
         </div>
       ) : (
-        <div className="space-y-4">
-          <div>
+        <div className="space-y-5 sm:space-y-4">
+          <div className="pt-1">
             <input
               type="email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setEmailError(""); setEmailStatus(""); }}
               placeholder="you@company.com"
-              className="w-full h-12 px-4 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-sm transition-all border-border"
+              className="w-full h-14 sm:h-12 px-4 rounded-xl border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 text-base sm:text-sm transition-all border-border"
             />
-            {emailError && <p className="mt-1.5 text-xs text-destructive font-medium">{emailError}</p>}
+            {emailError && <p className="mt-2 text-xs text-destructive font-medium">{emailError}</p>}
           </div>
           <label className="flex items-start gap-2.5 cursor-pointer">
             <input
@@ -110,7 +110,7 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+            className="w-full h-14 sm:h-12 mt-1 rounded-xl bg-primary text-primary-foreground font-bold text-base sm:text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
           >
             {loading ? "등록 중..." : "이메일로 받기"}
           </button>
