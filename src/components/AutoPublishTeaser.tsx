@@ -8,7 +8,7 @@ const AUTOBLOG_URL = "https://auto-blog-hive.lovable.app";
  */
 export default function AutoPublishTeaser() {
   const handleClick = () => {
-    trackEvent("autoblog_external_click", { source: "home_teaser" });
+    trackEvent("autoblog_beta_modal_open", { source: "home_teaser_external" });
   };
 
   return (
