@@ -509,18 +509,14 @@ const Index = () => {
             {urlError && (
               <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
             )}
-            {!subpageWarning && !urlError && url.trim() && (() => {
-              const storeInfo = parseNaverStoreUrl(
-                /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
-              );
-              return storeInfo ? (
-                <div className="mt-8 sm:mt-10">
-                  <NaverStoreDetectedBanner info={storeInfo} />
-                </div>
-              ) : null;
-            })()}
-            {subpageWarning && (
-              <div className="mt-8 sm:mt-10">
+            <div className="mt-8 sm:mt-10 space-y-3 sm:space-y-4">
+              {!subpageWarning && !urlError && url.trim() && (() => {
+                const storeInfo = parseNaverStoreUrl(
+                  /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
+                );
+                return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
+              })()}
+              {subpageWarning && (
                 <SubpageWarning
                   inputUrl={subpageWarning.inputUrl}
                   rootUrl={subpageWarning.rootUrl}
@@ -533,10 +529,8 @@ const Index = () => {
                     runAnalysis(subpageWarning.inputUrl);
                   }}
                 />
-              </div>
-            )}
-            {rateLimit && !rateLimit.allowed && (
-              <div className="mt-8 sm:mt-10">
+              )}
+              {rateLimit && !rateLimit.allowed && (
                 <RateLimitBanner
                   remaining={rateLimit.remaining}
                   emailUnlocked={rateLimit.emailUnlocked}
@@ -546,12 +540,8 @@ const Index = () => {
                     setRateLimit(updated);
                   }}
                 />
-              </div>
-            )}
-            <div className="mt-10 sm:mt-12">
+              )}
               <NaverStoreTeaser />
-            </div>
-            <div className="mt-6 sm:mt-8">
               <AutoPublishTeaser />
             </div>
             <section className="mt-10 max-w-2xl mx-auto text-left">
