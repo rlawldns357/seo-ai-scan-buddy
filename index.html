@@ -12,6 +12,31 @@
       @media(min-width:768px){.container{max-width:768px}}
       @media(min-width:1024px){.container{max-width:1024px}}
       @media(min-width:1280px){.container{max-width:1280px}}
+      /* Boot skeleton */
+      .stos-boot{min-height:100vh;display:flex;flex-direction:column;background:hsl(var(--background));color:hsl(var(--foreground));position:relative;overflow:hidden}
+      .stos-boot::before{content:"";position:absolute;inset:-20% -10% auto -10%;height:520px;background:radial-gradient(60% 60% at 50% 0%,hsl(230 80% 56% / .08),transparent 70%),radial-gradient(50% 50% at 80% 10%,hsl(268 70% 58% / .07),transparent 70%);pointer-events:none}
+      .stos-nav{height:60px;border-bottom:1px solid hsl(var(--border));display:flex;align-items:center;padding:0 1.25rem;backdrop-filter:saturate(140%) blur(8px);position:relative;z-index:1}
+      .stos-brand{display:flex;align-items:center;gap:.5rem;font-weight:700;font-size:.95rem;letter-spacing:-.02em;background:var(--gradient-primary);-webkit-background-clip:text;background-clip:text;color:transparent}
+      .stos-brand-dot{width:8px;height:8px;border-radius:999px;background:var(--gradient-primary);box-shadow:0 0 0 4px hsl(230 80% 56% / .12)}
+      .stos-main{flex:1;display:flex;align-items:center;justify-content:center;padding:1.5rem;position:relative;z-index:1}
+      .stos-hero{width:100%;max-width:640px;text-align:center}
+      .stos-badge{display:inline-flex;align-items:center;gap:.4rem;font-size:.72rem;font-weight:600;padding:.3rem .7rem;border-radius:999px;background:hsl(var(--secondary));color:hsl(var(--muted-foreground));border:1px solid hsl(var(--border));margin-bottom:1rem}
+      .stos-badge-dot{width:6px;height:6px;border-radius:999px;background:hsl(142 71% 45%);box-shadow:0 0 0 3px hsl(142 71% 45% / .2);animation:stos-pulse 1.6s ease-in-out infinite}
+      .stos-h1{font-size:1.75rem;line-height:1.25;font-weight:800;letter-spacing:-.025em;color:hsl(var(--foreground));margin:0 0 .65rem}
+      @media(min-width:640px){.stos-h1{font-size:2.25rem}}
+      .stos-h1 span{background:var(--gradient-primary);-webkit-background-clip:text;background-clip:text;color:transparent}
+      .stos-sub{color:hsl(var(--muted-foreground));font-size:.95rem;margin:0 0 1.75rem}
+      .stos-form{display:flex;gap:.5rem;max-width:520px;margin:0 auto;background:hsl(var(--card));border:1px solid hsl(var(--border));border-radius:14px;padding:.4rem;box-shadow:var(--shadow-card)}
+      .stos-input{flex:1;height:44px;border-radius:10px;background:linear-gradient(90deg,hsl(var(--muted)) 0%,hsl(220 14% 92%) 50%,hsl(var(--muted)) 100%);background-size:200% 100%;animation:stos-shimmer 1.4s linear infinite}
+      .stos-btn{height:44px;width:96px;border-radius:10px;background:var(--gradient-primary);opacity:.85;animation:stos-pulse 1.8s ease-in-out infinite}
+      .stos-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;max-width:520px;margin:1.25rem auto 0}
+      .stos-card{height:72px;border-radius:12px;background:hsl(var(--card));border:1px solid hsl(var(--border));position:relative;overflow:hidden}
+      .stos-card::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,hsl(0 0% 100% / .6),transparent);transform:translateX(-100%);animation:stos-sweep 1.8s ease-in-out infinite}
+      .stos-card:nth-child(2)::after{animation-delay:.25s}
+      .stos-card:nth-child(3)::after{animation-delay:.5s}
+      @keyframes stos-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+      @keyframes stos-sweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+      @keyframes stos-pulse{0%,100%{opacity:.85}50%{opacity:.55}}
     </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
