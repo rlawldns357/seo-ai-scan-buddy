@@ -125,32 +125,7 @@ export default function About() {
             </div>
           </Link>
 
-          <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-            <Target className="w-5 h-5 text-primary" />
-            퍼포먼스 마케팅
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-            검색 최적화로 유입을 만들고, 퍼포먼스 마케팅으로 전환을 극대화합니다.
-            담당 광고 전문가가 매체별 캠페인을 직접 운영하고 성과를 관리합니다.
-          </p>
-          <div className="grid sm:grid-cols-2 gap-4 mb-16">
-            {performanceFeatures.map((f) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-border/50 bg-muted/20 p-6 space-y-3"
-              >
-                <div className="rounded-xl p-2.5 w-fit bg-accent/20">
-                  <f.icon className="w-5 h-5 text-accent" />
-                </div>
-                <h3 className="text-sm font-bold text-foreground">{f.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  {f.desc}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <section className="space-y-6 text-sm text-muted-foreground leading-relaxed">
+          <section className="mt-12 space-y-6 text-sm text-muted-foreground leading-relaxed">
             <div>
               <h2 className="text-base font-bold text-foreground mb-2">
                 왜 SEO만으로는 부족한가요?
