@@ -47,7 +47,7 @@ export default function StickyBottomCTA() {
             </p>
           </div>
 
-          <span className="shrink-0 inline-flex items-center gap-1.5 h-10 px-5 rounded-full bg-white text-[hsl(220_15%_10%)] text-sm font-extrabold whitespace-nowrap group-hover:bg-white/90 group-hover:gap-2 transition-all shadow-lg">
+          <span className="shrink-0 inline-flex items-center gap-1.5 h-10 px-5 rounded-full bg-white text-[hsl(225_28%_22%)] text-sm font-extrabold whitespace-nowrap group-hover:bg-white/95 group-hover:gap-2 transition-all shadow-lg">
             바로가기
             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </span>
