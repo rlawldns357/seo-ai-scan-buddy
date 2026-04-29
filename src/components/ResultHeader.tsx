@@ -417,10 +417,14 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
               <PopoverTrigger asChild>
                 <button
                   aria-label="점수 공유"
-                  title="점수 공유"
-                  className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-muted hover:bg-muted/70 text-foreground transition-colors"
+                  title="점수 카드 공유"
+                  className="group relative inline-flex items-center gap-1.5 pl-2.5 pr-3 h-9 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 hover:from-primary/15 hover:to-primary/10 border border-primary/20 hover:border-primary/40 text-primary shadow-sm hover:shadow-md transition-all duration-200"
                 >
-                  <Share2 className="w-4 h-4" />
+                  <span className="relative flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 group-hover:bg-primary/25 transition-colors">
+                    <Share2 className="w-3 h-3" />
+                    <span className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-score-excellent ring-2 ring-card animate-pulse" />
+                  </span>
+                  <span className="text-[11px] font-semibold tracking-tight">공유</span>
                 </button>
               </PopoverTrigger>
               <PopoverContent align="end" sideOffset={8} className="w-64 p-3">
