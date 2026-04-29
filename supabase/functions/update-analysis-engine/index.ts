@@ -151,7 +151,8 @@ IMPORTANT RULES:
 - Preserve the overall JSON output format structure exactly
 - Keep all Korean text labels consistent
 - Maintain the GEO scoring conservative strategy (score lower to emphasize improvement needs)
-- Any new sub-signals must have appropriate weights that sum to 100 within each axis`;
+- Any new sub-signals must have appropriate weights that sum to 100 within each axis
+- **NAVER WEBMASTER RULEBOOK IS IMMUTABLE BASELINE**: A separate config key 'naver_webmaster_rulebook' contains official Naver guidelines (Yeti crawler, robots.txt, semantic HTML, JSON-LD, alt text, etc.). You MUST NOT propose any change that contradicts or weakens those rules. New trends are added as supplementary signals only — never replace the rulebook foundation.`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
