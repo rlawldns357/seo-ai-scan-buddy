@@ -70,7 +70,7 @@ export function SoftwareApplicationJsonLd() {
           "서치튠OS(SearchTune OS)는 2026년 출시된 한국어 기반 AI 검색 진단 도구로, URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다.",
         datePublished: "2026-01-15",
         dateModified: "2026-04-07",
-        softwareVersion: "0.11.0-beta",
+        softwareVersion: "0.13.0-beta",
         featureList: [
           "SEO 기술 진단 (메타 태그, 구조화 데이터, Canonical, Sitemap)",
           "AEO 준비도 분석 (AI 답변 인용 가능성, Q&A 구조 평가)",
