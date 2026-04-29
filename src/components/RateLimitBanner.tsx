@@ -58,19 +58,19 @@ const RateLimitBanner = ({ remaining, emailUnlocked, onUnlocked }: RateLimitBann
           <p className="text-xs text-muted-foreground mb-4">
             이메일을 입력하면 <span className="font-bold text-accent">5회 추가</span> 분석할 수 있어요!
           </p>
-          <div className="flex flex-col sm:flex-row gap-2 max-w-sm mx-auto">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 max-w-sm mx-auto py-1">
             <input
               type="email"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setError(""); }}
               onKeyDown={(e) => e.key === "Enter" && handleUnlock()}
               placeholder="email@example.com"
-              className="flex-1 h-10 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="flex-1 h-12 sm:h-10 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground text-base sm:text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
             <button
               onClick={handleUnlock}
               disabled={loading || !agreed}
-              className="h-10 px-5 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
+              className="h-12 sm:h-10 px-5 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 whitespace-nowrap"
             >
               {loading ? "처리 중..." : "추가 분석 받기"}
             </button>

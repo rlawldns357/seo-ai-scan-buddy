@@ -427,7 +427,7 @@ const Index = () => {
                 <div className="absolute right-1/4 top-1/2 translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-accent/25 blur-3xl group-focus-within:bg-accent/40 transition-colors duration-500" />
               </div>
 
-              <div className="relative flex flex-col sm:flex-row gap-2 sm:gap-3">
+              <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-3 py-2 sm:py-0">
                 <div className="relative w-full sm:flex-1">
                   <Search
                     className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60 pointer-events-none transition-colors group-focus-within:text-primary"
@@ -439,13 +439,13 @@ const Index = () => {
                     onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                     placeholder={url ? "" : rotatingPlaceholder}
-                    className="w-full h-16 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border border-input bg-card/80 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary text-base sm:text-lg shadow-sm focus:shadow-lg transition-all"
+                    className="w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border border-input bg-card/80 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary text-base sm:text-lg shadow-sm focus:shadow-lg transition-all"
                     style={{ paddingLeft: "3rem" }}
                   />
                 </div>
                 <button
                   onClick={handleAnalyze}
-                  className="h-16 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none"
+                  className="h-14 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none"
                 >
                   무료로 분석하기
                 </button>
