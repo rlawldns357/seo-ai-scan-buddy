@@ -4,8 +4,125 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-const FIRECRAWL_V2 = "https://api.firecrawl.dev/v2";
+const PERPLEXITY_API = "https://api.perplexity.ai/chat/completions";
 const NAVER_SEARCH_API = "https://openapi.naver.com/v1/search/webkr.json";
+
+interface GoogleResult {
+  status: "confirmed" | "unknown";
+  domainIndexed: boolean;
+  domainPages: number;
+  urlIndexed: boolean;
+  checkUrl: string;
+  topResults: { title: string; url: string }[];
+}
+
+async function checkGoogleViaPerplexity(
+  domain: string,
+  url: string,
+  apiKey: string,
+): Promise<GoogleResult> {
+  const checkUrl = `https://www.google.com/search?q=site:${encodeURIComponent(domain)}`;
+
+  const prompt = `Search Google for "site:${domain}" and tell me which pages from ${domain} are currently indexed by Google. Return up to 5 indexed page URLs and their titles. If no pages are indexed, say so explicitly.`;
+
+  try {
+    const res = await fetch(PERPLEXITY_API, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "sonar",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a search index checker. Use only real Google search results. Be concise and factual.",
+          },
+          { role: "user", content: prompt },
+        ],
+        temperature: 0,
+        max_tokens: 600,
+        search_domain_filter: [domain],
+        return_citations: true,
+      }),
+    });
+
+    if (!res.ok) {
+      console.error("Perplexity API error:", res.status, await res.text());
+      return {
+        status: "unknown",
+        domainIndexed: false,
+        domainPages: 0,
+        urlIndexed: false,
+        checkUrl,
+        topResults: [],
+      };
+    }
+
+    const data = await res.json();
+    const content: string = data?.choices?.[0]?.message?.content ?? "";
+    const citations: string[] = Array.isArray(data?.citations)
+      ? data.citations
+      : Array.isArray(data?.search_results)
+      ? data.search_results.map((r: any) => r?.url).filter(Boolean)
+      : [];
+
+    // Filter citations that belong to the target domain
+    const domainCitations = citations.filter((c) => {
+      try {
+        const host = new URL(c).hostname;
+        return host === domain || host.endsWith(`.${domain}`);
+      } catch {
+        return false;
+      }
+    });
+
+    // Try to extract titles from search_results if present
+    const searchResults: any[] = Array.isArray(data?.search_results)
+      ? data.search_results
+      : [];
+    const topResults = domainCitations.slice(0, 3).map((u) => {
+      const match = searchResults.find((r: any) => r?.url === u);
+      return {
+        title: match?.title || u.replace(/^https?:\/\//, ""),
+        url: u,
+      };
+    });
+
+    const normalizedTarget = url.replace(/\/$/, "").toLowerCase();
+    const exactMatch = domainCitations.some(
+      (c) => c.replace(/\/$/, "").toLowerCase() === normalizedTarget,
+    );
+
+    // Detect "not indexed" phrasing in the answer as a negative signal
+    const negativeSignal = /not\s+indexed|no\s+pages|not\s+found|appears\s+not/i.test(
+      content,
+    );
+
+    const indexed = domainCitations.length > 0 && !negativeSignal;
+
+    return {
+      status: indexed || domainCitations.length > 0 ? "confirmed" : "unknown",
+      domainIndexed: indexed,
+      domainPages: domainCitations.length,
+      urlIndexed: exactMatch,
+      checkUrl,
+      topResults,
+    };
+  } catch (e) {
+    console.error("Perplexity check failed:", e);
+    return {
+      status: "unknown",
+      domainIndexed: false,
+      domainPages: 0,
+      urlIndexed: false,
+      checkUrl,
+      topResults: [],
+    };
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -15,112 +132,81 @@ Deno.serve(async (req) => {
   try {
     const { url } = await req.json();
     if (!url || typeof url !== "string") {
-      return new Response(
-        JSON.stringify({ error: "url is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
+      return new Response(JSON.stringify({ error: "url is required" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    const firecrawlKey = Deno.env.get("FIRECRAWL_API_KEY");
-    if (!firecrawlKey) {
-      return new Response(
-        JSON.stringify({ error: "FIRECRAWL_API_KEY not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    // Extract domain from URL
     let domain: string;
     try {
-      domain = new URL(url).hostname;
+      domain = new URL(url).hostname.replace(/^www\./, "");
     } catch {
+      return new Response(JSON.stringify({ error: "Invalid URL" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const perplexityKey = Deno.env.get("PERPLEXITY_API_KEY");
+    if (!perplexityKey) {
       return new Response(
-        JSON.stringify({ error: "Invalid URL" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        JSON.stringify({ error: "PERPLEXITY_API_KEY not configured" }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
       );
     }
 
-    // Naver API credentials (optional — graceful fallback if not set)
     const naverClientId = Deno.env.get("NAVER_CLIENT_ID");
     const naverClientSecret = Deno.env.get("NAVER_CLIENT_SECRET");
     const hasNaverApi = !!(naverClientId && naverClientSecret);
 
-    // Build parallel requests
-    // Google: only one query (site:domain), no lang/country to avoid false negatives
-    const promises: Promise<Response>[] = [
-      fetch(`${FIRECRAWL_V2}/search`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${firecrawlKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: `site:${domain}`,
-          limit: 10,
-        }),
-      }),
-    ];
+    const naverCheckUrl = `https://search.naver.com/search.naver?query=site%3A${encodeURIComponent(domain)}`;
 
-    // Naver search (if credentials available)
-    if (hasNaverApi) {
-      const naverQuery = encodeURIComponent(domain);
-      promises.push(
-        fetch(`${NAVER_SEARCH_API}?query=${naverQuery}&display=10&start=1`, {
-          method: "GET",
-          headers: {
-            "X-Naver-Client-Id": naverClientId!,
-            "X-Naver-Client-Secret": naverClientSecret!,
-          },
-        }),
-      );
-    }
+    // Run Google (Perplexity) and Naver in parallel
+    const [googleResult, naverResponse] = await Promise.all([
+      checkGoogleViaPerplexity(domain, url, perplexityKey),
+      hasNaverApi
+        ? fetch(
+            `${NAVER_SEARCH_API}?query=${encodeURIComponent(domain)}&display=10&start=1`,
+            {
+              method: "GET",
+              headers: {
+                "X-Naver-Client-Id": naverClientId!,
+                "X-Naver-Client-Secret": naverClientSecret!,
+              },
+            },
+          )
+        : Promise.resolve(null),
+    ]);
 
-    const responses = await Promise.all(promises);
-    const domainData = await responses[0].json();
-
-    // Google results
-    const domainList: any[] = Array.isArray(domainData?.data) ? domainData.data : [];
-    const domainResults = domainList.length;
-
-    const normalizedUrl = url.replace(/\/$/, "").toLowerCase();
-    const exactMatch = domainList.some(
-      (r: any) => r.url?.replace(/\/$/, "").toLowerCase() === normalizedUrl,
-    );
-
-    // Status: confirmed (>=1 result) | unknown (0 results, can't auto-verify)
-    const googleStatus: "confirmed" | "unknown" =
-      domainResults > 0 ? "confirmed" : "unknown";
-
-    // Naver results
     let naverResult: {
       checkUrl: string;
       domainFound: boolean;
       resultCount: number;
       topResults: { title: string; url: string }[];
+    } = {
+      checkUrl: naverCheckUrl,
+      domainFound: false,
+      resultCount: 0,
+      topResults: [],
     };
 
-    const naverCheckUrl = `https://search.naver.com/search.naver?query=site%3A${encodeURIComponent(domain)}`;
-
-    if (hasNaverApi && responses[1]) {
+    if (naverResponse) {
       try {
-        const naverData = await responses[1].json();
+        const naverData = await naverResponse.json();
         const items: any[] = Array.isArray(naverData?.items) ? naverData.items : [];
-
-        // Filter results that contain the domain in the link
-        const domainMatches = items.filter(
-          (item: any) => {
-            try {
-              const itemHost = new URL(item.link).hostname;
-              return itemHost === domain || itemHost.endsWith(`.${domain}`);
-            } catch {
-              return false;
-            }
+        const domainMatches = items.filter((item: any) => {
+          try {
+            const itemHost = new URL(item.link).hostname;
+            return itemHost === domain || itemHost.endsWith(`.${domain}`);
+          } catch {
+            return false;
           }
-        );
-
-        // Strip HTML tags from title
+        });
         const stripHtml = (str: string) => str?.replace(/<[^>]*>/g, "") || "";
-
         naverResult = {
           checkUrl: naverCheckUrl,
           domainFound: domainMatches.length > 0,
@@ -132,36 +218,13 @@ Deno.serve(async (req) => {
         };
       } catch (e) {
         console.error("Naver API parse error:", e);
-        naverResult = {
-          checkUrl: naverCheckUrl,
-          domainFound: false,
-          resultCount: 0,
-          topResults: [],
-        };
       }
-    } else {
-      naverResult = {
-        checkUrl: naverCheckUrl,
-        domainFound: false,
-        resultCount: 0,
-        topResults: [],
-      };
     }
 
     return new Response(
       JSON.stringify({
         success: true,
-        google: {
-          status: googleStatus,
-          domainIndexed: domainResults > 0,
-          domainPages: domainResults,
-          urlIndexed: exactMatch,
-          checkUrl: `https://www.google.com/search?q=site:${encodeURIComponent(domain)}`,
-          topResults: domainList.slice(0, 3).map((r: any) => ({
-            title: r.title,
-            url: r.url,
-          })),
-        },
+        google: googleResult,
         naver: naverResult,
       }),
       {
@@ -171,9 +234,9 @@ Deno.serve(async (req) => {
     );
   } catch (error) {
     console.error("check-indexing error:", error);
-    return new Response(
-      JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
