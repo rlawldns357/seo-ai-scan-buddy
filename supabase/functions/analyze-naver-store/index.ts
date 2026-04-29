@@ -44,24 +44,29 @@ interface StoreInfo {
   storeUrl: string; // canonical store URL
 }
 
+function safeDecode(s: string): string {
+  try { return decodeURIComponent(s); } catch { return s; }
+}
+
 function parseStoreUrl(raw: string): StoreInfo | null {
   try {
     const u = new URL(raw);
+    const rawSlug = u.pathname.split("/").filter(Boolean)[0] ?? "";
+    if (!rawSlug) return null;
+    // 한글 슬러그(brand.naver.com/뮤지코리아)는 percent-encoded로 들어옴 → 검색·매칭용으로 디코드
+    const slug = safeDecode(rawSlug);
     if (u.hostname === "brand.naver.com") {
-      const slug = u.pathname.split("/").filter(Boolean)[0] ?? "";
-      if (!slug) return null;
-      return { type: "brand", slug, url: raw, storeUrl: `https://brand.naver.com/${slug}` };
+      return { type: "brand", slug, url: raw, storeUrl: `https://brand.naver.com/${encodeURIComponent(slug)}` };
     }
     if (u.hostname === "smartstore.naver.com") {
-      const slug = u.pathname.split("/").filter(Boolean)[0] ?? "";
-      if (!slug) return null;
-      return { type: "smartstore", slug, url: raw, storeUrl: `https://smartstore.naver.com/${slug}` };
+      return { type: "smartstore", slug, url: raw, storeUrl: `https://smartstore.naver.com/${encodeURIComponent(slug)}` };
     }
     return null;
   } catch {
     return null;
   }
 }
+
 
 async function naverSearch(
   type: "shop" | "blog" | "cafearticle" | "kin" | "webkr",
