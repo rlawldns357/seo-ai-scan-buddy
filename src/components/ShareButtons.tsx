@@ -1,12 +1,16 @@
-import { useState, useCallback } from "react";
-import { Share2, Download, Check, Copy } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { Share2, Download, Check, Copy, Twitter, Linkedin, MessageCircle } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
+import { supabase } from "@/integrations/supabase/client";
 import { type DemoResult } from "@/data/demoResults";
 
 interface ShareButtonsProps {
   result: DemoResult;
   url: string;
 }
+
+const KAKAO_JS_KEY = import.meta.env.VITE_KAKAO_JS_KEY as string | undefined;
+const SHARE_LANDING = "https://searchtuneos.com";
 
 function getGradeEmoji(score: number) {
   if (score >= 80) return "🟢";
@@ -27,11 +31,18 @@ function buildShareText(result: DemoResult, url: string) {
     `${getGradeEmoji(result.geoScore)} GEO: ${result.geoScore}점`,
     "",
     "SearchTune OS로 무료 분석하기 👇",
-    "https://searchtuneos.com",
+    SHARE_LANDING,
   ].join("\n");
 }
 
-function generateScoreCardCanvas(result: DemoResult, url: string): Promise<string> {
+function buildShortShareText(result: DemoResult, url: string) {
+  const domain = (() => {
+    try { return new URL(url).hostname; } catch { return url; }
+  })();
+  return `${domain} SEO ${result.seoScore} · AEO ${result.aeoScore} · GEO ${result.geoScore} | SearchTune OS`;
+}
+
+function generateScoreCardCanvas(result: DemoResult, url: string): Promise<Blob> {
   return new Promise((resolve) => {
     const W = 1080;
     const H = 1920;
@@ -94,7 +105,6 @@ function generateScoreCardCanvas(result: DemoResult, url: string): Promise<strin
       const x = startX;
       const y = startY + i * (cardH + gap);
 
-      // Card bg
       ctx.fillStyle = "rgba(255,255,255,0.06)";
       roundRect(ctx, x, y, cardW, cardH, 24);
       ctx.fill();
@@ -103,7 +113,6 @@ function generateScoreCardCanvas(result: DemoResult, url: string): Promise<strin
       roundRect(ctx, x, y, cardW, cardH, 24);
       ctx.stroke();
 
-      // Circle
       const cx = x + 170;
       const cy = y + cardH / 2;
       const radius = 100;
@@ -124,13 +133,11 @@ function generateScoreCardCanvas(result: DemoResult, url: string): Promise<strin
       ctx.stroke();
       ctx.lineCap = "butt";
 
-      // Score number
       ctx.fillStyle = "#ffffff";
       ctx.font = "bold 64px -apple-system, BlinkMacSystemFont, sans-serif";
       ctx.textAlign = "center";
       ctx.fillText(`${score}`, cx, cy + 22);
 
-      // Label + desc on the right
       const textX = x + 360;
       ctx.textAlign = "left";
       ctx.fillStyle = color;
@@ -142,7 +149,7 @@ function generateScoreCardCanvas(result: DemoResult, url: string): Promise<strin
       ctx.fillText(desc, textX, cy + 30);
     });
 
-    // Heavy watermarks
+    // Watermarks
     ctx.save();
     ctx.globalAlpha = 0.04;
     ctx.fillStyle = "#ffffff";
@@ -174,7 +181,9 @@ function generateScoreCardCanvas(result: DemoResult, url: string): Promise<strin
     ctx.font = "400 22px -apple-system, BlinkMacSystemFont, sans-serif";
     ctx.fillText("무료 AI 검색 최적화 분석 도구", W / 2, H - 55);
 
-    resolve(canvas.toDataURL("image/png"));
+    canvas.toBlob((blob) => {
+      resolve(blob!);
+    }, "image/png");
   });
 }
 
@@ -192,11 +201,54 @@ function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: numbe
   ctx.closePath();
 }
 
+async function uploadCardToStorage(blob: Blob): Promise<string> {
+  const filename = `${crypto.randomUUID()}.png`;
+  const { error } = await supabase.storage
+    .from("og-images")
+    .upload(filename, blob, { contentType: "image/png", cacheControl: "3600" });
+  if (error) throw error;
+  const { data } = supabase.storage.from("og-images").getPublicUrl(filename);
+  return data.publicUrl;
+}
+
+declare global {
+  interface Window {
+    Kakao?: {
+      isInitialized: () => boolean;
+      init: (key: string) => void;
+      Share?: {
+        sendDefault: (opts: Record<string, unknown>) => void;
+      };
+    };
+  }
+}
+
+function ensureKakaoInit(): boolean {
+  if (typeof window === "undefined") return false;
+  if (!window.Kakao || !KAKAO_JS_KEY) return false;
+  if (!window.Kakao.isInitialized()) {
+    try { window.Kakao.init(KAKAO_JS_KEY); } catch { return false; }
+  }
+  return !!window.Kakao.Share;
+}
+
 export default function ShareButtons({ result, url }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
   const [generating, setGenerating] = useState(false);
+  const [busyKakao, setBusyKakao] = useState(false);
+  const cardUrlCache = useRef<string | null>(null);
 
   const shareText = buildShareText(result, url);
+  const shortText = buildShortShareText(result, url);
+  const domain = (() => { try { return new URL(url).hostname; } catch { return url; } })();
+
+  const getOrUploadCard = useCallback(async (): Promise<string> => {
+    if (cardUrlCache.current) return cardUrlCache.current;
+    const blob = await generateScoreCardCanvas(result, url);
+    const publicUrl = await uploadCardToStorage(blob);
+    cardUrlCache.current = publicUrl;
+    return publicUrl;
+  }, [result, url]);
 
   const handleCopyText = async () => {
     trackEvent("share_click", { platform: "copy" });
@@ -209,29 +261,127 @@ export default function ShareButtons({ result, url }: ShareButtonsProps) {
     if (generating) return;
     setGenerating(true);
     trackEvent("share_click", { platform: "score_card" });
-
     try {
-      const dataUrl = await generateScoreCardCanvas(result, url);
+      const blob = await generateScoreCardCanvas(result, url);
+      const objUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.download = "searchtune-score.png";
-      link.href = dataUrl;
+      link.download = `searchtune-${domain}.png`;
+      link.href = objUrl;
       link.click();
+      setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
     } finally {
       setGenerating(false);
     }
-  }, [result, url, generating]);
+  }, [result, url, generating, domain]);
+
+  const handleTwitter = () => {
+    trackEvent("share_click", { platform: "twitter" });
+    const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shortText)}&url=${encodeURIComponent(SHARE_LANDING)}`;
+    window.open(intent, "_blank", "noopener,noreferrer,width=600,height=500");
+  };
+
+  const handleLinkedIn = () => {
+    trackEvent("share_click", { platform: "linkedin" });
+    const intent = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(SHARE_LANDING)}`;
+    window.open(intent, "_blank", "noopener,noreferrer,width=600,height=600");
+  };
+
+  const handleThreads = () => {
+    trackEvent("share_click", { platform: "threads" });
+    const intent = `https://www.threads.net/intent/post?text=${encodeURIComponent(shareText)}`;
+    window.open(intent, "_blank", "noopener,noreferrer");
+  };
+
+  const handleKakao = useCallback(async () => {
+    if (busyKakao) return;
+    trackEvent("share_click", { platform: "kakao" });
+
+    if (!KAKAO_JS_KEY) {
+      // Kakao SDK 미설정: 폴백으로 텍스트 복사 + 다운로드 안내
+      await navigator.clipboard.writeText(shareText);
+      alert("점수 카드를 다운로드한 뒤 카카오톡에 붙여넣어 주세요.\n(공유 텍스트는 클립보드에 복사되었습니다)");
+      await handleDownloadCard();
+      return;
+    }
+
+    setBusyKakao(true);
+    try {
+      const ready = ensureKakaoInit();
+      if (!ready) throw new Error("Kakao SDK not ready");
+
+      const imageUrl = await getOrUploadCard();
+
+      window.Kakao!.Share!.sendDefault({
+        objectType: "feed",
+        content: {
+          title: `${domain} SEO·AEO·GEO 점수`,
+          description: `SEO ${result.seoScore} · AEO ${result.aeoScore} · GEO ${result.geoScore}\nSearchTune OS로 무료 분석하기`,
+          imageUrl,
+          link: { mobileWebUrl: SHARE_LANDING, webUrl: SHARE_LANDING },
+        },
+        buttons: [
+          {
+            title: "내 사이트 분석하기",
+            link: { mobileWebUrl: SHARE_LANDING, webUrl: SHARE_LANDING },
+          },
+        ],
+      });
+    } catch (e) {
+      console.warn("[kakao] share failed", e);
+      await navigator.clipboard.writeText(shareText);
+      alert("카카오 공유에 실패했어요. 텍스트를 복사했으니 직접 붙여넣어 주세요.");
+    } finally {
+      setBusyKakao(false);
+    }
+  }, [busyKakao, shareText, getOrUploadCard, domain, result, handleDownloadCard]);
 
   return (
     <div className="bg-card rounded-xl shadow-card p-5 animate-fade-up">
-      <div className="flex items-center gap-2 mb-4">
+      <div className="flex items-center gap-2 mb-1">
         <Share2 className="w-4 h-4 text-primary" />
         <h3 className="text-sm font-bold text-foreground">내 점수 공유하기</h3>
       </div>
+      <p className="text-xs text-muted-foreground mb-4">
+        점수 카드 이미지로 SNS에 공유하세요. 워터마크가 포함됩니다.
+      </p>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <button
+          onClick={handleKakao}
+          disabled={busyKakao}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#FEE500] text-[#3C1E1E] hover:brightness-95 transition-all disabled:opacity-50"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          {busyKakao ? "준비 중..." : "카카오톡"}
+        </button>
+
+        <button
+          onClick={handleTwitter}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
+        >
+          <Twitter className="w-3.5 h-3.5" />
+          X (Twitter)
+        </button>
+
+        <button
+          onClick={handleLinkedIn}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#0A66C2] text-white hover:brightness-110 transition-all"
+        >
+          <Linkedin className="w-3.5 h-3.5" />
+          LinkedIn
+        </button>
+
+        <button
+          onClick={handleThreads}
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
+        >
+          <Share2 className="w-3.5 h-3.5" />
+          Threads
+        </button>
+
         <button
           onClick={handleCopyText}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
         >
           {copied ? <Check className="w-3.5 h-3.5 text-score-excellent" /> : <Copy className="w-3.5 h-3.5" />}
           {copied ? "복사됨!" : "텍스트 복사"}
@@ -240,10 +390,10 @@ export default function ShareButtons({ result, url }: ShareButtonsProps) {
         <button
           onClick={handleDownloadCard}
           disabled={generating}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
         >
           <Download className="w-3.5 h-3.5" />
-          {generating ? "생성 중..." : "점수 카드 저장"}
+          {generating ? "생성 중..." : "이미지 저장"}
         </button>
       </div>
     </div>
