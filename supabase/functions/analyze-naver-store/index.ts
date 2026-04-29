@@ -83,20 +83,68 @@ function stripTags(s: string): string {
   return (s ?? "").replace(/<[^>]*>/g, "");
 }
 
-/**
- * 자사 도메인이 검색결과에 포함된 비율 (0~1)
- * 브랜드/스마트스토어 도메인 + 슬러그를 호스트네임으로 가진 결과 카운트.
- */
-function ownDomainShare(items: any[], slug: string): number {
+/* ────────────────────────────────────────────────────────────────────
+ * 시그널 계산 — 누수율의 진짜 의미를 살리기 위한 멀티 신호
+ *
+ * 네이버 쇼핑 결과는 link가 보통 smartstore.naver.com/main/products/...
+ * 또는 shopping.naver.com/... 형태라 brand.naver.com/{slug} 매칭이 거의
+ * 안 됩니다. 그래서 다음 4개 신호를 합산해 권위 누수를 산출합니다:
+ *  1) storeShare — shop 결과의 mallName/link 호스트 일치 비율
+ *  2) ownSiteShare — webkr 결과 중 자사 외부 도메인(.kr/.com 등) 비율
+ *  3) slugAuthority — shop 결과 title에 슬러그 토큰 포함 비율 (충돌 감지)
+ *  4) brandPresence — webkr 상위 결과의 자사 위키/공식 채널 존재
+ * ──────────────────────────────────────────────────────────────────── */
+
+/** 슬러그를 검색 비교용 토큰으로 정규화 */
+function normalizeSlug(slug: string): string {
+  return slug.toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+}
+
+/** shop 결과 link/mallName이 본인 스토어인지 */
+function isOwnStoreItem(item: any, slug: string): boolean {
+  const link = String(item?.link ?? "").toLowerCase();
+  const mall = String(item?.mallName ?? "").toLowerCase();
+  const s = slug.toLowerCase();
+  if (link.includes(`brand.naver.com/${s}`)) return true;
+  if (link.includes(`smartstore.naver.com/${s}`)) return true;
+  // mallName 직접 일치 (네이버 쇼핑 검색의 표준 필드)
+  if (mall && (mall === s || mall.replace(/[^a-z0-9가-힣]/g, "") === normalizeSlug(slug))) return true;
+  return false;
+}
+
+/** title에 슬러그 토큰이 포함되는 비율 → 슬러그 충돌(노이즈) 감지 */
+function slugTitleMatch(items: any[], slug: string): number {
   if (!items || items.length === 0) return 0;
-  let own = 0;
+  const token = normalizeSlug(slug);
+  if (!token) return 0;
+  let hit = 0;
   for (const it of items) {
-    const link = String(it?.link ?? "");
-    if (link.includes(`brand.naver.com/${slug}`) || link.includes(`smartstore.naver.com/${slug}`)) {
-      own++;
-    }
+    const t = stripTags(String(it?.title ?? "")).toLowerCase().replace(/\s/g, "");
+    if (t.includes(token)) hit++;
   }
-  return own / items.length;
+  return hit / items.length;
+}
+
+/** webkr 결과 중 자사 외부 도메인(자사몰/공식 SNS) 비율
+ *  네이버/쇼핑/카페/블로그/지식인을 제외한 URL = 자사 통제 가능 후보.
+ *  슬러그 토큰이 호스트네임에 포함되면 자사로 본다. */
+function externalOwnedRatio(items: any[], slug: string): number {
+  if (!items || items.length === 0) return 0;
+  const token = normalizeSlug(slug);
+  if (!token) return 0;
+  let owned = 0;
+  let externalCount = 0;
+  for (const it of items) {
+    let host = "";
+    try { host = new URL(String(it?.link ?? "")).hostname.toLowerCase(); } catch { continue; }
+    // 네이버 자체 surface 제외
+    if (host.endsWith("naver.com") || host.endsWith("naver.net")) continue;
+    // 위키/사전류는 자사 통제 불가
+    if (host.includes("wiki") || host.includes("namu.")) continue;
+    externalCount++;
+    if (host.replace(/[^a-z0-9]/g, "").includes(token.replace(/[^a-z0-9]/g, ""))) owned++;
+  }
+  return externalCount === 0 ? 0 : owned / externalCount;
 }
 
 /**
@@ -132,46 +180,42 @@ interface AxisInputs {
 }
 
 function buildSeoAxis(x: AxisInputs) {
-  // 권위 누수율 = 1 - shopShare (shop에서 자사가 안 보이면 권위 누수 100%)
-  const leakageRatio = 1 - x.shopShare;
+  // x.shopShare = storeShare (스토어 자체 점유)
+  // x.webkrOwnRatio = ownSiteShare (자사 외부 도메인 점유)
+  const recovered = Math.min(1, x.shopShare * 0.6 + x.webkrOwnRatio * 0.4);
+  const leakageRatio = Math.max(0.05, Math.min(0.95, 1 - recovered));
   const leakagePct = Math.round(leakageRatio * 100);
+  const ownAuthority = Math.round(recovered * 100);
 
-  // 권위 회복 가능성 (자체 콘텐츠 점유율 기반)
-  const ownAuthority = Math.round((x.shopShare * 0.6 + x.webkrOwnRatio * 0.4) * 100);
-
-  // sub-signals
-  const crawlability = 10; // robots.txt가 strict — 사실상 차단
-  const indexability = Math.min(50, x.shopTotal > 0 ? 40 + Math.min(10, Math.log10(x.shopTotal) * 5) : 20);
-  const ownDomain = 0; // 자체 도메인 없음
-  const snippet = x.shopShare > 0 ? Math.round(x.shopShare * 60) : 15;
+  // sub-signals — 멀티 신호 반영
+  const crawlability = 10; // robots.txt strict
+  // 인덱싱 준비도: shop 결과 총량(로그) + storeShare 가산
+  const indexability = Math.min(60, (x.shopTotal > 0 ? Math.log10(x.shopTotal + 1) * 12 : 0) + x.shopShare * 30);
+  // 자체 도메인 권위: ownSiteShare 직접 반영 (자사몰 있으면 가산)
+  const ownDomain = Math.round(x.webkrOwnRatio * 80);
+  // 스니펫: storeShare 직접 반영
+  const snippet = Math.round(x.shopShare * 70 + 10);
   const structured = 5; // 네이버 템플릿 — 구조화 데이터 통제 불가
 
-  // 가중평균
-  const raw = Math.round(
-    crawlability * 0.20 +
-    indexability * 0.20 +
-    ownDomain * 0.25 +
-    snippet * 0.15 +
-    structured * 0.20
-  );
-
-  // Score cap: 자체 도메인 부재로 SEO 최대 45
-  const SEO_CAP = 45;
-  const score = Math.min(raw, SEO_CAP);
-
   const issues: string[] = [];
-  if (leakageRatio >= 0.8) {
-    issues.push(`검색 권위의 ${leakagePct}%가 naver.com에 적립되고 있어요. 자사 도메인이 없어 회수 불가능한 구조예요.`);
+  if (leakagePct >= 70) {
+    issues.push(`브랜드 검색 권위의 ${leakagePct}%가 naver.com에 적립되고 있어요. 자사 외부 채널 없이는 회수가 어려운 상태예요.`);
+  } else if (leakagePct >= 40) {
+    issues.push(`권위의 ${leakagePct}% 정도가 누수 중이에요. 자사 채널을 더 강화하면 회수 가능한 구간이에요.`);
   }
-  if (x.shopTotal === 0) {
-    issues.push("브랜드명으로 네이버 쇼핑 검색 시 노출이 거의 없어요. 슬러그가 일반 키워드와 충돌할 가능성이 있어요.");
+  if (x.shopShare === 0 && x.shopTotal > 0) {
+    issues.push("쇼핑 검색결과 상위에 본인 스토어가 거의 안 잡혀요. 슬러그가 일반 키워드와 충돌하거나 상품 노출이 약할 가능성이 있어요.");
   }
   issues.push("네이버 스토어는 robots.txt로 외부 검색엔진 크롤을 차단하고 있어요. Google·Bing 검색결과에서는 거의 노출되지 않아요.");
 
   const strengths: string[] = [];
+  if (x.webkrOwnRatio >= 0.3) {
+    strengths.push("자사 외부 도메인(자사몰·공식 채널) 노출이 확보돼 있어 권위 회수 기반이 있어요.");
+  }
   if (x.shopShare >= 0.3) {
-    strengths.push("쇼핑 검색결과에서 자사 스토어 노출 비중이 일정 수준 확보돼 있어요.");
-  } else {
+    strengths.push("쇼핑 검색결과에서 자사 스토어 노출 비중이 일정 수준 이상이에요.");
+  }
+  if (strengths.length === 0) {
     strengths.push("네이버 쇼핑 채널 자체는 활성 상태로 운영되고 있어요.");
   }
 
@@ -185,16 +229,17 @@ function buildSeoAxis(x: AxisInputs) {
       { name: "스니펫·메타 품질 (룰북 §2)", score: snippet, weight: 15 },
       { name: "구조화 데이터 (룰북 §5)", score: structured, weight: 20 },
     ],
-    scoreRationale: `브랜드 검색 권위의 ${leakagePct}%가 naver.com 도메인에 귀속됩니다. 자체 도메인이 없어 권위를 회수할 구조적 수단이 없습니다.`,
+    scoreRationale: `브랜드 검색 권위의 약 ${leakagePct}%가 naver.com 도메인에 귀속됩니다. 자사 외부 채널 점유율을 높여야 권위 회수가 가능합니다.`,
     issues: issues.slice(0, 3),
     strengths: strengths.slice(0, 2),
-    priorityFix: { label: "외부 콘텐츠 허브 구축으로 검색 권위 회수 시작", pointRange: "+15~+30" },
+    priorityFix: { label: "자사 외부 콘텐츠 허브 강화로 권위 회수", pointRange: "+15~+30" },
     quickFix: { label: "스토어 외 자사 채널(블로그·자사몰) 진단 받기", pointRange: "+3~+5" },
     additionalFixes: [
       { label: "구조화된 외부 콘텐츠로 브랜드 신호 강화", pointRange: "+5~+10" },
     ],
-    scoreCap: `네이버 스토어는 자체 도메인이 없어 SEO 점수가 ${SEO_CAP}점을 넘기 어려워요.`,
-    // 스토어 전용 메타
+    scoreCap: x.webkrOwnRatio >= 0.3
+      ? `자사 외부 도메인 신호가 있어 SEO 캡이 60점까지 완화돼요.`
+      : `네이버 스토어는 자체 도메인이 없어 SEO 점수가 45~50점을 넘기 어려워요.`,
     _storeMeta: {
       authorityLeakageRatio: leakageRatio,
       ownAuthority,
@@ -433,28 +478,42 @@ Deno.serve(async (req) => {
     );
   }
 
-  // 자사 점유율 계산
+  // ── 시그널 계산 (멀티 신호로 누수율 산출) ──
   const shopItems = shop.body?.items ?? [];
   const webkrItems = webkr.body?.items ?? [];
-  const shopShare = ownDomainShare(shopItems, store.slug);
-  const webkrOwnRatio = ownDomainShare(webkrItems, store.slug);
+
+  // 1) shop 결과 중 본인 스토어(mallName/link 호스트) 비율
+  const storeShare = shopItems.length === 0 ? 0
+    : shopItems.filter((it: any) => isOwnStoreItem(it, store.slug)).length / shopItems.length;
+  // 2) webkr 결과 중 자사 외부 도메인 비율 (자사몰/공식 SNS)
+  const ownSiteShare = externalOwnedRatio(webkrItems, store.slug);
+  // 3) shop 결과 title의 슬러그 토큰 매칭 → 1.0이면 충돌 없음, 낮으면 슬러그 노이즈
+  const slugMatch = slugTitleMatch(shopItems, store.slug);
+
+  // 권위 회수율 = 자사가 통제 가능한 노출 비중
+  //  storeShare(스토어 노출) 가중 0.6 + ownSiteShare(자사몰/SNS) 가중 0.4
+  //  단, slugMatch < 0.3이면 슬러그 충돌로 보고 storeShare 신뢰도 60% 할인
+  const trust = slugMatch < 0.3 ? 0.6 : 1;
+  const recovered = Math.min(1, storeShare * 0.6 * trust + ownSiteShare * 0.4);
+  // 누수율 = 1 - 회수율, 단 0%/100% 끝값 방지 위해 [5%, 95%]로 클램프
+  const rawLeakage = 1 - recovered;
+  const leakageRatio = Math.max(0.05, Math.min(0.95, rawLeakage));
 
   const inputs: AxisInputs = {
     store,
-    shopShare,
+    shopShare: storeShare,
     shopTotal: shop.body?.total ?? 0,
     blogTotal: blog.body?.total ?? 0,
     cafeTotal: cafe.body?.total ?? 0,
     kinTotal: kin.body?.total ?? 0,
     webkrTotal: webkr.body?.total ?? 0,
-    webkrOwnRatio,
+    webkrOwnRatio: ownSiteShare,
   };
 
   const seoAxis = buildSeoAxis(inputs);
   const aeoAxis = buildAeoAxis(inputs);
   const geoAxis = buildGeoAxis(inputs);
 
-  // 가중평균으로 최종 점수 계산
   const calcScore = (axis: any) =>
     Math.round(
       axis.subSignals.reduce(
@@ -463,9 +522,10 @@ Deno.serve(async (req) => {
       ),
     );
 
-  const seoCap = 45;
-  const aeoCap = 50;
-  const geoCap = webkrOwnRatio === 0 ? 40 : 60;
+  // ── 동적 캡: 자사몰(ownSiteShare)/스토어 점유에 따라 캡 완화 ──
+  const seoCap = ownSiteShare >= 0.3 ? 60 : ownSiteShare > 0 ? 50 : 45;
+  const aeoCap = storeShare >= 0.3 ? 60 : 50;
+  const geoCap = ownSiteShare >= 0.3 ? 70 : ownSiteShare > 0 ? 55 : 40;
 
   const seoScore = Math.min(calcScore(seoAxis), seoCap);
   const aeoScore = Math.min(calcScore(aeoAxis), aeoCap);
@@ -478,13 +538,18 @@ Deno.serve(async (req) => {
     seoAxis,
     aeoAxis,
     geoAxis,
-    // 스토어 전용 추가 메타 (UI에서 권위 누수 도넛/외부 점유율 바 그릴 때 사용)
     storeContext: {
       type: store.type,
       slug: store.slug,
       storeUrl: store.storeUrl,
-      authorityLeakageRatio: 1 - shopShare,
-      ownContentRatio: shopShare,
+      authorityLeakageRatio: leakageRatio,
+      ownContentRatio: recovered,
+      signalBreakdown: {
+        storeShare,
+        ownSiteShare,
+        slugMatch,
+        trustAdjusted: trust < 1,
+      },
       externalSurfaces: {
         shop: shop.body?.total ?? 0,
         blog: blog.body?.total ?? 0,
@@ -503,6 +568,7 @@ Deno.serve(async (req) => {
       rulebookLoaded: !!rulebook,
       rulebookHash: rulebook ? rulebook.length : 0,
       caps: { seo: seoCap, aeo: aeoCap, geo: geoCap },
+      signals: { storeShare, ownSiteShare, slugMatch, leakageRatio, recovered },
     },
   };
 
