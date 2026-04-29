@@ -11,18 +11,22 @@ export interface NaverStoreInfo {
   storeUrl: string;
 }
 
+function safeDecode(s: string): string {
+  try { return decodeURIComponent(s); } catch { return s; }
+}
+
 export function parseNaverStoreUrl(raw: string): NaverStoreInfo | null {
   try {
     const u = new URL(raw);
+    const rawSlug = u.pathname.split("/").filter(Boolean)[0] ?? "";
+    if (!rawSlug) return null;
+    // 한글 슬러그(예: brand.naver.com/뮤지코리아) 디코드 — 표시·비교는 디코드된 값으로
+    const slug = safeDecode(rawSlug);
     if (u.hostname === "brand.naver.com") {
-      const slug = u.pathname.split("/").filter(Boolean)[0] ?? "";
-      if (!slug) return null;
-      return { type: "brand", slug, storeUrl: `https://brand.naver.com/${slug}` };
+      return { type: "brand", slug, storeUrl: `https://brand.naver.com/${encodeURIComponent(slug)}` };
     }
     if (u.hostname === "smartstore.naver.com") {
-      const slug = u.pathname.split("/").filter(Boolean)[0] ?? "";
-      if (!slug) return null;
-      return { type: "smartstore", slug, storeUrl: `https://smartstore.naver.com/${slug}` };
+      return { type: "smartstore", slug, storeUrl: `https://smartstore.naver.com/${encodeURIComponent(slug)}` };
     }
     return null;
   } catch {
