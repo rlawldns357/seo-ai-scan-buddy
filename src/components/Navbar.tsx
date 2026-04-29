@@ -105,15 +105,6 @@ export default function Navbar() {
                 <Sparkles className="w-2.5 h-2.5" /> NEW
               </span>
             </a>
-            {!user && (
-              <Link
-                to={`/auth?next=${nextParam}`}
-                className="inline-flex items-center gap-1 sm:gap-1.5 px-3 h-8 rounded-full border border-border bg-card text-foreground text-xs font-semibold hover:bg-muted transition-colors whitespace-nowrap"
-              >
-                <LogIn className="w-3.5 h-3.5" />
-                로그인
-              </Link>
-            )}
             <Link
               to="/blog"
               className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
