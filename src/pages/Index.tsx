@@ -394,7 +394,7 @@ const Index = () => {
       <Navbar />
 
       {screen === "home" && (
-        <main className="flex-1 flex items-center justify-center px-4 pb-20">
+        <main className="flex-1 flex items-center justify-center px-4 pt-12 sm:pt-20 pb-40 sm:pb-44">
           <div className="max-w-2xl w-full text-center animate-fade-up">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold mb-8">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
@@ -565,7 +565,7 @@ const Index = () => {
         )}
 
         {screen === "result" && (
-          <main className="flex-1 py-8 sm:py-12 px-2 sm:px-4 pb-24">
+          <main className="flex-1 pt-10 pb-40 sm:pt-16 sm:pb-44 px-2 sm:px-4">
             <div className="max-w-4xl mx-auto space-y-5">
               <ResultHeader
                 psi={psiMobile || psiDesktop}
