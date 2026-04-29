@@ -116,9 +116,9 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
       <section>
         <div className="rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm">
           <div className="flex items-center gap-2 mb-5">
-            <span className="inline-block w-1 h-3.5 bg-destructive rounded-full" />
-            <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-destructive">
-              핵심 진단 · Critical
+            <span className={`inline-block w-1 h-3.5 rounded-full ${dominant ? "bg-emerald-500" : "bg-destructive"}`} />
+            <span className={`text-[10px] font-bold tracking-[0.15em] uppercase ${dominant ? "text-emerald-700" : "text-destructive"}`}>
+              {dominant ? "권위 분배 정상 · Healthy" : "핵심 진단 · Critical"}
             </span>
           </div>
 
@@ -126,7 +126,6 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
             {/* ── 반원 게이지 (Semi-circle gauge) ── */}
             <div className="relative w-full max-w-[280px]">
               <svg viewBox="0 0 220 130" className="w-full h-auto" aria-hidden="true">
-                {/* 트랙 */}
                 <path
                   d="M 20 110 A 90 90 0 0 1 200 110"
                   fill="none"
@@ -134,7 +133,6 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
                   strokeWidth={14}
                   strokeLinecap="round"
                 />
-                {/* 진행 호 */}
                 <path
                   d="M 20 110 A 90 90 0 0 1 200 110"
                   fill="none"
@@ -146,51 +144,80 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
                   className="transition-all duration-700 ease-out"
                   style={{ filter: `drop-shadow(0 2px 6px ${gaugeColor}33)` }}
                 />
-                {/* 좌·우 라벨 */}
                 <text x="20" y="126" fontSize="9" fill="hsl(var(--muted-foreground))" textAnchor="middle" className="font-medium">0%</text>
                 <text x="200" y="126" fontSize="9" fill="hsl(var(--muted-foreground))" textAnchor="middle" className="font-medium">100%</text>
               </svg>
 
-              {/* 중앙 수치 */}
               <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 pointer-events-none">
                 <span
                   className="text-[3rem] sm:text-[3.5rem] font-extrabold leading-none tracking-tight tabular-nums"
                   style={{ color: gaugeColor }}
                 >
-                  {leakagePct}
+                  {heroPct}
                   <span className="text-xl sm:text-2xl align-top ml-0.5 font-bold">%</span>
                 </span>
                 <span className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-[0.14em]">
-                  권위 누수율
+                  {dominant ? "네이버 채널 보조 노출" : "권위 누수율"}
                 </span>
               </div>
             </div>
 
             {/* Headline + body */}
             <div className="max-w-md">
-              <h3 className="text-base sm:text-xl font-bold text-foreground mb-2.5 leading-snug tracking-tight">
-                검색 권위의 <span className="tabular-nums" style={{ color: gaugeColor }}>{leakagePct}%</span>가{" "}
-                <span className="whitespace-nowrap">naver.com</span>에 적립돼요
-              </h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                브랜드명 검색 시 자사 스토어 노출 비율은{" "}
-                <span className="font-semibold text-foreground tabular-nums">{ownPct}%</span> 뿐.
-                자체 도메인이 없어 모든 권위가 naver.com으로 귀속돼요.
-              </p>
+              {dominant ? (
+                <>
+                  <h3 className="text-base sm:text-xl font-bold text-foreground mb-2.5 leading-snug tracking-tight">
+                    자체 도메인{ownDomain ? <> <code className="px-1.5 py-0.5 rounded bg-muted text-[0.85em] font-mono">{ownDomain}</code></> : ""}이 살아있어{" "}
+                    <span className="text-emerald-600">권위가 정상 분배</span>되고 있어요
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    네이버 스토어는 보조 판매 채널로 활용되는 정상 운영 상태예요. 자체 도메인이 검색 권위를 흡수하고,
+                    네이버 surface는 약 <span className="font-semibold text-foreground tabular-nums">{heroPct}%</span> 비중으로 보완 역할을 해요.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-base sm:text-xl font-bold text-foreground mb-2.5 leading-snug tracking-tight">
+                    검색 권위의 <span className="tabular-nums" style={{ color: gaugeColor }}>{leakagePct}%</span>가{" "}
+                    <span className="whitespace-nowrap">naver.com</span>에 적립돼요
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    브랜드명 검색 시 자사 스토어 노출 비율은{" "}
+                    <span className="font-semibold text-foreground tabular-nums">{ownPct}%</span> 뿐.
+                    자체 도메인이 없어 모든 권위가 naver.com으로 귀속돼요.
+                  </p>
+                </>
+              )}
               <div className="flex justify-center">
-                <InfoToggle title="권위 누수란? · 산출 기준 보기">
-                  <p>
-                    <span className="font-semibold text-foreground">쉬운 풀이:</span> '검색 권위(Authority)'는
-                    구글·네이버가 한 도메인에 쌓아두는 신뢰도 점수예요. 스토어처럼 자체 도메인이 없으면
-                    내가 콘텐츠를 잘 만들어도 그 점수가 전부 <code className="px-1 rounded bg-background">naver.com</code>으로 흘러갑니다.
-                  </p>
-                  <p>
-                    <span className="font-semibold text-foreground">산출 방법:</span> 브랜드명으로 네이버 검색 시
-                    상위 결과 중 스토어/자사 도메인 비율을 측정해 (1 − 자사비율) × 100 으로 계산했어요.
-                  </p>
-                  <p className="text-foreground">
-                    <span className="font-semibold">우리 기준:</span> 30% 이하 양호 · 30~60% 주의 · 60% 초과 위험
-                  </p>
+                <InfoToggle title={dominant ? "왜 정상으로 봤나? · 산출 기준" : "권위 누수란? · 산출 기준 보기"}>
+                  {dominant ? (
+                    <>
+                      <p>
+                        <span className="font-semibold text-foreground">판정 근거:</span> 웹 검색 결과의 외부 도메인 중{" "}
+                        <span className="font-semibold text-foreground tabular-nums">{Math.round((1 - context.authorityLeakageRatio) * 100)}%</span>가
+                        자체 도메인({ownDomain ?? "—"})으로 잡혀요. 30%를 넘으면 권위 분배가 정상으로 작동 중이에요.
+                      </p>
+                      <p>
+                        <span className="font-semibold text-foreground">도메인 인식:</span> {domainSource === "user" ? "사용자가 직접 입력한 도메인" : domainSource === "inferred" ? "검색 결과에서 자동 추론한 도메인" : "도메인 미식별"}.
+                        다르게 잡혔다면 진단 시 자체 도메인을 직접 입력해 주세요.
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p>
+                        <span className="font-semibold text-foreground">쉬운 풀이:</span> '검색 권위(Authority)'는
+                        구글·네이버가 한 도메인에 쌓아두는 신뢰도 점수예요. 스토어처럼 자체 도메인이 없으면
+                        내가 콘텐츠를 잘 만들어도 그 점수가 전부 <code className="px-1 rounded bg-background">naver.com</code>으로 흘러갑니다.
+                      </p>
+                      <p>
+                        <span className="font-semibold text-foreground">산출 방법:</span> 브랜드명으로 네이버 검색 시
+                        상위 결과 중 스토어/자사 도메인 비율을 측정해 (1 − 자사비율) × 100 으로 계산했어요.
+                      </p>
+                      <p className="text-foreground">
+                        <span className="font-semibold">우리 기준:</span> 30% 이하 양호 · 30~60% 주의 · 60% 초과 위험
+                      </p>
+                    </>
+                  )}
                 </InfoToggle>
               </div>
             </div>
