@@ -276,7 +276,7 @@ ${links.slice(0, 20).join("\n")}
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         temperature: 0,
         messages: [
           { role: "system", content: ANALYSIS_PROMPT },
