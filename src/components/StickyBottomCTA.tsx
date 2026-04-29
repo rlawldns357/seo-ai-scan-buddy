@@ -23,7 +23,7 @@ export default function StickyBottomCTA() {
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="hidden sm:flex relative items-center gap-4 px-6 py-3.5 group bg-[hsl(220_15%_10%)] hover:bg-[hsl(220_15%_8%)] transition-colors"
+        className="hidden sm:flex relative items-center gap-4 px-6 py-3.5 group bg-[hsl(225_28%_22%)] hover:bg-[hsl(225_28%_18%)] transition-colors"
       >
         <div className="container max-w-4xl mx-auto flex items-center gap-4">
           {/* 외부 서비스 뱃지 */}
@@ -47,7 +47,7 @@ export default function StickyBottomCTA() {
             </p>
           </div>
 
-          <span className="shrink-0 inline-flex items-center gap-1.5 h-10 px-5 rounded-full bg-white text-[hsl(220_15%_10%)] text-sm font-extrabold whitespace-nowrap group-hover:bg-white/90 group-hover:gap-2 transition-all shadow-lg">
+          <span className="shrink-0 inline-flex items-center gap-1.5 h-10 px-5 rounded-full bg-white text-[hsl(225_28%_22%)] text-sm font-extrabold whitespace-nowrap group-hover:bg-white/95 group-hover:gap-2 transition-all shadow-lg">
             바로가기
             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </span>
@@ -60,7 +60,7 @@ export default function StickyBottomCTA() {
         target="_blank"
         rel="noopener noreferrer"
         onClick={handleClick}
-        className="sm:hidden block bg-[hsl(220_15%_10%)] active:bg-[hsl(220_15%_6%)] px-3 py-2.5 transition-colors"
+        className="sm:hidden block bg-[hsl(225_28%_22%)] active:bg-[hsl(225_28%_16%)] px-3 py-2.5 transition-colors"
       >
         <div className="flex items-center justify-center gap-1.5 mb-2">
           <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-white/10 text-white border border-white/20 leading-none">
@@ -71,7 +71,7 @@ export default function StickyBottomCTA() {
             진단 다음 단계는 <span className="font-bold text-white">자동 발행</span>
           </p>
         </div>
-        <div className="flex items-center justify-between gap-2 h-11 pl-4 pr-3 rounded-full bg-white text-[hsl(220_15%_10%)] shadow-lg">
+        <div className="flex items-center justify-between gap-2 h-11 pl-4 pr-3 rounded-full bg-white text-[hsl(225_28%_22%)] shadow-lg">
           <span className="inline-flex items-center gap-2 text-sm font-extrabold">
             <span className="inline-flex items-center justify-center w-6 h-6 rounded-md bg-gradient-to-br from-primary to-accent">
               <Sparkles className="w-3 h-3 text-primary-foreground" />
