@@ -718,7 +718,7 @@ ${naverRulebook}
     }
 
     const titleForSlug = args?.title || `failed-${theme}`;
-    const slug = slugify(titleForSlug) + (isFailed ? `-failed-${Date.now().toString(36)}` : "");
+    const slug = buildSafeSlug(args?.slug_en, titleForSlug) + (isFailed ? `-failed-${Date.now().toString(36)}` : "");
 
     const scoreSummary = qualityScore
       ? `[자체점수 SEO ${qualityScore.seo} / AEO ${qualityScore.aeo} / GEO ${qualityScore.geo} / 평균 ${qualityScore.avg}]`
