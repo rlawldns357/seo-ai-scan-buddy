@@ -417,11 +417,20 @@ const Index = () => {
             <p className="text-muted-foreground text-base sm:text-lg mb-10 leading-relaxed">
               URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
             </p>
-            <div className="max-w-lg mx-auto">
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+            <div className="relative max-w-xl mx-auto group">
+              {/* Soft glow halo — focus 시 강화 */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute -inset-6 sm:-inset-8 -z-10 opacity-60 group-focus-within:opacity-100 transition-opacity duration-500"
+              >
+                <div className="absolute left-1/4 top-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-primary/30 blur-3xl group-focus-within:bg-primary/50 transition-colors duration-500" />
+                <div className="absolute right-1/4 top-1/2 translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-accent/25 blur-3xl group-focus-within:bg-accent/40 transition-colors duration-500" />
+              </div>
+
+              <div className="relative flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <div className="relative w-full sm:flex-1">
                   <Search
-                    className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 pointer-events-none"
+                    className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60 pointer-events-none transition-colors group-focus-within:text-primary"
                     strokeWidth={2.5}
                   />
                   <input
@@ -430,18 +439,19 @@ const Index = () => {
                     onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                     placeholder={url ? "" : rotatingPlaceholder}
-                    className="w-full h-14 sm:h-12 pl-11 pr-4 sm:pr-5 rounded-xl sm:rounded-2xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary text-base sm:text-base transition-all"
+                    className="w-full h-16 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border border-input bg-card/80 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary text-base sm:text-lg shadow-sm focus:shadow-lg transition-all"
+                    style={{ paddingLeft: "3rem" }}
                   />
                 </div>
                 <button
                   onClick={handleAnalyze}
-                  className="h-14 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl gradient-primary text-primary-foreground font-semibold text-base sm:text-base whitespace-nowrap shadow-md hover:shadow-lg hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none"
+                  className="h-16 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none"
                 >
                   무료로 분석하기
                 </button>
               </div>
               {!url && (
-                <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 animate-fade-in">
+                <div className="relative flex flex-wrap items-center justify-center gap-1.5 mt-3.5 animate-fade-in">
                   <span className="text-[11px] text-muted-foreground/70 mr-0.5">예시</span>
                   {EXAMPLE_URLS.map((ex) => (
                     <button
