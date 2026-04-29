@@ -42,10 +42,11 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
   const leakagePct = Math.round(context.authorityLeakageRatio * 100);
   const ownPct = Math.round(context.ownContentRatio * 100);
 
-  // 도넛 (권위 누수율)
-  const radius = 60;
+  // 도넛 (권위 누수율) — 100%일 때 끝점 겹침 방지를 위해 cap=butt, 살짝 얇게
+  const radius = 52;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (leakagePct / 100) * circumference;
+  const isFull = leakagePct >= 100;
+  const offset = isFull ? 0 : circumference - (leakagePct / 100) * circumference;
 
   const surfaces = [
     { label: "쇼핑", key: "shop", count: context.externalSurfaces.shop, color: "bg-emerald-500", desc: "네이버 쇼핑 검색에 노출되는 상품·스토어 결과" },
