@@ -177,12 +177,28 @@ export default function Admin() {
     setRetrying(false);
   };
 
+  const fetchClarity = async (n: number = clarityDays) => {
+    setClarityLoading(true);
+    setClarityErr("");
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "clarityInsights", numOfDays: n },
+    });
+    if (res?.error) {
+      setClarityErr(res.error);
+    } else if (res?.summary) {
+      setClarity({ summary: res.summary, numOfDays: res.numOfDays, fetchedAt: res.fetchedAt });
+    }
+    setClarityLoading(false);
+  };
+
   useEffect(() => {
     if (authed) {
       fetchInsights(days);
       fetchBlogPosts();
       fetchEngineStatus();
       fetchFailedPosts();
+      fetchClarity(1);
     }
   }, [authed, days]);
 
