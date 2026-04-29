@@ -52,7 +52,7 @@ const Unsubscribe = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
-      <main className="flex-1 flex items-center justify-center px-4">
+      <main className="flex-1 flex items-center justify-center px-4 pt-16 pb-32">
         <div className="max-w-md w-full text-center space-y-4">
           {status === "loading" && <p className="text-muted-foreground">확인 중...</p>}
           {status === "valid" && (

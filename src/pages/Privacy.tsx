@@ -16,7 +16,7 @@ export default function Privacy() {
       </Helmet>
       <Navbar />
 
-      <main className="container max-w-3xl py-12 md:py-20">
+      <main className="container max-w-3xl pt-16 pb-28 md:pt-24 md:pb-32">
         <h1 className="text-3xl md:text-4xl font-extrabold text-foreground mb-8">개인정보처리방침</h1>
         <p className="text-sm text-muted-foreground mb-10">시행일: 2026년 4월 14일</p>
 
