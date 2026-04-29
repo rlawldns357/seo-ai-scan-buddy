@@ -42,10 +42,11 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
   const leakagePct = Math.round(context.authorityLeakageRatio * 100);
   const ownPct = Math.round(context.ownContentRatio * 100);
 
-  // 도넛 (권위 누수율)
-  const radius = 60;
+  // 도넛 (권위 누수율) — 100%일 때 끝점 겹침 방지를 위해 cap=butt, 살짝 얇게
+  const radius = 52;
   const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (leakagePct / 100) * circumference;
+  const isFull = leakagePct >= 100;
+  const offset = isFull ? 0 : circumference - (leakagePct / 100) * circumference;
 
   const surfaces = [
     { label: "쇼핑", key: "shop", count: context.externalSurfaces.shop, color: "bg-emerald-500", desc: "네이버 쇼핑 검색에 노출되는 상품·스토어 결과" },
@@ -101,36 +102,54 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
           ───────────────────────────────────────────── */}
       <section>
         <div className="rounded-2xl border-2 border-destructive/20 bg-gradient-to-br from-destructive/[0.04] to-transparent p-6 sm:p-8">
-          <div className="flex items-center gap-2 mb-5">
+          <div className="flex items-center gap-2 mb-6">
             <span className="inline-block w-1 h-4 bg-destructive rounded-full" />
             <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-destructive">
               핵심 진단 · Critical
             </span>
           </div>
-          <div className="flex flex-col sm:flex-row items-center gap-6 sm:gap-8">
-            <div className="relative flex-shrink-0">
-              <svg width="150" height="150" viewBox="0 0 150 150" className="-rotate-90">
-                <circle cx="75" cy="75" r={radius} fill="none" stroke="hsl(var(--muted))" strokeWidth="14" />
+
+          <div className="flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-8">
+            {/* Donut — sized down, baseline aligned with headline */}
+            <div className="relative flex-shrink-0 mx-auto sm:mx-0 w-[128px] h-[128px] sm:w-[140px] sm:h-[140px] sm:mt-1">
+              <svg viewBox="0 0 128 128" className="w-full h-full -rotate-90">
                 <circle
-                  cx="75" cy="75" r={radius} fill="none"
-                  stroke="hsl(var(--destructive))" strokeWidth="14"
-                  strokeDasharray={circumference} strokeDashoffset={offset}
-                  strokeLinecap="round" className="transition-all duration-700"
+                  cx="64" cy="64" r={radius}
+                  fill="none"
+                  stroke="hsl(var(--muted))"
+                  strokeWidth="10"
+                />
+                <circle
+                  cx="64" cy="64" r={radius}
+                  fill="none"
+                  stroke="hsl(var(--destructive))"
+                  strokeWidth="10"
+                  strokeDasharray={circumference}
+                  strokeDashoffset={offset}
+                  strokeLinecap={isFull ? "butt" : "round"}
+                  className="transition-all duration-700"
                 />
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-4xl font-extrabold text-destructive leading-none tracking-tight">{leakagePct}%</span>
-                <span className="text-[10px] text-muted-foreground mt-1.5 font-medium uppercase tracking-wider">권위 누수</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[2rem] sm:text-[2.25rem] font-extrabold text-destructive leading-none tracking-tight tabular-nums">
+                  {leakagePct}
+                  <span className="text-base sm:text-lg align-top ml-0.5 font-bold">%</span>
+                </span>
+                <span className="text-[9px] text-muted-foreground mt-2 font-semibold uppercase tracking-[0.12em]">
+                  권위 누수
+                </span>
               </div>
             </div>
-            <div className="flex-1 text-center sm:text-left">
-              <h3 className="text-xl sm:text-2xl font-bold text-foreground mb-2 leading-tight tracking-tight">
-                검색 권위의 <span className="text-destructive">{leakagePct}%</span>가<br className="hidden sm:block" />
-                naver.com에 적립돼요
+
+            {/* Headline + body */}
+            <div className="flex-1 min-w-0 text-center sm:text-left">
+              <h3 className="text-lg sm:text-2xl font-bold text-foreground mb-3 leading-snug tracking-tight">
+                검색 권위의 <span className="text-destructive tabular-nums">{leakagePct}%</span>가{" "}
+                <span className="whitespace-nowrap">naver.com</span>에 적립돼요
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 브랜드명 검색 시 자사 스토어 노출 비율은{" "}
-                <span className="font-semibold text-foreground">{ownPct}%</span> 뿐.
+                <span className="font-semibold text-foreground tabular-nums">{ownPct}%</span> 뿐.
                 자체 도메인이 없어 모든 권위가 naver.com으로 귀속돼요.
               </p>
               <InfoToggle title="권위 누수란? · 산출 기준 보기">
