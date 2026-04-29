@@ -132,30 +132,6 @@ export default function Admin() {
     setEngineUpdating(false);
   };
 
-  const fetchAutoblogStatus = async () => {
-    const { data: cfg } = await (supabase as any)
-      .from("autoblog_engine_config")
-      .select("version, updated_at")
-      .eq("config_key", "content_system_prompt")
-      .maybeSingle();
-    if (cfg) setAutoblogConfig(cfg);
-    const { data: logs } = await (supabase as any)
-      .from("autoblog_engine_log")
-      .select("version, changes_summary, trends_found, status, created_at")
-      .order("created_at", { ascending: false })
-      .limit(10);
-    if (logs) setAutoblogLogs(logs);
-  };
-
-  const triggerAutoblogUpdate = async () => {
-    setAutoblogUpdating(true);
-    try {
-      const { data: res } = await supabase.functions.invoke("update-autoblog-engine", {});
-      if (res?.success) await fetchAutoblogStatus();
-    } catch {}
-    setAutoblogUpdating(false);
-  };
-
   const fetchFailedPosts = async () => {
     const pw = sessionStorage.getItem("admin_pw") || password;
     const { data: res } = await supabase.functions.invoke("admin-insights", {
