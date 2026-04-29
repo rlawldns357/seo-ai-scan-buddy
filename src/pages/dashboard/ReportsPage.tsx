@@ -9,7 +9,7 @@ export default function DashboardReportsPage() {
   return (
     <>
       <Helmet>
-        <title>성과 리포트 | AutoBlog</title>
+        <title>성과 리포트 | Auto-Blog</title>
       </Helmet>
       <PageHeader
         icon={BarChart3}

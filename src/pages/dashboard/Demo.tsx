@@ -405,7 +405,7 @@ export default function Demo() {
 
   return (
     <>
-      <Helmet><title>AutoBlog 라이브 데모 | 내부 시연용</title></Helmet>
+      <Helmet><title>Auto-Blog 라이브 데모 | 내부 시연용</title></Helmet>
 
       <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
         <div className="min-w-0 flex-1">
@@ -418,7 +418,7 @@ export default function Demo() {
             </span>
           </div>
           <h1 className="text-xl md:text-2xl font-bold text-foreground leading-tight tracking-tight">
-            검색 유입을 만드는 콘텐츠 시스템, <span className="text-primary">AutoBlog</span>
+            검색 유입을 만드는 콘텐츠 시스템, <span className="text-primary">Auto-Blog</span>
           </h1>
           <p className="text-sm text-muted-foreground mt-1 leading-snug">
             광고는 끄면 멈추고 <span className="text-foreground font-semibold">검색은 잠들어도 일합니다</span>. 다음 30편이 큐에 쌓여 매일 자동 발행 — 아침에 승인 한 번.
@@ -972,7 +972,7 @@ export default function Demo() {
                 <div className="text-[10px] text-muted-foreground">리서치+작성 평균</div>
               </div>
               <div className="p-2.5 rounded-lg border border-primary bg-primary/5">
-                <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-0.5">AutoBlog</div>
+                <div className="text-[10px] text-primary font-bold uppercase tracking-wider mb-0.5">Auto-Blog</div>
                 <div className="text-base font-bold text-primary tabular-nums">{aiSeconds}초</div>
                 <div className="text-[10px] text-muted-foreground">실측 생성 시간</div>
               </div>

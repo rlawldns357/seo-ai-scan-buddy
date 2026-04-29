@@ -57,7 +57,7 @@ export default function SiteHub() {
     <>
       <Helmet>
         <title>{site.title} | SearchTune OS</title>
-        <meta name="description" content={`${site.title} 블로그 허브 - SearchTune OS AutoBlog로 발행됨`} />
+        <meta name="description" content={`${site.title} 블로그 허브 - SearchTune OS Auto-Blog로 발행됨`} />
         <link rel="canonical" href={`https://searchtuneos.com/sites/${site.site_slug}`} />
       </Helmet>
       <JsonLd data={jsonLd} />
@@ -68,7 +68,7 @@ export default function SiteHub() {
             <a href={site.site_url} target="_blank" rel="noreferrer" className="hover:underline">{site.site_url}</a>
           </p>
           <h1 className="text-3xl md:text-4xl font-bold text-foreground mt-1">{site.title}</h1>
-          <p className="text-sm text-muted-foreground mt-2">SearchTune OS AutoBlog로 운영되는 블로그 허브</p>
+          <p className="text-sm text-muted-foreground mt-2">SearchTune OS Auto-Blog로 운영되는 블로그 허브</p>
         </header>
 
         {posts.length === 0 ? (

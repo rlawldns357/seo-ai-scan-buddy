@@ -380,7 +380,7 @@ function ActionPlan({ context }: { context: NaverStoreContext }) {
       tag: "AI 인용 자산",
       title: "AI 인용 친화 가이드 콘텐츠 제작",
       why: `외부 언급 ${totalMentions.toLocaleString()}건은 충분 — 다만 AI가 인용할 정형화된 자사 콘텐츠가 부재해요.`,
-      how: "제품 가이드·비교표·FAQ를 자사 도메인에 구조화 데이터(JSON-LD)와 함께 게시하세요. AutoBlog로 자동화 가능해요.",
+      how: "제품 가이드·비교표·FAQ를 자사 도메인에 구조화 데이터(JSON-LD)와 함께 게시하세요. Auto-Blog로 자동화 가능해요.",
       impact: "GEO 인용 가능성 점수 +15~25",
       tone: "neutral",
     });
@@ -391,7 +391,7 @@ function ActionPlan({ context }: { context: NaverStoreContext }) {
     tag: "운영 자동화",
     title: "콘텐츠 발행 루프 자동화",
     why: "위 두 액션은 모두 '꾸준한 발행'이 전제 — 수동으로는 30편 이상 누적이 어려워요.",
-    how: "AutoBlog로 자사 도메인에 블로그 허브를 두고 SEO/AEO/GEO 3축 최적화된 콘텐츠를 자동 발행하세요.",
+    how: "Auto-Blog로 자사 도메인에 블로그 허브를 두고 SEO/AEO/GEO 3축 최적화된 콘텐츠를 자동 발행하세요.",
     impact: "월 30편 발행 시 6개월 누적 180편 콘텐츠 자산",
     tone: "neutral",
   });

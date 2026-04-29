@@ -100,7 +100,7 @@ export default function Navbar() {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 sm:gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium whitespace-nowrap"
             >
-              <span>AutoBlog</span>
+              <span>Auto-Blog</span>
               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-primary to-accent text-primary-foreground leading-none shadow-sm">
                 <Sparkles className="w-2.5 h-2.5" /> NEW
               </span>

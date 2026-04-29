@@ -191,7 +191,7 @@ export default function DashboardProducts() {
   if (siteLoading || !site) {
     return (
       <>
-        <Helmet><title>제품 카탈로그 | AutoBlog</title></Helmet>
+        <Helmet><title>제품 카탈로그 | Auto-Blog</title></Helmet>
         <PageHeader icon={ShoppingBag} chip="Products" title="제품 카탈로그" tone="primary" />
         <p className="text-sm text-muted-foreground">사이트를 불러오는 중…</p>
       </>
@@ -202,7 +202,7 @@ export default function DashboardProducts() {
   if (isLocked) {
     return (
       <>
-        <Helmet><title>제품 카탈로그 | AutoBlog</title></Helmet>
+        <Helmet><title>제품 카탈로그 | Auto-Blog</title></Helmet>
         <PageHeader icon={ShoppingBag} chip="Products" title="제품 카탈로그" tone="primary" />
         <LockedFeature
           title="제품 카탈로그는 Lite 플랜부터 사용할 수 있어요"
@@ -219,7 +219,7 @@ export default function DashboardProducts() {
   return (
     <>
       <Helmet>
-        <title>제품 카탈로그 | AutoBlog</title>
+        <title>제품 카탈로그 | Auto-Blog</title>
       </Helmet>
       <PageHeader
         icon={ShoppingBag}

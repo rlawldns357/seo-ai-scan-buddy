@@ -27,7 +27,7 @@ type Props = {
 
 /**
  * Hero placed at the very top of /dashboard.
- * Mirrors the public AutoBlog landing hero (title + URL input + 3-step row),
+ * Mirrors the public Auto-Blog landing hero (title + URL input + 3-step row),
  * but adapts to the user's lifecycle stage: guest / no-site / ready.
  */
 export default function DashboardHero(props: Props) {
@@ -42,7 +42,7 @@ export default function DashboardHero(props: Props) {
       {/* Top badge */}
       <div className="relative flex items-center gap-2 mb-3">
         <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary text-[11px] font-bold px-2.5 py-1">
-          <Sparkles className="w-3 h-3" /> AutoBlog
+          <Sparkles className="w-3 h-3" /> Auto-Blog
         </span>
         <span className="text-[11px] text-muted-foreground hidden sm:inline">
           검색 유입을 만드는 콘텐츠 시스템
