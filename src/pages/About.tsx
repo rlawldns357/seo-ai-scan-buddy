@@ -2,7 +2,7 @@ import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import { SoftwareApplicationJsonLd } from "@/components/JsonLd";
 import FunnelCTAs from "@/components/FunnelCTAs";
-import { Search, BarChart3, Shield, Zap, ArrowRight, Target, TrendingUp, MousePointerClick, Store, Sparkles } from "lucide-react";
+import { Search, BarChart3, Shield, Zap, ArrowRight, Store, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const analyticFeatures = [
