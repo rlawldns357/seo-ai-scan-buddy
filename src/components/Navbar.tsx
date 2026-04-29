@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, ShieldCheck, Bell, MessageSquare, Briefcase, Sparkles } from "lucide-react";
+import { Search, ShieldCheck, Bell, MessageSquare, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
@@ -86,17 +86,6 @@ export default function Navbar() {
             )}
           </div>
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
-            <a
-              href="https://auto-blog-hive.lovable.app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 sm:gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors font-medium whitespace-nowrap"
-            >
-              <span>Auto-Blog</span>
-              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-gradient-to-r from-primary to-accent text-primary-foreground leading-none shadow-sm">
-                <Sparkles className="w-2.5 h-2.5" /> NEW
-              </span>
-            </a>
             <Link
               to="/blog"
               className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
