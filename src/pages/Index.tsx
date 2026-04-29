@@ -400,17 +400,17 @@ const Index = () => {
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               무료 베타 서비스
             </div>
-            <h1 className="text-4xl sm:text-5xl md:text-6xl text-foreground leading-[1.15] sm:leading-[1.1] mb-6 tracking-tight">
-              <span className="block font-light text-muted-foreground text-2xl sm:text-3xl md:text-4xl mb-3">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl text-foreground leading-[1.2] sm:leading-[1.1] mb-6 tracking-tight">
+              <span className="block font-light text-muted-foreground text-2xl sm:text-3xl md:text-4xl leading-snug mb-4 sm:mb-3">
                 내 사이트,
               </span>
-              <span className="block font-extrabold">
+              <span className="block font-extrabold leading-[1.2] sm:leading-[1.1]">
                 <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   검색엔진과 AI
                 </span>
                 <span>가</span>
               </span>
-              <span className="block font-extrabold mt-1">
+              <span className="block font-extrabold leading-[1.2] sm:leading-[1.1] mt-2 sm:mt-1">
                 제대로 이해<span className="font-light text-muted-foreground">하고 있을까?</span>
               </span>
             </h1>
