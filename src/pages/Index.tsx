@@ -415,7 +415,7 @@ const Index = () => {
               </span>
             </h1>
             <p className="text-muted-foreground text-base sm:text-lg mb-10 sm:mb-16 leading-relaxed">
-              URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
+              URL만 입력하면 SEO·GEO·AEO 최적화 기본 상태와<br className="hidden sm:block" /> AI 검색 준비도를 빠르게 확인할 수 있어요.
             </p>
             <div className="relative max-w-xl mx-auto group">
               {/* Soft glow halo — focus 시 강화 */}
