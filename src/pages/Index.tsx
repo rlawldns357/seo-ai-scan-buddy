@@ -390,21 +390,44 @@ const Index = () => {
             <p className="text-muted-foreground text-base sm:text-lg mb-10 leading-relaxed">
               URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
             </p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-lg mx-auto">
-              <input
-                type="url"
-                value={url}
-                onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
-                onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-                placeholder="https://example.com"
-                className="w-full sm:flex-1 h-14 sm:h-12 px-4 sm:px-5 rounded-xl sm:rounded-2xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-base sm:text-base transition-all"
-              />
-              <button
-                onClick={handleAnalyze}
-                className="h-14 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl gradient-primary text-primary-foreground font-semibold text-base sm:text-base whitespace-nowrap shadow-md hover:shadow-lg hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none"
-              >
-                무료로 분석하기
-              </button>
+            <div className="max-w-lg mx-auto">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+                <div className="relative w-full sm:flex-1">
+                  <Search
+                    className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60 pointer-events-none"
+                    strokeWidth={2.5}
+                  />
+                  <input
+                    type="url"
+                    value={url}
+                    onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
+                    placeholder={url ? "" : rotatingPlaceholder}
+                    className="w-full h-14 sm:h-12 pl-11 pr-4 sm:pr-5 rounded-xl sm:rounded-2xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary text-base sm:text-base transition-all"
+                  />
+                </div>
+                <button
+                  onClick={handleAnalyze}
+                  className="h-14 sm:h-12 px-6 sm:px-8 rounded-xl sm:rounded-2xl gradient-primary text-primary-foreground font-semibold text-base sm:text-base whitespace-nowrap shadow-md hover:shadow-lg hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none"
+                >
+                  무료로 분석하기
+                </button>
+              </div>
+              {!url && (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 mt-3 animate-fade-in">
+                  <span className="text-[11px] text-muted-foreground/70 mr-0.5">예시</span>
+                  {EXAMPLE_URLS.map((ex) => (
+                    <button
+                      key={ex.url}
+                      type="button"
+                      onClick={() => { setUrl(ex.url); setUrlError(""); }}
+                      className="text-[11px] px-2.5 py-1 rounded-full border border-border/70 bg-card hover:bg-muted hover:border-primary/40 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      {ex.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             {(() => {
               const trimmed = url.trim();
