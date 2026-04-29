@@ -215,38 +215,86 @@ Deno.serve(async (req) => {
 
     const recentTitleList = recentTitles.slice(0, 15).join(", ");
 
-    // === (NEW) 최신 레퍼런스 자동 수집: Firecrawl search ===
+    // === (NEW) 최신 레퍼런스 자동 수집: Perplexity sonar (우선) → Firecrawl (폴백) ===
     let freshContext = "";
+    let freshSource: "perplexity" | "firecrawl" | "none" = "none";
     if (ENABLE_FRESH_REFERENCES) {
+      // 1순위: Perplexity sonar — 실시간 검색 + 인용 URL 자동 수집
       try {
-        const fcKey = Deno.env.get("FIRECRAWL_API_KEY");
-        if (fcKey) {
-          const fcRes = await fetch("https://api.firecrawl.dev/v2/search", {
+        const pplxKey = Deno.env.get("PERPLEXITY_API_KEY");
+        if (pplxKey) {
+          const pplxRes = await fetch("https://api.perplexity.ai/chat/completions", {
             method: "POST",
-            headers: { Authorization: `Bearer ${fcKey}`, "Content-Type": "application/json" },
+            headers: { Authorization: `Bearer ${pplxKey}`, "Content-Type": "application/json" },
             body: JSON.stringify({
-              query: `${theme} ${currentYear}`,
-              limit: 3,
-              lang: "ko",
-              country: "kr",
-              tbs: "qdr:m",
+              model: "sonar",
+              messages: [
+                {
+                  role: "system",
+                  content: `You are a research assistant for a Korean SEO/AEO/GEO blog. Find 2-3 credible, recent (last 3 months) facts, statistics, or official guidance about the given topic. Respond in Korean. For each fact, include: (1) the fact itself, (2) the source name, (3) a 1-line context. Do not make up sources.`,
+                },
+                {
+                  role: "user",
+                  content: `주제: "${theme}". ${currentYear}년 기준 최신 사실·통계·공식 가이드 2~3개를 한국어로 정리해주세요.`,
+                },
+              ],
+              search_recency_filter: "month",
+              temperature: 0.2,
+              max_tokens: 600,
             }),
           });
-          if (fcRes.ok) {
-            const fcData = await fcRes.json();
-            const results = (fcData?.data || fcData?.web?.results || []).slice(0, 2);
-            if (Array.isArray(results) && results.length > 0) {
-              freshContext = results
-                .map((r: any, i: number) => `[참고 ${i + 1}] ${r.title || ""}\n출처: ${r.url || ""}\n요약: ${(r.description || r.snippet || "").slice(0, 220)}`)
-                .join("\n\n");
-              console.log(`[Firecrawl] ${results.length}개 최신 레퍼런스 수집 완료`);
+          if (pplxRes.ok) {
+            const pplxData = await pplxRes.json();
+            const content = pplxData.choices?.[0]?.message?.content as string | undefined;
+            const citations: string[] = Array.isArray(pplxData.citations) ? pplxData.citations.slice(0, 5) : [];
+            if (content && content.trim().length > 50) {
+              freshContext =
+                `[Perplexity 실시간 리서치]\n${content.trim()}` +
+                (citations.length > 0 ? `\n\n인용 출처:\n${citations.map((u, i) => `[${i + 1}] ${u}`).join("\n")}` : "");
+              freshSource = "perplexity";
+              console.log(`[Perplexity] 리서치 완료, 인용 ${citations.length}개`);
             }
           } else {
-            console.warn("[Firecrawl] search failed:", fcRes.status);
+            console.warn("[Perplexity] failed:", pplxRes.status);
           }
         }
       } catch (e) {
-        console.warn("[Firecrawl] non-blocking error:", e);
+        console.warn("[Perplexity] non-blocking error:", e);
+      }
+
+      // 2순위: Firecrawl 폴백
+      if (!freshContext) {
+        try {
+          const fcKey = Deno.env.get("FIRECRAWL_API_KEY");
+          if (fcKey) {
+            const fcRes = await fetch("https://api.firecrawl.dev/v2/search", {
+              method: "POST",
+              headers: { Authorization: `Bearer ${fcKey}`, "Content-Type": "application/json" },
+              body: JSON.stringify({
+                query: `${theme} ${currentYear}`,
+                limit: 3,
+                lang: "ko",
+                country: "kr",
+                tbs: "qdr:m",
+              }),
+            });
+            if (fcRes.ok) {
+              const fcData = await fcRes.json();
+              const results = (fcData?.data || fcData?.web?.results || []).slice(0, 2);
+              if (Array.isArray(results) && results.length > 0) {
+                freshContext = results
+                  .map((r: any, i: number) => `[참고 ${i + 1}] ${r.title || ""}\n출처: ${r.url || ""}\n요약: ${(r.description || r.snippet || "").slice(0, 220)}`)
+                  .join("\n\n");
+                freshSource = "firecrawl";
+                console.log(`[Firecrawl 폴백] ${results.length}개 최신 레퍼런스 수집 완료`);
+              }
+            } else {
+              console.warn("[Firecrawl] search failed:", fcRes.status);
+            }
+          }
+        } catch (e) {
+          console.warn("[Firecrawl] non-blocking error:", e);
+        }
       }
     }
 
