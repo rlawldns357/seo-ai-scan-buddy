@@ -172,12 +172,13 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
       </section>
 
       {/* ─────────────────────────────────────────────
-          L2 SUPPORT: 보조 데이터 · 토글 (기본 접힘)
+          L2 SUPPORT + L1 ACTION: 토글로 접기 (기본 접힘)
           ───────────────────────────────────────────── */}
-      <DetailsToggle />
-
-      {/* legacy section kept below as JSX children of DetailsToggle via portal-like inlining */}
-      <section className="hidden" aria-hidden>
+      <DetailsToggleSection
+        leftLabel="자세한 진단 데이터 + 액션 플랜 보기"
+        rightLabel={`보조 지표 2 · 액션 ${3}`}
+      >
+        <section>
         <div className="flex items-baseline justify-between px-1 mb-2.5">
           <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
             보조 진단 데이터
