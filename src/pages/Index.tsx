@@ -445,9 +445,18 @@ const Index = () => {
                 </div>
                 <button
                   onClick={handleAnalyze}
-                  className="h-14 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none"
+                  disabled={isAnalyzing}
+                  aria-busy={isAnalyzing}
+                  className="h-14 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none disabled:opacity-95 disabled:cursor-wait inline-flex items-center justify-center gap-2"
                 >
-                  무료로 분석하기
+                  {isAnalyzing ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span>분석 시작 중…</span>
+                    </>
+                  ) : (
+                    "무료로 분석하기"
+                  )}
                 </button>
               </div>
               {!url && (
