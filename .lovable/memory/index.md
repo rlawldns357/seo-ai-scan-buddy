@@ -1,0 +1,78 @@
+# Project Memory
+
+## Core
+- **Scope:** SearchTune OS는 **사이트 진단 전용**. AutoBlog/대시보드/큐/결제 전부 제거됨 (별도 SaaS auto-blog-hive로 분리). [autoblog-removed](mem://constraints/autoblog-removed) 참조.
+- **Tech Stack:** v0.13.0-beta. Target year 2026. Supabase, Cloudflare. `search_path = public` on DB functions.
+- **AI & Analysis:** Gemini temp=0. 3 scores (SEO, AEO, GEO) 0-100. Always show worst score first to drive urgency.
+- **Layout Constraints:** Desktop `max-w-4xl`. Mobile `px-2` full-width. Toss-style rounded buttons (`rounded-full`, `h-10`).
+- **Mobile Patterns:** 'Internal Expansion Cards' (inline expand, duplicate fold btn). Sticky 2-row CTA at bottom.
+- **Resource Rules:** UUID filenames for Supabase Storage. Max 3 analyses/day/IP (Email unlocks +5).
+- **SEO/DOM:** Single-H1 strict rule. Inline critical CSS in `<head>`, defer rest. Prerender `/blog` routes.
+- **Naver Store BM:** 별도 진단 라인. SEO/AEO/GEO 3축 통일 (별도 점수체계 금지). `/naver-store` 랜딩 + 메인 자동 분기.
+- **Naver Rulebook:** 네이버 웹마스터 공식 룰북은 분석/생성 엔진의 불변 베이스. 트렌드 업데이트로 절대 덮어쓰기 금지. 한국 사이트 채점 시 강제 주입.
+
+## Memories
+- [PSI Integration](mem://technical/psi-integration) — Edge Function proxy for PSI API, 90-100s timeout, retries
+- [Analytics Tracking](mem://technical/analytics-tracking) — Supabase KPI & GA4, analysis_start URL in independent column
+- [Error Handling](mem://ux/error-handling) — Clear UX for robots.txt block, timeouts, unreachable sites
+- [Loading Experience](mem://ux/loading-experience) — 3-step checklist, sticky CTA, Fast Analysis mode skips Lighthouse
+- [Analysis Framework](mem://logic/analysis-framework) — SEO/AEO/GEO scores, no total score, First/Fast improvement tags
+- [Data Gating](mem://features/data-gating) — Free tier shows 3 scores/summary; details gated behind email conversion
+- [Score Caps](mem://logic/score-caps) — Hard blockers cap max scores (e.g., crawling block caps SEO)
+- [Lighthouse Vis](mem://style/lighthouse-visualization) — Compact bar/ring desktop, MiniScoreMobile dot format mobile
+- [Worst Score Priority](mem://logic/worst-score-priority) — Auto-select lowest score axis on load to drive urgency
+- [GEO Scoring](mem://logic/geo-scoring-strategy) — Conservative GEO score to emphasize missed AI engine opportunities
+- [Dev Test Route](mem://technical/dev-test-route) — `/design-test` route for integrated UI/UX testing
+- [Visual Hierarchy](mem://ux/visual-hierarchy) — Header: color icons + black uppercase. Score gauge emphasized
+- [Analysis Pipeline](mem://technical/analysis-pipeline) — Firecrawl + Gemini. Extract JSON-LD first, parallel subpage scrape
+- [URL Validation](mem://logic/url-validation-strategy) — Auto https, strip www, block localhost/IPs, SubpageWarning
+- [Admin Portal](mem://features/admin-portal) — `/admin` engine status, update logs, manual trigger
+- [FAQ Strategy](mem://ux/faq-strategy) — Top 3 on main UI, all 10 in static JSON-LD/noscript for SEO/AEO
+- [UI Constraints](mem://style/ui-constraints) — Mobile: px-2, full width. Desktop: max-w-4xl. URL input h-14 w-full
+- [Verification Links](mem://features/verification-links) — External verification links in responsive grid (up to 4 cols)
+- [Domain Connection](mem://technical/domain-connection) — searchtuneos.com via Cloudflare, A record 185.158.133.1
+- [Credit Protection](mem://logic/credit-protection) — 3 IP limits/day. Email unlocks 5 more. Consent checkbox required
+- [AI Parsing Logic](mem://technical/ai-parsing-logic) — Remove markdown ```json before parsing. 15-30s parallel process
+- [AEO/GEO Concepts](mem://logic/aeo-geo-concepts) — GEO checks major AI platforms (ChatGPT, Perplexity, etc). Not local SEO
+- [Asset Specs](mem://technical/asset-specifications) — OG 1200x630, Favicon 32, Apple 180, Android 192
+- [PDF Reports](mem://features/pdf-report-generation) — jspdf + watermark, Supabase upload, React Email send
+- [Database Security](mem://security/database-hardening) — service_role for SELECTs, strict RLS for INSERTs
+- [Admin Auth](mem://security/admin-auth-architecture) — Edge Function password validation for /admin, no client auth
+- [Score Messaging](mem://logic/score-based-messaging) — >= 75 avg score switches copy to positive encouragement
+- [Structured Data](mem://technical/structured-data-extraction) — rawHtml to keep scripts, score based on JSON-LD count
+- [Score UI Feedback](mem://style/score-based-ui-feedback) — Backdrop-blur 16px, state colors (red/orange/blue) with glow
+- [Mobile Cards](mem://style/mobile-card-optimization) — Internal expansion, duplicate collapse button, colored ring
+- [Desktop Layout](mem://style/dashboard-layout-desktop) — 3-col top grid (same height), full-width details below
+- [Visitor Calculator](mem://ux/visitor-loss-calculator) — 3,000 visitors default, red text, mobile compact w/ toggle
+- [Sticky CTA Mobile](mem://ux/sticky-cta-mobile-layout) — 2-row sticky CTA (message + input/btn), Toss-style
+- [Mobile Interaction](mem://ux/mobile-interaction-logic) — Folded on load, lazy init, auto-scroll on expand
+- [Admin Reliability](mem://technical/admin-data-reliability) — .range() for pagination, backward compatible event_data
+- [Performance Optimization](mem://technical/performance-optimization) — Critical inline CSS, deferred media="print"
+- [Navigation Contact](mem://ux/navigation-contact-system) — Dropdown w/ 3 options: notify, consult, business inquiry
+- [AdSense Plan](mem://constraints/adsense-plan) — ca-pub-2991246554449711, prerendered blog, defer CMP
+- [Social Sharing](mem://features/social-sharing) — Copy, Web Share, downloadable watermark PNG. Mobile action bar
+- [Analysis History](mem://features/analysis-history) — analysis_history table, diff arrows on dashboard
+- [Blog Queue](mem://technical/blog-queue-system) — Async queue for blog generation w/ states and recovery
+- [Storage Naming](mem://technical/storage-resource-naming) — UUIDs for all auto-generated Supabase Storage files
+- [Automated Engine](mem://logic/automated-engine-update) — pg_cron 1st/15th, updates engine_config via AI & Firecrawl
+- [Conversion Funnel](mem://strategy/conversion-funnel) — Loss-aversion, 2-step (email->consult), vertical on mobile
+- [Brand Identity](mem://brand/identity-and-messaging) — v0.11.0-beta, header badge, synced engine version
+- [SEO/AEO Strategy](mem://strategy/seo-aeo-geo-optimization) — Single-H1, AI bots allowed in robots.txt, 2026 schema
+- [Blog Automation](mem://features/blog/automation-and-ux) — 3 AI personas, auto internal links, 08:50/17:30 KST daily
+- [Blog Prerendering](mem://technical/blog-prerendering) — Static HTML generation for /blog routes
+- [Deterministic AI](mem://logic/deterministic-scoring) — Gemini temperature = 0
+- [Entity Definition](mem://brand/entity-definition) — SearchTune OS, 2025 release, target year 2026
+- [Blog Thumbnails](mem://style/blog-thumbnail-branding) — Brand-specific fonts/colors (ChatGPT Inter, Claude Georgia)
+- [Content Scoring](mem://features/content-scoring) — 자동 발행 콘텐츠 SEO/AEO/GEO 3축 점수 (초안+발행 후 재채점, 큐 배지). CRD: .lovable/crd/content-scoring.md
+- [Inventory Frame](mem://strategy/inventory-frame-positioning) — AutoBlog 핵심 포지셔닝: 속도 아닌 재고(큐). 데모=10초 생성 증명, 제품=30편 큐 자동발행. 시간 과장 금지
+- [AutoBlog Engine](mem://features/autoblog-content-engine) — site_posts 생성/발행 엔진. SEO/AEO/GEO 3축 프롬프트, 자동 백링크(같은 사이트 키워드 매칭, 최대 3개), FAQ JSON-LD, 발행 시 신호 기반 자동 채점
+- [Naver Store Handling](mem://logic/naver-store-handling) — ✅ 분리 BM 가동. analyze-naver-store 함수 + /naver-store 랜딩 + 메인 자동 분기. SEO/AEO/GEO 3축 통일, 측정 로직만 별도
+- [AutoBlog BM Tiers](mem://strategy/autoblog-bm-tiers) — 5-tier (Free/Beta/Lite ₩4,900/Pro ₩49,000/Studio ₩199,000). 호스팅 모델(/sites/{slug}). 재생성=과금 레버, Pro=Flash+무제한, Studio=Pro모델+진짜무제한. 워딩: "브랜드 페이지"
+- [Kanban Workflow](mem://features/kanban-workflow) — `/dashboard#workflow` 4칸 칸반(idea/draft/scheduled/published). dnd-kit 드래그=상태변경, 모바일=Tabs 폴백. status 'queued'→'scheduled' 마이그레이션됨
+- [Autopublish Control](mem://features/autopublish-control) — 사이트별 자동 발행 ON/OFF + KST 요일·시간 + 일일 캡 + 큐 자동 보충. 워크플로우 헤더 ⚡ 팝오버. autopublish_settings 테이블 + 매분 cron + topup-idea-queue
+- [Blog Hub Naming](mem://design/naming-blog-hub) — 호스팅 페이지(/sites/{slug}) 공식 명칭은 '블로그 허브'. 브랜드 페이지/콘텐츠 허브/콘텐츠 페이지/라이브 보기 모두 금지. 라이브 데모는 admin 전용
+- [Recommendations Stock](mem://features/recommendations-stock) — /dashboard/recommendations은 site_posts(status='idea') 재고. 수동 '5개 더 받기' + 자동 보충(autopublish min_queue). '발행 대기로' 클릭 시 generate-content-draft → status='scheduled' 승격. 칸반은 .neq("status","idea")로 제외
+- [Perplexity Integration](mem://technical/perplexity-integration) — sonar(블로그 일2회) + sonar-pro(엔진 월2회). Firecrawl 폴백. citations 동봉 저장
+- [Naver Webmaster Rulebook](mem://logic/naver-webmaster-rulebook) — 네이버 공식 6대 룰북(Yeti/robots/JSON-LD/alt/시맨틱). DB+코드 이중화. analyze-site 한국사이트 감지 주입, generate-blog-post 무조건 주입, update-analysis-engine 보존 가드
+- [Blog Rulebook Compliance](mem://style/blog-naver-rulebook-compliance) — BlogPost.tsx 룰북 준수: alt 폴백(파일명 추출), 무의미 anchor 보강(도메인 부착), `<time datetime>` 시맨틱
+- [ASCII-Only Slugs](mem://constraints/ascii-only-slugs) — 자동 생성 블로그 slug는 영문만. AI가 slug_en 직접 생성, buildSafeSlug 검증, 한글 폴백 절대 금지 (네이버 색인/공유성)
