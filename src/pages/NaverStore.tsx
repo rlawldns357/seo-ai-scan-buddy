@@ -93,7 +93,7 @@ export default function NaverStore() {
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
 
-        <main className="flex-1 px-4 sm:px-6 py-12 sm:py-16">
+        <main className="flex-1 px-4 sm:px-6 pt-14 pb-32 sm:pt-20 sm:pb-40">
           <div className="max-w-3xl mx-auto">
             {/* 히어로 */}
             <div className="text-center mb-10">
