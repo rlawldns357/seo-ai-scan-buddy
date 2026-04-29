@@ -26,7 +26,7 @@ const fakePsi = {
 const DesignTest = () => (
   <div className="min-h-screen flex flex-col bg-background">
     <Navbar />
-    <main className="flex-1 py-8 sm:py-12 px-2 sm:px-4 pb-24">
+    <main className="flex-1 px-2 sm:px-4 pt-10 pb-40 sm:pt-16 sm:pb-44">
       <div className="max-w-4xl mx-auto space-y-5">
         <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />

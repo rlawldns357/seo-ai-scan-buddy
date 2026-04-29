@@ -298,7 +298,7 @@ export default function Blog() {
         })}</script>
       </Helmet>
       <Navbar />
-      <main className="container py-10 md:py-16">
+      <main className="container pt-14 pb-28 md:pt-20 md:pb-32">
         <div className="mb-10">
           <h1 className="text-3xl md:text-4xl font-extrabold text-foreground">블로그</h1>
           <p className="mt-2 text-muted-foreground">

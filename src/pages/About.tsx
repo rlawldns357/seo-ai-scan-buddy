@@ -34,7 +34,7 @@ export default function About() {
     <div className="min-h-screen flex flex-col bg-background">
       <SoftwareApplicationJsonLd />
       <Navbar />
-      <main className="flex-1 py-16 px-4">
+      <main className="flex-1 px-4 pt-20 pb-40 sm:pt-24 sm:pb-44">
         <div className="container max-w-3xl mx-auto">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight text-center mb-4">
             SearchTune <span className="font-extrabold">OS</span>
