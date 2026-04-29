@@ -4,22 +4,33 @@
  * PoC(naver-store-poc)에서 승격됨. 일반 사이트와 동일한 SEO/AEO/GEO 3축 점수
  * 체계를 유지하되, 측정 로직만 네이버 Search API 5-surface 기반으로 재정의함.
  *
- * 점수 매핑 원칙:
+ * 점수 매핑 원칙 (네이버 웹마스터 룰북 베이스):
  *  - SEO = 권위 누수율 (브랜드 검색결과에서 자사 콘텐츠 비중)
- *          → 자체 도메인 부재로 항상 강한 score cap (≤ 45)
+ *          → 자체 도메인 부재(룰북 §6 브랜드 도메인) → SEO cap ≤ 45
+ *          → robots.txt 외부 차단(룰북 §1 Yeti 허용)도 외부 검색 기준 0% 처리
  *  - AEO = AI 답변 인용 가능성 (외부 콘텐츠의 구조화·언급 정도)
- *          → 스토어 자체는 AI 크롤 차단으로 cap (≤ 50)
+ *          → 스토어 템플릿 = JSON-LD 통제 불가(룰북 §5) → AEO cap ≤ 50
  *  - GEO = 외부 출처 다양성 (webkr/blog/cafe 인용 가능 출처 수)
- *          → 자사 콘텐츠 0%면 cap (≤ 40)
+ *          → 자사 통제 콘텐츠 0%면 GEO cap ≤ 40
+ *
+ * 엔진 업데이트:
+ *  - DB의 `naver_webmaster_rulebook`을 fallback과 함께 로드해 응답 메타에 동봉
+ *  - 룰북 버전을 응답에 포함해 클라이언트가 어떤 룰북 기준으로 채점됐는지 추적 가능
  *
  * Output: DemoResult 형태 그대로 반환 (ScoreDashboard 100% 재사용).
  */
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { loadNaverRulebook } from "../_shared/naver-rulebook.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const NAVER_CLIENT_ID = Deno.env.get("NAVER_CLIENT_ID");
 const NAVER_CLIENT_SECRET = Deno.env.get("NAVER_CLIENT_SECRET");
@@ -168,11 +179,11 @@ function buildSeoAxis(x: AxisInputs) {
     label: "SEO" as const,
     description: "검색엔진이 이 페이지를 크롤링·인덱싱하고 검색 결과에 노출할 기술적 준비 상태",
     subSignals: [
-      { name: "크롤링 가능성", score: crawlability, weight: 20 },
-      { name: "인덱싱 준비도", score: Math.round(indexability), weight: 20 },
-      { name: "자체 도메인 권위", score: ownDomain, weight: 25 },
-      { name: "스니펫 품질", score: snippet, weight: 15 },
-      { name: "구조화 데이터", score: structured, weight: 20 },
+      { name: "Yeti 크롤 허용 (룰북 §1)", score: crawlability, weight: 20 },
+      { name: "인덱싱 준비도 (룰북 §1)", score: Math.round(indexability), weight: 20 },
+      { name: "자체 도메인 권위 (룰북 §6)", score: ownDomain, weight: 25 },
+      { name: "스니펫·메타 품질 (룰북 §2)", score: snippet, weight: 15 },
+      { name: "구조화 데이터 (룰북 §5)", score: structured, weight: 20 },
     ],
     scoreRationale: `브랜드 검색 권위의 ${leakagePct}%가 naver.com 도메인에 귀속됩니다. 자체 도메인이 없어 권위를 회수할 구조적 수단이 없습니다.`,
     issues: issues.slice(0, 3),
@@ -239,11 +250,11 @@ function buildAeoAxis(x: AxisInputs) {
     label: "AEO" as const,
     description: "AI 답변 엔진이 이 브랜드를 인용·요약하기 위해 필요한 외부 신호의 구조화 정도",
     subSignals: [
-      { name: "직접 답변 가능성", score: directAnswer, weight: 20 },
-      { name: "Q&A 구조 (지식인)", score: Math.round(qaStructure), weight: 20 },
-      { name: "리뷰 신호 (블로그)", score: Math.round(reviewSignal), weight: 20 },
-      { name: "요약 적합도", score: summarizable, weight: 15 },
-      { name: "엔티티 명확성", score: entityClarity, weight: 25 },
+      { name: "직접 답변 가능성 (룰북 §2)", score: directAnswer, weight: 20 },
+      { name: "Q&A 구조 — 지식인 (룰북 §4)", score: Math.round(qaStructure), weight: 20 },
+      { name: "리뷰 신호 — 블로그 (룰북 §4)", score: Math.round(reviewSignal), weight: 20 },
+      { name: "요약 적합도 (룰북 §2)", score: summarizable, weight: 15 },
+      { name: "엔티티 명확성 (룰북 §5 sameAs)", score: entityClarity, weight: 25 },
     ],
     scoreRationale: `스토어 자체는 AI 봇 크롤 차단 상태입니다. AI 인용은 외부 콘텐츠(블로그 ${x.blogTotal.toLocaleString()}건·지식인 ${x.kinTotal.toLocaleString()}건)에만 의존합니다.`,
     issues: issues.slice(0, 3),
@@ -310,11 +321,11 @@ function buildGeoAxis(x: AxisInputs) {
     label: "GEO" as const,
     description: "ChatGPT·Perplexity 등 생성형 AI 검색 엔진이 이 브랜드를 발견·인용할 준비 상태",
     subSignals: [
-      { name: "출처 다양성", score: Math.round(sourceDiversity), weight: 25 },
-      { name: "자사 통제 콘텐츠 비중", score: ownControlled, weight: 25 },
-      { name: "인용 가능성", score: Math.round(citability), weight: 20 },
-      { name: "최신성", score: freshness, weight: 15 },
-      { name: "브랜드 엔티티 명확성", score: brandClarity, weight: 15 },
+      { name: "출처 다양성 (룰북 §4 외부 백링크)", score: Math.round(sourceDiversity), weight: 25 },
+      { name: "자사 통제 콘텐츠 (룰북 §6)", score: ownControlled, weight: 25 },
+      { name: "인용 가능성 (룰북 §5 JSON-LD)", score: Math.round(citability), weight: 20 },
+      { name: "최신성 — lastmod (룰북 §6)", score: freshness, weight: 15 },
+      { name: "브랜드 엔티티 명확성 (룰북 §5)", score: brandClarity, weight: 15 },
     ],
     scoreRationale: `웹 전반에서 자사 통제 콘텐츠 비중은 ${ownControlled}%입니다. 생성형 AI는 자체 도메인 콘텐츠를 우선 인용하므로, 자사 통제 영역 확보 없이는 인용률 상승이 어렵습니다.`,
     issues: issues.slice(0, 3),
@@ -359,23 +370,46 @@ Deno.serve(async (req) => {
   const targetUrl =
     input.url ?? new URL(req.url).searchParams.get("url") ?? "";
 
-  if (!targetUrl) {
+  if (!targetUrl || typeof targetUrl !== "string" || targetUrl.length > 2000) {
     return new Response(
-      JSON.stringify({ success: false, error: "url required" }),
+      JSON.stringify({ success: false, error: "url required", code: "URL_REQUIRED" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  // ── 도메인 검증 강화: 파싱 실패/스토어 아님은 무조건 튕긴다 ──
+  let parsedHost = "";
+  try {
+    parsedHost = new URL(targetUrl).hostname.toLowerCase();
+  } catch {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "유효한 URL이 아니에요. 예: https://brand.naver.com/내브랜드",
+        code: "INVALID_URL",
+      }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 
   const store = parseStoreUrl(targetUrl);
   if (!store) {
+    const isNaverDomain = parsedHost.endsWith("naver.com");
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Not a Naver store URL. brand.naver.com 또는 smartstore.naver.com URL을 입력해 주세요.",
+        error: isNaverDomain
+          ? "네이버 스토어 URL이 아니에요. brand.naver.com/내브랜드 또는 smartstore.naver.com/내브랜드 형식이어야 해요."
+          : "네이버 스토어 진단은 brand.naver.com 또는 smartstore.naver.com URL만 분석할 수 있어요.",
+        code: "NOT_NAVER_STORE",
       }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
+
+  // ── 룰북 로드 (DB 우선, fallback 자동) ──
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const rulebook = await loadNaverRulebook(supabase).catch(() => null);
 
   const query = store.slug;
 
@@ -386,6 +420,18 @@ Deno.serve(async (req) => {
     naverSearch("kin", query, 10),
     naverSearch("webkr", query, 10),
   ]);
+
+  // 네이버 API 전체 실패면 명확하게 알린다
+  if (!shop.ok && !blog.ok && !webkr.ok) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "네이버 검색 API 응답이 없어요. 잠시 후 다시 시도해 주세요.",
+        code: "NAVER_API_DOWN",
+      }),
+      { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
 
   // 자사 점유율 계산
   const shopItems = shop.body?.items ?? [];
@@ -451,6 +497,12 @@ Deno.serve(async (req) => {
         blog: (blog.body?.items ?? []).slice(0, 3).map((i: any) => stripTags(i.title)),
         webkr: webkrItems.slice(0, 3).map((i: any) => stripTags(i.title)),
       },
+    },
+    engineMeta: {
+      rulebook: "naver-webmaster-bible",
+      rulebookLoaded: !!rulebook,
+      rulebookHash: rulebook ? rulebook.length : 0,
+      caps: { seo: seoCap, aeo: aeoCap, geo: geoCap },
     },
   };
 

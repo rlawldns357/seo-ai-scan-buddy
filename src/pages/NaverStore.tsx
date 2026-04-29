@@ -3,14 +3,11 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { Store, AlertTriangle, TrendingDown, Search, Bot } from "lucide-react";
 import Navbar from "@/components/Navbar";
-import { isNaverStoreUrl } from "@/lib/naverStore";
+import { parseNaverStoreUrl } from "@/lib/naverStore";
 
 /**
- * /naver-store — 네이버 스마트/브랜드 스토어 발자 타겟 마케팅 랜딩.
+ * /naver-store — 네이버 스마트/브랜드 스토어 타겟 랜딩.
  * 입력 후 메인(/)으로 redirect하면 자동 분기 로직이 analyze-naver-store로 연결.
- *
- * mem://logic/naver-store-handling 의 메시지 톤 따름:
- * "구조적으로 점수 회수 불가" → 위기감 → 진단 신청.
  */
 export default function NaverStore() {
   const navigate = useNavigate();
@@ -25,16 +22,42 @@ export default function NaverStore() {
       setError("URL을 입력해 주세요.");
       return;
     }
+    if (trimmed.length > 2000) {
+      setError("URL이 너무 길어요.");
+      return;
+    }
     let normalized = trimmed;
     if (!/^https?:\/\//i.test(normalized)) {
       normalized = `https://${normalized}`;
     }
-    if (!isNaverStoreUrl(normalized)) {
-      setError("brand.naver.com 또는 smartstore.naver.com URL만 입력 가능해요.");
+
+    // 1차: URL 파싱
+    let host = "";
+    try {
+      host = new URL(normalized).hostname.toLowerCase();
+    } catch {
+      setError("올바른 URL 형식이 아니에요. 예: brand.naver.com/내브랜드");
       return;
     }
-    // 메인의 자동 분기 로직 활용 — query string으로 URL 전달
-    navigate(`/?url=${encodeURIComponent(normalized)}&autorun=1`);
+
+    // 2차: 네이버 스토어 도메인 여부
+    if (host !== "brand.naver.com" && host !== "smartstore.naver.com") {
+      if (host.endsWith("naver.com")) {
+        setError("네이버 메인/검색 URL은 분석할 수 없어요. 스토어 URL(brand.naver.com/… 또는 smartstore.naver.com/…)을 입력해 주세요.");
+      } else {
+        setError("brand.naver.com 또는 smartstore.naver.com URL만 입력 가능해요. 일반 사이트는 메인 페이지에서 분석해 주세요.");
+      }
+      return;
+    }
+
+    // 3차: 슬러그(브랜드 식별자) 존재
+    const parsed = parseNaverStoreUrl(normalized);
+    if (!parsed) {
+      setError("브랜드 식별자가 없어요. 예: brand.naver.com/내브랜드 형식으로 입력해 주세요.");
+      return;
+    }
+
+    navigate(`/?url=${encodeURIComponent(parsed.storeUrl)}&autorun=1`);
   };
 
   return (

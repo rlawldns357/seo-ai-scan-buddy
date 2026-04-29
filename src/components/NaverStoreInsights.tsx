@@ -42,11 +42,19 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
   const leakagePct = Math.round(context.authorityLeakageRatio * 100);
   const ownPct = Math.round(context.ownContentRatio * 100);
 
-  // 도넛 (권위 누수율) — 100%일 때 끝점 겹침 방지를 위해 cap=butt, 살짝 얇게
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const isFull = leakagePct >= 100;
-  const offset = isFull ? 0 : circumference - (leakagePct / 100) * circumference;
+  // ─── 반원(semi-circle) 게이지 — 다른 컴포넌트(ScoreDashboard)와 톤 맞춤 ───
+  // viewBox 220×120, 반지름 90, stroke-width 14 (얇고 모던)
+  // 반원 호 길이 = π·r ≈ 282.74
+  const GAUGE_R = 90;
+  const GAUGE_ARC_LEN = Math.PI * GAUGE_R; // ≈ 282.74
+  const gaugeOffset = GAUGE_ARC_LEN - (leakagePct / 100) * GAUGE_ARC_LEN;
+  // 누수율 색상 — 다른 컴포넌트와 동일한 score 토큰 사용
+  // 누수율은 "낮을수록 좋다"이므로 기존 score 색을 역으로 매핑
+  const gaugeColor =
+    leakagePct >= 80 ? "hsl(var(--score-poor))"
+    : leakagePct >= 60 ? "hsl(var(--score-warning))"
+    : leakagePct >= 30 ? "hsl(var(--score-good))"
+    : "hsl(var(--score-excellent))";
 
   const surfaces = [
     { label: "쇼핑", key: "shop", count: context.externalSurfaces.shop, color: "bg-emerald-500", desc: "네이버 쇼핑 검색에 노출되는 상품·스토어 결과" },
@@ -98,53 +106,65 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
       </div>
 
       {/* ─────────────────────────────────────────────
-          L1 HERO: 가장 강한 인사이트 — 권위 누수
+          L1 HERO: 가장 강한 인사이트 — 권위 누수 (반원 게이지)
           ───────────────────────────────────────────── */}
       <section>
-        <div className="rounded-2xl border-2 border-destructive/20 bg-gradient-to-br from-destructive/[0.04] to-transparent p-6 sm:p-8">
-          <div className="flex items-center gap-2 mb-6">
-            <span className="inline-block w-1 h-4 bg-destructive rounded-full" />
+        <div className="rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm">
+          <div className="flex items-center gap-2 mb-5">
+            <span className="inline-block w-1 h-3.5 bg-destructive rounded-full" />
             <span className="text-[10px] font-bold tracking-[0.15em] uppercase text-destructive">
               핵심 진단 · Critical
             </span>
           </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-start gap-6 sm:gap-8">
-            {/* Donut — sized down, baseline aligned with headline */}
-            <div className="relative flex-shrink-0 mx-auto sm:mx-0 w-[128px] h-[128px] sm:w-[140px] sm:h-[140px] sm:mt-1">
-              <svg viewBox="0 0 128 128" className="w-full h-full -rotate-90">
-                <circle
-                  cx="64" cy="64" r={radius}
+          <div className="flex flex-col items-center text-center gap-5">
+            {/* ── 반원 게이지 (Semi-circle gauge) ── */}
+            <div className="relative w-full max-w-[280px]">
+              <svg viewBox="0 0 220 130" className="w-full h-auto" aria-hidden="true">
+                {/* 트랙 */}
+                <path
+                  d="M 20 110 A 90 90 0 0 1 200 110"
                   fill="none"
                   stroke="hsl(var(--muted))"
-                  strokeWidth="10"
+                  strokeWidth={14}
+                  strokeLinecap="round"
                 />
-                <circle
-                  cx="64" cy="64" r={radius}
+                {/* 진행 호 */}
+                <path
+                  d="M 20 110 A 90 90 0 0 1 200 110"
                   fill="none"
-                  stroke="hsl(var(--destructive))"
-                  strokeWidth="10"
-                  strokeDasharray={circumference}
-                  strokeDashoffset={offset}
-                  strokeLinecap={isFull ? "butt" : "round"}
-                  className="transition-all duration-700"
+                  stroke={gaugeColor}
+                  strokeWidth={14}
+                  strokeLinecap="round"
+                  strokeDasharray={GAUGE_ARC_LEN}
+                  strokeDashoffset={gaugeOffset}
+                  className="transition-all duration-700 ease-out"
+                  style={{ filter: `drop-shadow(0 2px 6px ${gaugeColor}33)` }}
                 />
+                {/* 좌·우 라벨 */}
+                <text x="20" y="126" fontSize="9" fill="hsl(var(--muted-foreground))" textAnchor="middle" className="font-medium">0%</text>
+                <text x="200" y="126" fontSize="9" fill="hsl(var(--muted-foreground))" textAnchor="middle" className="font-medium">100%</text>
               </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[2rem] sm:text-[2.25rem] font-extrabold text-destructive leading-none tracking-tight tabular-nums">
+
+              {/* 중앙 수치 */}
+              <div className="absolute inset-0 flex flex-col items-center justify-end pb-3 pointer-events-none">
+                <span
+                  className="text-[3rem] sm:text-[3.5rem] font-extrabold leading-none tracking-tight tabular-nums"
+                  style={{ color: gaugeColor }}
+                >
                   {leakagePct}
-                  <span className="text-base sm:text-lg align-top ml-0.5 font-bold">%</span>
+                  <span className="text-xl sm:text-2xl align-top ml-0.5 font-bold">%</span>
                 </span>
-                <span className="text-[9px] text-muted-foreground mt-2 font-semibold uppercase tracking-[0.12em]">
-                  권위 누수
+                <span className="text-[10px] text-muted-foreground mt-1.5 font-semibold uppercase tracking-[0.14em]">
+                  권위 누수율
                 </span>
               </div>
             </div>
 
             {/* Headline + body */}
-            <div className="flex-1 min-w-0 text-center sm:text-left">
-              <h3 className="text-lg sm:text-2xl font-bold text-foreground mb-3 leading-snug tracking-tight">
-                검색 권위의 <span className="text-destructive tabular-nums">{leakagePct}%</span>가{" "}
+            <div className="max-w-md">
+              <h3 className="text-base sm:text-xl font-bold text-foreground mb-2.5 leading-snug tracking-tight">
+                검색 권위의 <span className="tabular-nums" style={{ color: gaugeColor }}>{leakagePct}%</span>가{" "}
                 <span className="whitespace-nowrap">naver.com</span>에 적립돼요
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -152,20 +172,22 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
                 <span className="font-semibold text-foreground tabular-nums">{ownPct}%</span> 뿐.
                 자체 도메인이 없어 모든 권위가 naver.com으로 귀속돼요.
               </p>
-              <InfoToggle title="권위 누수란? · 산출 기준 보기">
-                <p>
-                  <span className="font-semibold text-foreground">쉬운 풀이:</span> '검색 권위(Authority)'는
-                  구글·네이버가 한 도메인에 쌓아두는 신뢰도 점수예요. 스토어처럼 자체 도메인이 없으면
-                  내가 콘텐츠를 잘 만들어도 그 점수가 전부 <code className="px-1 rounded bg-background">naver.com</code>으로 흘러갑니다.
-                </p>
-                <p>
-                  <span className="font-semibold text-foreground">산출 방법:</span> 브랜드명으로 네이버 검색 시
-                  상위 결과 중 스토어/자사 도메인 비율을 측정해 (1 − 자사비율) × 100 으로 계산했어요.
-                </p>
-                <p className="text-foreground">
-                  <span className="font-semibold">우리 기준:</span> 30% 이하 양호 · 30~60% 주의 · 60% 초과 위험
-                </p>
-              </InfoToggle>
+              <div className="flex justify-center">
+                <InfoToggle title="권위 누수란? · 산출 기준 보기">
+                  <p>
+                    <span className="font-semibold text-foreground">쉬운 풀이:</span> '검색 권위(Authority)'는
+                    구글·네이버가 한 도메인에 쌓아두는 신뢰도 점수예요. 스토어처럼 자체 도메인이 없으면
+                    내가 콘텐츠를 잘 만들어도 그 점수가 전부 <code className="px-1 rounded bg-background">naver.com</code>으로 흘러갑니다.
+                  </p>
+                  <p>
+                    <span className="font-semibold text-foreground">산출 방법:</span> 브랜드명으로 네이버 검색 시
+                    상위 결과 중 스토어/자사 도메인 비율을 측정해 (1 − 자사비율) × 100 으로 계산했어요.
+                  </p>
+                  <p className="text-foreground">
+                    <span className="font-semibold">우리 기준:</span> 30% 이하 양호 · 30~60% 주의 · 60% 초과 위험
+                  </p>
+                </InfoToggle>
+              </div>
             </div>
           </div>
         </div>
