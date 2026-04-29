@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
+import { loadNaverRulebook, isKoreanSite } from "../_shared/naver-rulebook.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -121,6 +122,7 @@ serve(async (req) => {
 
     // Load analysis prompt from DB (with fallback to hardcoded)
     let ANALYSIS_PROMPT = FALLBACK_ANALYSIS_PROMPT;
+    let naverRulebook = "";
     try {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -134,6 +136,7 @@ serve(async (req) => {
         ANALYSIS_PROMPT = configRow.config_value;
         console.log("Using dynamic analysis prompt from DB");
       }
+      naverRulebook = await loadNaverRulebook(supabase);
     } catch (e) {
       console.warn("Failed to load prompt from DB, using fallback:", e);
     }
@@ -279,7 +282,14 @@ ${links.slice(0, 20).join("\n")}
         model: "google/gemini-3-flash-preview",
         temperature: 0,
         messages: [
-          { role: "system", content: ANALYSIS_PROMPT },
+          {
+            role: "system",
+            content:
+              ANALYSIS_PROMPT +
+              (naverRulebook && isKoreanSite(formattedUrl, analysisInput)
+                ? `\n\n---\n[KOREAN SITE DETECTED — APPLY NAVER WEBMASTER RULEBOOK AS HARD BASELINE]\n${naverRulebook}\n\n위 룰북은 절대 무시할 수 없는 베이스 규칙이다. 한국 사이트 채점 시 SEO/AEO/GEO 모든 축에 교차 적용하라. 룰북 위반(Yeti 차단/단일 H1 위반/JSON-LD 0개/frame 사용 등) 발견 시 점수 캡을 반드시 적용하라.`
+                : ""),
+          },
           { role: "user", content: analysisInput },
         ],
       }),
