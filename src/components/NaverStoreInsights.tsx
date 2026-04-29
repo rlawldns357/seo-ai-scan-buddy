@@ -289,6 +289,42 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
         </div>
         <ActionPlan context={context} />
       </section>
+      </DetailsToggleSection>
+    </div>
+  );
+}
+
+/* ── 접기/펼치기 섹션 래퍼 (기본 접힘) ── */
+function DetailsToggleSection({
+  leftLabel,
+  rightLabel,
+  children,
+}: {
+  leftLabel: string;
+  rightLabel?: string;
+  children: React.ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="space-y-3">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="w-full flex items-center justify-between gap-3 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors px-4 py-3.5 text-left"
+        aria-expanded={open}
+      >
+        <span className="inline-flex items-center gap-2 text-sm font-semibold text-foreground">
+          <ChevronDown
+            className={`w-4 h-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`}
+          />
+          {leftLabel}
+        </span>
+        {rightLabel && (
+          <span className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground">
+            {rightLabel}
+          </span>
+        )}
+      </button>
+      {open && <div className="space-y-6 animate-fade-up">{children}</div>}
     </div>
   );
 }
