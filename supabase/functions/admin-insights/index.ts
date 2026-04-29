@@ -59,7 +59,83 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Handle blog list action (excludes failed-queue posts)
+    // Microsoft Clarity insights (Data Export API, last 1-3 days)
+    if (action === "clarityInsights") {
+      const token = Deno.env.get("CLARITY_API_TOKEN");
+      if (!token) {
+        return new Response(
+          JSON.stringify({ error: "CLARITY_API_TOKEN not configured" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const numOfDays = Math.min(Math.max(Number(body.numOfDays ?? 1), 1), 3);
+      try {
+        const res = await fetch(
+          `https://www.clarity.ms/export-data/api/v1/project-live-insights?numOfDays=${numOfDays}`,
+          { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" } }
+        );
+        const text = await res.text();
+        if (!res.ok) {
+          return new Response(
+            JSON.stringify({ error: `Clarity API ${res.status}`, detail: text.slice(0, 500) }),
+            { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+          );
+        }
+        let data: any;
+        try { data = JSON.parse(text); } catch { data = []; }
+
+        // Compact summary: extract top-level totals from common metrics
+        const summary: Record<string, number> = {};
+        if (Array.isArray(data)) {
+          for (const m of data) {
+            const info = Array.isArray(m?.information) ? m.information[0] : null;
+            if (!info) continue;
+            switch (m.metricName) {
+              case "Traffic":
+                summary.totalSessions = Number(info.totalSessionCount ?? 0);
+                summary.botSessions = Number(info.totalBotSessionCount ?? 0);
+                summary.distinctUsers = Number(info.distantUserCount ?? 0);
+                summary.pagesPerSession = Number(info.PagesPerSessionPercentage ?? 0);
+                break;
+              case "Engagement Time":
+                summary.engagementTime = Number(info.totalTime ?? info.activeTime ?? 0);
+                break;
+              case "Scroll Depth":
+                summary.scrollDepth = Number(info.averageScrollDepth ?? info.scrollDepth ?? 0);
+                break;
+              case "Dead Click Count":
+                summary.deadClicks = Number(info.totalDeadClickCount ?? info.deadClickCount ?? 0);
+                break;
+              case "Rage Click Count":
+                summary.rageClicks = Number(info.totalRageClickCount ?? info.rageClickCount ?? 0);
+                break;
+              case "Quickback Click":
+                summary.quickbackClicks = Number(info.totalQuickbackClickCount ?? 0);
+                break;
+              case "Excessive Scroll":
+                summary.excessiveScroll = Number(info.totalExcessiveScrollCount ?? 0);
+                break;
+              case "Script Error Count":
+                summary.scriptErrors = Number(info.totalScriptErrorCount ?? 0);
+                break;
+              case "Error Click Count":
+                summary.errorClicks = Number(info.totalErrorClickCount ?? 0);
+                break;
+            }
+          }
+        }
+        return new Response(
+          JSON.stringify({ summary, raw: data, numOfDays, fetchedAt: new Date().toISOString() }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      } catch (e: any) {
+        return new Response(
+          JSON.stringify({ error: e?.message ?? "Clarity fetch failed" }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
     if (action === "listBlogPosts") {
       const { data: posts } = await supabase
         .from("blog_posts")
