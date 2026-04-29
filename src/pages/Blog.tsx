@@ -305,9 +305,10 @@ export default function Blog() {
           <p className="mt-2 text-muted-foreground">
             SEO · AEO · GEO에 대해 알아야 할 모든 것. 실전 가이드와 인사이트를 공유합니다.
           </p>
-        </div>
 
-        {featured && (
+        <BlogScanDemo />
+
+
           <div className="mb-12">
             <Link to={`/blog/${featured.slug}`}>
               <FeaturedPost post={featured} />
