@@ -6,18 +6,21 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TREND_SEARCH_QUERIES = [
-  "SEO algorithm update 2026",
-  "Google search ranking changes 2026",
-  "AI search engine optimization trends",
-  "AEO answer engine optimization latest",
-  "GEO generative engine optimization updates",
-  "Google SGE AI overview changes",
-  "Naver search algorithm update",
-  "structured data SEO best practices 2026",
-  "Core Web Vitals updates 2026",
-  "AI crawler robots.txt changes",
-];
+// Perplexity 단일 호출로 최신 트렌드 + 인용 URL 묶음 추출
+const TREND_RESEARCH_PROMPT = `You are a senior SEO/AEO/GEO industry analyst. Research the LATEST (last 30 days) developments across:
+- Google search algorithm updates, Core Web Vitals, AI Overview / SGE behavior
+- AEO (Answer Engine Optimization): how ChatGPT, Perplexity, Claude, Gemini cite sources
+- GEO (Generative Engine Optimization): structured data, llms.txt, AI crawler access
+- Naver / Korean search ecosystem changes
+- New schema.org types and structured data best practices
+
+For each meaningful trend, give:
+1. A concise description (1-2 sentences)
+2. Why it affects scoring criteria
+3. The source URL
+
+Be skeptical: only include trends with credible sources. Skip rumors and undated claims.
+Today is ${new Date().toISOString().slice(0, 10)}.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -26,6 +29,7 @@ Deno.serve(async (req) => {
 
   try {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const PERPLEXITY_API_KEY = Deno.env.get("PERPLEXITY_API_KEY");
     const FIRECRAWL_API_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -50,16 +54,54 @@ Deno.serve(async (req) => {
 
     console.log(`Current engine version: v${currentVersion}`);
 
-    // 2. Search for latest trends using Firecrawl search
+    // 2. Research latest trends — prefer Perplexity sonar-pro (real-time + citations),
+    //    fall back to Firecrawl search if unavailable.
     let trendResults: string[] = [];
+    let trendCitations: string[] = [];
 
-    if (FIRECRAWL_API_KEY) {
-      // Pick 3 random queries to avoid rate limits
-      const selectedQueries = TREND_SEARCH_QUERIES
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 3);
+    if (PERPLEXITY_API_KEY) {
+      try {
+        const pplxRes = await fetch("https://api.perplexity.ai/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${PERPLEXITY_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "sonar-pro",
+            messages: [
+              { role: "system", content: TREND_RESEARCH_PROMPT },
+              { role: "user", content: "List the most important SEO/AEO/GEO trends from the last 30 days that should affect a scoring engine." },
+            ],
+            search_recency_filter: "month",
+            temperature: 0.2,
+          }),
+        });
 
-      for (const query of selectedQueries) {
+        if (pplxRes.ok) {
+          const pplxData = await pplxRes.json();
+          const content = pplxData.choices?.[0]?.message?.content;
+          if (content) trendResults.push(`[Perplexity Research]\n${content}`);
+          if (Array.isArray(pplxData.citations)) {
+            trendCitations = pplxData.citations.slice(0, 15);
+          }
+          console.log(`Perplexity returned ${trendCitations.length} citations`);
+        } else {
+          console.warn("Perplexity failed:", pplxRes.status, await pplxRes.text());
+        }
+      } catch (e) {
+        console.warn("Perplexity research error:", e);
+      }
+    }
+
+    // Fallback to Firecrawl if Perplexity yielded nothing
+    if (trendResults.length === 0 && FIRECRAWL_API_KEY) {
+      const fallbackQueries = [
+        "SEO algorithm update 2026",
+        "AI search engine optimization trends",
+        "structured data SEO best practices 2026",
+      ];
+      for (const query of fallbackQueries) {
         try {
           const searchRes = await fetch("https://api.firecrawl.dev/v1/search", {
             method: "POST",
@@ -67,27 +109,22 @@ Deno.serve(async (req) => {
               Authorization: `Bearer ${FIRECRAWL_API_KEY}`,
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({
-              query,
-              limit: 5,
-              tbs: "qdr:m", // Last month
-            }),
+            body: JSON.stringify({ query, limit: 5, tbs: "qdr:m" }),
           });
-
           if (searchRes.ok) {
             const searchData = await searchRes.json();
-            const results = searchData.data || [];
-            for (const r of results) {
+            for (const r of searchData.data || []) {
               trendResults.push(`[${r.title}] ${r.description || ""}`);
+              if (r.url) trendCitations.push(r.url);
             }
           }
         } catch (e) {
-          console.warn(`Search failed for "${query}":`, e);
+          console.warn(`Firecrawl fallback failed for "${query}":`, e);
         }
       }
     }
 
-    console.log(`Found ${trendResults.length} trend results`);
+    console.log(`Found ${trendResults.length} trend blocks, ${trendCitations.length} citations`);
 
     // 3. Ask AI to analyze trends and suggest prompt updates
     const analysisPrompt = `You are an SEO/AEO/GEO analysis engine updater. Your job is to review the latest industry trends and determine if the scoring criteria need updating.
@@ -97,10 +134,11 @@ Current analysis engine prompt (version ${currentVersion}):
 ${currentPrompt}
 ---
 
-Latest industry trends found:
+Latest industry trends found (with citations from Perplexity sonar-pro real-time research):
 ---
-${trendResults.length > 0 ? trendResults.join("\n\n") : "No trend data available. Use your knowledge of the latest SEO/AEO/GEO developments as of ${new Date().toISOString().slice(0, 10)}."}
+${trendResults.length > 0 ? trendResults.join("\n\n") : `No trend data available. Use your knowledge of the latest SEO/AEO/GEO developments as of ${new Date().toISOString().slice(0, 10)}.`}
 ---
+${trendCitations.length > 0 ? `\nSource citations:\n${trendCitations.map((u, i) => `[${i + 1}] ${u}`).join("\n")}\n---\n` : ""}
 
 Tasks:
 1. Identify any significant changes in SEO/AEO/GEO best practices that should affect scoring criteria
@@ -208,7 +246,7 @@ IMPORTANT RULES:
       await supabase.from("engine_update_log").insert({
         version: newVersion,
         changes_summary: args.changes_summary,
-        trends_found: args.trends_found,
+        trends_found: { trends: args.trends_found, citations: trendCitations, source: trendCitations.length > 0 ? "perplexity" : "fallback" },
         previous_prompt: currentPrompt,
         new_prompt: args.updated_prompt,
         status: "success",
@@ -231,7 +269,7 @@ IMPORTANT RULES:
       await supabase.from("engine_update_log").insert({
         version: currentVersion,
         changes_summary: args.changes_summary,
-        trends_found: args.trends_found || [],
+        trends_found: { trends: args.trends_found || [], citations: trendCitations, source: trendCitations.length > 0 ? "perplexity" : "fallback" },
         status: "no_changes",
       });
 
