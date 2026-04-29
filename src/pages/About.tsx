@@ -28,28 +28,6 @@ const analyticFeatures = [
   },
 ];
 
-const performanceFeatures = [
-  {
-    icon: Target,
-    title: "네이버 검색광고",
-    desc: "키워드 분석부터 입찰 전략, 품질지수 관리까지 네이버 SA의 ROAS를 극대화합니다.",
-  },
-  {
-    icon: MousePointerClick,
-    title: "Google Ads",
-    desc: "검색·디스플레이·쇼핑·영상 캠페인을 통합 운영하여 전환 단가를 최적화합니다.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Meta 광고",
-    desc: "Facebook·Instagram 타겟팅과 크리에이티브 최적화로 효율적인 리드 및 매출을 확보합니다.",
-  },
-  {
-    icon: BarChart3,
-    title: "데이터 분석 & GA",
-    desc: "GA4, GTM 세팅부터 전환 퍼널 분석, 어트리뷰션 모델링까지 데이터 기반 의사결정을 지원합니다.",
-  },
-];
 
 export default function About() {
   return (
