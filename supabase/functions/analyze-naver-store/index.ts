@@ -588,6 +588,9 @@ Deno.serve(async (req) => {
       storeUrl: store.storeUrl,
       authorityLeakageRatio: leakageRatio,
       ownContentRatio: recovered,
+      ownDomain: effectiveOwnDomain,
+      ownDomainSource: userOwnDomain ? "user" : (inferredOwnDomain ? "inferred" : "none"),
+      ownDomainDominant,
       signalBreakdown: {
         storeShare,
         ownSiteShare,
