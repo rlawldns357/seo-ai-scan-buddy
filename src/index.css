@@ -41,6 +41,13 @@
     --shadow-card: 0 2px 8px 0 hsl(220 15% 13% / 0.04), 0 0 1px 0 hsl(220 15% 13% / 0.06);
     --shadow-elevated: 0 8px 30px -8px hsl(230 80% 56% / 0.12), 0 4px 12px -4px hsl(220 15% 13% / 0.06);
 
+    --naver: 142 71% 38%;
+    --naver-foreground: 0 0% 100%;
+    --naver-deep: 152 80% 28%;
+    --gradient-naver: linear-gradient(135deg, hsl(142, 71%, 38%), hsl(152, 80%, 28%));
+    --gradient-naver-subtle: linear-gradient(135deg, hsl(142, 71%, 96%), hsl(152, 60%, 94%));
+    --shadow-naver: 0 8px 30px -8px hsl(142 71% 38% / 0.18), 0 4px 12px -4px hsl(152 80% 28% / 0.08);
+
     --score-excellent: 152 60% 46%;
     --score-good: 230 80% 56%;
     --score-warning: 36 96% 52%;

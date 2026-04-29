@@ -74,15 +74,22 @@ export default function About() {
           {/* Naver Store Dedicated Diagnosis — NEW */}
           <Link
             to="/naver-store"
-            className="group block rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/5 via-card to-accent/5 p-6 mb-12 hover:border-primary/50 hover:shadow-elevated transition-all"
+            className="group block rounded-2xl border border-naver/30 p-6 mb-12 hover:border-naver/60 transition-all"
+            style={{
+              background: "var(--gradient-naver-subtle)",
+              boxShadow: "var(--shadow-naver)",
+            }}
           >
             <div className="flex items-start gap-4">
-              <div className="shrink-0 gradient-primary rounded-xl p-2.5">
-                <Store className="w-5 h-5 text-primary-foreground" />
+              <div
+                className="shrink-0 rounded-xl p-2.5"
+                style={{ background: "var(--gradient-naver)" }}
+              >
+                <Store className="w-5 h-5 text-naver-foreground" />
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 mb-1.5">
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider uppercase text-primary">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold tracking-wider uppercase text-naver-deep">
                     <Sparkles className="w-3 h-3" /> NEW
                   </span>
                   <span className="text-[10px] font-semibold tracking-wider uppercase text-muted-foreground">
@@ -96,7 +103,7 @@ export default function About() {
                   스마트스토어 URL만 입력하면 상품명·태그·카테고리·리뷰 신호 등 네이버 쇼핑 랭킹 핵심 요소를 별도 진단합니다.
                   일반 SEO/AEO/GEO 진단과 동일한 3축 점수 체계로 비교 가능합니다.
                 </p>
-                <span className="inline-flex items-center gap-1 mt-3 text-xs font-bold text-primary group-hover:gap-2 transition-all">
+                <span className="inline-flex items-center gap-1 mt-3 text-xs font-bold text-naver-deep group-hover:gap-2 transition-all">
                   네이버 스토어 진단 받기 <ArrowRight className="w-3.5 h-3.5" />
                 </span>
               </div>
