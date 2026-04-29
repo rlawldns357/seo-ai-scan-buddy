@@ -5,7 +5,6 @@ import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
-import BlogScanDemo from "@/components/blog/BlogScanDemo";
 
 
 const categoryColor: Record<string, string> = {
