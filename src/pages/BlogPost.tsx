@@ -608,7 +608,7 @@ export default function BlogPost() {
             </span>
             <span className="flex items-center gap-1.5">
               <Calendar className="w-4 h-4" />
-              {formatDate(post.date)}
+              <time dateTime={post.date}>{formatDate(post.date)}</time>
             </span>
             <span className="flex items-center gap-1.5">
               <Clock className="w-4 h-4" />
