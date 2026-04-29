@@ -29,10 +29,6 @@ export default function StickyBottomCTA() {
         <div className="container max-w-4xl mx-auto flex items-center gap-4">
           {/* 브랜드 로고 칩 */}
           <div className="shrink-0 flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest bg-white/15 text-white border border-white/25">
-              <ExternalLink className="w-2.5 h-2.5" />
-              새 서비스
-            </span>
             <span className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-white shadow-lg shadow-black/20 ring-1 ring-white/40">
               <img
                 src={autoblogLogo}
@@ -41,6 +37,10 @@ export default function StickyBottomCTA() {
                 loading="lazy"
                 decoding="async"
               />
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest bg-white/15 text-white border border-white/25">
+              <ExternalLink className="w-2.5 h-2.5" />
+              새 서비스
             </span>
           </div>
 
