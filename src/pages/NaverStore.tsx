@@ -145,6 +145,25 @@ export default function NaverStore() {
                 예: <code className="px-1.5 py-0.5 bg-muted rounded">brand.naver.com/mujikorea</code> ·{" "}
                 <code className="px-1.5 py-0.5 bg-muted rounded">smartstore.naver.com/오늘의집</code>
               </p>
+
+              {/* 자체 도메인 옵션 */}
+              <div className="mt-4 pt-4 border-t border-border/60">
+                <label htmlFor="own-domain" className="block text-xs font-bold text-foreground mb-1.5">
+                  자체 도메인이 있나요? <span className="text-muted-foreground font-normal">(선택)</span>
+                </label>
+                <input
+                  id="own-domain"
+                  type="text"
+                  value={ownDomain}
+                  onChange={(e) => setOwnDomain(e.target.value)}
+                  placeholder="예: mybrand.com"
+                  className="w-full h-10 px-4 rounded-full border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <p className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">
+                  자체 도메인이 검색에서 잘 노출되고 있다면, 누수가 아니라 권위가 정상 분배되는 상태로 채점해요.
+                </p>
+              </div>
+
             </form>
 
             {/* 진단 항목 3개 */}
