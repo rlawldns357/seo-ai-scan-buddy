@@ -73,11 +73,11 @@ export default function Navbar() {
               <div className="gradient-primary rounded-xl p-2 shrink-0">
                 <Search className="w-4 h-4 text-primary-foreground" />
               </div>
-              <div className="flex flex-col leading-none min-w-0">
-                <span className="text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap">
+              <div className="flex flex-col min-w-0 gap-0.5">
+                <span className="text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap leading-none">
                   SearchTune <span className="font-extrabold">OS</span>
                 </span>
-                <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide whitespace-nowrap">
+                <span className="text-[9px] text-muted-foreground/60 font-medium tracking-wide whitespace-nowrap leading-none">
                   v0.11.0-beta{engineVersion !== null && ` · Engine v${engineVersion}`}
                 </span>
               </div>
