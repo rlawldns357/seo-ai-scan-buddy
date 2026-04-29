@@ -42,11 +42,19 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
   const leakagePct = Math.round(context.authorityLeakageRatio * 100);
   const ownPct = Math.round(context.ownContentRatio * 100);
 
-  // 도넛 (권위 누수율) — 100%일 때 끝점 겹침 방지를 위해 cap=butt, 살짝 얇게
-  const radius = 52;
-  const circumference = 2 * Math.PI * radius;
-  const isFull = leakagePct >= 100;
-  const offset = isFull ? 0 : circumference - (leakagePct / 100) * circumference;
+  // ─── 반원(semi-circle) 게이지 — 다른 컴포넌트(ScoreDashboard)와 톤 맞춤 ───
+  // viewBox 220×120, 반지름 90, stroke-width 14 (얇고 모던)
+  // 반원 호 길이 = π·r ≈ 282.74
+  const GAUGE_R = 90;
+  const GAUGE_ARC_LEN = Math.PI * GAUGE_R; // ≈ 282.74
+  const gaugeOffset = GAUGE_ARC_LEN - (leakagePct / 100) * GAUGE_ARC_LEN;
+  // 누수율 색상 — 다른 컴포넌트와 동일한 score 토큰 사용
+  // 누수율은 "낮을수록 좋다"이므로 기존 score 색을 역으로 매핑
+  const gaugeColor =
+    leakagePct >= 80 ? "hsl(var(--score-poor))"
+    : leakagePct >= 60 ? "hsl(var(--score-warning))"
+    : leakagePct >= 30 ? "hsl(var(--score-good))"
+    : "hsl(var(--score-excellent))";
 
   const surfaces = [
     { label: "쇼핑", key: "shop", count: context.externalSurfaces.shop, color: "bg-emerald-500", desc: "네이버 쇼핑 검색에 노출되는 상품·스토어 결과" },
