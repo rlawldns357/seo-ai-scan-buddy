@@ -74,7 +74,7 @@ export default function About() {
           {/* Naver Store Dedicated Diagnosis — NEW */}
           <Link
             to="/naver-store"
-            className="group block rounded-2xl border border-naver/30 p-6 mb-12 hover:border-naver/60 transition-all"
+            className="group block rounded-2xl border border-naver/15 p-6 mb-12 hover:border-naver/30 transition-all"
             style={{
               background: "var(--gradient-naver-subtle)",
               boxShadow: "var(--shadow-naver)",
