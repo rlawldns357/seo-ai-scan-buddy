@@ -4,22 +4,33 @@
  * PoC(naver-store-poc)에서 승격됨. 일반 사이트와 동일한 SEO/AEO/GEO 3축 점수
  * 체계를 유지하되, 측정 로직만 네이버 Search API 5-surface 기반으로 재정의함.
  *
- * 점수 매핑 원칙:
+ * 점수 매핑 원칙 (네이버 웹마스터 룰북 베이스):
  *  - SEO = 권위 누수율 (브랜드 검색결과에서 자사 콘텐츠 비중)
- *          → 자체 도메인 부재로 항상 강한 score cap (≤ 45)
+ *          → 자체 도메인 부재(룰북 §6 브랜드 도메인) → SEO cap ≤ 45
+ *          → robots.txt 외부 차단(룰북 §1 Yeti 허용)도 외부 검색 기준 0% 처리
  *  - AEO = AI 답변 인용 가능성 (외부 콘텐츠의 구조화·언급 정도)
- *          → 스토어 자체는 AI 크롤 차단으로 cap (≤ 50)
+ *          → 스토어 템플릿 = JSON-LD 통제 불가(룰북 §5) → AEO cap ≤ 50
  *  - GEO = 외부 출처 다양성 (webkr/blog/cafe 인용 가능 출처 수)
- *          → 자사 콘텐츠 0%면 cap (≤ 40)
+ *          → 자사 통제 콘텐츠 0%면 GEO cap ≤ 40
+ *
+ * 엔진 업데이트:
+ *  - DB의 `naver_webmaster_rulebook`을 fallback과 함께 로드해 응답 메타에 동봉
+ *  - 룰북 버전을 응답에 포함해 클라이언트가 어떤 룰북 기준으로 채점됐는지 추적 가능
  *
  * Output: DemoResult 형태 그대로 반환 (ScoreDashboard 100% 재사용).
  */
+
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { loadNaverRulebook } from "../_shared/naver-rulebook.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
 const NAVER_CLIENT_ID = Deno.env.get("NAVER_CLIENT_ID");
 const NAVER_CLIENT_SECRET = Deno.env.get("NAVER_CLIENT_SECRET");
