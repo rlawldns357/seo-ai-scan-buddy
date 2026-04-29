@@ -425,7 +425,7 @@ Deno.serve(async (req) => {
     );
   }
 
-  let input: { url?: string } = {};
+  let input: { url?: string; ownDomain?: string } = {};
   try {
     input = await req.json();
   } catch {
@@ -433,6 +433,18 @@ Deno.serve(async (req) => {
   }
   const targetUrl =
     input.url ?? new URL(req.url).searchParams.get("url") ?? "";
+  // 사용자 입력 자체 도메인 (정규화: 프로토콜/경로/www 제거)
+  let userOwnDomain: string | null = null;
+  const rawOwn = input.ownDomain ?? new URL(req.url).searchParams.get("ownDomain") ?? "";
+  if (rawOwn && rawOwn.length < 200) {
+    try {
+      const withProto = /^https?:\/\//i.test(rawOwn) ? rawOwn : `https://${rawOwn}`;
+      userOwnDomain = new URL(withProto).hostname.toLowerCase().replace(/^www\./, "");
+    } catch {
+      userOwnDomain = rawOwn.toLowerCase().replace(/^www\./, "").split("/")[0] || null;
+    }
+    if (userOwnDomain && userOwnDomain.endsWith("naver.com")) userOwnDomain = null; // 무효
+  }
 
   if (!targetUrl || typeof targetUrl !== "string" || targetUrl.length > 2000) {
     return new Response(
