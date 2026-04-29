@@ -394,7 +394,7 @@ const Index = () => {
       <Navbar />
 
       {screen === "home" && (
-        <main className="flex-1 flex items-center justify-center px-4 pt-12 sm:pt-20 pb-40 sm:pb-44">
+        <main className="flex-1 flex items-center justify-center px-4 pt-14 sm:pt-20 pb-44 sm:pb-44">
           <div className="max-w-2xl w-full text-center animate-fade-up">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold mb-8">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
@@ -414,7 +414,7 @@ const Index = () => {
                 제대로 이해<span className="font-light text-muted-foreground">하고 있을까?</span>
               </span>
             </h1>
-            <p className="text-muted-foreground text-base sm:text-lg mb-14 sm:mb-16 leading-relaxed">
+            <p className="text-muted-foreground text-base sm:text-lg mb-10 sm:mb-16 leading-relaxed">
               URL만 입력하면 SEO 기본 상태와 AI 검색 준비도를<br className="hidden sm:block" /> 빠르게 확인할 수 있어요.
             </p>
             <div className="relative max-w-xl mx-auto group">
@@ -427,7 +427,7 @@ const Index = () => {
                 <div className="absolute right-1/4 top-1/2 translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-accent/25 blur-3xl group-focus-within:bg-accent/40 transition-colors duration-500" />
               </div>
 
-              <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-3 py-2 sm:py-0">
+              <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-3 my-2 sm:my-0">
                 <div className="relative w-full sm:flex-1">
                   <Search
                     className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60 pointer-events-none transition-colors group-focus-within:text-primary"
@@ -476,7 +476,7 @@ const Index = () => {
               return (
                 <>
                   <label
-                    className={`flex items-center gap-2 justify-center mt-3 select-none group ${
+                    className={`flex items-center gap-2 justify-center mt-5 sm:mt-3 select-none group ${
                       forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"
                     }`}
                     title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
@@ -509,7 +509,7 @@ const Index = () => {
             {urlError && (
               <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
             )}
-            <div className="mt-8 sm:mt-10 space-y-3 sm:space-y-4">
+            <div className="mt-10 sm:mt-10 space-y-4 sm:space-y-4">
               {!subpageWarning && !urlError && url.trim() && (() => {
                 const storeInfo = parseNaverStoreUrl(
                   /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
@@ -543,7 +543,7 @@ const Index = () => {
               )}
               <NaverStoreTeaser />
             </div>
-            <section className="mt-10 max-w-2xl mx-auto text-left">
+            <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
                 FAQ
               </h2>
@@ -565,8 +565,8 @@ const Index = () => {
         )}
 
         {screen === "result" && (
-          <main className="flex-1 pt-10 pb-40 sm:pt-16 sm:pb-44 px-2 sm:px-4">
-            <div className="max-w-4xl mx-auto space-y-5">
+          <main className="flex-1 pt-10 pb-44 sm:pt-16 sm:pb-44 px-2 sm:px-4">
+            <div className="max-w-4xl mx-auto space-y-4 sm:space-y-5">
               <ResultHeader
                 psi={psiMobile || psiDesktop}
                 psiError={psiError}
