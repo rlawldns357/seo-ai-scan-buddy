@@ -226,12 +226,9 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
       </section>
 
       {/* ─────────────────────────────────────────────
-          L2 SUPPORT + L1 ACTION: 토글로 접기 (기본 접힘)
+          L2 SUPPORT + L1 ACTION: 항상 펼쳐서 표시
           ───────────────────────────────────────────── */}
-      <DetailsToggleSection
-        leftLabel="자세한 진단 데이터 + 액션 플랜 보기"
-        rightLabel={`보조 지표 2 · 액션 ${3}`}
-      >
+      <div className="space-y-6">
         <section>
         <div className="flex items-baseline justify-between px-1 mb-2.5">
           <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
