@@ -33,7 +33,7 @@ const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
 const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
 const ScoreComparison = lazy(() => import("@/components/ScoreComparison"));
 const IndexingStatus = lazy(() => import("@/components/IndexingStatus"));
-const ShareButtons = lazy(() => import("@/components/ShareButtons"));
+
 const NaverStoreInsights = lazy(() => import("@/components/NaverStoreInsights"));
 
 
