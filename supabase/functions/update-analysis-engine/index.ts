@@ -134,10 +134,11 @@ Current analysis engine prompt (version ${currentVersion}):
 ${currentPrompt}
 ---
 
-Latest industry trends found:
+Latest industry trends found (with citations from Perplexity sonar-pro real-time research):
 ---
-${trendResults.length > 0 ? trendResults.join("\n\n") : "No trend data available. Use your knowledge of the latest SEO/AEO/GEO developments as of ${new Date().toISOString().slice(0, 10)}."}
+${trendResults.length > 0 ? trendResults.join("\n\n") : `No trend data available. Use your knowledge of the latest SEO/AEO/GEO developments as of ${new Date().toISOString().slice(0, 10)}.`}
 ---
+${trendCitations.length > 0 ? `\nSource citations:\n${trendCitations.map((u, i) => `[${i + 1}] ${u}`).join("\n")}\n---\n` : ""}
 
 Tasks:
 1. Identify any significant changes in SEO/AEO/GEO best practices that should affect scoring criteria
