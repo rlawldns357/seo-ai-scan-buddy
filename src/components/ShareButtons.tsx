@@ -336,65 +336,75 @@ export default function ShareButtons({ result, url }: ShareButtonsProps) {
   }, [busyKakao, shareText, getOrUploadCard, domain, result, handleDownloadCard]);
 
   return (
-    <div className="bg-card rounded-xl shadow-card p-5 animate-fade-up">
-      <div className="flex items-center gap-2 mb-1">
-        <Share2 className="w-4 h-4 text-primary" />
-        <h3 className="text-sm font-bold text-foreground">내 점수 공유하기</h3>
-      </div>
-      <p className="text-xs text-muted-foreground mb-4">
-        점수 카드 이미지로 SNS에 공유하세요. 워터마크가 포함됩니다.
-      </p>
+    <div className="bg-card rounded-xl shadow-card px-4 py-3 animate-fade-up">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0">
+          <Share2 className="w-4 h-4 text-primary shrink-0" />
+          <span className="text-sm font-semibold text-foreground">점수 공유</span>
+          <span className="text-[11px] text-muted-foreground hidden sm:inline">
+            워터마크 포함 점수 카드
+          </span>
+        </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <button
-          onClick={handleKakao}
-          disabled={busyKakao}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#FEE500] text-[#3C1E1E] hover:brightness-95 transition-all disabled:opacity-50"
-        >
-          <MessageCircle className="w-3.5 h-3.5" />
-          {busyKakao ? "준비 중..." : "카카오톡"}
-        </button>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <button
+            onClick={handleKakao}
+            disabled={busyKakao}
+            aria-label="카카오톡 공유"
+            title="카카오톡"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#FEE500] text-[#3C1E1E] hover:brightness-95 transition-all disabled:opacity-50"
+          >
+            <MessageCircle className="w-4 h-4" />
+          </button>
 
-        <button
-          onClick={handleTwitter}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-foreground text-background hover:opacity-90 transition-opacity"
-        >
-          <Twitter className="w-3.5 h-3.5" />
-          X (Twitter)
-        </button>
+          <button
+            onClick={handleTwitter}
+            aria-label="X (Twitter) 공유"
+            title="X (Twitter)"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-foreground text-background hover:opacity-90 transition-opacity"
+          >
+            <Twitter className="w-4 h-4" />
+          </button>
 
-        <button
-          onClick={handleLinkedIn}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-[#0A66C2] text-white hover:brightness-110 transition-all"
-        >
-          <Linkedin className="w-3.5 h-3.5" />
-          LinkedIn
-        </button>
+          <button
+            onClick={handleLinkedIn}
+            aria-label="LinkedIn 공유"
+            title="LinkedIn"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#0A66C2] text-white hover:brightness-110 transition-all"
+          >
+            <Linkedin className="w-4 h-4" />
+          </button>
 
-        <button
-          onClick={handleThreads}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
-        >
-          <Share2 className="w-3.5 h-3.5" />
-          Threads
-        </button>
+          <button
+            onClick={handleThreads}
+            aria-label="Threads 공유"
+            title="Threads"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted text-foreground hover:bg-muted/80 transition-colors"
+          >
+            <Share2 className="w-4 h-4" />
+          </button>
 
-        <button
-          onClick={handleCopyText}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
-        >
-          {copied ? <Check className="w-3.5 h-3.5 text-score-excellent" /> : <Copy className="w-3.5 h-3.5" />}
-          {copied ? "복사됨!" : "텍스트 복사"}
-        </button>
+          <span className="w-px h-5 bg-border mx-0.5" aria-hidden />
 
-        <button
-          onClick={handleDownloadCard}
-          disabled={generating}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
-        >
-          <Download className="w-3.5 h-3.5" />
-          {generating ? "생성 중..." : "이미지 저장"}
-        </button>
+          <button
+            onClick={handleCopyText}
+            aria-label="텍스트 복사"
+            title={copied ? "복사됨!" : "텍스트 복사"}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-muted text-foreground hover:bg-muted/80 transition-colors"
+          >
+            {copied ? <Check className="w-4 h-4 text-score-excellent" /> : <Copy className="w-4 h-4" />}
+          </button>
+
+          <button
+            onClick={handleDownloadCard}
+            disabled={generating}
+            aria-label="점수 카드 이미지 저장"
+            title={generating ? "생성 중..." : "이미지 저장"}
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-colors disabled:opacity-50"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );
