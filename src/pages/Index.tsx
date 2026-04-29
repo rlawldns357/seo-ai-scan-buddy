@@ -506,40 +506,42 @@ const Index = () => {
                 </>
               );
             })()}
-            {urlError && (
-              <p className="mt-3 text-sm text-destructive font-medium">{urlError}</p>
-            )}
-            {!subpageWarning && !urlError && url.trim() && (() => {
-              const storeInfo = parseNaverStoreUrl(
-                /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
-              );
-              return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
-            })()}
-            {subpageWarning && (
-              <SubpageWarning
-                inputUrl={subpageWarning.inputUrl}
-                rootUrl={subpageWarning.rootUrl}
-                onAnalyzeRoot={() => {
-                  setSubpageWarning(null);
-                  runAnalysis(subpageWarning.rootUrl);
-                }}
-                onAnalyzeCurrent={() => {
-                  setSubpageWarning(null);
-                  runAnalysis(subpageWarning.inputUrl);
-                }}
-              />
-            )}
-            {rateLimit && !rateLimit.allowed && (
-              <RateLimitBanner
-                remaining={rateLimit.remaining}
-                emailUnlocked={rateLimit.emailUnlocked}
-                onUnlocked={async () => {
-                  const { checkRateLimit } = await import("@/lib/rateLimit");
-                  const updated = await checkRateLimit();
-                  setRateLimit(updated);
-                }}
-              />
-            )}
+            <div className="mt-6 space-y-4">
+              {urlError && (
+                <p className="text-sm text-destructive font-medium">{urlError}</p>
+              )}
+              {!subpageWarning && !urlError && url.trim() && (() => {
+                const storeInfo = parseNaverStoreUrl(
+                  /^https?:\/\//i.test(url.trim()) ? url.trim() : `https://${url.trim()}`
+                );
+                return storeInfo ? <NaverStoreDetectedBanner info={storeInfo} /> : null;
+              })()}
+              {subpageWarning && (
+                <SubpageWarning
+                  inputUrl={subpageWarning.inputUrl}
+                  rootUrl={subpageWarning.rootUrl}
+                  onAnalyzeRoot={() => {
+                    setSubpageWarning(null);
+                    runAnalysis(subpageWarning.rootUrl);
+                  }}
+                  onAnalyzeCurrent={() => {
+                    setSubpageWarning(null);
+                    runAnalysis(subpageWarning.inputUrl);
+                  }}
+                />
+              )}
+              {rateLimit && !rateLimit.allowed && (
+                <RateLimitBanner
+                  remaining={rateLimit.remaining}
+                  emailUnlocked={rateLimit.emailUnlocked}
+                  onUnlocked={async () => {
+                    const { checkRateLimit } = await import("@/lib/rateLimit");
+                    const updated = await checkRateLimit();
+                    setRateLimit(updated);
+                  }}
+                />
+              )}
+            </div>
             <NaverStoreTeaser />
             <AutoPublishTeaser />
             <section className="mt-10 max-w-2xl mx-auto text-left">
