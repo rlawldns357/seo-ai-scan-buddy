@@ -33,7 +33,7 @@ const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
 const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
 const ScoreComparison = lazy(() => import("@/components/ScoreComparison"));
 const IndexingStatus = lazy(() => import("@/components/IndexingStatus"));
-const ShareButtons = lazy(() => import("@/components/ShareButtons"));
+
 const NaverStoreInsights = lazy(() => import("@/components/NaverStoreInsights"));
 
 
@@ -646,10 +646,6 @@ const Index = () => {
                 />
               )}
 
-              {/* 점수 카드 SNS 공유 */}
-              {result && (
-                <ShareButtons result={result} url={normalizedUrl} />
-              )}
 
               {/* 일반 사이트 전용 섹션: 스토어 결과일 땐 의미 없으므로 숨김 */}
               {result && !result.storeContext && (

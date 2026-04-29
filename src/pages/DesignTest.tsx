@@ -6,7 +6,6 @@ import VerificationLinks from "@/components/VerificationLinks";
 import EmailForm from "@/components/EmailForm";
 import FunnelCTAs from "@/components/FunnelCTAs";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
-import ShareButtons from "@/components/ShareButtons";
 import FaqSection from "@/components/FaqSection";
 
 import { getDemoResult } from "@/data/demoResults";
@@ -32,7 +31,6 @@ const DesignTest = () => (
         <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
         <ScoreDashboard result={demoResult} url={DEMO_URL} />
-        <ShareButtons result={demoResult} url={DEMO_URL} />
         <VerificationLinks url={DEMO_URL} />
         
         <FunnelCTAs result={demoResult} url={DEMO_URL} />
