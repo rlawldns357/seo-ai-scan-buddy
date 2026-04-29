@@ -509,7 +509,7 @@ export default function BlogPost() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <main className="container py-16 text-center">
+        <main className="container pt-20 pb-32 text-center">
           <div className="animate-pulse text-muted-foreground">불러오는 중...</div>
         </main>
       </div>
@@ -520,7 +520,7 @@ export default function BlogPost() {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <main className="container py-16 text-center">
+        <main className="container pt-20 pb-32 text-center">
           <h1 className="text-2xl font-bold text-foreground">글을 찾을 수 없습니다</h1>
           <Link to="/blog" className="mt-4 inline-flex items-center gap-1 text-primary font-medium hover:underline">
             <ArrowLeft className="w-4 h-4" /> 블로그로 돌아가기
@@ -584,7 +584,7 @@ export default function BlogPost() {
       {faqs && faqs.length > 0 && <FaqJsonLd faqs={faqs} title={post.title} />}
       <ArticleJsonLd post={post} />
 
-      <main className="container py-8 md:py-14">
+      <main className="container pt-10 pb-28 md:pt-16 md:pb-32">
         <Link
           to="/blog"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
