@@ -12,6 +12,7 @@ import { parseNaverStoreUrl } from "@/lib/naverStore";
 export default function NaverStore() {
   const navigate = useNavigate();
   const [url, setUrl] = useState("");
+  const [ownDomain, setOwnDomain] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -31,7 +32,6 @@ export default function NaverStore() {
       normalized = `https://${normalized}`;
     }
 
-    // 1차: URL 파싱
     let host = "";
     try {
       host = new URL(normalized).hostname.toLowerCase();
@@ -40,7 +40,6 @@ export default function NaverStore() {
       return;
     }
 
-    // 2차: 네이버 스토어 도메인 여부
     if (host !== "brand.naver.com" && host !== "smartstore.naver.com") {
       if (host.endsWith("naver.com")) {
         setError("네이버 메인/검색 URL은 분석할 수 없어요. 스토어 URL(brand.naver.com/… 또는 smartstore.naver.com/…)을 입력해 주세요.");
@@ -50,14 +49,33 @@ export default function NaverStore() {
       return;
     }
 
-    // 3차: 슬러그(브랜드 식별자) 존재
     const parsed = parseNaverStoreUrl(normalized);
     if (!parsed) {
       setError("브랜드 식별자가 없어요. 예: brand.naver.com/내브랜드 형식으로 입력해 주세요.");
       return;
     }
 
-    navigate(`/?url=${encodeURIComponent(parsed.storeUrl)}&autorun=1`);
+    // 자체 도메인 정규화 (선택 입력)
+    let ownDomainParam = "";
+    const trimmedOwn = ownDomain.trim();
+    if (trimmedOwn) {
+      try {
+        const withProto = /^https?:\/\//i.test(trimmedOwn) ? trimmedOwn : `https://${trimmedOwn}`;
+        const ownHost = new URL(withProto).hostname.toLowerCase().replace(/^www\./, "");
+        if (ownHost.endsWith("naver.com")) {
+          setError("자체 도메인은 naver.com이 아닌 별도 도메인이어야 해요.");
+          return;
+        }
+        ownDomainParam = ownHost;
+      } catch {
+        setError("자체 도메인 형식이 올바르지 않아요. 예: mybrand.com");
+        return;
+      }
+    }
+
+    const qs = new URLSearchParams({ url: parsed.storeUrl, autorun: "1" });
+    if (ownDomainParam) qs.set("ownDomain", ownDomainParam);
+    navigate(`/?${qs.toString()}`);
   };
 
   return (
@@ -127,6 +145,25 @@ export default function NaverStore() {
                 예: <code className="px-1.5 py-0.5 bg-muted rounded">brand.naver.com/mujikorea</code> ·{" "}
                 <code className="px-1.5 py-0.5 bg-muted rounded">smartstore.naver.com/오늘의집</code>
               </p>
+
+              {/* 자체 도메인 옵션 */}
+              <div className="mt-4 pt-4 border-t border-border/60">
+                <label htmlFor="own-domain" className="block text-xs font-bold text-foreground mb-1.5">
+                  자체 도메인이 있나요? <span className="text-muted-foreground font-normal">(선택)</span>
+                </label>
+                <input
+                  id="own-domain"
+                  type="text"
+                  value={ownDomain}
+                  onChange={(e) => setOwnDomain(e.target.value)}
+                  placeholder="예: mybrand.com"
+                  className="w-full h-10 px-4 rounded-full border border-border bg-background text-foreground text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+                />
+                <p className="mt-1.5 text-[11px] text-muted-foreground leading-relaxed">
+                  자체 도메인이 검색에서 잘 노출되고 있다면, 누수가 아니라 권위가 정상 분배되는 상태로 채점해요.
+                </p>
+              </div>
+
             </form>
 
             {/* 진단 항목 3개 */}

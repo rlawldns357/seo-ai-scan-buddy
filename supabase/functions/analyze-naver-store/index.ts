@@ -127,25 +127,44 @@ function slugTitleMatch(items: any[], slug: string): number {
 
 /** webkr 결과 중 자사 외부 도메인(자사몰/공식 SNS) 비율
  *  네이버/쇼핑/카페/블로그/지식인을 제외한 URL = 자사 통제 가능 후보.
- *  슬러그 토큰이 호스트네임에 포함되면 자사로 본다. */
-function externalOwnedRatio(items: any[], slug: string): number {
+ *  슬러그 토큰이 호스트네임에 포함되거나, 사용자가 입력한 ownDomain과 일치하면 자사로 본다. */
+function externalOwnedRatio(items: any[], slug: string, ownDomain?: string | null): number {
   if (!items || items.length === 0) return 0;
   const token = normalizeSlug(slug);
-  if (!token) return 0;
+  const ownHost = ownDomain ? ownDomain.toLowerCase().replace(/^www\./, "") : "";
+  if (!token && !ownHost) return 0;
   let owned = 0;
   let externalCount = 0;
   for (const it of items) {
     let host = "";
-    try { host = new URL(String(it?.link ?? "")).hostname.toLowerCase(); } catch { continue; }
-    // 네이버 자체 surface 제외
+    try { host = new URL(String(it?.link ?? "")).hostname.toLowerCase().replace(/^www\./, ""); } catch { continue; }
     if (host.endsWith("naver.com") || host.endsWith("naver.net")) continue;
-    // 위키/사전류는 자사 통제 불가
     if (host.includes("wiki") || host.includes("namu.")) continue;
     externalCount++;
-    if (host.replace(/[^a-z0-9]/g, "").includes(token.replace(/[^a-z0-9]/g, ""))) owned++;
+    const tokenMatch = token && host.replace(/[^a-z0-9]/g, "").includes(token.replace(/[^a-z0-9]/g, ""));
+    const domainMatch = ownHost && (host === ownHost || host.endsWith("." + ownHost));
+    if (tokenMatch || domainMatch) owned++;
   }
   return externalCount === 0 ? 0 : owned / externalCount;
 }
+
+/** 자체 도메인 후보 자동 추출 — webkr/blog 결과에서 가장 많이 등장하는 비-naver 호스트 */
+function inferOwnDomain(items: any[], slug: string): string | null {
+  const token = normalizeSlug(slug).replace(/[^a-z0-9]/g, "");
+  if (!items || items.length === 0 || !token) return null;
+  const counts = new Map<string, number>();
+  for (const it of items) {
+    let host = "";
+    try { host = new URL(String(it?.link ?? "")).hostname.toLowerCase().replace(/^www\./, ""); } catch { continue; }
+    if (host.endsWith("naver.com") || host.endsWith("naver.net")) continue;
+    if (host.includes("wiki") || host.includes("namu.") || host.includes("youtube") || host.includes("instagram") || host.includes("facebook")) continue;
+    if (!host.replace(/[^a-z0-9]/g, "").includes(token)) continue;
+    counts.set(host, (counts.get(host) ?? 0) + 1);
+  }
+  if (counts.size === 0) return null;
+  return [...counts.entries()].sort((a, b) => b[1] - a[1])[0][0];
+}
+
 
 /**
  * 외부 surface(blog/cafe/kin/webkr) 점유 다양성 점수 (0~100)
@@ -406,7 +425,7 @@ Deno.serve(async (req) => {
     );
   }
 
-  let input: { url?: string } = {};
+  let input: { url?: string; ownDomain?: string } = {};
   try {
     input = await req.json();
   } catch {
@@ -414,6 +433,18 @@ Deno.serve(async (req) => {
   }
   const targetUrl =
     input.url ?? new URL(req.url).searchParams.get("url") ?? "";
+  // 사용자 입력 자체 도메인 (정규화: 프로토콜/경로/www 제거)
+  let userOwnDomain: string | null = null;
+  const rawOwn = input.ownDomain ?? new URL(req.url).searchParams.get("ownDomain") ?? "";
+  if (rawOwn && rawOwn.length < 200) {
+    try {
+      const withProto = /^https?:\/\//i.test(rawOwn) ? rawOwn : `https://${rawOwn}`;
+      userOwnDomain = new URL(withProto).hostname.toLowerCase().replace(/^www\./, "");
+    } catch {
+      userOwnDomain = rawOwn.toLowerCase().replace(/^www\./, "").split("/")[0] || null;
+    }
+    if (userOwnDomain && userOwnDomain.endsWith("naver.com")) userOwnDomain = null; // 무효
+  }
 
   if (!targetUrl || typeof targetUrl !== "string" || targetUrl.length > 2000) {
     return new Response(
@@ -481,23 +512,32 @@ Deno.serve(async (req) => {
   // ── 시그널 계산 (멀티 신호로 누수율 산출) ──
   const shopItems = shop.body?.items ?? [];
   const webkrItems = webkr.body?.items ?? [];
+  const blogItems = blog.body?.items ?? [];
+
+  // 자체 도메인: 사용자 입력 우선, 없으면 webkr+blog에서 자동 추론
+  const inferredOwnDomain = inferOwnDomain([...webkrItems, ...blogItems], store.slug);
+  const effectiveOwnDomain = userOwnDomain ?? inferredOwnDomain;
 
   // 1) shop 결과 중 본인 스토어(mallName/link 호스트) 비율
   const storeShare = shopItems.length === 0 ? 0
     : shopItems.filter((it: any) => isOwnStoreItem(it, store.slug)).length / shopItems.length;
-  // 2) webkr 결과 중 자사 외부 도메인 비율 (자사몰/공식 SNS)
-  const ownSiteShare = externalOwnedRatio(webkrItems, store.slug);
+  // 2) webkr 결과 중 자사 외부 도메인 비율 (자사몰/공식 SNS, 사용자 입력 도메인 포함)
+  const ownSiteShare = externalOwnedRatio(webkrItems, store.slug, effectiveOwnDomain);
   // 3) shop 결과 title의 슬러그 토큰 매칭 → 1.0이면 충돌 없음, 낮으면 슬러그 노이즈
   const slugMatch = slugTitleMatch(shopItems, store.slug);
 
-  // 권위 회수율 = 자사가 통제 가능한 노출 비중
-  //  storeShare(스토어 노출) 가중 0.6 + ownSiteShare(자사몰/SNS) 가중 0.4
-  //  단, slugMatch < 0.3이면 슬러그 충돌로 보고 storeShare 신뢰도 60% 할인
+  // 자체 도메인 우세 판정: 사용자가 명시한 ownDomain이 webkr 외부에서 30% 이상 점유
+  // → 권위가 정상 분배되는 운영 상태로 간주, 누수 프레임 해제
+  const ownDomainDominant = !!effectiveOwnDomain && ownSiteShare >= 0.3;
+
+  // 권위 회수율 계산
   const trust = slugMatch < 0.3 ? 0.6 : 1;
   const recovered = Math.min(1, storeShare * 0.6 * trust + ownSiteShare * 0.4);
-  // 누수율 = 1 - 회수율, 단 0%/100% 끝값 방지 위해 [5%, 95%]로 클램프
   const rawLeakage = 1 - recovered;
-  const leakageRatio = Math.max(0.05, Math.min(0.95, rawLeakage));
+  // 우세 모드면 클램프 해제 (실제 0%까지 내려갈 수 있음), 아니면 [5%, 95%]
+  const leakageRatio = ownDomainDominant
+    ? Math.max(0, rawLeakage)
+    : Math.max(0.05, Math.min(0.95, rawLeakage));
 
   const inputs: AxisInputs = {
     store,
@@ -522,14 +562,18 @@ Deno.serve(async (req) => {
       ),
     );
 
-  // ── 동적 캡: 자사몰(ownSiteShare)/스토어 점유에 따라 캡 완화 ──
-  const seoCap = ownSiteShare >= 0.3 ? 60 : ownSiteShare > 0 ? 50 : 45;
+  // ── 동적 캡 ──
+  // 자체 도메인 우세 → SEO/GEO 캡을 대폭 완화 (정상 권위 분배 인정)
+  const seoCap = ownDomainDominant ? 80 : ownSiteShare >= 0.3 ? 60 : ownSiteShare > 0 ? 50 : 45;
   const aeoCap = storeShare >= 0.3 ? 60 : 50;
-  const geoCap = ownSiteShare >= 0.3 ? 70 : ownSiteShare > 0 ? 55 : 40;
+  const geoCap = ownDomainDominant ? 80 : ownSiteShare >= 0.3 ? 70 : ownSiteShare > 0 ? 55 : 40;
 
-  const seoScore = Math.min(calcScore(seoAxis), seoCap);
+  // 우세 모드: SEO에 자체 도메인 보너스 +15
+  const ownDomainBonus = ownDomainDominant ? 15 : 0;
+  const seoScore = Math.min(calcScore(seoAxis) + ownDomainBonus, seoCap);
   const aeoScore = Math.min(calcScore(aeoAxis), aeoCap);
-  const geoScore = Math.min(calcScore(geoAxis), geoCap);
+  const geoScore = Math.min(calcScore(geoAxis) + Math.round(ownDomainBonus / 2), geoCap);
+
 
   const result = {
     seoScore,
@@ -544,6 +588,9 @@ Deno.serve(async (req) => {
       storeUrl: store.storeUrl,
       authorityLeakageRatio: leakageRatio,
       ownContentRatio: recovered,
+      ownDomain: effectiveOwnDomain,
+      ownDomainSource: userOwnDomain ? "user" : (inferredOwnDomain ? "inferred" : "none"),
+      ownDomainDominant,
       signalBreakdown: {
         storeShare,
         ownSiteShare,

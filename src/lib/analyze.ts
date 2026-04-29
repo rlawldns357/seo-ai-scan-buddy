@@ -15,6 +15,9 @@ export interface NaverStoreContext {
   storeUrl: string;
   authorityLeakageRatio: number; // 0~1
   ownContentRatio: number;       // 0~1
+  ownDomain?: string | null;
+  ownDomainSource?: "user" | "inferred" | "none";
+  ownDomainDominant?: boolean;
   externalSurfaces: {
     shop: number;
     blog: number;
@@ -35,16 +38,18 @@ export type ExtendedDemoResult = DemoResult & {
 
 export async function analyzeSite(
   url: string,
+  options?: { ownDomain?: string },
 ): Promise<{ data?: ExtendedDemoResult; error?: AnalyzeError }> {
-  // 네이버 스토어 URL이면 전용 함수로 분기 (별도 점수체계가 아니라 같은 SEO/AEO/GEO 형태로 반환)
   const isNaverStore = isNaverStoreUrl(url);
   const functionName = isNaverStore ? "analyze-naver-store" : "analyze-site";
   const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/${functionName}`;
 
   try {
     const controller = new AbortController();
-    // 네이버 스토어 분석은 가벼우므로 30초로도 충분, 일반 분석은 120초 유지
     const timeout = setTimeout(() => controller.abort(), isNaverStore ? 30000 : 120000);
+
+    const body: Record<string, unknown> = { url };
+    if (isNaverStore && options?.ownDomain) body.ownDomain = options.ownDomain;
 
     const res = await fetch(functionUrl, {
       method: "POST",
@@ -52,7 +57,7 @@ export async function analyzeSite(
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify(body),
       signal: controller.signal,
     });
     clearTimeout(timeout);
