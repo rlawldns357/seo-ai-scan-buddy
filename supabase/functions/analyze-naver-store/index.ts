@@ -370,23 +370,46 @@ Deno.serve(async (req) => {
   const targetUrl =
     input.url ?? new URL(req.url).searchParams.get("url") ?? "";
 
-  if (!targetUrl) {
+  if (!targetUrl || typeof targetUrl !== "string" || targetUrl.length > 2000) {
     return new Response(
-      JSON.stringify({ success: false, error: "url required" }),
+      JSON.stringify({ success: false, error: "url required", code: "URL_REQUIRED" }),
+      { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
+  // ── 도메인 검증 강화: 파싱 실패/스토어 아님은 무조건 튕긴다 ──
+  let parsedHost = "";
+  try {
+    parsedHost = new URL(targetUrl).hostname.toLowerCase();
+  } catch {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "유효한 URL이 아니에요. 예: https://brand.naver.com/내브랜드",
+        code: "INVALID_URL",
+      }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 
   const store = parseStoreUrl(targetUrl);
   if (!store) {
+    const isNaverDomain = parsedHost.endsWith("naver.com");
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Not a Naver store URL. brand.naver.com 또는 smartstore.naver.com URL을 입력해 주세요.",
+        error: isNaverDomain
+          ? "네이버 스토어 URL이 아니에요. brand.naver.com/내브랜드 또는 smartstore.naver.com/내브랜드 형식이어야 해요."
+          : "네이버 스토어 진단은 brand.naver.com 또는 smartstore.naver.com URL만 분석할 수 있어요.",
+        code: "NOT_NAVER_STORE",
       }),
       { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
+
+  // ── 룰북 로드 (DB 우선, fallback 자동) ──
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const rulebook = await loadNaverRulebook(supabase).catch(() => null);
 
   const query = store.slug;
 
@@ -397,6 +420,18 @@ Deno.serve(async (req) => {
     naverSearch("kin", query, 10),
     naverSearch("webkr", query, 10),
   ]);
+
+  // 네이버 API 전체 실패면 명확하게 알린다
+  if (!shop.ok && !blog.ok && !webkr.ok) {
+    return new Response(
+      JSON.stringify({
+        success: false,
+        error: "네이버 검색 API 응답이 없어요. 잠시 후 다시 시도해 주세요.",
+        code: "NAVER_API_DOWN",
+      }),
+      { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
 
   // 자사 점유율 계산
   const shopItems = shop.body?.items ?? [];
