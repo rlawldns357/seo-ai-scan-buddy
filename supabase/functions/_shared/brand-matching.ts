@@ -3,6 +3,11 @@
  *
  * Frontend (Blog.tsx, BlogPost.tsx) 와 Edge Function 양쪽에서 공통으로 사용된다.
  * (Edge Function 측 사본은 supabase/functions/_shared/brand-matching.ts 에 거울 유지.)
+ *
+ * 3-tier 폴백 전략:
+ *  1. 명확한 브랜드 (ChatGPT, Claude, Naver 등) → 브랜드 워드마크 카드
+ *  2. 카테고리만 명확 (AEO/GEO/SEO) → 개념 카드 (큰 키워드 워드마크)
+ *  3. 둘 다 없음 → SearchTune OS 폴백 (최후)
  */
 
 export type BrandKey =
@@ -19,6 +24,10 @@ export type BrandKey =
   | "imweb"
   | "bing-copilot"
   | "clovax"
+  // 개념(컨셉) 카드 — 카테고리 폴백용
+  | "aeo"
+  | "geo"
+  | "seo"
   | "searchtune";
 
 export interface BrandStyle {
@@ -37,8 +46,8 @@ export interface BrandStyle {
   panelBg: string;
   /** 카테고리 부제 (소문자/한글 가능) */
   subtitle: string;
-  /** 'AI' / 'SEARCH' 등 카테고리 태그 */
-  kind: "AI" | "SEARCH" | "PLATFORM" | "BRAND";
+  /** 'AI' / 'SEARCH' / 'CONCEPT' 등 카테고리 태그 */
+  kind: "AI" | "SEARCH" | "PLATFORM" | "BRAND" | "CONCEPT";
 }
 
 const PRETENDARD = `'Pretendard','Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif`;
@@ -108,7 +117,7 @@ export const BRAND_STYLES: Record<BrandKey, BrandStyle> = {
     wordmark: "Google",
     fontFamily: POPPINS,
     fontWeight: 600,
-    color: "#4285F4", // composite — rendered with multi-color in components
+    color: "#4285F4",
     panelBg: "#FFFFFF",
     subtitle: "Google · SEO",
     kind: "SEARCH",
@@ -190,6 +199,42 @@ export const BRAND_STYLES: Record<BrandKey, BrandStyle> = {
     subtitle: "Naver AI · GEO",
     kind: "AI",
   },
+
+  // ─── 개념(컨셉) 카드 — 카테고리 폴백 ──────────────────────────────
+  aeo: {
+    key: "aeo",
+    label: "AEO",
+    wordmark: "AEO",
+    fontFamily: INTER,
+    fontWeight: 900,
+    color: "#9A3412", // 따뜻한 앰버 — AEO 카테고리 그라데이션과 매칭
+    panelBg: "#FFF7ED",
+    subtitle: "Answer Engine Optimization",
+    kind: "CONCEPT",
+  },
+  geo: {
+    key: "geo",
+    label: "GEO",
+    wordmark: "GEO",
+    fontFamily: INTER,
+    fontWeight: 900,
+    color: "#0F766E", // 에메랄드 — GEO 카테고리 그라데이션과 매칭
+    panelBg: "#ECFDF5",
+    subtitle: "Generative Engine Optimization",
+    kind: "CONCEPT",
+  },
+  seo: {
+    key: "seo",
+    label: "SEO",
+    wordmark: "SEO",
+    fontFamily: INTER,
+    fontWeight: 900,
+    color: "#1E3A8A", // 인디고 — SEO 카테고리 그라데이션과 매칭
+    panelBg: "#EFF6FF",
+    subtitle: "Search Engine Optimization",
+    kind: "CONCEPT",
+  },
+
   searchtune: {
     key: "searchtune",
     label: "SearchTune OS",
@@ -205,7 +250,14 @@ export const BRAND_STYLES: Record<BrandKey, BrandStyle> = {
 
 /**
  * 슬러그/제목 기반 결정적 브랜드 감지.
- * 우선순위: 더 구체적인 브랜드(예: Cue:, AI Overview)가 일반 브랜드(Naver, Google)보다 먼저.
+ *
+ * 우선순위 (한국 시장 우선):
+ *  1. 가장 구체적인 케이스 (AI Overview, Cue:, Clova)
+ *  2. 한국 브랜드 (Naver, Cue:, Clova, 뤼튼) — 글로벌보다 위
+ *  3. 글로벌 AI/검색 (ChatGPT, Claude, Gemini, Perplexity, Google, Bing)
+ *  4. 플랫폼 (Cafe24, imweb)
+ *  5. 카테고리 폴백 (AEO/GEO/SEO 개념 카드)
+ *  6. SearchTune (최후)
  */
 export function detectBrand(slug: string, title?: string, category?: string): BrandKey {
   const s = (slug || "").toLowerCase();
@@ -214,29 +266,34 @@ export function detectBrand(slug: string, title?: string, category?: string): Br
 
   const has = (...needles: string[]) => needles.some((n) => both.includes(n));
 
-  // 가장 구체적인 케이스 먼저
+  // 1) 가장 구체적인 케이스 먼저
   if (has("ai-overview", "ai overview", "sge")) return "google-ai-overview";
   if (has("cue:", "naver-cue", "네이버 큐", "네이버큐")) return "naver-cue";
   if (has("clova", "클로바")) return "clovax";
-  if (has("bing", "copilot")) return "bing-copilot";
 
+  // 2) 한국 브랜드 — 글로벌보다 우선 (한국 시장 타겟)
+  if (has("naver", "네이버", "search-advisor", "서치어드바이저")) return "naver";
+  if (has("wrtn", "뤼튼")) return "wrtn";
+
+  // 3) 글로벌 AI/검색
   if (has("chatgpt", "searchgpt", "openai")) return "chatgpt";
   if (has("claude", "anthropic", "클로드")) return "claude";
   if (has("gemini", "제미나이", "제미니")) return "gemini";
   if (has("perplexity", "퍼플렉시티")) return "perplexity";
-  if (has("wrtn", "뤼튼")) return "wrtn";
+  if (has("bing", "copilot")) return "bing-copilot";
+  if (has("google", "search-console", "서치콘솔", "core-web-vitals")) return "google";
 
+  // 4) 플랫폼
   if (has("cafe24", "카페24")) return "cafe24";
   if (has("imweb", "아임웹")) return "imweb";
 
-  if (has("naver", "네이버", "search-advisor", "서치어드바이저")) return "naver";
-  if (has("google", "search-console", "서치콘솔", "core-web-vitals")) return "google";
-
-  // 카테고리 기반 약한 매칭 (브랜드 미스 시 폴백)
+  // 5) 카테고리 폴백 — 개념 카드 (브랜드보다 키워드가 더 강력)
   const c = (category || "").toUpperCase();
-  if (c === "AEO") return "chatgpt"; // AEO 대표 = ChatGPT
-  if (c === "GEO") return "perplexity"; // GEO 대표 = Perplexity
+  if (c === "AEO") return "aeo";
+  if (c === "GEO") return "geo";
+  if (c === "SEO") return "seo";
 
+  // 6) 최후 폴백
   return "searchtune";
 }
 
@@ -244,9 +301,11 @@ export function getBrandStyle(slug: string, title?: string, category?: string): 
   return BRAND_STYLES[detectBrand(slug, title, category)];
 }
 
-/** 슬러그가 명확한 브랜드와 매칭되는지 (searchtune 폴백 제외) */
-export function hasExplicitBrand(slug: string, title?: string): boolean {
-  // 카테고리는 약한 폴백이므로 제외
-  const key = detectBrand(slug, title);
+/**
+ * 슬러그/제목/카테고리가 의미 있는 카드(브랜드 또는 개념)와 매칭되는지.
+ * SearchTune 폴백 외에는 모두 explicit으로 간주 → 워드마크 카드로 렌더.
+ */
+export function hasExplicitBrand(slug: string, title?: string, category?: string): boolean {
+  const key = detectBrand(slug, title, category);
   return key !== "searchtune";
 }
