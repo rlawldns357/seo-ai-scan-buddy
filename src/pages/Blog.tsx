@@ -31,9 +31,10 @@ function ShareIconButton({ slug, title }: { slug: string; title: string }) {
       onClick={handleClick}
       aria-label={`${title} 링크 복사`}
       title={copied ? "링크 복사됨" : "링크 복사"}
-      className="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full bg-background/80 backdrop-blur border border-border text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-background transition-colors shadow-sm"
+      className="group/share inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
     >
-      {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Share2 className="w-3.5 h-3.5" />}
+      {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Share2 className="w-3.5 h-3.5 transition-transform group-hover/share:-rotate-6 group-hover/share:scale-110" />}
+      <span className="sr-only">공유</span>
     </button>
   );
 }
