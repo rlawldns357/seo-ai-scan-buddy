@@ -59,11 +59,13 @@ type: design
 ## prerender-blog.mjs
 - `resolveOgImage(post)`: `og_image`가 비었거나 `.svg`로 끝나면 `og-svg` PNG endpoint URL로 강제 치환
 - 모든 `<meta property="og:image">`는 반드시 PNG URL을 가리킴
+- 블로그 상세는 `dist/blog/{slug}` **확장자 없는 파일**로 생성한다. `dist/blog/{slug}/index.html`은 공유 URL `/blog/{slug}`에서 Lovable hosting SPA fallback에 밀려 카카오/페북 크롤러가 기본 메타를 읽는 문제가 있음
 
 ## 신규 발행 자동 규칙 (CRD에 박힘)
 1. 발행 시 `generate-og-image` 자동 호출 → og_image/thumbnail에 .png URL 저장
 2. 만약 호출 실패해도 prerender가 og-svg endpoint(PNG)로 fallback → og:image는 항상 PNG 보장
-3. SVG 직접 저장 금지 (Storage에 .svg 파일 새로 만들지 말 것)
+3. 신규/기존 글 prerender 산출물은 `/blog/{slug}` 요청과 1:1 매칭되는 확장자 없는 HTML 파일로 생성
+4. SVG 직접 저장 금지 (Storage에 .svg 파일 새로 만들지 말 것)
 
 ## 검증 (v4)
 - 발행글 57개 모두 PNG로 일괄 재생성 완료 (2026-04-30)
