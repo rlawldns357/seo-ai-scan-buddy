@@ -31,9 +31,10 @@ function ShareIconButton({ slug, title }: { slug: string; title: string }) {
       onClick={handleClick}
       aria-label={`${title} 링크 복사`}
       title={copied ? "링크 복사됨" : "링크 복사"}
-      className="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full bg-background/80 backdrop-blur border border-border text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-background transition-colors shadow-sm"
+      className="group/share inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary transition-colors"
     >
-      {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Share2 className="w-3.5 h-3.5" />}
+      {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Share2 className="w-3.5 h-3.5 transition-transform group-hover/share:-rotate-6 group-hover/share:scale-110" />}
+      <span className="sr-only">공유</span>
     </button>
   );
 }
@@ -229,7 +230,6 @@ function HeroPost({ post }: { post: BlogPost }) {
           </span>
           최신
         </span>
-        <ShareIconButton slug={post.slug} title={post.title} />
       </div>
       <div className="flex flex-col justify-center px-4 pb-5 md:p-8">
         <span className={`self-start px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
@@ -244,6 +244,7 @@ function HeroPost({ post }: { post: BlogPost }) {
         <div className="mt-3 md:mt-4 flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDate(post.date)}</span>
           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{post.readTime} 읽기</span>
+          <span className="ml-auto"><ShareIconButton slug={post.slug} title={post.title} /></span>
         </div>
         <div className="mt-4 md:mt-5">
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all">
@@ -271,7 +272,6 @@ function PostCard({ post }: { post: BlogPost }) {
         }}
       >
         <CardVisual slug={post.slug} title={post.title} category={post.category} />
-        <ShareIconButton slug={post.slug} title={post.title} />
       </div>
       <div className="flex flex-col flex-1 p-5">
         <div className="flex items-center gap-2">
@@ -293,6 +293,7 @@ function PostCard({ post }: { post: BlogPost }) {
           <span>{post.author}</span>
           <span>·</span>
           <span>{formatDate(post.date)}</span>
+          <span className="ml-auto"><ShareIconButton slug={post.slug} title={post.title} /></span>
         </div>
       </div>
     </article>
