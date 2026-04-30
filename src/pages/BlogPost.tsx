@@ -819,7 +819,7 @@ export default function BlogPost() {
             {post.title}
           </h1>
 
-          <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-b border-border pb-6">
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground border-b border-border pb-6">
             <span className="flex items-center gap-1.5">
               <User className="w-4 h-4" />
               {post.author}
@@ -832,6 +832,16 @@ export default function BlogPost() {
               <Clock className="w-4 h-4" />
               {post.readTime} 읽기
             </span>
+            <div className="ml-auto">
+              <BlogShareButton
+                variant="subtle"
+                title={post.title}
+                excerpt={post.excerpt}
+                url={postUrl}
+                imageUrl={ogImage}
+                category={post.category}
+              />
+            </div>
           </div>
 
           {/* Thumbnail */}
