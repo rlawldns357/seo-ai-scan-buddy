@@ -281,13 +281,20 @@ async function main() {
   fs.mkdirSync(blogDir, { recursive: true });
 
   for (const post of allPosts) {
-    const postPath = path.join(blogDir, post.slug);
+    // Write as /blog/{slug}/index.html so the host serves it as text/html
+    // (extensionless files were being served as application/octet-stream,
+    // causing browsers to download the page instead of rendering it,
+    // and breaking OG previews on KakaoTalk / Facebook crawlers).
+    const postDir = path.join(blogDir, post.slug);
+    const legacyPath = path.join(blogDir, post.slug); // same path, but as a file
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    if (fs.existsSync(postPath)) {
-      fs.rmSync(postPath, { recursive: true, force: true });
+    // If a previous build wrote an extensionless FILE at this path, remove it
+    if (fs.existsSync(legacyPath) && fs.statSync(legacyPath).isFile()) {
+      fs.rmSync(legacyPath, { force: true });
     }
-    fs.writeFileSync(postPath, html, "utf-8");
+    fs.mkdirSync(postDir, { recursive: true });
+    fs.writeFileSync(path.join(postDir, "index.html"), html, "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
