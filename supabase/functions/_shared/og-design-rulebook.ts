@@ -125,7 +125,8 @@ export function buildAiOgPrompt(opts: { title: string; category: string }): stri
  * `slug` 미지정 시 카테고리 기반 폴백.
  */
 export function buildSvgOg(opts: { title: string; category: string; slug?: string }): string {
-  const explicit = !!opts.slug && hasExplicitBrand(opts.slug, opts.title);
+  // category까지 넘겨서 AEO/GEO/SEO 컨셉 카드 폴백이 작동하도록
+  const explicit = hasExplicitBrand(opts.slug || "", opts.title, opts.category);
   if (explicit) {
     return buildBrandSplitSvg(opts);
   }
