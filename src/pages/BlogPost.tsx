@@ -803,21 +803,12 @@ export default function BlogPost() {
       <ArticleJsonLd post={post} />
 
       <main className="container pt-10 pb-28 md:pt-16 md:pb-32">
-        <div className="flex items-center justify-between gap-2 mb-6">
-          <Link
-            to="/blog"
-            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" /> 블로그
-          </Link>
-          <BlogShareButton
-            title={post.title}
-            excerpt={post.excerpt}
-            url={postUrl}
-            imageUrl={ogImage}
-            category={post.category}
-          />
-        </div>
+        <Link
+          to="/blog"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
+        >
+          <ArrowLeft className="w-4 h-4" /> 블로그
+        </Link>
 
         <article className="max-w-3xl mx-auto">
           <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
@@ -828,7 +819,7 @@ export default function BlogPost() {
             {post.title}
           </h1>
 
-          <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-muted-foreground border-b border-border pb-6">
+          <div className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground border-b border-border pb-6">
             <span className="flex items-center gap-1.5">
               <User className="w-4 h-4" />
               {post.author}
@@ -841,6 +832,16 @@ export default function BlogPost() {
               <Clock className="w-4 h-4" />
               {post.readTime} 읽기
             </span>
+            <div className="ml-auto">
+              <BlogShareButton
+                variant="subtle"
+                title={post.title}
+                excerpt={post.excerpt}
+                url={postUrl}
+                imageUrl={ogImage}
+                category={post.category}
+              />
+            </div>
           </div>
 
           {/* Thumbnail */}

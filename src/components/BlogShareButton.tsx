@@ -30,9 +30,10 @@ interface BlogShareButtonProps {
   url: string;       // canonical share URL (absolute)
   imageUrl?: string; // OG image (absolute https URL)
   category?: string;
+  variant?: "primary" | "subtle"; // primary = filled CTA, subtle = inline meta-row tone
 }
 
-export default function BlogShareButton({ title, excerpt, url, imageUrl, category }: BlogShareButtonProps) {
+export default function BlogShareButton({ title, excerpt, url, imageUrl, category, variant = "primary" }: BlogShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [busyKakao, setBusyKakao] = useState(false);
 
@@ -118,16 +119,27 @@ export default function BlogShareButton({ title, excerpt, url, imageUrl, categor
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button
-          aria-label="이 글 공유"
-          title="이 글 공유"
-          className="group relative inline-flex items-center gap-1.5 pl-2.5 pr-3 h-9 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 hover:from-primary/15 hover:to-primary/10 border border-primary/20 hover:border-primary/40 text-primary shadow-sm hover:shadow-md transition-all duration-200"
-        >
-          <span className="relative flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 group-hover:bg-primary/25 transition-colors">
-            <Share2 className="w-3 h-3" />
-          </span>
-          <span className="text-[11px] font-semibold tracking-tight">공유</span>
-        </button>
+        {variant === "subtle" ? (
+          <button
+            aria-label="이 글 공유"
+            title="이 글 공유"
+            className="group inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Share2 className="w-4 h-4 transition-transform group-hover:-rotate-6 group-hover:scale-110" />
+            <span className="font-medium">공유</span>
+          </button>
+        ) : (
+          <button
+            aria-label="이 글 공유"
+            title="이 글 공유"
+            className="group relative inline-flex items-center gap-1.5 pl-2.5 pr-3 h-9 rounded-full bg-gradient-to-br from-primary/10 to-primary/5 hover:from-primary/15 hover:to-primary/10 border border-primary/20 hover:border-primary/40 text-primary shadow-sm hover:shadow-md transition-all duration-200"
+          >
+            <span className="relative flex items-center justify-center w-5 h-5 rounded-full bg-primary/15 group-hover:bg-primary/25 transition-colors">
+              <Share2 className="w-3 h-3" />
+            </span>
+            <span className="text-[11px] font-semibold tracking-tight">공유</span>
+          </button>
+        )}
       </PopoverTrigger>
       <PopoverContent align="end" sideOffset={8} className="w-64 p-3">
         <div className="space-y-3">
