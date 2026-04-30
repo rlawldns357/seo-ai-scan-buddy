@@ -4,9 +4,10 @@
  * index content without executing JavaScript.
  *
  * Runs after `vite build` and writes static HTML files to
- * dist/blog/{slug}/index.html, plus a compatibility dist/blog/{slug}.html copy.
- * Canonical/share URLs include /index.html because the published custom domain
- * may route /blog/{slug} and /blog/{slug}/ to the SPA root fallback.
+ * dist/blog/{slug}.html as the canonical share page, plus a compatibility
+ * dist/blog/{slug}/index.html copy.
+ * Canonical/share URLs use .html because the published custom domain routes
+ * /blog/{slug} and /blog/{slug}/ to the SPA home fallback.
  */
 
 import fs from "fs";
@@ -143,18 +144,18 @@ function resolveOgImage(post) {
   const fnBase = supaProj
     ? `https://${supaProj}.supabase.co/functions/v1/og-svg`
     : `${SITE}/og-image.png`;
-  const fallback = `${fnBase}?slug=${encodeURIComponent(post.slug)}`;
+  const fallback = `${fnBase}?slug=${encodeURIComponent(post.slug)}&title=${encodeURIComponent(post.title || "SearchTune OS")}&category=${encodeURIComponent(post.category || "가이드")}`;
   if (!post.og_image) return fallback;
   // .svg URL은 카톡 미리보기에서 안 뜨므로 PNG endpoint로 강제 치환
   if (/\.svg(\?|$)/i.test(post.og_image)) return fallback;
   return post.og_image;
 }
 
-// Canonical URL form: explicit physical HTML file. On the published custom
-// domain, /blog/{slug} and /blog/{slug}/ can hit the SPA root fallback, so
-// crawlers see the home OG image instead of the article OG image.
+// Canonical URL form: explicit .html file. On the published custom domain,
+// /blog/{slug} and /blog/{slug}/ can hit the SPA root fallback, so crawlers see
+// the home OG image instead of the article OG image.
 function blogHtmlPath(slug) {
-  return `/blog/${slug}/index.html`;
+  return `/blog/${slug}.html`;
 }
 
 function blogHtmlUrl(slug) {

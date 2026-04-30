@@ -1,8 +1,8 @@
 /**
  * Routing compatibility test:
  * For every blog slug, ensures that both URL shapes
- *   - /blog/{slug}/index.html (canonical Kakao-safe URL)
- *   - /blog/{slug}.html   (legacy / explicit extension)
+ *   - /blog/{slug}.html   (canonical Kakao-safe URL)
+ *   - /blog/{slug}/index.html (compatibility directory index)
  * resolve to the SAME canonical and og:url.
  *
  * CRITICAL: We do NOT write an extensionless physical file at dist/blog/{slug}
@@ -58,7 +58,7 @@ function main() {
     const indexHtml = path.join(BLOG_DIR, slug, "index.html");
     const unsafeSlugFile = path.join(BLOG_DIR, slug);
     const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
-    const expected = `${SITE}/blog/${slug}/index.html`;
+    const expected = `${SITE}/blog/${slug}.html`;
     const errors = [];
 
     // Canonical index.html must exist, and the unsafe extensionless file must not.
@@ -97,7 +97,7 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs use /blog/{slug}/index.html as canonical and keep /blog/{slug}.html compatible`);
+  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs use /blog/{slug}.html as canonical and keep /blog/{slug}/index.html compatible`);
 }
 
 main();
