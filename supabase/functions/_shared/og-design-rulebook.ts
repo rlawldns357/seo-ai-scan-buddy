@@ -134,27 +134,65 @@ export function buildSvgOg(opts: { title: string; category: string; slug?: strin
 }
 
 /**
+ * 제목을 OG 부제용으로 "정갈하게" 요약.
+ * - 콜론/대시 뒤 보조 설명 제거: "Q&A 4단계 전략 (AEO 최적화)" → "Q&A 4단계 전략"
+ * - 괄호 안 부가 설명 제거
+ * - 연도 prefix 제거: "2026년 ..." → "..." (이미 OG에 연도 노출은 식상)
+ * - 너무 길면 단어 경계로 자르고 … 추가
+ * - 최종 한 줄 (max 32자) 권장
+ */
+function tidyTitleForOg(rawTitle: string): string {
+  let t = (rawTitle || "").trim();
+  // 괄호 안 보조 설명 제거 (한/영 괄호 모두)
+  t = t.replace(/\s*[\(（][^\)）]*[\)）]\s*/g, " ").trim();
+  // 콜론/대시/세미콜론 뒤 보조 설명 잘라내기 (앞부분이 충분히 길 때만)
+  const splitMatch = t.match(/^(.+?)\s*[:：\-—–|]\s*(.+)$/);
+  if (splitMatch && splitMatch[1].length >= 8) {
+    t = splitMatch[1].trim();
+  }
+  // 연도 prefix 제거
+  t = t.replace(/^20\d{2}년\s*/, "").trim();
+  // 길이 제한
+  const MAX = 32;
+  if (t.length > MAX) {
+    const sliced = t.slice(0, MAX);
+    // 마지막 공백에서 자르기 (한글은 공백 적으니 그냥 컷)
+    const lastSpace = sliced.lastIndexOf(" ");
+    t = (lastSpace > MAX * 0.6 ? sliced.slice(0, lastSpace) : sliced).trim() + "…";
+  }
+  return t;
+}
+
+/**
  * 미니멀 단일 패널 OG (1200x630).
  *
  * 룰:
  *  - 브랜드별 크림/오프화이트 panelBg 풀 적용 (좌/우 분할 폐기)
  *  - SVG `<filter>` 그레인 노이즈 살짝 (한국적 종이 질감)
  *  - 워드마크 중앙 (그라데이션 유지) + descender 안전 baseline
- *  - 부제: `회사 · 카테고리` (Inter 700, letter-spacing 넓게, 회색 0.5)
- *  - 우측 하단 워터마크: SearchTune OS · searchtuneos.com (회색 0.35)
+ *  - 위쪽 작은 메타: `회사 · 카테고리` (Inter 700, letter-spacing 넓게, 회색)
+ *  - 아래 부제: 제목 정갈 요약 한 줄 (Pretendard 600, 회색 0.7) ← 후킹
+ *  - 우측 하단 워터마크: SearchTune OS · searchtuneos.com
  */
 function buildBrandSplitSvg(opts: { title: string; category: string; slug?: string }): string {
   const brand = getBrandStyle(opts.slug || "", opts.title, opts.category);
 
-  // 워드마크 중앙 (1200x630의 시각 중심은 약 y=300, descender 고려해 305)
+  // 워드마크 중앙
   const cx = 600;
   const cy = 305;
   const wordmarkSvg = renderBrandWordmark(brand, cx, cy);
 
-  // 부제: 회사 · 카테고리 (이미 brand.subtitle 이 그 포맷)
-  // 길이에 따라 폰트 사이즈 자동 조정
-  const subtitle = brand.subtitle.toUpperCase();
-  const subFontSize = subtitle.length > 28 ? 18 : 22;
+  // 위쪽 작은 메타: 회사 · 카테고리 (eyebrow)
+  const meta = brand.subtitle.toUpperCase();
+  const metaFontSize = meta.length > 28 ? 14 : 16;
+
+  // 아래 후킹 부제: 제목 정갈 요약
+  const tidyTitle = tidyTitleForOg(opts.title);
+  // 한국어는 글자당 폭이 넓으니 길이별 폰트 자동 조정
+  const titleFontSize =
+    tidyTitle.length > 26 ? 28 :
+    tidyTitle.length > 18 ? 32 :
+    tidyTitle.length > 12 ? 36 : 40;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
@@ -178,11 +216,14 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   <!-- 미세한 비네팅 -->
   <rect width="1200" height="630" fill="url(#vignette)"/>
 
+  <!-- 위쪽 작은 메타: 회사 · 카테고리 (eyebrow) -->
+  <text x="${cx}" y="180" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${metaFontSize}" font-weight="700" fill="rgba(0,0,0,0.42)" text-anchor="middle" letter-spacing="4">${escXml(meta)}</text>
+
   <!-- 워드마크 (중앙) -->
   ${wordmarkSvg}
 
-  <!-- 부제: 회사 · 카테고리 -->
-  <text x="${cx}" y="395" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${subFontSize}" font-weight="700" fill="rgba(0,0,0,0.45)" text-anchor="middle" letter-spacing="3">${escXml(subtitle)}</text>
+  <!-- 아래 후킹 부제: 제목 정갈 요약 (한 줄, 굵직, 진한 회색) -->
+  <text x="${cx}" y="430" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="600" fill="rgba(0,0,0,0.72)" text-anchor="middle" letter-spacing="-0.5">${escXml(tidyTitle)}</text>
 
   <!-- 우측 하단 워터마크 -->
   <text x="1140" y="595" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="14" font-weight="500" fill="rgba(0,0,0,0.32)" text-anchor="end" letter-spacing="1">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>

@@ -32,3 +32,16 @@ type: design
 ## Endpoints
 - `og-svg` GET `?slug=...&title=...&category=...` — 영구 폴백 (Cache 24h)
 - `generate-og-image` POST — AI 시도 후 실패 시 SVG 폴백, Storage(og-images, UUID) 업로드
+
+## v3 업데이트 (2026-04-30): SVG SSOT + 후킹 부제
+- **`generate-og-image` 기본값 SVG-first**: AI 이미지는 `prefer_ai=true` 명시할 때만 시도. 룰북 SVG가 단일 진실 소스 (한글 안전 + 스타일 일관성).
+- **부제 2층 구조** in `buildBrandSplitSvg`:
+  - **위 메타** (y=180, 14-16px, 회색 0.42, letter-spacing 4): `회사 · 카테고리` (예: `MICROSOFT · SEO`)
+  - **워드마크** (중앙, y=305): 기존 그라데이션 유지
+  - **아래 후킹 부제** (y=430, 28-40px 자동, Pretendard 600, 회색 0.72): 제목 정갈 요약 → 클릭 유도
+- **`tidyTitleForOg(title)` 헬퍼**:
+  - 괄호 안 부가 설명 제거 (`Q&A 4단계 전략 (AEO 최적화)` → `Q&A 4단계 전략`)
+  - 콜론/대시 뒤 보조 설명 컷 (`완벽 가이드: 중복 콘텐츠 해결` → `완벽 가이드`)
+  - 연도 prefix 제거 (`2026년 ...` → `...`)
+  - 32자 초과 시 단어 경계로 컷 + `…`
+- 발행된 모든 글 OG 일괄 재생성 (57개) — 모두 SVG 룰북 적용 완료.
