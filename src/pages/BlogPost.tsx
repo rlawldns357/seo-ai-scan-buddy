@@ -12,6 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import FunnelCTAs from "@/components/FunnelCTAs";
+import { detectBrand, BRAND_STYLES, hasExplicitBrand } from "@/lib/brandMatching";
 
 
 const categoryColor: Record<string, string> = {
@@ -38,6 +39,8 @@ function isImwebPost(slug: string) {
 
 function getBrandThumbnail(slug: string, category: string, large = false) {
   const size = large ? "text-4xl md:text-5xl" : "text-3xl";
+
+  // 1) 기존 강제 매칭 (네이버/카페24/아임웹) — 메모리·SEO 호환성 유지
   if (isNaverPost(slug)) {
     return (
       <div className="flex flex-col items-center gap-2">
@@ -65,6 +68,46 @@ function getBrandThumbnail(slug: string, category: string, large = false) {
       </div>
     );
   }
+
+  // 2) 공유 브랜드 모듈로 자동 감지 (ChatGPT/Claude/Gemini/Perplexity/Wrtn/Google 등)
+  if (hasExplicitBrand(slug)) {
+    const key = detectBrand(slug, undefined, category);
+    const brand = BRAND_STYLES[key];
+
+    if (key === "google" || key === "google-ai-overview") {
+      const letters = "Google".split("");
+      const colors = ["#4285F4", "#EA4335", "#FBBC05", "#4285F4", "#34A853", "#EA4335"];
+      return (
+        <div className="flex flex-col items-center gap-2">
+          <span className={`${size} tracking-tight`} style={{ fontFamily: brand.fontFamily, fontWeight: brand.fontWeight }}>
+            {letters.map((ch, i) => (
+              <span key={i} style={{ color: colors[i] }}>{ch}</span>
+            ))}
+          </span>
+          <span className="text-sm font-semibold text-muted-foreground">{brand.subtitle}</span>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col items-center gap-2">
+        <span
+          className={`${size} tracking-tight`}
+          style={{
+            fontFamily: brand.fontFamily,
+            fontWeight: brand.fontWeight,
+            color: brand.color,
+            letterSpacing: "-0.02em",
+          }}
+        >
+          {brand.wordmark}
+        </span>
+        <span className="text-sm font-semibold text-muted-foreground">{brand.subtitle}</span>
+      </div>
+    );
+  }
+
+  // 3) 폴백: 카테고리 그라데이션 워드
   return (
     <span className={`${size} font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent`}>
       {category}
