@@ -1,4 +1,4 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
@@ -25,8 +25,11 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-const blogPostPath = (slug: string) => `/blog/${slug}/index.html`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}/index.html`;
+// Trailing-slash form: hosting serves it as text/html (auto resolves index.html)
+// while keeping the address bar clean. Required for Kakao/Facebook OG to work
+// when users copy the URL straight from the address bar.
+const blogPostPath = (slug: string) => `/blog/${slug}/`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}/`;
 
 function isNaverPost(slug: string) {
   return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
@@ -543,8 +546,20 @@ type FaqShort = { q: string; a: string };
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
+
+  // Canonical URL form is /blog/{slug}/ (trailing slash). If the user landed on
+  // /blog/{slug}, /blog/{slug}.html, or /blog/{slug}/index.html, normalise the
+  // address bar so any subsequent copy-paste yields a Kakao/Facebook-friendly URL.
+  useEffect(() => {
+    if (!slug) return;
+    const canonical = `/blog/${slug}/`;
+    if (location.pathname !== canonical) {
+      navigate(canonical + location.search + location.hash, { replace: true });
+    }
+  }, [slug, location.pathname, location.search, location.hash, navigate]);
 
   // Fetch DB posts for nav
   useEffect(() => {
