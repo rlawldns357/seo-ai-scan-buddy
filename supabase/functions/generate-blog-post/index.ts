@@ -423,6 +423,22 @@ ${naverRulebook}
       if (!hasCode && !hasQuote) issues.push("코드블록(```) 또는 인용(>) 중 최소 1개가 필요합니다.");
       const hasInternalLink = /\]\(\/(blog|about)?[)#?]/.test(content) || /\]\(\/[^)]*\)/.test(content);
       if (!hasInternalLink) issues.push("내부 링크([텍스트](/...)) 1개 이상 필요.");
+
+      // === (NEW) 시각 컴포넌트 룰북 검증 ===
+      // 1) TL;DR 박스 (글 시작 부근)
+      const hasTldr = /TL;?DR/i.test(content.slice(0, 1000));
+      if (!hasTldr) issues.push("TL;DR 인용 박스(글 시작 부근)가 없습니다. `> **TL;DR**` 형식 필요.");
+
+      // 2) 본문 중간 CTA (자연스러운 인용 박스 + 무료 진단 링크)
+      const hasMidCta =
+        (/💡/.test(content) && /\]\(\/\)/.test(content)) ||
+        (/잠깐[^\n]{0,30}점검/.test(content) && /\]\(\/\)/.test(content));
+      if (!hasMidCta) issues.push("본문 중간 CTA 박스(`> 💡 **잠깐, 우리 사이트도 점검해 볼까요?**` + `[무료 진단](/)`)가 없습니다.");
+
+      // 3) 마무리 체크리스트 (GitHub 체크박스)
+      const checkboxCount = (content.match(/^\s*-\s*\[\s\]\s+/gm) || []).length;
+      if (checkboxCount < 4) issues.push(`마무리 체크리스트 항목이 부족합니다(${checkboxCount}개). \`- [ ] 항목\` 5~7개 필요.`);
+
       if (!faqs || faqs.length < 5) issues.push(`본문 FAQ가 부족합니다(${faqs?.length || 0}개). 최소 5개 필요.`);
       if (!faqsShort || faqsShort.length < 3) issues.push(`아코디언용 faqs_short가 부족합니다(${faqsShort?.length || 0}개). 최소 3개 필요.`);
       // 톤 분리 검증: faqs_short 답변 평균 길이가 본문 faqs보다 짧아야 함
