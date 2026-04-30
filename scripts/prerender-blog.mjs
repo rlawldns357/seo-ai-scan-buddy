@@ -281,12 +281,14 @@ async function main() {
   fs.mkdirSync(blogDir, { recursive: true });
 
   for (const post of allPosts) {
-    const postPath = path.join(blogDir, post.slug);
+    const postDir = path.join(blogDir, post.slug);
+    const postPath = path.join(postDir, "index.html");
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    if (fs.existsSync(postPath) && fs.statSync(postPath).isDirectory()) {
-      fs.rmSync(postPath, { recursive: true, force: true });
+    if (fs.existsSync(postDir) && !fs.statSync(postDir).isDirectory()) {
+      fs.rmSync(postDir, { force: true });
     }
+    fs.mkdirSync(postDir, { recursive: true });
     fs.writeFileSync(postPath, html, "utf-8");
   }
 
@@ -317,7 +319,7 @@ function generateBlogListHtml(posts, assets) {
   const desc = "SEO·AEO·GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
 
   const listItems = posts
-    .map(p => `<li><a href="/blog/${p.slug}">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
+    .map(p => `<li><a href="/blog/${p.slug}/">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
     .join("\n      ");
 
   return `<!doctype html>
@@ -358,7 +360,7 @@ main().catch(console.error);
 // ── 8. RSS XML generator ───────────────────────────────────────────
 function generateRssXml(posts) {
   const items = posts.map(p => {
-    const url = `${SITE}/blog/${p.slug}`;
+    const url = `${SITE}/blog/${p.slug}/`;
     const pubDate = new Date(p.date).toUTCString();
     return `    <item>
       <title><![CDATA[${p.title}]]></title>
@@ -399,7 +401,7 @@ function generateAboutHtml(latestPosts, assets) {
     isPartOf: { "@type": "WebSite", name: "서치튠OS", url: SITE },
   });
   const blogLinks = latestPosts
-    .map(p => `<li><a href="/blog/${p.slug}" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
+    .map(p => `<li><a href="/blog/${p.slug}/" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
     .join("\n        ");
 
   return `<!doctype html>
@@ -460,7 +462,7 @@ function injectHomeLinks(latestPosts) {
   const linksHtml = `<section data-prerender-home-links style="display:none">
     <h2>최신 블로그</h2>
     <ul>
-      ${latestPosts.map(p => `<li><a href="/blog/${p.slug}">${esc(p.title)}</a></li>`).join("\n      ")}
+      ${latestPosts.map(p => `<li><a href="/blog/${p.slug}/">${esc(p.title)}</a></li>`).join("\n      ")}
     </ul>
     <p><a href="/blog">블로그 전체 보기</a> · <a href="/about">서치튠OS 소개</a></p>
   </section>`;
