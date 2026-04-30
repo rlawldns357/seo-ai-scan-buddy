@@ -258,30 +258,39 @@ Deno.serve(async (req) => {
       : AUTHORS[Math.floor(Math.random() * AUTHORS.length)];
 
     // Pick a theme: avoid recent titles AND recent categories (prefer variety)
+    // 또한 BRAND_TOPIC_RATIO 확률로 브랜드 키워드가 들어간 토픽을 우선 선택
+    // (ChatGPT/Claude/Naver/Google 등 → OG 분할 카드 비주얼이 자동 적용됨)
     const allThemes = TOPICS.flatMap((t) =>
-      t.themes.map((theme) => ({ category: t.category, theme }))
+      t.themes.map((theme) => ({ category: t.category, theme, isBrand: isBrandTopic(theme) }))
     );
 
-    const shuffled = allThemes.sort(() => Math.random() - 0.5);
-    
-    // First try: avoid both recent title AND recent category
-    let pick = shuffled.find(
-      (t) =>
-        !recentTitles.some((title) => title.includes(t.theme.slice(0, 10).toLowerCase())) &&
-        !recentCategories.includes(t.category)
-    );
-    // Fallback: just avoid recent titles
-    if (!pick) {
-      pick = shuffled.find(
-        (t) => !recentTitles.some((title) => title.includes(t.theme.slice(0, 10).toLowerCase()))
-      );
-    }
-    // Final fallback
-    if (!pick) pick = shuffled[0];
+    const preferBrand = Math.random() < BRAND_TOPIC_RATIO;
+    const primaryPool = preferBrand
+      ? allThemes.filter((t) => t.isBrand)
+      : allThemes.filter((t) => !t.isBrand);
+    const fallbackPool = preferBrand
+      ? allThemes.filter((t) => !t.isBrand)
+      : allThemes.filter((t) => t.isBrand);
+
+    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
+    const primaryShuffled = shuffle(primaryPool);
+    const fallbackShuffled = shuffle(fallbackPool);
+
+    const matchesRecent = (theme: string) =>
+      recentTitles.some((title) => title.includes(theme.slice(0, 10).toLowerCase()));
+
+    // 1) 선호 풀에서 최근 중복 + 최근 카테고리 모두 회피
+    let pick = primaryShuffled.find((t) => !matchesRecent(t.theme) && !recentCategories.includes(t.category));
+    // 2) 선호 풀에서 최근 타이틀만 회피
+    if (!pick) pick = primaryShuffled.find((t) => !matchesRecent(t.theme));
+    // 3) 폴백 풀에서 최근 타이틀 회피
+    if (!pick) pick = fallbackShuffled.find((t) => !matchesRecent(t.theme));
+    // 4) 최종 폴백
+    if (!pick) pick = primaryShuffled[0] || fallbackShuffled[0] || allThemes[0];
 
     const { category, theme } = pick;
 
-    console.log(`Generating blog post: [${category}] ${theme} by ${author.name}`);
+    console.log(`Generating blog post: [${category}] ${theme} by ${author.name} (brand=${pick.isBrand}, prefer=${preferBrand})`);
 
     const recentTitleList = recentTitles.slice(0, 15).join(", ");
 
