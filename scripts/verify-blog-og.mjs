@@ -67,11 +67,8 @@ function collectBlogFiles() {
   const files = [];
 
   for (const entry of entries) {
-    if (entry.isDirectory()) {
-      const indexPath = path.join(BLOG_DIR, entry.name, "index.html");
-      if (fs.existsSync(indexPath)) {
-        files.push({ slug: entry.name, label: `/blog/${entry.name}`, path: indexPath });
-      }
+    if (entry.isFile() && !entry.name.includes(".")) {
+      files.push({ slug: entry.name, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name) });
       continue;
     }
 
@@ -103,7 +100,7 @@ function main() {
     const expectedUrl = `${SITE}/blog/${file.slug}`;
     const errors = verifyFile(file.path, expectedUrl);
     if (file.compatibility && !canonicalSlugs.has(file.slug)) {
-      errors.push(`missing canonical extensionless file: dist/blog/${file.slug}/index.html`);
+      errors.push(`missing canonical extensionless file: dist/blog/${file.slug}`);
     }
     if (errors.length) {
       failed++;
