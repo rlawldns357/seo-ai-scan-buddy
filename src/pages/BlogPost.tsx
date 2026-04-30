@@ -639,9 +639,12 @@ export default function BlogPost() {
 
   const postUrl = `https://searchtuneos.com/blog/${post.slug}`;
   const postTitle = `${post.title} – 서치튠OS 블로그`;
+  // OG image fallback chain: explicit og_image → custom thumbnail → on-demand brand SVG
+  // The SVG endpoint always returns a valid 1200x630 brand-consistent image, so previews never break.
+  const ogSvgFallback = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-svg?slug=${encodeURIComponent(post.slug)}`;
   const ogImage = post.ogImage
-    || (post.thumbnail !== "/placeholder.svg" ? post.thumbnail : undefined)
-    || "https://searchtuneos.com/og-image.png";
+    || (post.thumbnail && post.thumbnail !== "/placeholder.svg" ? post.thumbnail : undefined)
+    || ogSvgFallback;
 
   return (
     <div className="min-h-screen bg-background">
