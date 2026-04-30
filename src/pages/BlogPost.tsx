@@ -803,12 +803,21 @@ export default function BlogPost() {
       <ArticleJsonLd post={post} />
 
       <main className="container pt-10 pb-28 md:pt-16 md:pb-32">
-        <Link
-          to="/blog"
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" /> 블로그
-        </Link>
+        <div className="flex items-center justify-between gap-2 mb-6">
+          <Link
+            to="/blog"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" /> 블로그
+          </Link>
+          <BlogShareButton
+            title={post.title}
+            excerpt={post.excerpt}
+            url={postUrl}
+            imageUrl={ogImage}
+            category={post.category}
+          />
+        </div>
 
         <article className="max-w-3xl mx-auto">
           <span className={`inline-block px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
