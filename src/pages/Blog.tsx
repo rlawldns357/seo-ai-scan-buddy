@@ -155,38 +155,35 @@ function formatDate(d: string) {
 
 function HeroPost({ post }: { post: BlogPost }) {
   return (
-    <article className="group relative grid md:grid-cols-5 gap-0 rounded-3xl border border-border bg-card overflow-hidden hover:shadow-2xl hover:border-primary/30 transition-all duration-300">
-      <div className="md:col-span-2 aspect-[16/10] md:aspect-auto bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center md:min-h-[320px] relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent" />
-        <div className="relative z-10 scale-110">
-          {getBrandThumbnail(post.slug, post.category)}
+    <article className="group relative grid md:grid-cols-2 gap-4 md:gap-6 rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
+      <div className="aspect-[2/1] md:aspect-auto bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center md:min-h-[220px] relative">
+        <div className="text-center p-6 md:p-8">
+          <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
+            AEO
+          </span>
+          <p className="text-sm text-muted-foreground mt-2">Answer Engine Optimization</p>
         </div>
-        <span className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
+        <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
           ✨ NEW
         </span>
       </div>
-      <div className="md:col-span-3 flex flex-col justify-center px-5 py-6 md:p-10">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
-            {post.category}
-          </span>
-          <span className="text-[11px] font-semibold tracking-wider uppercase text-primary">
-            최신 발행
-          </span>
-        </div>
-        <h2 className="mt-3 text-xl md:text-3xl font-extrabold text-foreground leading-tight group-hover:text-primary transition-colors">
+      <div className="flex flex-col justify-center px-4 pb-5 md:p-8">
+        <span className={`self-start px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
+          {post.category}
+        </span>
+        <h2 className="mt-3 text-lg md:text-2xl font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
           {post.title}
         </h2>
-        <p className="mt-3 text-sm md:text-base text-muted-foreground line-clamp-3 leading-relaxed">
+        <p className="mt-2 md:mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
           {post.excerpt}
         </p>
-        <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="mt-3 md:mt-4 flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDate(post.date)}</span>
           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{post.readTime} 읽기</span>
         </div>
-        <div className="mt-5">
-          <span className="inline-flex items-center gap-1.5 text-sm font-bold text-primary group-hover:gap-2.5 transition-all">
-            지금 읽기 <ArrowRight className="w-4 h-4" />
+        <div className="mt-4 md:mt-5">
+          <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all">
+            자세히 보기 <ArrowRight className="w-4 h-4" />
           </span>
         </div>
       </div>
