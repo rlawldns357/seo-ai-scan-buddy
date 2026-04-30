@@ -116,29 +116,108 @@ export function buildAiOgPrompt(opts: { title: string; category: string }): stri
 }
 
 /**
- * 한글 100% 안전 SVG 폴백 OG 이미지.
- * AI 모델이 한글을 깨뜨리거나 실패할 때 즉시 사용.
- * 1200x630, 그라데이션 + 카테고리 배지 + 타이틀 + 브랜드 워드마크.
+ * 한글 100% 안전 SVG OG 이미지 (브랜드 자동 감지).
+ *
+ * 슬러그/제목에서 명확한 브랜드(ChatGPT/Claude/Naver/Google 등)가 감지되면
+ * 좌측 브랜드 워드마크 카드 + 우측 다크 그라데이션 메타 분할 레이아웃으로 렌더한다.
+ * 그 외에는 기존 카테고리 그라데이션 레이아웃으로 폴백.
+ *
+ * `slug` 미지정 시 카테고리 기반 폴백.
  */
-export function buildSvgOg(opts: { title: string; category: string }): string {
+export function buildSvgOg(opts: { title: string; category: string; slug?: string }): string {
+  const explicit = !!opts.slug && hasExplicitBrand(opts.slug, opts.title);
+  if (explicit) {
+    return buildBrandSplitSvg(opts);
+  }
+  return buildGradientSvg(opts);
+}
+
+/** 좌측 브랜드 카드 + 우측 메타 분할 OG (1200x630). */
+function buildBrandSplitSvg(opts: { title: string; category: string; slug?: string }): string {
+  const brand = getBrandStyle(opts.slug || "", opts.title, opts.category);
+  const cat = resolveStyle(opts.category);
+  const title = (opts.title || "SearchTune OS").trim();
+  const lines = wrapTitle(title, 18); // 우측 패널이 좁으므로 짧게
+
+  const titleSvg = lines
+    .slice(0, 4)
+    .map(
+      (line, i) =>
+        `<text x="540" y="${230 + i * 70}" font-family="'Pretendard','Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif" font-size="56" font-weight="800" fill="#ffffff" letter-spacing="-1.5">${escXml(
+          line,
+        )}</text>`,
+    )
+    .join("\n  ");
+
+  const overflow =
+    lines.length > 4
+      ? `<text x="540" y="${230 + 4 * 70}" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="28" font-weight="500" fill="rgba(255,255,255,0.6)">${escXml(lines.slice(4).join(" "))}…</text>`
+      : "";
+
+  // 좌측 패널 (브랜드 워드마크) - 화이트/라이트 컬러 패널
+  // 우측 패널 (메타) - 카테고리 그라데이션
+  // 패널 분할: 좌측 480px, 우측 720px
+  const wordmarkSvg = renderBrandWordmark(brand, 240, 315); // 좌측 패널 중앙
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="metaBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="${cat.gradient.from}"/>
+      <stop offset="50%" stop-color="${cat.gradient.via ?? cat.gradient.from}"/>
+      <stop offset="100%" stop-color="${cat.gradient.to}"/>
+    </linearGradient>
+    <radialGradient id="metaGlow" cx="80%" cy="20%" r="60%">
+      <stop offset="0%" stop-color="${cat.accent}" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="${cat.accent}" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="metaGrid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <!-- Left brand panel -->
+  <rect x="0" y="0" width="480" height="630" fill="${brand.panelBg}"/>
+  <!-- Subtle inset shadow -->
+  <rect x="478" y="0" width="2" height="630" fill="rgba(0,0,0,0.06)"/>
+  ${wordmarkSvg}
+  <text x="240" y="385" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="20" font-weight="500" fill="rgba(0,0,0,0.5)" text-anchor="middle" letter-spacing="0.5">${escXml(brand.subtitle)}</text>
+
+  <!-- Right meta panel -->
+  <rect x="480" y="0" width="720" height="630" fill="url(#metaBg)"/>
+  <rect x="480" y="0" width="720" height="630" fill="url(#metaGrid)"/>
+  <rect x="480" y="0" width="720" height="630" fill="url(#metaGlow)"/>
+  <circle cx="1100" cy="540" r="180" fill="${cat.accent}" opacity="0.08"/>
+
+  <!-- Category badge -->
+  <g transform="translate(540, 110)">
+    <rect width="160" height="48" rx="24" fill="${cat.badgeBg}"/>
+    <text x="80" y="32" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="20" font-weight="700" fill="${cat.badgeFg}" text-anchor="middle">${cat.emoji} ${escXml(cat.label)}</text>
+  </g>
+
+  <!-- Title -->
+  ${titleSvg}
+  ${overflow}
+
+  <!-- SearchTune wordmark bottom-right of meta panel -->
+  <g transform="translate(540, 560)">
+    <circle cx="10" cy="0" r="10" fill="${cat.accent}"/>
+    <text x="30" y="6" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="22" font-weight="700" fill="#ffffff" letter-spacing="-0.5">SearchTune OS</text>
+  </g>
+  <text x="1140" y="566" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="18" font-weight="500" fill="rgba(255,255,255,0.55)" text-anchor="end">searchtuneos.com</text>
+</svg>`;
+}
+
+/** 기존 카테고리 풀 그라데이션 SVG (브랜드 미감지 시). */
+function buildGradientSvg(opts: { title: string; category: string }): string {
   const style = resolveStyle(opts.category);
   const title = (opts.title || "SearchTune OS").trim();
-
-  // 줄바꿈: 한글 28자 / 영문 38자 기준 line wrap
   const lines = wrapTitle(title, 28);
-
-  // XML escape
-  const esc = (s: string) =>
-    s.replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
 
   const titleSvg = lines
     .slice(0, 3)
     .map(
       (line, i) =>
-        `<text x="80" y="${260 + i * 90}" font-family="'Pretendard','Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif" font-size="76" font-weight="800" fill="#ffffff" letter-spacing="-2">${esc(
+        `<text x="80" y="${260 + i * 90}" font-family="'Pretendard','Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif" font-size="76" font-weight="800" fill="#ffffff" letter-spacing="-2">${escXml(
           line,
         )}</text>`,
     )
@@ -146,7 +225,7 @@ export function buildSvgOg(opts: { title: string; category: string }): string {
 
   const subtitle =
     lines.length > 3
-      ? `<text x="80" y="${260 + 3 * 90}" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="32" font-weight="500" fill="rgba(255,255,255,0.6)">${esc(lines.slice(3).join(" "))}…</text>`
+      ? `<text x="80" y="${260 + 3 * 90}" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="32" font-weight="500" fill="rgba(255,255,255,0.6)">${escXml(lines.slice(3).join(" "))}…</text>`
       : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
@@ -170,25 +249,57 @@ export function buildSvgOg(opts: { title: string; category: string }): string {
   <circle cx="1080" cy="540" r="220" fill="${style.accent}" opacity="0.08"/>
   <circle cx="980" cy="120" r="120" fill="${style.accent}" opacity="0.06"/>
 
-  <!-- Category badge top-left -->
   <g transform="translate(80, 90)">
     <rect width="180" height="56" rx="28" fill="${style.badgeBg}"/>
-    <text x="90" y="38" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="24" font-weight="700" fill="${style.badgeFg}" text-anchor="middle">${style.emoji} ${esc(style.label)}</text>
+    <text x="90" y="38" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="24" font-weight="700" fill="${style.badgeFg}" text-anchor="middle">${style.emoji} ${escXml(style.label)}</text>
   </g>
 
-  <!-- Title -->
   ${titleSvg}
   ${subtitle}
 
-  <!-- Brand wordmark bottom-left -->
   <g transform="translate(80, 560)">
     <circle cx="14" cy="0" r="14" fill="${style.accent}"/>
     <text x="40" y="8" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="28" font-weight="700" fill="#ffffff" letter-spacing="-0.5">SearchTune OS</text>
   </g>
-
-  <!-- URL bottom-right -->
   <text x="1120" y="568" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="22" font-weight="500" fill="rgba(255,255,255,0.55)" text-anchor="end">searchtuneos.com</text>
 </svg>`;
+}
+
+/**
+ * 브랜드별 워드마크 SVG 렌더링.
+ * Google 같은 멀티컬러 브랜드는 글자별 컬러 처리.
+ * (cx, cy) 는 워드마크 중심점.
+ */
+function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string {
+  const fontSize = brand.wordmark.length > 7 ? 56 : 72;
+
+  // Google 멀티컬러
+  if (brand.key === "google" || brand.key === "google-ai-overview") {
+    const colors = ["#4285F4", "#EA4335", "#FBBC05", "#4285F4", "#34A853", "#EA4335"];
+    const letters = "Google".split("");
+    // 글자별 x 오프셋 근사 (모노스페이스 가정)
+    const charW = fontSize * 0.55;
+    const totalW = charW * letters.length;
+    const startX = cx - totalW / 2;
+    const letterTags = letters
+      .map(
+        (ch, i) =>
+          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${colors[i]}" text-anchor="middle" letter-spacing="-1">${ch}</text>`,
+      )
+      .join("");
+    return letterTags;
+  }
+
+  // 일반 브랜드: 단일 컬러 워드마크
+  return `<text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${brand.color}" text-anchor="middle" letter-spacing="-1.5">${escXml(brand.wordmark)}</text>`;
+}
+
+function escXml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 function wrapTitle(text: string, maxLen: number): string[] {
