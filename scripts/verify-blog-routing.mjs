@@ -32,7 +32,7 @@ function listSlugs() {
   if (!fs.existsSync(BLOG_DIR)) return [];
   const slugs = new Set();
   for (const entry of fs.readdirSync(BLOG_DIR, { withFileTypes: true })) {
-    if (entry.isDirectory()) {
+    if (entry.isFile() && !entry.name.includes(".")) {
       slugs.add(entry.name);
     } else if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
       slugs.add(entry.name.replace(/\.html$/, ""));
@@ -55,26 +55,24 @@ function main() {
 
   let failed = 0;
   for (const slug of slugs) {
-    const dirIndex = path.join(BLOG_DIR, slug, "index.html");
+    const slugFile = path.join(BLOG_DIR, slug);
     const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
-    const stray = path.join(BLOG_DIR, slug);
     const expected = `${SITE}/blog/${slug}`;
     const errors = [];
 
-    // Guard: a plain extensionless file would cause MIME-less downloads
-    if (fs.existsSync(stray) && fs.statSync(stray).isFile()) {
-      errors.push(`UNSAFE: extensionless physical file exists at /blog/${slug} — browsers may download it instead of rendering`);
+    // Both shapes MUST exist as files (extensionless + .html)
+    if (!fs.existsSync(slugFile) || !fs.statSync(slugFile).isFile()) {
+      errors.push(`missing extensionless file at /blog/${slug}`);
     }
-    if (!fs.existsSync(dirIndex)) errors.push(`missing /blog/${slug}/index.html`);
     if (!fs.existsSync(dotHtml)) errors.push(`missing /blog/${slug}.html`);
 
     if (errors.length === 0) {
-      const a = readMeta(dirIndex);
+      const a = readMeta(slugFile);
       const b = readMeta(dotHtml);
 
-      if (a.canonical !== expected) errors.push(`dir-index canonical "${a.canonical}" ≠ "${expected}"`);
+      if (a.canonical !== expected) errors.push(`extensionless canonical "${a.canonical}" ≠ "${expected}"`);
       if (b.canonical !== expected) errors.push(`.html canonical "${b.canonical}" ≠ "${expected}"`);
-      if (a.ogUrl !== expected) errors.push(`dir-index og:url "${a.ogUrl}" ≠ "${expected}"`);
+      if (a.ogUrl !== expected) errors.push(`extensionless og:url "${a.ogUrl}" ≠ "${expected}"`);
       if (b.ogUrl !== expected) errors.push(`.html og:url "${b.ogUrl}" ≠ "${expected}"`);
 
       if (a.canonical !== b.canonical) errors.push(`canonical mismatch between variants: "${a.canonical}" vs "${b.canonical}"`);
