@@ -282,6 +282,7 @@ function buildGradientSvg(opts: { title: string; category: string }): string {
       : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  ${FONT_EMBED}
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${style.gradient.from}"/>
