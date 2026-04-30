@@ -662,6 +662,18 @@ Deno.serve(async (req) => {
     },
   };
 
+  // ── 캐시 저장 (24h TTL) ── 같은 storeUrl 행 덮어쓰기
+  try {
+    await supabase
+      .from("naver_store_analysis_cache")
+      .upsert(
+        { url: cacheKey, result_data: result, analyzed_at: new Date().toISOString() },
+        { onConflict: "url" },
+      );
+  } catch (e) {
+    console.warn("[naver-store-cache] write failed:", e);
+  }
+
   return new Response(
     JSON.stringify({ success: true, data: result }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } },
