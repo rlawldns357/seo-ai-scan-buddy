@@ -180,7 +180,7 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   <!-- Subtle inset shadow -->
   <rect x="478" y="0" width="2" height="630" fill="rgba(0,0,0,0.06)"/>
   ${wordmarkSvg}
-  <text x="240" y="${brand.kind === "CONCEPT" ? 420 : 385}" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="${brand.subtitle.length > 22 ? 16 : 20}" font-weight="${brand.kind === "CONCEPT" ? 700 : 500}" fill="${brand.kind === "CONCEPT" ? brand.color : "rgba(0,0,0,0.5)"}" fill-opacity="${brand.kind === "CONCEPT" ? 0.85 : 1}" text-anchor="middle" letter-spacing="${brand.kind === "CONCEPT" ? 1.5 : 0.5}">${escXml(brand.subtitle.toUpperCase())}</text>
+  <text x="240" y="385" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="${brand.subtitle.length > 22 ? 16 : 20}" font-weight="500" fill="rgba(0,0,0,0.5)" text-anchor="middle" letter-spacing="0.5">${escXml(brand.subtitle)}</text>
 
   <!-- Right meta panel -->
   <rect x="480" y="0" width="720" height="630" fill="url(#metaBg)"/>
