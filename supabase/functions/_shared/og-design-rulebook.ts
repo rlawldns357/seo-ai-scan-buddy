@@ -180,7 +180,7 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   <!-- Subtle inset shadow -->
   <rect x="478" y="0" width="2" height="630" fill="rgba(0,0,0,0.06)"/>
   ${wordmarkSvg}
-  <text x="240" y="${brand.kind === "CONCEPT" ? 420 : 385}" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="${brand.subtitle.length > 22 ? 16 : 20}" font-weight="${brand.kind === "CONCEPT" ? 700 : 500}" fill="${brand.kind === "CONCEPT" ? brand.color : "rgba(0,0,0,0.5)"}" fill-opacity="${brand.kind === "CONCEPT" ? 0.85 : 1}" text-anchor="middle" letter-spacing="${brand.kind === "CONCEPT" ? 1.5 : 0.5}">${escXml(brand.subtitle.toUpperCase())}</text>
+  <text x="240" y="385" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="${brand.subtitle.length > 22 ? 16 : 20}" font-weight="500" fill="rgba(0,0,0,0.5)" text-anchor="middle" letter-spacing="0.5">${escXml(brand.subtitle)}</text>
 
   <!-- Right meta panel -->
   <rect x="480" y="0" width="720" height="630" fill="url(#metaBg)"/>
@@ -271,30 +271,25 @@ function buildGradientSvg(opts: { title: string; category: string }): string {
  * (cx, cy) 는 워드마크 중심점.
  */
 function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string {
-  // 개념 카드 (AEO/GEO/SEO) — 거대 그라데이션 + 고스트 + 언더바
+  // 개념 카드 (AEO/GEO/SEO) — 글자별 그라데이션, 다른 브랜드와 동급 사이즈
   if (brand.key === "aeo" || brand.key === "geo" || brand.key === "seo") {
-    const gradients: Record<"aeo" | "geo" | "seo", { from: string; to: string }> = {
-      aeo: { from: "#fbbf24", to: "#9a3412" },
-      geo: { from: "#34d399", to: "#0f766e" },
-      seo: { from: "#60a5fa", to: "#1e3a8a" },
+    const stops: Record<"aeo" | "geo" | "seo", [string, string, string]> = {
+      aeo: ["#f59e0b", "#d97706", "#b45309"],
+      geo: ["#10b981", "#059669", "#047857"],
+      seo: ["#3b82f6", "#2563eb", "#1d4ed8"],
     };
-    const g = gradients[brand.key];
-    const gradId = `concept-${brand.key}`;
-    const fontSize = 200;
-    return `
-      <defs>
-        <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="${g.from}"/>
-          <stop offset="100%" stop-color="${g.to}"/>
-        </linearGradient>
-      </defs>
-      <!-- 고스트 아웃라인 -->
-      <text x="${cx}" y="${cy + 20}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="none" stroke="${brand.color}" stroke-width="2" opacity="0.10" text-anchor="middle" letter-spacing="-8">${escXml(brand.wordmark)}</text>
-      <!-- 메인 그라데이션 -->
-      <text x="${cx}" y="${cy + 20}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="url(#${gradId})" text-anchor="middle" letter-spacing="-8">${escXml(brand.wordmark)}</text>
-      <!-- 언더바 -->
-      <rect x="${cx - 50}" y="${cy + 50}" width="100" height="6" rx="3" fill="url(#${gradId})"/>
-    `;
+    const colors = stops[brand.key];
+    const letters = brand.wordmark.split("");
+    const fontSize = 96;
+    const charW = fontSize * 0.62;
+    const totalW = charW * letters.length;
+    const startX = cx - totalW / 2;
+    return letters
+      .map(
+        (ch, i) =>
+          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="${colors[i] ?? colors[colors.length - 1]}" text-anchor="middle" letter-spacing="-3">${escXml(ch)}</text>`,
+      )
+      .join("");
   }
 
   // Bing — Microsoft 시그니처 블루→사이언 그라데이션
