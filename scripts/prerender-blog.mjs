@@ -3,8 +3,8 @@
  * so that search engine crawlers (especially Naver Yeti) can
  * index content without executing JavaScript.
  *
- * Runs after `vite build` and writes HTML files to dist/blog/{slug}/index.html.
- * Blog canonical/share URLs intentionally use the physical index.html URL so
+ * Runs after `vite build` and writes extensionless HTML files to dist/blog/{slug}.
+ * Blog canonical/share URLs intentionally use the physical extensionless URL so
  * crawlers receive the post HTML instead of Lovable's SPA fallback index.html.
  */
 
@@ -150,7 +150,7 @@ function resolveOgImage(post) {
 }
 
 function generateHtml(post, assets, related = []) {
-  const postUrl = `${SITE}/blog/${post.slug}/index.html`;
+  const postUrl = `${SITE}/blog/${post.slug}`;
   const title = `${post.title} – 서치튠OS 블로그`;
   const ogImage = resolveOgImage(post);
   const contentHtml = mdToHtml(post.content || "");
@@ -230,7 +230,7 @@ function generateHtml(post, assets, related = []) {
       ${related.length ? `<aside style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee">
         <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:0.75rem">관련 글</h2>
         <ul style="list-style:none;padding:0;margin:0">
-          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="/blog/${r.slug}/index.html" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
+          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="/blog/${r.slug}" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
         </ul>
       </aside>` : ""}
       <footer style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.85rem;color:#888">
@@ -281,14 +281,12 @@ async function main() {
   fs.mkdirSync(blogDir, { recursive: true });
 
   for (const post of allPosts) {
-    const postDir = path.join(blogDir, post.slug);
-    const postPath = path.join(postDir, "index.html");
+    const postPath = path.join(blogDir, post.slug);
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    if (fs.existsSync(postDir) && !fs.statSync(postDir).isDirectory()) {
-      fs.rmSync(postDir, { force: true });
+    if (fs.existsSync(postPath)) {
+      fs.rmSync(postPath, { recursive: true, force: true });
     }
-    fs.mkdirSync(postDir, { recursive: true });
     fs.writeFileSync(postPath, html, "utf-8");
   }
 
@@ -319,7 +317,7 @@ function generateBlogListHtml(posts, assets) {
   const desc = "SEO·AEO·GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
 
   const listItems = posts
-    .map(p => `<li><a href="/blog/${p.slug}/index.html">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
+    .map(p => `<li><a href="/blog/${p.slug}">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
     .join("\n      ");
 
   return `<!doctype html>
@@ -360,7 +358,7 @@ main().catch(console.error);
 // ── 8. RSS XML generator ───────────────────────────────────────────
 function generateRssXml(posts) {
   const items = posts.map(p => {
-    const url = `${SITE}/blog/${p.slug}/index.html`;
+    const url = `${SITE}/blog/${p.slug}`;
     const pubDate = new Date(p.date).toUTCString();
     return `    <item>
       <title><![CDATA[${p.title}]]></title>
@@ -401,7 +399,7 @@ function generateAboutHtml(latestPosts, assets) {
     isPartOf: { "@type": "WebSite", name: "서치튠OS", url: SITE },
   });
   const blogLinks = latestPosts
-    .map(p => `<li><a href="/blog/${p.slug}/index.html" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
+    .map(p => `<li><a href="/blog/${p.slug}" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
     .join("\n        ");
 
   return `<!doctype html>
@@ -462,7 +460,7 @@ function injectHomeLinks(latestPosts) {
   const linksHtml = `<section data-prerender-home-links style="display:none">
     <h2>최신 블로그</h2>
     <ul>
-      ${latestPosts.map(p => `<li><a href="/blog/${p.slug}/index.html">${esc(p.title)}</a></li>`).join("\n      ")}
+      ${latestPosts.map(p => `<li><a href="/blog/${p.slug}">${esc(p.title)}</a></li>`).join("\n      ")}
     </ul>
     <p><a href="/blog">블로그 전체 보기</a> · <a href="/about">서치튠OS 소개</a></p>
   </section>`;
