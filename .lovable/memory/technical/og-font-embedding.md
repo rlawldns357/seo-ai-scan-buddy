@@ -58,6 +58,11 @@ const png = resvg.render().asPng();
 - `og-svg` GET → 룰북 SVG 빌드 → `svgToPng()` → `Content-Type: image/png` 응답 (Cloudflare 24h 캐시)
 - 두 endpoint 모두 동일한 PNG 출력 보장
 
+## 카카오 URL 규칙 (2026-04-30 추가)
+- 블로그 canonical/share/og:url/sitemap/internal link는 `/blog/{slug}/` **trailing slash**로 통일
+- prerender 산출물은 `dist/blog/{slug}/index.html`만 허용
+- 확장자 없는 `dist/blog/{slug}` 파일은 Lovable hosting에서 `Content-Type: application/octet-stream`으로 나가 카카오 공유 디버거가 **Invalid URL**로 판정할 수 있으므로 금지
+
 ## 검증 (2026-04-30)
 - 발행글 57개 일괄 재생성 → DB 검사: `png_count=57, svg_count=0` ✓
 - 카카오톡 UA fetch: `Content-Type: image/png`, 200 OK ✓
