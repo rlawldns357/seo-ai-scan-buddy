@@ -271,6 +271,7 @@ function PostCard({ post }: { post: BlogPost }) {
         }}
       >
         <CardVisual slug={post.slug} title={post.title} category={post.category} />
+        <ShareIconButton slug={post.slug} title={post.title} />
       </div>
       <div className="flex flex-col flex-1 p-5">
         <div className="flex items-center gap-2">
