@@ -3,9 +3,10 @@
  * so that search engine crawlers (especially Naver Yeti) can
  * index content without executing JavaScript.
  *
- * Runs after `vite build` and writes static HTML files to dist/blog/{slug}.html.
- * Blog canonical/share URLs intentionally use the physical .html URL so
- * crawlers receive the post HTML instead of Lovable's SPA fallback index.html.
+ * Runs after `vite build` and writes static HTML files to
+ * dist/blog/{slug}/index.html, plus a compatibility dist/blog/{slug}.html copy.
+ * Canonical/share URLs stay extensionless so Kakao/Naver/debuggers receive the
+ * post HTML at the same URL users actually paste: /blog/{slug}.
  */
 
 import fs from "fs";
@@ -150,7 +151,7 @@ function resolveOgImage(post) {
 }
 
 function blogHtmlPath(slug) {
-  return `/blog/${slug}.html`;
+  return `/blog/${slug}`;
 }
 
 function blogHtmlUrl(slug) {
@@ -289,18 +290,18 @@ async function main() {
   fs.mkdirSync(blogDir, { recursive: true });
 
   for (const post of allPosts) {
-    // Write as /blog/{slug}.html so static hosting serves crawler-ready HTML
-    // before SPA fallback routing can return the main app shell.
+    // Write /blog/{slug}/index.html so extensionless share/debugger URLs receive
+    // crawler-ready HTML before SPA fallback can return the main app shell.
     const legacyPath = path.join(blogDir, post.slug);
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    // Remove previous extensionless file or directory to avoid routing conflicts.
+    // Remove a previous extensionless file, then create the directory-index URL.
     if (fs.existsSync(legacyPath) && fs.statSync(legacyPath).isFile()) {
       fs.rmSync(legacyPath, { force: true });
     }
-    if (fs.existsSync(legacyPath) && fs.statSync(legacyPath).isDirectory()) {
-      fs.rmSync(legacyPath, { recursive: true, force: true });
-    }
+    fs.mkdirSync(legacyPath, { recursive: true });
+    fs.writeFileSync(path.join(legacyPath, "index.html"), html, "utf-8");
+    // Keep /blog/{slug}.html as a compatibility copy for already-shared links.
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
   }
 

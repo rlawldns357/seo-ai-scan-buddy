@@ -25,8 +25,8 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-const blogPostPath = (slug: string) => `/blog/${slug}.html`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
+const blogPostPath = (slug: string) => `/blog/${slug}`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}`;
 
 function isNaverPost(slug: string) {
   return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");

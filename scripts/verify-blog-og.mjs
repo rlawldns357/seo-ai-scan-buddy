@@ -1,6 +1,6 @@
 /**
  * Post-build verification: ensures every prerendered blog HTML
- * contains correct OG metadata and that og:url matches its physical path.
+ * contains correct OG metadata and that og:url matches the public share path.
  *
  * Fails the build (exit 1) if any required tag is missing or mismatched.
  */
@@ -62,15 +62,35 @@ function verifyFile(filePath, expectedUrl) {
   return errors;
 }
 
+function collectBlogFiles() {
+  const entries = fs.readdirSync(BLOG_DIR, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    if (entry.isDirectory()) {
+      const indexPath = path.join(BLOG_DIR, entry.name, "index.html");
+      if (fs.existsSync(indexPath)) {
+        files.push({ slug: entry.name, label: `/blog/${entry.name}`, path: indexPath });
+      }
+      continue;
+    }
+
+    if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
+      const slug = entry.name.replace(/\.html$/, "");
+      files.push({ slug, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name), compatibility: true });
+    }
+  }
+
+  return files;
+}
+
 function main() {
   if (!fs.existsSync(BLOG_DIR)) {
     console.warn("[verify-og] dist/blog not found, skipping");
     return;
   }
 
-  const files = fs
-    .readdirSync(BLOG_DIR)
-    .filter((f) => f.endsWith(".html") && f !== "index.html");
+  const files = collectBlogFiles();
 
   if (files.length === 0) {
     console.warn("[verify-og] No blog HTML files to verify");
@@ -78,13 +98,16 @@ function main() {
   }
 
   let failed = 0;
+  const canonicalSlugs = new Set(files.filter((f) => !f.compatibility).map((f) => f.slug));
   for (const file of files) {
-    const slug = file.replace(/\.html$/, "");
-    const expectedUrl = `${SITE}/blog/${slug}.html`;
-    const errors = verifyFile(path.join(BLOG_DIR, file), expectedUrl);
+    const expectedUrl = `${SITE}/blog/${file.slug}`;
+    const errors = verifyFile(file.path, expectedUrl);
+    if (file.compatibility && !canonicalSlugs.has(file.slug)) {
+      errors.push(`missing canonical extensionless file: dist/blog/${file.slug}/index.html`);
+    }
     if (errors.length) {
       failed++;
-      console.error(`[verify-og] ❌ /blog/${file}`);
+      console.error(`[verify-og] ❌ ${file.label}`);
       for (const e of errors) console.error(`            - ${e}`);
     }
   }
