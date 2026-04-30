@@ -87,20 +87,69 @@ function escapeHtml(s: string) {
     .replace(/'/g, "&#39;");
 }
 
-/** Minimal markdown→HTML supporting headings, ul/ol, tables, code blocks, blockquotes, hr */
+/** Minimal markdown→HTML supporting headings, ul/ol, tables, code blocks, blockquotes, hr, GitHub checkboxes, and themed callouts (TL;DR, CTA) */
 function renderMarkdown(md: string) {
   const lines = md.split("\n");
   const html: string[] = [];
   let inUl = false;
   let inOl = false;
+  let inChecklist = false;
   let inCode = false;
   let codeBuf: string[] = [];
   let codeLang = "";
   let tableBuf: string[] = [];
+  let blockquoteBuf: string[] = [];
 
   const closeLists = () => {
     if (inUl) { html.push("</ul>"); inUl = false; }
     if (inOl) { html.push("</ol>"); inOl = false; }
+    if (inChecklist) { html.push("</ul>"); inChecklist = false; }
+  };
+
+  const flushBlockquote = () => {
+    if (blockquoteBuf.length === 0) return;
+    const joined = blockquoteBuf.join("\n");
+    // Detect callout type
+    const isTldr = /^\s*\*\*TL;?DR\*\*/i.test(blockquoteBuf[0]) || /TL;?DR/i.test(blockquoteBuf[0]);
+    const isCta = /💡/.test(joined) && /\]\(\/\)/.test(joined);
+    // Render inner: each line is a separate paragraph or bullet
+    const inner = blockquoteBuf
+      .map((l) => {
+        if (l.trim() === "") return "";
+        const bullet = l.match(/^\s*-\s+(.*)$/);
+        if (bullet) return `<li>${inline(bullet[1])}</li>`;
+        return `<p>${inline(l)}</p>`;
+      })
+      .filter(Boolean);
+    const hasBullets = inner.some((s) => s.startsWith("<li>"));
+    const innerHtml = hasBullets
+      ? inner.map((s) => (s.startsWith("<li>") ? s : s)).join("")
+      : inner.join("");
+    const wrappedInner = hasBullets
+      ? innerHtml.replace(/(<li>.*?<\/li>)+/g, (m) => `<ul class="list-disc pl-5 space-y-1 my-1">${m}</ul>`)
+      : innerHtml;
+
+    if (isTldr) {
+      html.push(
+        `<aside class="my-8 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-5 shadow-sm" role="note" aria-label="TL;DR 핵심 요약">
+          <div class="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-wider text-primary">
+            <span aria-hidden="true">📌</span> TL;DR · 3줄 요약
+          </div>
+          <div class="text-foreground/90 leading-relaxed [&>p]:my-1 [&>ul]:my-1">${wrappedInner}</div>
+        </aside>`,
+      );
+    } else if (isCta) {
+      html.push(
+        `<aside class="my-10 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-accent/5 p-6 shadow-md" role="complementary">
+          <div class="text-foreground leading-relaxed [&>p]:my-2 [&_a]:text-primary [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-4">${wrappedInner}</div>
+        </aside>`,
+      );
+    } else {
+      html.push(
+        `<blockquote class="border-l-4 border-primary/40 pl-5 my-6 text-muted-foreground [&>p]:my-1 [&>ul]:my-1">${wrappedInner}</blockquote>`,
+      );
+    }
+    blockquoteBuf = [];
   };
 
   const flushTable = () => {
