@@ -216,11 +216,14 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   <!-- 미세한 비네팅 -->
   <rect width="1200" height="630" fill="url(#vignette)"/>
 
+  <!-- 위쪽 작은 메타: 회사 · 카테고리 (eyebrow) -->
+  <text x="${cx}" y="180" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${metaFontSize}" font-weight="700" fill="rgba(0,0,0,0.42)" text-anchor="middle" letter-spacing="4">${escXml(meta)}</text>
+
   <!-- 워드마크 (중앙) -->
   ${wordmarkSvg}
 
-  <!-- 부제: 회사 · 카테고리 -->
-  <text x="${cx}" y="395" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${subFontSize}" font-weight="700" fill="rgba(0,0,0,0.45)" text-anchor="middle" letter-spacing="3">${escXml(subtitle)}</text>
+  <!-- 아래 후킹 부제: 제목 정갈 요약 (한 줄, 굵직, 진한 회색) -->
+  <text x="${cx}" y="430" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="600" fill="rgba(0,0,0,0.72)" text-anchor="middle" letter-spacing="-0.5">${escXml(tidyTitle)}</text>
 
   <!-- 우측 하단 워터마크 -->
   <text x="1140" y="595" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="14" font-weight="500" fill="rgba(0,0,0,0.32)" text-anchor="end" letter-spacing="1">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
