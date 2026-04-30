@@ -244,6 +244,7 @@ function HeroPost({ post }: { post: BlogPost }) {
         <div className="mt-3 md:mt-4 flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDate(post.date)}</span>
           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{post.readTime} 읽기</span>
+          <span className="ml-auto"><ShareIconButton slug={post.slug} title={post.title} /></span>
         </div>
         <div className="mt-4 md:mt-5">
           <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all">
