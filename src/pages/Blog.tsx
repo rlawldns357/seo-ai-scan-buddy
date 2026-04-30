@@ -29,6 +29,61 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
   const brand = BRAND_STYLES[key];
   const isLg = size === "lg";
 
+  // ─── 개념 카드 (AEO/GEO/SEO) — 임팩트 강화: 거대 그라데이션 + 고스트 백그라운드 ───
+  if (key === "aeo" || key === "geo" || key === "seo") {
+    const conceptGradient: Record<"aeo" | "geo" | "seo", string> = {
+      aeo: "linear-gradient(135deg, #fbbf24 0%, #9a3412 100%)",
+      geo: "linear-gradient(135deg, #34d399 0%, #0f766e 100%)",
+      seo: "linear-gradient(135deg, #60a5fa 0%, #1e3a8a 100%)",
+    };
+    return (
+      <div className="relative flex flex-col items-center gap-2">
+        {/* 고스트 아웃라인 백그라운드 */}
+        <span
+          aria-hidden
+          className={`${isLg ? "text-[10rem]" : "text-[7rem]"} font-black tracking-tighter leading-none absolute inset-0 flex items-center justify-center pointer-events-none select-none`}
+          style={{
+            WebkitTextStroke: "2px currentColor",
+            color: brand.color,
+            opacity: 0.08,
+            transform: "translateY(-2%)",
+          }}
+        >
+          {brand.wordmark}
+        </span>
+        {/* 메인 그라데이션 워드마크 */}
+        <span
+          className={`${isLg ? "text-7xl md:text-8xl" : "text-5xl md:text-6xl"} font-black tracking-tighter leading-none relative z-10`}
+          style={{
+            fontFamily: brand.fontFamily,
+            backgroundImage: conceptGradient[key],
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            letterSpacing: "-0.06em",
+          }}
+        >
+          {brand.wordmark}
+        </span>
+        {/* 컬러 언더바 */}
+        <span
+          aria-hidden
+          className="block h-1 rounded-full relative z-10"
+          style={{
+            width: isLg ? 72 : 56,
+            background: conceptGradient[key],
+          }}
+        />
+        <span
+          className="text-[11px] md:text-xs font-semibold tracking-wider uppercase relative z-10"
+          style={{ color: brand.color, opacity: 0.75 }}
+        >
+          {brand.subtitle}
+        </span>
+      </div>
+    );
+  }
+
   // Google 멀티컬러
   if (key === "google" || key === "google-ai-overview") {
     const letters = "Google".split("");
@@ -42,6 +97,31 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
           {letters.map((ch, i) => (
             <span key={i} style={{ color: colors[i] }}>{ch}</span>
           ))}
+        </span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
+          {brand.subtitle}
+        </span>
+      </div>
+    );
+  }
+
+  // Bing — Microsoft 시그니처 블루→사이언 그라데이션
+  if (key === "bing-copilot") {
+    return (
+      <div className="flex flex-col items-center gap-1.5">
+        <span
+          className={isLg ? "text-5xl tracking-tight" : "text-3xl tracking-tight"}
+          style={{
+            fontFamily: brand.fontFamily,
+            fontWeight: brand.fontWeight,
+            backgroundImage: "linear-gradient(135deg, #0078D4 0%, #00B7C3 100%)",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            letterSpacing: "-0.04em",
+          }}
+        >
+          {brand.wordmark}
         </span>
         <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
           {brand.subtitle}
