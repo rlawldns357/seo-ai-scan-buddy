@@ -3,9 +3,9 @@
  * so that search engine crawlers (especially Naver Yeti) can
  * index content without executing JavaScript.
  *
- * Runs after `vite build` and writes extensionless files to dist/blog/{slug}
- * because Lovable hosting's SPA fallback does not serve nested index.html
- * for social crawler requests to /blog/{slug}.
+ * Runs after `vite build` and writes HTML files to dist/blog/{slug}/index.html.
+ * Blog canonical/share URLs intentionally include a trailing slash so crawlers
+ * receive `text/html` instead of an extensionless file served as octet-stream.
  */
 
 import fs from "fs";
@@ -110,7 +110,12 @@ function mdToHtml(md) {
 }
 
 function esc(s) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function inlineF(s) {
@@ -145,7 +150,7 @@ function resolveOgImage(post) {
 }
 
 function generateHtml(post, assets, related = []) {
-  const postUrl = `${SITE}/blog/${post.slug}`;
+  const postUrl = `${SITE}/blog/${post.slug}/`;
   const title = `${post.title} – 서치튠OS 블로그`;
   const ogImage = resolveOgImage(post);
   const contentHtml = mdToHtml(post.content || "");
@@ -225,7 +230,7 @@ function generateHtml(post, assets, related = []) {
       ${related.length ? `<aside style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee">
         <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:0.75rem">관련 글</h2>
         <ul style="list-style:none;padding:0;margin:0">
-          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="/blog/${r.slug}" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
+          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="/blog/${r.slug}/" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
         </ul>
       </aside>` : ""}
       <footer style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.85rem;color:#888">
