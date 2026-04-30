@@ -546,8 +546,20 @@ type FaqShort = { q: string; a: string };
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
+
+  // Canonical URL form is /blog/{slug}/ (trailing slash). If the user landed on
+  // /blog/{slug}, /blog/{slug}.html, or /blog/{slug}/index.html, normalise the
+  // address bar so any subsequent copy-paste yields a Kakao/Facebook-friendly URL.
+  useEffect(() => {
+    if (!slug) return;
+    const canonical = `/blog/${slug}/`;
+    if (location.pathname !== canonical) {
+      navigate(canonical + location.search + location.hash, { replace: true });
+    }
+  }, [slug, location.pathname, location.search, location.hash, navigate]);
 
   // Fetch DB posts for nav
   useEffect(() => {
