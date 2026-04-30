@@ -211,7 +211,7 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   // 세로 균등 3분할: 메타(y=210) → 워드마크(cy=315) → 부제(y=420)
   // 위 여백 210 / 아래 여백 210, 워드마크 정중앙
   const cx = 600;
-  const cy = 322;
+  const cy = 338; // SEO 워드마크 살짝 더 아래로 (322 → 338) — 시각적 정중앙
   const wordmarkSvg = renderBrandWordmark(brand, cx, cy);
 
   // eyebrow 메타: 회사 · 카테고리
@@ -225,7 +225,7 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
     ? (titleLines.some((line) => line.length > 16) ? 36 : 40)
     : (tidyTitle.length > 14 ? 44 : 48);
   const lineGap = titleFontSize + 8;
-  const titleStartY = titleLines.length > 1 ? 432 : 446;
+  const titleStartY = titleLines.length > 1 ? 444 : 458;
   const titleSvg = titleLines
     .map((line, i) => `<text x="${cx}" y="${titleStartY + i * lineGap}" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="800" fill="rgba(0,0,0,0.86)" text-anchor="middle" letter-spacing="-1">${escXml(line)}</text>`)
     .join("\n  ");
@@ -239,18 +239,26 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
       <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0"/>
       <feComposite operator="in" in2="SourceGraphic"/>
     </filter>
-    <!-- 모서리 비네팅 (아주 살짝) -->
-    <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
-      <stop offset="60%" stop-color="${brand.panelBg}" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.05"/>
+    <!-- 중앙 라디얼 글로우 (카테고리 컬러, 깊이감) -->
+    <radialGradient id="centerGlow" cx="50%" cy="52%" r="42%">
+      <stop offset="0%" stop-color="${accent}" stop-opacity="0.12"/>
+      <stop offset="60%" stop-color="${accent}" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
+    </radialGradient>
+    <!-- 모서리 비네팅 (배경에 무게감) -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="78%">
+      <stop offset="55%" stop-color="${brand.panelBg}" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.07"/>
     </radialGradient>
   </defs>
 
   <!-- 단일 패널 배경 (브랜드별 크림/오프화이트) -->
   <rect width="1200" height="630" fill="${brand.panelBg}"/>
+  <!-- 중앙 라디얼 글로우 (워드마크 뒤 은은한 후광) -->
+  <rect width="1200" height="630" fill="url(#centerGlow)"/>
   <!-- 그레인 노이즈 오버레이 -->
-  <rect width="1200" height="630" fill="${brand.panelBg}" filter="url(#grain)"/>
-  <!-- 미세한 비네팅 -->
+  <rect width="1200" height="630" fill="${brand.panelBg}" filter="url(#grain)" opacity="0.6"/>
+  <!-- 모서리 비네팅 -->
   <rect width="1200" height="630" fill="url(#vignette)"/>
 
   <!-- 좌우 액센트 바 (카테고리 컬러, 중앙 정렬, h=140) -->
