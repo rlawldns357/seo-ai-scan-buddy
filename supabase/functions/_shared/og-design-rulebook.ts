@@ -225,7 +225,8 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
     ? (titleLines.some((line) => line.length > 16) ? 36 : 40)
     : (tidyTitle.length > 14 ? 44 : 48);
   const lineGap = titleFontSize + 8;
-  const titleStartY = titleLines.length > 1 ? 444 : 458;
+  // 부제: 워드마크 바로 아래로 더 밀착 (444→416 / 458→430)
+  const titleStartY = titleLines.length > 1 ? 416 : 430;
   const titleSvg = titleLines
     .map((line, i) => `<text x="${cx}" y="${titleStartY + i * lineGap}" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="800" fill="rgba(0,0,0,0.86)" text-anchor="middle" letter-spacing="-1">${escXml(line)}</text>`)
     .join("\n  ");
@@ -289,8 +290,8 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   <!-- 부제: 제목 정갈 요약 (워드마크 바로 아래) -->
   ${titleSvg}
 
-  <!-- 중앙 하단 워터마크 (부제 바로 아래로 끌어올림 — 하단 여백 축소) -->
-  <text x="${cx}" y="510" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="13" font-weight="700" fill="rgba(0,0,0,0.32)" text-anchor="middle" letter-spacing="3">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
+  <!-- 중앙 하단 워터마크 (부제와 충분히 떨어뜨려 호흡) -->
+  <text x="${cx}" y="548" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="13" font-weight="700" fill="rgba(0,0,0,0.32)" text-anchor="middle" letter-spacing="3">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
 </svg>`;
 }
 
