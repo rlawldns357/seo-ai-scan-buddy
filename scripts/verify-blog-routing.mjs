@@ -1,13 +1,13 @@
 /**
  * Routing compatibility test:
  * For every blog slug, ensures that both URL shapes
- *   - /blog/{slug}        (served via dist/blog/{slug}/index.html)
+ *   - /blog/{slug}/index.html (canonical Kakao-safe URL)
  *   - /blog/{slug}.html   (legacy / explicit extension)
  * resolve to the SAME canonical and og:url.
  *
  * CRITICAL: We do NOT write an extensionless physical file at dist/blog/{slug}
- * because hosts often serve such files without Content-Type: text/html, which
- * causes browsers to DOWNLOAD the file instead of rendering it.
+ * because Lovable hosting may serve some of those as application/octet-stream,
+ * which Kakao rejects as Invalid URL.
  *
  * Fails the build (exit 1) on any mismatch.
  */
@@ -32,7 +32,7 @@ function listSlugs() {
   if (!fs.existsSync(BLOG_DIR)) return [];
   const slugs = new Set();
   for (const entry of fs.readdirSync(BLOG_DIR, { withFileTypes: true })) {
-    if (entry.isFile() && !entry.name.includes(".")) {
+    if (entry.isDirectory() && fs.existsSync(path.join(BLOG_DIR, entry.name, "index.html"))) {
       slugs.add(entry.name);
     } else if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
       slugs.add(entry.name.replace(/\.html$/, ""));
