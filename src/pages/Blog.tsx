@@ -106,7 +106,7 @@ function SearchTuneBadge({ category, size = "md" }: { category: string; size?: "
 
 /** 카드 좌측에 표시할 비주얼: 브랜드가 명확하면 워드마크, 아니면 SearchTune 폴백 */
 function CardVisual({ slug, title, category, size = "md" }: { slug: string; title?: string; category?: string; size?: "md" | "lg" }) {
-  if (hasExplicitBrand(slug, title)) {
+  if (hasExplicitBrand(slug, title, category)) {
     return <BrandWordmark slug={slug} title={title} category={category} size={size} />;
   }
   return <SearchTuneBadge category={category || "SEO"} size={size} />;
@@ -120,7 +120,7 @@ function formatDate(d: string) {
 function HeroPost({ post }: { post: BlogPost }) {
   const brandKey = detectBrand(post.slug, post.title, post.category);
   const brand = BRAND_STYLES[brandKey];
-  const explicit = hasExplicitBrand(post.slug, post.title);
+  const explicit = hasExplicitBrand(post.slug, post.title, post.category);
 
   return (
     <article className="group relative grid md:grid-cols-2 gap-4 md:gap-6 rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
@@ -170,7 +170,7 @@ function HeroPost({ post }: { post: BlogPost }) {
 function PostCard({ post }: { post: BlogPost }) {
   const brandKey = detectBrand(post.slug, post.title, post.category);
   const brand = BRAND_STYLES[brandKey];
-  const explicit = hasExplicitBrand(post.slug, post.title);
+  const explicit = hasExplicitBrand(post.slug, post.title, post.category);
 
   return (
     <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
