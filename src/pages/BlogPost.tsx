@@ -87,20 +87,69 @@ function escapeHtml(s: string) {
     .replace(/'/g, "&#39;");
 }
 
-/** Minimal markdown→HTML supporting headings, ul/ol, tables, code blocks, blockquotes, hr */
+/** Minimal markdown→HTML supporting headings, ul/ol, tables, code blocks, blockquotes, hr, GitHub checkboxes, and themed callouts (TL;DR, CTA) */
 function renderMarkdown(md: string) {
   const lines = md.split("\n");
   const html: string[] = [];
   let inUl = false;
   let inOl = false;
+  let inChecklist = false;
   let inCode = false;
   let codeBuf: string[] = [];
   let codeLang = "";
   let tableBuf: string[] = [];
+  let blockquoteBuf: string[] = [];
 
   const closeLists = () => {
     if (inUl) { html.push("</ul>"); inUl = false; }
     if (inOl) { html.push("</ol>"); inOl = false; }
+    if (inChecklist) { html.push("</ul>"); inChecklist = false; }
+  };
+
+  const flushBlockquote = () => {
+    if (blockquoteBuf.length === 0) return;
+    const joined = blockquoteBuf.join("\n");
+    // Detect callout type
+    const isTldr = /^\s*\*\*TL;?DR\*\*/i.test(blockquoteBuf[0]) || /TL;?DR/i.test(blockquoteBuf[0]);
+    const isCta = /💡/.test(joined) && /\]\(\/\)/.test(joined);
+    // Render inner: each line is a separate paragraph or bullet
+    const inner = blockquoteBuf
+      .map((l) => {
+        if (l.trim() === "") return "";
+        const bullet = l.match(/^\s*-\s+(.*)$/);
+        if (bullet) return `<li>${inline(bullet[1])}</li>`;
+        return `<p>${inline(l)}</p>`;
+      })
+      .filter(Boolean);
+    const hasBullets = inner.some((s) => s.startsWith("<li>"));
+    const innerHtml = hasBullets
+      ? inner.map((s) => (s.startsWith("<li>") ? s : s)).join("")
+      : inner.join("");
+    const wrappedInner = hasBullets
+      ? innerHtml.replace(/(<li>.*?<\/li>)+/g, (m) => `<ul class="list-disc pl-5 space-y-1 my-1">${m}</ul>`)
+      : innerHtml;
+
+    if (isTldr) {
+      html.push(
+        `<aside class="my-8 rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-primary/[0.03] to-transparent p-5 shadow-sm" role="note" aria-label="TL;DR 핵심 요약">
+          <div class="flex items-center gap-2 mb-3 text-xs font-bold uppercase tracking-wider text-primary">
+            <span aria-hidden="true">📌</span> TL;DR · 3줄 요약
+          </div>
+          <div class="text-foreground/90 leading-relaxed [&>p]:my-1 [&>ul]:my-1">${wrappedInner}</div>
+        </aside>`,
+      );
+    } else if (isCta) {
+      html.push(
+        `<aside class="my-10 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-primary/5 to-accent/5 p-6 shadow-md" role="complementary">
+          <div class="text-foreground leading-relaxed [&>p]:my-2 [&_a]:text-primary [&_a]:font-semibold [&_a]:underline [&_a]:underline-offset-4">${wrappedInner}</div>
+        </aside>`,
+      );
+    } else {
+      html.push(
+        `<blockquote class="border-l-4 border-primary/40 pl-5 my-6 text-muted-foreground [&>p]:my-1 [&>ul]:my-1">${wrappedInner}</blockquote>`,
+      );
+    }
+    blockquoteBuf = [];
   };
 
   const flushTable = () => {
@@ -120,13 +169,19 @@ function renderMarkdown(md: string) {
     tableBuf = [];
   };
 
+  // Wrap closeLists to also flush blockquote when leaving block context
+  const closeBlocks = () => {
+    closeLists();
+    flushBlockquote();
+  };
+
   for (const raw of lines) {
     const line = raw.trimEnd();
 
     // code fence
     if (/^```/.test(line.trim())) {
       if (!inCode) {
-        closeLists();
+        closeBlocks();
         flushTable();
         inCode = true;
         codeLang = line.trim().slice(3).trim();
@@ -145,9 +200,19 @@ function renderMarkdown(md: string) {
       continue;
     }
 
+    // blockquote line — accumulate (supports multi-line callouts)
+    if (line.startsWith("> ") || line.trim() === ">") {
+      closeLists();
+      flushTable();
+      blockquoteBuf.push(line.replace(/^>\s?/, ""));
+      continue;
+    } else if (blockquoteBuf.length > 0) {
+      flushBlockquote();
+    }
+
     // table row
     if (line.startsWith("|") && line.endsWith("|")) {
-      closeLists();
+      closeBlocks();
       tableBuf.push(line);
       continue;
     } else if (tableBuf.length > 0) {
@@ -155,41 +220,41 @@ function renderMarkdown(md: string) {
     }
 
     if (line.trim() === "") {
-      closeLists();
+      closeBlocks();
       continue;
     }
 
     // horizontal rule
     if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
-      closeLists();
+      closeBlocks();
       html.push('<hr class="my-8 border-border" />');
       continue;
     }
 
     if (line.startsWith("#### ")) {
-      closeLists();
+      closeBlocks();
       html.push(`<h4 class="text-base font-bold text-foreground mt-6 mb-2">${inline(line.slice(5))}</h4>`);
       continue;
     }
     if (line.startsWith("### ")) {
-      closeLists();
+      closeBlocks();
       html.push(`<h3 class="text-lg font-bold text-foreground mt-8 mb-3">${inline(line.slice(4))}</h3>`);
       continue;
     }
     if (line.startsWith("## ")) {
-      closeLists();
-      html.push(`<h2 class="text-xl font-bold text-foreground mt-10 mb-4">${inline(line.slice(3))}</h2>`);
+      closeBlocks();
+      // Detect "✅ 실행 체크리스트" headings for accent color
+      const heading = line.slice(3);
+      const isChecklistH = /✅/.test(heading);
+      const cls = isChecklistH
+        ? "text-xl font-bold text-primary mt-12 mb-4 flex items-center gap-2"
+        : "text-xl font-bold text-foreground mt-10 mb-4";
+      html.push(`<h2 class="${cls}">${inline(heading)}</h2>`);
       continue;
     }
     if (line.startsWith("# ")) {
-      closeLists();
+      closeBlocks();
       html.push(`<h2 class="text-2xl font-bold text-foreground mt-10 mb-4">${inline(line.slice(2))}</h2>`);
-      continue;
-    }
-
-    if (line.startsWith("> ")) {
-      closeLists();
-      html.push(`<blockquote class="border-l-4 border-primary/30 pl-4 my-6 text-muted-foreground italic">${inline(line.slice(2))}</blockquote>`);
       continue;
     }
 
@@ -197,20 +262,39 @@ function renderMarkdown(md: string) {
     const olMatch = line.match(/^\s*(\d+)[.)]\s+(.*)$/);
     if (olMatch) {
       if (inUl) { html.push("</ul>"); inUl = false; }
+      if (inChecklist) { html.push("</ul>"); inChecklist = false; }
       if (!inOl) { html.push('<ol class="list-decimal pl-6 space-y-1.5 my-4 text-muted-foreground">'); inOl = true; }
       html.push(`<li>${inline(olMatch[2])}</li>`);
+      continue;
+    }
+
+    // GitHub-style task list: - [ ] item / - [x] item
+    const taskMatch = line.match(/^\s*[-*+]\s+\[([ xX])\]\s+(.*)$/);
+    if (taskMatch) {
+      if (inUl) { html.push("</ul>"); inUl = false; }
+      if (inOl) { html.push("</ol>"); inOl = false; }
+      if (!inChecklist) {
+        html.push('<ul class="list-none pl-0 space-y-2 my-5 rounded-xl border border-border/60 bg-muted/20 p-4">');
+        inChecklist = true;
+      }
+      const checked = taskMatch[1].toLowerCase() === "x";
+      const box = checked
+        ? '<span class="inline-flex items-center justify-center w-5 h-5 rounded-md bg-primary text-primary-foreground text-xs flex-shrink-0 mt-0.5" aria-hidden="true">✓</span>'
+        : '<span class="inline-flex items-center justify-center w-5 h-5 rounded-md border-2 border-primary/40 bg-background flex-shrink-0 mt-0.5" aria-hidden="true"></span>';
+      html.push(`<li class="flex items-start gap-3 text-foreground/90 leading-relaxed">${box}<span>${inline(taskMatch[2])}</span></li>`);
       continue;
     }
 
     // unordered list
     if (/^\s*[-*+]\s+/.test(line)) {
       if (inOl) { html.push("</ol>"); inOl = false; }
+      if (inChecklist) { html.push("</ul>"); inChecklist = false; }
       if (!inUl) { html.push('<ul class="list-disc pl-6 space-y-1.5 my-4 text-muted-foreground">'); inUl = true; }
       html.push(`<li>${inline(line.replace(/^\s*[-*+]\s+/, ""))}</li>`);
       continue;
     }
 
-    closeLists();
+    closeBlocks();
     html.push(`<p class="text-muted-foreground leading-relaxed my-4">${inline(line)}</p>`);
   }
 
@@ -218,6 +302,7 @@ function renderMarkdown(md: string) {
     html.push(`<pre class="my-6 p-4 rounded-lg bg-muted/30 border border-border overflow-x-auto text-sm font-mono text-foreground"><code>${escapeHtml(codeBuf.join("\n"))}</code></pre>`);
   }
   flushTable();
+  flushBlockquote();
   closeLists();
   return html.join("\n");
 }
@@ -554,9 +639,12 @@ export default function BlogPost() {
 
   const postUrl = `https://searchtuneos.com/blog/${post.slug}`;
   const postTitle = `${post.title} – 서치튠OS 블로그`;
+  // OG image fallback chain: explicit og_image → custom thumbnail → on-demand brand SVG
+  // The SVG endpoint always returns a valid 1200x630 brand-consistent image, so previews never break.
+  const ogSvgFallback = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/og-svg?slug=${encodeURIComponent(post.slug)}`;
   const ogImage = post.ogImage
-    || (post.thumbnail !== "/placeholder.svg" ? post.thumbnail : undefined)
-    || "https://searchtuneos.com/og-image.png";
+    || (post.thumbnail && post.thumbnail !== "/placeholder.svg" ? post.thumbnail : undefined)
+    || ogSvgFallback;
 
   return (
     <div className="min-h-screen bg-background">

@@ -352,11 +352,14 @@ ${recentTitleList}
 ${freshContext ? `\n[참고 자료 — 사실성 강화용 (직접 인용 시 출처 명기 필수, 표절 금지)]\n${freshContext}\n` : ""}
 
 [필수 콘텐츠 구조 — 모두 1개 이상 포함]
-1. **표(table)**: 비교/체크리스트/단계별 정리 중 1개 이상을 마크다운 표(| 헤더 | ... | + |---|---|)로 작성
-2. **숫자 리스트**: "1. ", "2. " 형태의 순서 있는 리스트 1개 이상
-3. **불릿 리스트**: "- " 형태의 리스트 2개 이상
-4. **코드블록 또는 인용**: 실제 예시(HTML/JSON-LD/robots.txt/스키마/명령어) \`\`\`언어 ... \`\`\` 1개 이상, 또는 권위 있는 출처 인용 "> "
-5. **H2(##) 4개 이상, H3(###) 적절히 활용** — 위계 명확히
+1. **TL;DR 박스 (글 시작 직후)**: 도입 1문단 다음에 반드시 \`> **TL;DR**\\n>\\n> - 핵심 포인트 1\\n> - 핵심 포인트 2\\n> - 핵심 포인트 3\` 형식의 인용 박스로 3줄 핵심 요약. 글을 읽지 않아도 핵심을 잡게 하는 것이 목적.
+2. **표(table)**: 비교/체크리스트/단계별 정리 중 1개 이상을 마크다운 표(| 헤더 | ... | + |---|---|)로 작성
+3. **숫자 리스트**: "1. ", "2. " 형태의 순서 있는 리스트 1개 이상 (단계별 가이드 권장)
+4. **불릿 리스트**: "- " 형태의 리스트 2개 이상
+5. **코드블록 또는 인용**: 실제 예시(HTML/JSON-LD/robots.txt/스키마/명령어) \`\`\`언어 ... \`\`\` 1개 이상, 또는 권위 있는 출처 인용 "> "
+6. **H2(##) 4개 이상, H3(###) 적절히 활용** — 위계 명확히
+7. **본문 중간 CTA (자연 삽입)**: 본문 약 60~70% 지점에 자연스러운 한 문단으로 SearchTune OS 무료 진단 안내. 반드시 \`> 💡 **잠깐, 우리 사이트도 점검해 볼까요?**\`로 시작하는 인용 박스 형태로, 마지막에 \`👉 [무료 SEO·AEO·GEO 진단 받기](/)\` 링크 포함. 강매 톤 절대 금지, 자연스러운 흐름 유지.
+8. **마무리 체크리스트 (글 끝)**: 결론 단락 직전 \`## ✅ 실행 체크리스트\` H2 + 5~7개 항목 \`- [ ] 항목명\` GitHub 스타일 체크박스 리스트. 독자가 바로 적용할 수 있게 구체적으로.
 
 [네이버 C-Rank · D.I.A. 알고리즘 대응 — 신빙성 핵심]
 - **출처(Source) 신뢰성**: 단정적 주장에는 출처 또는 근거(공식 문서/통계/실측 사례)를 본문에 명시. 추측·"~라고 한다" 표현 지양.
@@ -420,6 +423,22 @@ ${naverRulebook}
       if (!hasCode && !hasQuote) issues.push("코드블록(```) 또는 인용(>) 중 최소 1개가 필요합니다.");
       const hasInternalLink = /\]\(\/(blog|about)?[)#?]/.test(content) || /\]\(\/[^)]*\)/.test(content);
       if (!hasInternalLink) issues.push("내부 링크([텍스트](/...)) 1개 이상 필요.");
+
+      // === (NEW) 시각 컴포넌트 룰북 검증 ===
+      // 1) TL;DR 박스 (글 시작 부근)
+      const hasTldr = /TL;?DR/i.test(content.slice(0, 1000));
+      if (!hasTldr) issues.push("TL;DR 인용 박스(글 시작 부근)가 없습니다. `> **TL;DR**` 형식 필요.");
+
+      // 2) 본문 중간 CTA (자연스러운 인용 박스 + 무료 진단 링크)
+      const hasMidCta =
+        (/💡/.test(content) && /\]\(\/\)/.test(content)) ||
+        (/잠깐[^\n]{0,30}점검/.test(content) && /\]\(\/\)/.test(content));
+      if (!hasMidCta) issues.push("본문 중간 CTA 박스(`> 💡 **잠깐, 우리 사이트도 점검해 볼까요?**` + `[무료 진단](/)`)가 없습니다.");
+
+      // 3) 마무리 체크리스트 (GitHub 체크박스)
+      const checkboxCount = (content.match(/^\s*-\s*\[\s\]\s+/gm) || []).length;
+      if (checkboxCount < 4) issues.push(`마무리 체크리스트 항목이 부족합니다(${checkboxCount}개). \`- [ ] 항목\` 5~7개 필요.`);
+
       if (!faqs || faqs.length < 5) issues.push(`본문 FAQ가 부족합니다(${faqs?.length || 0}개). 최소 5개 필요.`);
       if (!faqsShort || faqsShort.length < 3) issues.push(`아코디언용 faqs_short가 부족합니다(${faqsShort?.length || 0}개). 최소 3개 필요.`);
       // 톤 분리 검증: faqs_short 답변 평균 길이가 본문 faqs보다 짧아야 함
@@ -483,7 +502,7 @@ ${naverRulebook}
                       },
                       excerpt: { type: "string", description: "2-3 sentence summary in Korean, max 160 chars" },
                       readTime: { type: "string", enum: ["3분", "4분", "5분"], description: "Read time" },
-                      content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section. MUST include table, numbered list, code/quote, internal link." },
+                      content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section. MUST include ALL of these visual components: (1) `> **TL;DR**` blockquote with 3 bullets right after intro, (2) markdown table, (3) numbered list, (4) code block or quote, (5) internal link, (6) mid-content CTA blockquote `> 💡 **잠깐, 우리 사이트도 점검해 볼까요?**` with `[무료 SEO·AEO·GEO 진단 받기](/)` link at ~60-70% position, (7) `## ✅ 실행 체크리스트` H2 with 5-7 `- [ ] item` GitHub-style checkboxes before conclusion." },
                       faqs: {
                         type: "array",
                         description: "5-6 expert-tone FAQs for body content. Formal voice, 3-5 sentences each, MUST cite data/stats/sources. NO CTA phrases.",
