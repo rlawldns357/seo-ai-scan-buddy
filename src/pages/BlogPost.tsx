@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import FunnelCTAs from "@/components/FunnelCTAs";
-import BlogShareButton from "@/components/BlogShareButton";
+import BlogShareButton, { type BlogShareButtonProps } from "@/components/BlogShareButton";
 import { detectBrand, BRAND_STYLES, hasExplicitBrand } from "@/lib/brandMatching";
 
 

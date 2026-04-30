@@ -24,7 +24,7 @@ function ensureKakaoInit(): boolean {
   return !!window.Kakao.Share;
 }
 
-interface BlogShareButtonProps {
+export interface BlogShareButtonProps {
   title: string;
   excerpt?: string;
   url: string;       // canonical share URL (absolute)
