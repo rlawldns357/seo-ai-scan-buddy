@@ -271,6 +271,46 @@ function buildGradientSvg(opts: { title: string; category: string }): string {
  * (cx, cy) 는 워드마크 중심점.
  */
 function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string {
+  // 개념 카드 (AEO/GEO/SEO) — 거대 그라데이션 + 고스트 + 언더바
+  if (brand.key === "aeo" || brand.key === "geo" || brand.key === "seo") {
+    const gradients: Record<"aeo" | "geo" | "seo", { from: string; to: string }> = {
+      aeo: { from: "#fbbf24", to: "#9a3412" },
+      geo: { from: "#34d399", to: "#0f766e" },
+      seo: { from: "#60a5fa", to: "#1e3a8a" },
+    };
+    const g = gradients[brand.key];
+    const gradId = `concept-${brand.key}`;
+    const fontSize = 200;
+    return `
+      <defs>
+        <linearGradient id="${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="${g.from}"/>
+          <stop offset="100%" stop-color="${g.to}"/>
+        </linearGradient>
+      </defs>
+      <!-- 고스트 아웃라인 -->
+      <text x="${cx}" y="${cy + 20}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="none" stroke="${brand.color}" stroke-width="2" opacity="0.10" text-anchor="middle" letter-spacing="-8">${escXml(brand.wordmark)}</text>
+      <!-- 메인 그라데이션 -->
+      <text x="${cx}" y="${cy + 20}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="url(#${gradId})" text-anchor="middle" letter-spacing="-8">${escXml(brand.wordmark)}</text>
+      <!-- 언더바 -->
+      <rect x="${cx - 50}" y="${cy + 50}" width="100" height="6" rx="3" fill="url(#${gradId})"/>
+    `;
+  }
+
+  // Bing — Microsoft 시그니처 블루→사이언 그라데이션
+  if (brand.key === "bing-copilot") {
+    const fontSize = 80;
+    return `
+      <defs>
+        <linearGradient id="bingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0078D4"/>
+          <stop offset="100%" stop-color="#00B7C3"/>
+        </linearGradient>
+      </defs>
+      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-2">${escXml(brand.wordmark)}</text>
+    `;
+  }
+
   const fontSize = brand.wordmark.length > 7 ? 56 : 72;
 
   // Google 멀티컬러
