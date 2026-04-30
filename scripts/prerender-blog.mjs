@@ -297,16 +297,18 @@ async function main() {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
 
-    // Kakao rejects extensionless physical files if the host serves them as
-    // application/octet-stream. Use the explicit HTML document URL as canonical.
-    // Remove any previously generated extensionless file before making the
-    // slug directory, then keep .html as a legacy compatibility copy.
+    // Canonical form is /blog/{slug}/ — Cloudflare/Lovable resolves the trailing
+    // slash to /blog/{slug}/index.html and serves it as text/html. Make sure no
+    // extensionless physical file (/blog/{slug}) exists, since the host returns
+    // those as application/octet-stream and breaks Kakao/Facebook OG crawlers.
     const slugDir = path.join(blogDir, post.slug);
-    if (fs.existsSync(slugDir) && fs.statSync(slugDir).isFile()) {
-      fs.rmSync(slugDir, { force: true });
+    const extensionlessFile = path.join(blogDir, post.slug); // same path, but as a file
+    if (fs.existsSync(extensionlessFile) && fs.statSync(extensionlessFile).isFile()) {
+      fs.rmSync(extensionlessFile, { force: true });
     }
     fs.mkdirSync(slugDir, { recursive: true });
     fs.writeFileSync(path.join(slugDir, "index.html"), html, "utf-8");
+    // Legacy compatibility: keep /blog/{slug}.html for any old links/RSS readers.
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
   }
 
