@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
@@ -361,6 +361,7 @@ type FaqShort = { q: string; a: string };
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
@@ -468,11 +469,28 @@ export default function BlogPost() {
           ogImage: (data as any).og_image || undefined,
         });
       } else {
+        // Slug not found in DB → check legacy Korean slug redirect mapping.
+        // 55 posts were migrated from Korean slugs to ASCII English slugs;
+        // this preserves backlinks by redirecting old URLs to new ones.
+        try {
+          const decoded = decodeURIComponent(slug || "");
+          const { data: redirect } = await supabase
+            .from("slug_redirects")
+            .select("new_slug")
+            .eq("old_slug", decoded)
+            .maybeSingle();
+          if (redirect?.new_slug) {
+            navigate(`/blog/${redirect.new_slug}`, { replace: true });
+            return;
+          }
+        } catch (e) {
+          console.warn("[blog] redirect lookup failed:", e);
+        }
         setPost(null);
       }
     }
     fetchFromDb();
-  }, [slug]);
+  }, [slug, navigate]);
 
   // Compute prev/next
   const { prevPost, nextPost } = useMemo(() => {
