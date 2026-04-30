@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { detectBrand, getBrandStyle, hasExplicitBrand, BRAND_STYLES } from "@/lib/brandMatching";
 
-const blogPostPath = (slug: string) => `/blog/${slug}/`;
+const blogPostPath = (slug: string) => `/blog/${slug}/index.html`;
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
