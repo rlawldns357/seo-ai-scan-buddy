@@ -125,85 +125,67 @@ export function buildAiOgPrompt(opts: { title: string; category: string }): stri
  * `slug` 미지정 시 카테고리 기반 폴백.
  */
 export function buildSvgOg(opts: { title: string; category: string; slug?: string }): string {
-  const explicit = !!opts.slug && hasExplicitBrand(opts.slug, opts.title);
+  // category까지 넘겨서 AEO/GEO/SEO 컨셉 카드 폴백이 작동하도록
+  const explicit = hasExplicitBrand(opts.slug || "", opts.title, opts.category);
   if (explicit) {
     return buildBrandSplitSvg(opts);
   }
   return buildGradientSvg(opts);
 }
 
-/** 좌측 브랜드 카드 + 우측 메타 분할 OG (1200x630). */
+/**
+ * 미니멀 단일 패널 OG (1200x630).
+ *
+ * 룰:
+ *  - 브랜드별 크림/오프화이트 panelBg 풀 적용 (좌/우 분할 폐기)
+ *  - SVG `<filter>` 그레인 노이즈 살짝 (한국적 종이 질감)
+ *  - 워드마크 중앙 (그라데이션 유지) + descender 안전 baseline
+ *  - 부제: `회사 · 카테고리` (Inter 700, letter-spacing 넓게, 회색 0.5)
+ *  - 우측 하단 워터마크: SearchTune OS · searchtuneos.com (회색 0.35)
+ */
 function buildBrandSplitSvg(opts: { title: string; category: string; slug?: string }): string {
   const brand = getBrandStyle(opts.slug || "", opts.title, opts.category);
-  const cat = resolveStyle(opts.category);
-  const title = (opts.title || "SearchTune OS").trim();
-  const lines = wrapTitle(title, 18); // 우측 패널이 좁으므로 짧게
 
-  const titleSvg = lines
-    .slice(0, 4)
-    .map(
-      (line, i) =>
-        `<text x="540" y="${230 + i * 70}" font-family="'Pretendard','Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif" font-size="56" font-weight="800" fill="#ffffff" letter-spacing="-1.5">${escXml(
-          line,
-        )}</text>`,
-    )
-    .join("\n  ");
+  // 워드마크 중앙 (1200x630의 시각 중심은 약 y=300, descender 고려해 305)
+  const cx = 600;
+  const cy = 305;
+  const wordmarkSvg = renderBrandWordmark(brand, cx, cy);
 
-  const overflow =
-    lines.length > 4
-      ? `<text x="540" y="${230 + 4 * 70}" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="28" font-weight="500" fill="rgba(255,255,255,0.6)">${escXml(lines.slice(4).join(" "))}…</text>`
-      : "";
-
-  // 좌측 패널 (브랜드 워드마크) - 화이트/라이트 컬러 패널
-  // 우측 패널 (메타) - 카테고리 그라데이션
-  // 패널 분할: 좌측 480px, 우측 720px
-  const wordmarkSvg = renderBrandWordmark(brand, 240, 315); // 좌측 패널 중앙
+  // 부제: 회사 · 카테고리 (이미 brand.subtitle 이 그 포맷)
+  // 길이에 따라 폰트 사이즈 자동 조정
+  const subtitle = brand.subtitle.toUpperCase();
+  const subFontSize = subtitle.length > 28 ? 18 : 22;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <defs>
-    <linearGradient id="metaBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="${cat.gradient.from}"/>
-      <stop offset="50%" stop-color="${cat.gradient.via ?? cat.gradient.from}"/>
-      <stop offset="100%" stop-color="${cat.gradient.to}"/>
-    </linearGradient>
-    <radialGradient id="metaGlow" cx="80%" cy="20%" r="60%">
-      <stop offset="0%" stop-color="${cat.accent}" stop-opacity="0.30"/>
-      <stop offset="100%" stop-color="${cat.accent}" stop-opacity="0"/>
+    <!-- 살짝 그레인 노이즈 (한국적 종이 질감) -->
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0"/>
+      <feComposite operator="in" in2="SourceGraphic"/>
+    </filter>
+    <!-- 모서리 비네팅 (아주 살짝) -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+      <stop offset="60%" stop-color="${brand.panelBg}" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.04"/>
     </radialGradient>
-    <pattern id="metaGrid" width="48" height="48" patternUnits="userSpaceOnUse">
-      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
-    </pattern>
   </defs>
 
-  <!-- Left brand panel -->
-  <rect x="0" y="0" width="480" height="630" fill="${brand.panelBg}"/>
-  <!-- Subtle inset shadow -->
-  <rect x="478" y="0" width="2" height="630" fill="rgba(0,0,0,0.06)"/>
+  <!-- 단일 패널 배경 (브랜드별 크림/오프화이트) -->
+  <rect width="1200" height="630" fill="${brand.panelBg}"/>
+  <!-- 그레인 노이즈 오버레이 -->
+  <rect width="1200" height="630" fill="${brand.panelBg}" filter="url(#grain)"/>
+  <!-- 미세한 비네팅 -->
+  <rect width="1200" height="630" fill="url(#vignette)"/>
+
+  <!-- 워드마크 (중앙) -->
   ${wordmarkSvg}
-  <text x="240" y="385" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="${brand.subtitle.length > 22 ? 16 : 20}" font-weight="500" fill="rgba(0,0,0,0.5)" text-anchor="middle" letter-spacing="0.5">${escXml(brand.subtitle)}</text>
 
-  <!-- Right meta panel -->
-  <rect x="480" y="0" width="720" height="630" fill="url(#metaBg)"/>
-  <rect x="480" y="0" width="720" height="630" fill="url(#metaGrid)"/>
-  <rect x="480" y="0" width="720" height="630" fill="url(#metaGlow)"/>
-  <circle cx="1100" cy="540" r="180" fill="${cat.accent}" opacity="0.08"/>
+  <!-- 부제: 회사 · 카테고리 -->
+  <text x="${cx}" y="395" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${subFontSize}" font-weight="700" fill="rgba(0,0,0,0.45)" text-anchor="middle" letter-spacing="3">${escXml(subtitle)}</text>
 
-  <!-- Category badge -->
-  <g transform="translate(540, 110)">
-    <rect width="160" height="48" rx="24" fill="${cat.badgeBg}"/>
-    <text x="80" y="32" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="20" font-weight="700" fill="${cat.badgeFg}" text-anchor="middle">${cat.emoji} ${escXml(cat.label)}</text>
-  </g>
-
-  <!-- Title -->
-  ${titleSvg}
-  ${overflow}
-
-  <!-- SearchTune wordmark bottom-right of meta panel -->
-  <g transform="translate(540, 560)">
-    <circle cx="10" cy="0" r="10" fill="${cat.accent}"/>
-    <text x="30" y="6" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="22" font-weight="700" fill="#ffffff" letter-spacing="-0.5">SearchTune OS</text>
-  </g>
-  <text x="1140" y="566" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="18" font-weight="500" fill="rgba(255,255,255,0.55)" text-anchor="end">searchtuneos.com</text>
+  <!-- 우측 하단 워터마크 -->
+  <text x="1140" y="595" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="14" font-weight="500" fill="rgba(0,0,0,0.32)" text-anchor="end" letter-spacing="1">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
 </svg>`;
 }
 
@@ -271,7 +253,7 @@ function buildGradientSvg(opts: { title: string; category: string }): string {
  * (cx, cy) 는 워드마크 중심점.
  */
 function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string {
-  // 개념 카드 (AEO/GEO/SEO) — 글자별 그라데이션, 다른 브랜드와 동급 사이즈
+  // 개념 카드 (AEO/GEO/SEO) — 글자별 그라데이션, 크게
   if (brand.key === "aeo" || brand.key === "geo" || brand.key === "seo") {
     const stops: Record<"aeo" | "geo" | "seo", [string, string, string]> = {
       aeo: ["#f59e0b", "#d97706", "#b45309"],
@@ -280,21 +262,21 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
     };
     const colors = stops[brand.key];
     const letters = brand.wordmark.split("");
-    const fontSize = 96;
+    const fontSize = 180;
     const charW = fontSize * 0.62;
     const totalW = charW * letters.length;
     const startX = cx - totalW / 2;
     return letters
       .map(
         (ch, i) =>
-          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="${colors[i] ?? colors[colors.length - 1]}" text-anchor="middle" letter-spacing="-3">${escXml(ch)}</text>`,
+          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="${colors[i] ?? colors[colors.length - 1]}" text-anchor="middle" letter-spacing="-5">${escXml(ch)}</text>`,
       )
       .join("");
   }
 
   // Bing — Microsoft 시그니처 블루→사이언 그라데이션
   if (brand.key === "bing-copilot") {
-    const fontSize = 80;
+    const fontSize = 156;
     return `
       <defs>
         <linearGradient id="bingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -302,31 +284,30 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
           <stop offset="100%" stop-color="#00B7C3"/>
         </linearGradient>
       </defs>
-      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-2">${escXml(brand.wordmark)}</text>
+      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-4">${escXml(brand.wordmark)}</text>
     `;
   }
 
-  const fontSize = brand.wordmark.length > 7 ? 56 : 72;
+  // 일반 브랜드 — 워드마크 길이에 따라 사이즈 조정
+  const fontSize = brand.wordmark.length > 8 ? 120 : brand.wordmark.length > 5 ? 140 : 160;
 
   // Google 멀티컬러
   if (brand.key === "google" || brand.key === "google-ai-overview") {
     const colors = ["#4285F4", "#EA4335", "#FBBC05", "#4285F4", "#34A853", "#EA4335"];
     const letters = "Google".split("");
-    // 글자별 x 오프셋 근사 (모노스페이스 가정)
     const charW = fontSize * 0.55;
     const totalW = charW * letters.length;
     const startX = cx - totalW / 2;
-    const letterTags = letters
+    return letters
       .map(
         (ch, i) =>
-          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${colors[i]}" text-anchor="middle" letter-spacing="-1">${ch}</text>`,
+          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${colors[i]}" text-anchor="middle" letter-spacing="-2">${ch}</text>`,
       )
       .join("");
-    return letterTags;
   }
 
   // 일반 브랜드: 단일 컬러 워드마크
-  return `<text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${brand.color}" text-anchor="middle" letter-spacing="-1.5">${escXml(brand.wordmark)}</text>`;
+  return `<text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${brand.color}" text-anchor="middle" letter-spacing="-3">${escXml(brand.wordmark)}</text>`;
 }
 
 function escXml(s: string): string {

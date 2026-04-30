@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <!-- 살짝 그레인 노이즈 (한국적 종이 질감) -->
+    <filter id="grain" x="0" y="0" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0"/>
+      <feComposite operator="in" in2="SourceGraphic"/>
+    </filter>
+    <!-- 모서리 비네팅 (아주 살짝) -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+      <stop offset="60%" stop-color="#F0F7FE" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.04"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 단일 패널 배경 (브랜드별 크림/오프화이트) -->
+  <rect width="1200" height="630" fill="#F0F7FE"/>
+  <!-- 그레인 노이즈 오버레이 -->
+  <rect width="1200" height="630" fill="#F0F7FE" filter="url(#grain)"/>
+  <!-- 미세한 비네팅 -->
+  <rect width="1200" height="630" fill="url(#vignette)"/>
+
+  <!-- 워드마크 (중앙) -->
+  
+      <defs>
+        <linearGradient id="bingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0078D4"/>
+          <stop offset="100%" stop-color="#00B7C3"/>
+        </linearGradient>
+      </defs>
+      <text x="600" y="305" font-family="'Segoe UI','Inter','Pretendard',sans-serif" font-size="156" font-weight="600" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-4">Bing</text>
+    
+
+  <!-- 부제: 회사 · 카테고리 -->
+  <text x="600" y="395" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="22" font-weight="700" fill="rgba(0,0,0,0.45)" text-anchor="middle" letter-spacing="3">MICROSOFT 검색 · SEO</text>
+
+  <!-- 우측 하단 워터마크 -->
+  <text x="1140" y="595" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="14" font-weight="500" fill="rgba(0,0,0,0.32)" text-anchor="end" letter-spacing="1">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
+</svg>
