@@ -810,6 +810,30 @@ export type Database = {
           },
         ]
       }
+      slug_redirects: {
+        Row: {
+          created_at: string
+          id: string
+          new_slug: string
+          old_slug: string
+          post_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_slug: string
+          old_slug: string
+          post_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_slug?: string
+          old_slug?: string
+          post_id?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           canceled_at: string | null
