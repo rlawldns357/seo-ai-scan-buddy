@@ -1,74 +1,59 @@
 ---
 name: OG/Thumbnail Rulebook
-description: OG=썸네일. **항상 PNG 출력** (카카오톡 호환). 룰북 SVG 빌드 → resvg-wasm + Pretendard ttf로 래스터라이즈. 단일 패널 미니멀 + 그레인 + 후킹 부제
+description: OG=썸네일. **항상 PNG 출력** (카카오톡 호환). 룰북 SVG 빌드 → resvg-wasm + Pretendard ttf로 래스터라이즈. eyebrow는 `회사 · DB카테고리` 강제 동기화
 type: design
 ---
 
-## 출력 형식 (v4 — PNG 강제, 2026-04-30)
+## 출력 형식 (v4 — PNG 강제)
 
-**모든 OG 이미지는 PNG로 발행한다.** SVG 직접 호스팅 금지.
-
-이유:
-- **카카오톡**은 OG 이미지로 SVG 미지원 → 미리보기 자체가 안 뜸
-- **페북/트위터/슬랙**은 SVG → PNG 변환 시 `@font-face`/`@import`를 무시하는 렌더러 多 → 한글 □□
+**모든 OG 이미지는 PNG로 발행한다.** SVG 직접 호스팅 금지 (카카오톡 미지원).
 
 해결 (`supabase/functions/_shared/og-png-renderer.ts`):
-1. 룰북이 SVG 빌드 (`buildSvgOg` — 디자인 SSOT)
+1. `buildSvgOg`로 룰북 SVG 빌드 (디자인 SSOT)
 2. `svgToPng(svg)`로 resvg-wasm 래스터라이즈
-3. **Pretendard-Bold.ttf** (jsdelivr `npm/pretendard@1.3.9/dist/public/static/alternative/`, 2.6MB) ArrayBuffer를 `fontBuffers`로 직접 주입 → @font-face 의존 X, 한글 100% 보장
-4. `og-images` 버킷에 `.png` 업로드, `og_image`/`thumbnail` 양쪽 저장
+3. **Pretendard-Bold.ttf**를 ArrayBuffer로 `fontBuffers` 직접 주입 → 한글 100% 보장
+4. `og-images` 버킷에 `.png` 업로드, `og_image`/`thumbnail` 양쪽 저장 (synced)
 
-## 컨셉 (v2 유지 — 미니멀 단일 패널)
-업로드한 ChatGPT/Claude/AEO 예시 톤. 좌우 분할/그라데이션 시끄러움 폐기.
+## 컨셉 (단일 패널 미니멀)
 - **단일 패널**: 1200x630 풀 크림/오프화이트 (`brand.panelBg`)
-- **그레인 노이즈**: SVG `<filter>` feTurbulence 6% opacity (한국적 종이 질감)
-- **워드마크 중앙**: brand.wordmark, brand.color (Bing은 그라데이션 fill, AEO/GEO/SEO는 글자별 그라데이션, Google은 멀티컬러)
-- **위 메타** (eyebrow): `회사 · 카테고리` (예: `OPENAI · AEO`). brand.subtitle.toUpperCase + letter-spacing 4
-- **아래 후킹 부제**: `tidyTitleForOg(title)` — 제목 정갈 요약 한 줄 (Pretendard 600, 회색 0.72)
-- **워터마크**: 우측 하단 `SEARCHTUNE OS · SEARCHTUNEOS.COM` (회색 0.32)
+- **그레인 노이즈** + **중앙 라디얼 글로우** + **모서리 마크**
+- **워드마크 중앙** (브랜드별 컬러/폰트)
+- **위 메타(eyebrow)**: `회사 · {DB카테고리}` (예: `GOOGLE · AEO`)
+- **아래 부제**: `tidyTitleForOg(title)` — 정갈 요약 한 줄
+- **워터마크**: 중앙 하단 `SEARCHTUNE OS · SEARCHTUNEOS.COM`
 
-## 3-Tier 폴백 (유지)
+## ⚠️ Eyebrow 카테고리 동기화 (v5 핵심 룰)
+**eyebrow는 항상 `회사 · {opts.category}` 형태로 DB 카테고리를 강제 사용한다.**
+
+이유: `brand.subtitle`에 하드코딩된 카테고리(예: `"OpenAI · AEO"`, `"Microsoft 검색 · SEO"`)가
+DB의 글 카테고리와 어긋날 수 있음. (예: Bing Copilot 글의 DB cat=GEO인데 brand.subtitle은 "Microsoft · SEO")
+
+구현 (`og-design-rulebook.ts` `buildBrandSplitSvg`):
+```ts
+const companyOnly = brand.subtitle.split("·")[0].trim();
+const dbCategory = (opts.category || categoryStyle.label || "GUIDE").trim();
+const meta = `${companyOnly} · ${dbCategory}`.toUpperCase();
+```
+
+브랜드 카드/컨셉 카드/그라데이션 폴백 모두 DB 카테고리가 단일 진실 소스.
+
+## 3-Tier 폴백
 1. **명확 브랜드**: ChatGPT/Claude/Gemini/Perplexity/Wrtn/Google/Naver/Cue:/Clova X/Cafe24/imweb/Bing → 워드마크 카드
-2. **카테고리만**: AEO/GEO/SEO → 개념 카드 (글자별 그라데이션, 부제는 풀네임 `ANSWER ENGINE OPTIMIZATION`)
-3. **둘 다 없음**: SearchTune OS 풀 그라데이션 폴백 (`buildGradientSvg`)
+2. **카테고리만**: AEO/GEO/SEO → 글자별 그라데이션 컨셉 카드
+3. **둘 다 없음**: 가이드/뉴스 → `buildGradientSvg` 풀 그라데이션 폴백 (한글 안전 wrapTitle)
 
-⚠️ `hasExplicitBrand(slug, title, category)` — category 인자 필수. 안 넘기면 AEO/GEO/SEO 컨셉 카드 폴백 안 됨
-
-## 폰트 사이즈 룰
-- 워드마크: `length > 8 → 120 / > 5 → 140 / else → 160`
-- 컨셉(AEO/GEO/SEO): 180
-- Bing: 156 (그라데이션 fill, descender padding)
-- 부제(eyebrow): `length > 28 → 14 / else → 16`
-- 후킹 부제(아래): 길이별 자동 28-40 (28 → 32 → 36 → 40)
+## 그라데이션 폴백 한글 안전 룰 (v5)
+`buildGradientSvg`는 한글 글자 폭 측정 함수로 폰트 자동 축소 (76→68→60→52pt).
+영문 28자 기준 wrapTitle은 한글에서 우측 잘림 발생 → 절대 사용 금지.
 
 ## tidyTitleForOg 룰
-- 괄호 안 부가 설명 제거
-- 콜론/대시 뒤 보조 설명 컷 (앞부분 8자 이상일 때)
-- 연도 prefix(`2026년`) 제거
-- 32자 초과 시 단어 경계로 컷 + `…`
+- 괄호/콜론 뒤 보조 설명 제거, 연도 prefix 제거, 32자 초과 시 컷+`…`
 
-## 구현
-- 공유 모듈: `src/lib/brandMatching.ts` ↔ `supabase/functions/_shared/brand-matching.ts` (mirror)
-- 룰북 SVG 빌더: `supabase/functions/_shared/og-design-rulebook.ts`
-- **PNG 렌더러**: `supabase/functions/_shared/og-png-renderer.ts` (resvg-wasm + Pretendard ttf)
+## 검증 (2026-04-30)
+- 발행글 58개 모두 PNG 200 OK · synced (og_image == thumbnail)
+- 카테고리 동기화 검증: `회사 · {DB cat}` 일치 100%
+- 카카오 디버거: `Content-Type: image/png` + 글별 OG 정상 표시
 
 ## Endpoints
-- `og-svg` GET `?slug=...&title=...&category=...` — **PNG 응답** (Cloudflare 24h 캐시). `?format=svg`는 디버그용
-- `generate-og-image` POST `{slug,title,category}` — 룰북 SVG → PNG → Storage 업로드 → DB 갱신
-
-## prerender-blog.mjs
-- `resolveOgImage(post)`: `og_image`가 비었거나 `.svg`로 끝나면 `og-svg` PNG endpoint URL로 강제 치환
-- 모든 `<meta property="og:image">`는 반드시 PNG URL을 가리킴
-- 블로그 상세는 `dist/blog/{slug}/index.html`로 생성하고, canonical/share/og:url/sitemap/internal link는 반드시 `/blog/{slug}/index.html` 실물 파일 URL을 사용한다. `/blog/{slug}/`는 Lovable hosting SPA fallback이 기본 `index.html`을 반환해 카카오가 홈 OG를 집을 수 있으므로 공유 URL로 금지.
-
-## 신규 발행 자동 규칙 (CRD에 박힘)
-1. 발행 시 `generate-og-image` 자동 호출 → og_image/thumbnail에 .png URL 저장
-2. 만약 호출 실패해도 prerender가 og-svg endpoint(PNG)로 fallback → og:image는 항상 PNG 보장
-3. 신규/기존 글 prerender 산출물은 `/blog/{slug}/index.html`로 생성하고 모든 내부 링크/sitemap/canonical/og:url은 `/blog/{slug}/index.html`로 통일
-4. SVG 직접 저장 금지 (Storage에 .svg 파일 새로 만들지 말 것)
-
-## 검증 (v4)
-- 발행글 57개 모두 PNG로 일괄 재생성 완료 (2026-04-30)
-- 카카오톡 / Facebook 크롤러 UA로 fetch 테스트 → `Content-Type: image/png`, 200 OK
-- 한글/영문 혼합 테스트: Google/Naver/Perplexity/AEO 카드 모두 Pretendard로 깨끗하게 렌더 ✓
-
+- `og-svg` GET `?slug=...&title=...&category=...` — PNG 응답 (Cloudflare 24h 캐시)
+- `generate-og-image` POST `{slug,title,category}` — SVG → PNG → Storage → DB 갱신

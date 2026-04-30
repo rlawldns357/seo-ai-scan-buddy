@@ -214,8 +214,12 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   const cy = 338; // SEO 워드마크 살짝 더 아래로 (322 → 338) — 시각적 정중앙
   const wordmarkSvg = renderBrandWordmark(brand, cx, cy);
 
-  // eyebrow 메타: 회사 · 카테고리
-  const meta = brand.subtitle.toUpperCase();
+  // eyebrow 메타: 회사 · {DB카테고리} (DB 카테고리 강제 우선)
+  // brand.subtitle에 하드코딩된 카테고리(예: "OpenAI · AEO")는 DB 카테고리와 어긋날 수 있어
+  // 회사명 부분만 추출 후 opts.category로 결합 → DB가 단일 진실 소스
+  const companyOnly = brand.subtitle.split("·")[0].trim() || brand.subtitle;
+  const dbCategory = (opts.category || categoryStyle.label || "GUIDE").trim();
+  const meta = `${companyOnly} · ${dbCategory}`.toUpperCase();
   const metaFontSize = meta.length > 28 ? 16 : 18;
 
   // 부제: 제목 정갈 요약 (워드마크 바로 아래, 밀착)
