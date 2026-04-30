@@ -55,24 +55,28 @@ function main() {
 
   let failed = 0;
   for (const slug of slugs) {
-    const slugFile = path.join(BLOG_DIR, slug);
+    const indexHtml = path.join(BLOG_DIR, slug, "index.html");
+    const unsafeSlugFile = path.join(BLOG_DIR, slug);
     const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
-    const expected = `${SITE}/blog/${slug}`;
+    const expected = `${SITE}/blog/${slug}/index.html`;
     const errors = [];
 
-    // Both shapes MUST exist as files (extensionless + .html)
-    if (!fs.existsSync(slugFile) || !fs.statSync(slugFile).isFile()) {
-      errors.push(`missing extensionless file at /blog/${slug}`);
+    // Canonical index.html must exist, and the unsafe extensionless file must not.
+    if (!fs.existsSync(indexHtml) || !fs.statSync(indexHtml).isFile()) {
+      errors.push(`missing canonical file at /blog/${slug}/index.html`);
+    }
+    if (fs.existsSync(unsafeSlugFile) && fs.statSync(unsafeSlugFile).isFile()) {
+      errors.push(`unsafe extensionless file exists at /blog/${slug}`);
     }
     if (!fs.existsSync(dotHtml)) errors.push(`missing /blog/${slug}.html`);
 
     if (errors.length === 0) {
-      const a = readMeta(slugFile);
+      const a = readMeta(indexHtml);
       const b = readMeta(dotHtml);
 
-      if (a.canonical !== expected) errors.push(`extensionless canonical "${a.canonical}" ≠ "${expected}"`);
+      if (a.canonical !== expected) errors.push(`index.html canonical "${a.canonical}" ≠ "${expected}"`);
       if (b.canonical !== expected) errors.push(`.html canonical "${b.canonical}" ≠ "${expected}"`);
-      if (a.ogUrl !== expected) errors.push(`extensionless og:url "${a.ogUrl}" ≠ "${expected}"`);
+      if (a.ogUrl !== expected) errors.push(`index.html og:url "${a.ogUrl}" ≠ "${expected}"`);
       if (b.ogUrl !== expected) errors.push(`.html og:url "${b.ogUrl}" ≠ "${expected}"`);
 
       if (a.canonical !== b.canonical) errors.push(`canonical mismatch between variants: "${a.canonical}" vs "${b.canonical}"`);
@@ -93,7 +97,7 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs are consistent across /blog/{slug} and /blog/{slug}.html`);
+  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs are consistent across /blog/{slug}/index.html and /blog/{slug}.html`);
 }
 
 main();
