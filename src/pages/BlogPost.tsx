@@ -70,7 +70,7 @@ function getBrandThumbnail(slug: string, category: string, large = false) {
   }
 
   // 2) 공유 브랜드 모듈로 자동 감지 (ChatGPT/Claude/Gemini/Perplexity/Wrtn/Google 등)
-  if (hasExplicitBrand(slug)) {
+  if (hasExplicitBrand(slug, undefined, category)) {
     const key = detectBrand(slug, undefined, category);
     const brand = BRAND_STYLES[key];
 
