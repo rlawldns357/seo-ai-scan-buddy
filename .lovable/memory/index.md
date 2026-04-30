@@ -62,7 +62,8 @@
 - [Blog Prerendering](mem://technical/blog-prerendering) — Static HTML generation for /blog routes
 - [Deterministic AI](mem://logic/deterministic-scoring) — Gemini temperature = 0
 - [Entity Definition](mem://brand/entity-definition) — SearchTune OS, 2025 release, target year 2026
-- [Blog Thumbnails](mem://style/blog-thumbnail-branding) — Brand-specific fonts/colors (ChatGPT Inter, Claude Georgia)
+- [Blog Thumbnails](mem://style/blog-thumbnail-branding) — Brand-specific fonts/colors (ChatGPT Inter, Claude Georgia). 공유 모듈: src/lib/brandMatching.ts (=supabase/functions/_shared/brand-matching.ts)
+- [Brand Topic Curation](mem://features/brand-aware-topic-curation) — 자동 발행 토픽 60%를 브랜드 키워드(ChatGPT/Claude/Naver/Google 등)로 가중. BRAND_TOPIC_RATIO=0.6, BRAND_KEYWORDS 동기화 필요
 - [Content Scoring](mem://features/content-scoring) — 자동 발행 콘텐츠 SEO/AEO/GEO 3축 점수 (초안+발행 후 재채점, 큐 배지). CRD: .lovable/crd/content-scoring.md
 - [Inventory Frame](mem://strategy/inventory-frame-positioning) — AutoBlog 핵심 포지셔닝: 속도 아닌 재고(큐). 데모=10초 생성 증명, 제품=30편 큐 자동발행. 시간 과장 금지
 - [AutoBlog Engine](mem://features/autoblog-content-engine) — site_posts 생성/발행 엔진. SEO/AEO/GEO 3축 프롬프트, 자동 백링크(같은 사이트 키워드 매칭, 최대 3개), FAQ JSON-LD, 발행 시 신호 기반 자동 채점
