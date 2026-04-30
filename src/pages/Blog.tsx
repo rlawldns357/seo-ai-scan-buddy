@@ -293,6 +293,7 @@ function PostCard({ post }: { post: BlogPost }) {
           <span>{post.author}</span>
           <span>·</span>
           <span>{formatDate(post.date)}</span>
+          <span className="ml-auto"><ShareIconButton slug={post.slug} title={post.title} /></span>
         </div>
       </div>
     </article>
