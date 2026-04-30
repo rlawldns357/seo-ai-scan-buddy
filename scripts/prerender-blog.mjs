@@ -372,7 +372,7 @@ main().catch(console.error);
 // ── 8. RSS XML generator ───────────────────────────────────────────
 function generateRssXml(posts) {
   const items = posts.map(p => {
-    const url = `${SITE}/blog/${p.slug}`;
+    const url = blogHtmlUrl(p.slug);
     const pubDate = new Date(p.date).toUTCString();
     return `    <item>
       <title><![CDATA[${p.title}]]></title>
@@ -413,7 +413,7 @@ function generateAboutHtml(latestPosts, assets) {
     isPartOf: { "@type": "WebSite", name: "서치튠OS", url: SITE },
   });
   const blogLinks = latestPosts
-    .map(p => `<li><a href="/blog/${p.slug}" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
+    .map(p => `<li><a href="${blogHtmlPath(p.slug)}" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
     .join("\n        ");
 
   return `<!doctype html>
@@ -474,7 +474,7 @@ function injectHomeLinks(latestPosts) {
   const linksHtml = `<section data-prerender-home-links style="display:none">
     <h2>최신 블로그</h2>
     <ul>
-      ${latestPosts.map(p => `<li><a href="/blog/${p.slug}">${esc(p.title)}</a></li>`).join("\n      ")}
+      ${latestPosts.map(p => `<li><a href="${blogHtmlPath(p.slug)}">${esc(p.title)}</a></li>`).join("\n      ")}
     </ul>
     <p><a href="/blog">블로그 전체 보기</a> · <a href="/about">서치튠OS 소개</a></p>
   </section>`;
