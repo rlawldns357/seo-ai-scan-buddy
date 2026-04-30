@@ -58,7 +58,7 @@ function main() {
     const indexHtml = path.join(BLOG_DIR, slug, "index.html");
     const unsafeSlugFile = path.join(BLOG_DIR, slug);
     const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
-    const expected = `${SITE}/blog/${slug}/`;
+    const expected = `${SITE}/blog/${slug}/index.html`;
     const errors = [];
 
     // Canonical index.html must exist, and the unsafe extensionless file must not.
@@ -97,7 +97,7 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs are consistent across /blog/{slug}/index.html and /blog/{slug}.html`);
+  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs use /blog/{slug}/index.html as canonical and keep /blog/{slug}.html compatible`);
 }
 
 main();

@@ -25,11 +25,11 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-// Trailing-slash form: hosting serves it as text/html (auto resolves index.html)
-// while keeping the address bar clean. Required for Kakao/Facebook OG to work
-// when users copy the URL straight from the address bar.
-const blogPostPath = (slug: string) => `/blog/${slug}/`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}/`;
+// Lovable hosting does not reliably resolve /blog/{slug}/ to the prerendered
+// directory index on the published custom domain. Use the explicit physical
+// file URL so copying the address bar always gives Kakao/Facebook the real OG.
+const blogPostPath = (slug: string) => `/blog/${slug}/index.html`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}/index.html`;
 
 function isNaverPost(slug: string) {
   return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
@@ -550,12 +550,12 @@ export default function BlogPost() {
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
-  // Canonical URL form is /blog/{slug}/ (trailing slash). If the user landed on
-  // /blog/{slug}, /blog/{slug}.html, or /blog/{slug}/index.html, normalise the
-  // address bar so any subsequent copy-paste yields a Kakao/Facebook-friendly URL.
+  // Canonical URL form is /blog/{slug}/index.html. If the user landed on
+  // /blog/{slug}, /blog/{slug}/, or /blog/{slug}.html, normalise the address bar
+  // so any subsequent copy-paste yields a Kakao/Facebook-friendly URL.
   useEffect(() => {
     if (!slug) return;
-    const canonical = `/blog/${slug}/`;
+    const canonical = blogPostPath(slug);
     if (location.pathname !== canonical) {
       navigate(canonical + location.search + location.hash, { replace: true });
     }
