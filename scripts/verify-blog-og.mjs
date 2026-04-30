@@ -101,12 +101,12 @@ function main() {
   let failed = 0;
   const canonicalSlugs = new Set(files.filter((f) => !f.compatibility).map((f) => f.slug));
   for (const file of files) {
-    // Canonical URL form is the explicit physical HTML file. Published hosting
-    // can route /blog/{slug}/ to the SPA fallback, which exposes the home OG.
-    const expectedUrl = `${SITE}/blog/${file.slug}/index.html`;
+    // Canonical URL form is the explicit .html file. Published hosting can
+    // route /blog/{slug}/ to the SPA home fallback, which exposes the home OG.
+    const expectedUrl = `${SITE}/blog/${file.slug}.html`;
     const errors = verifyFile(file.path, expectedUrl);
     if (file.compatibility && !canonicalSlugs.has(file.slug)) {
-      errors.push(`missing canonical /blog/${file.slug}/index.html (directory index)`);
+      errors.push(`missing canonical /blog/${file.slug}.html`);
     }
     if (errors.length) {
       failed++;
