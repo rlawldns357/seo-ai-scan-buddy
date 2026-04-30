@@ -224,6 +224,7 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
     tidyTitle.length > 12 ? 36 : 40;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  ${FONT_EMBED}
   <defs>
     <!-- 살짝 그레인 노이즈 (한국적 종이 질감) -->
     <filter id="grain" x="0" y="0" width="100%" height="100%">
