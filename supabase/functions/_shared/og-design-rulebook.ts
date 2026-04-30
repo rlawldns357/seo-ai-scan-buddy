@@ -298,23 +298,63 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
 /** 기존 카테고리 풀 그라데이션 SVG (브랜드 미감지 시). */
 function buildGradientSvg(opts: { title: string; category: string }): string {
   const style = resolveStyle(opts.category);
-  const title = (opts.title || "SearchTune OS").trim();
-  const lines = wrapTitle(title, 28);
+  // 부제 룰북 적용 (괄호/연도/콜론 뒤 정리) → 우측 잘림 1차 방지
+  const title = tidyTitleForOg(opts.title || "SearchTune OS");
+
+  // 가용 폭: 좌우 패딩 80px씩 = 1040px
+  // Pretendard 한글은 fontSize * 1.0 폭으로 잡으면 안전 (영문/숫자는 더 좁음)
+  // 64pt: 한 줄 ~16자, 56pt: ~18자, 48pt: ~21자
+  const PADDING_X = 80;
+  const MAX_W = 1200 - PADDING_X * 2;
+
+  // 한글/영문 혼합 글자 폭 추정 (한글=1, 영문/숫자=0.55, 공백=0.4)
+  const measure = (s: string, fs: number): number => {
+    let w = 0;
+    for (const ch of s) {
+      if (/[\uAC00-\uD7AF\u3130-\u318F]/.test(ch)) w += fs * 1.0;
+      else if (ch === " ") w += fs * 0.4;
+      else w += fs * 0.55;
+    }
+    return w;
+  };
+
+  // 폰트 사이즈 자동 축소 (76 → 64 → 56 → 48)
+  const sizes = [76, 68, 60, 52];
+  let fontSize = 52;
+  let lines: string[] = [];
+  for (const fs of sizes) {
+    // 해당 fs에서 안전하게 들어갈 글자 수 = MAX_W / (fs * 1.0)
+    const maxChars = Math.floor(MAX_W / (fs * 1.0));
+    const candidate = wrapTitle(title, maxChars);
+    // 모든 줄이 실제로 폭 안에 들어가는지 확인
+    const allFit = candidate.every((ln) => measure(ln, fs) <= MAX_W);
+    if (allFit && candidate.length <= 3) {
+      fontSize = fs;
+      lines = candidate;
+      break;
+    }
+    if (fs === 52) {
+      // 마지막 폴백 — 강제로 자름
+      fontSize = fs;
+      lines = candidate.slice(0, 3);
+    }
+  }
+
+  const lineGap = Math.round(fontSize * 1.18);
+  // 수직 중앙 정렬: 카드 중앙 y=315, 줄 수에 따라 시작 y 조정
+  const totalH = lines.length * lineGap;
+  const startY = Math.round(315 - totalH / 2 + fontSize * 0.85);
 
   const titleSvg = lines
-    .slice(0, 3)
     .map(
       (line, i) =>
-        `<text x="80" y="${260 + i * 90}" font-family="'Pretendard','Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif" font-size="76" font-weight="800" fill="#ffffff" letter-spacing="-2">${escXml(
+        `<text x="${PADDING_X}" y="${startY + i * lineGap}" font-family="'Pretendard','Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif" font-size="${fontSize}" font-weight="800" fill="#ffffff" letter-spacing="-2">${escXml(
           line,
         )}</text>`,
     )
     .join("\n  ");
 
-  const subtitle =
-    lines.length > 3
-      ? `<text x="80" y="${260 + 3 * 90}" font-family="'Pretendard','Noto Sans KR',sans-serif" font-size="32" font-weight="500" fill="rgba(255,255,255,0.6)">${escXml(lines.slice(3).join(" "))}…</text>`
-      : "";
+  const subtitle = "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   ${FONT_EMBED}
