@@ -12,10 +12,16 @@ const QUALITY_PASS_THRESHOLD = 70;
 const MAX_QUALITY_RETRIES = 2; // 임계 미달 시 추가 재시도 (최대)
 const ENABLE_FRESH_REFERENCES = true; // Firecrawl로 최신 레퍼런스 1~2개 자동 수집
 
+/**
+ * 토픽 풀.
+ * 룰: 일정 비율(BRAND_TOPIC_RATIO)은 명확한 브랜드 키워드(ChatGPT/Claude/Naver/Google 등)가
+ * 들어간 토픽을 우선 선택해서 브랜드 인지 OG/썸네일이 나오도록 한다.
+ */
 const TOPICS = [
   {
     category: "SEO",
     themes: [
+      // 일반 SEO
       "Core Web Vitals 최적화 전략",
       "기술적 SEO 체크리스트",
       "사이트 속도 개선 방법",
@@ -25,44 +31,58 @@ const TOPICS = [
       "국제 SEO (hreflang) 설정",
       "사이트맵 최적화 전략",
       "캐노니컬 태그 활용법",
-      "검색 콘솔 활용 가이드",
-      "네이버 서치어드바이저 활용 팁",
-      "네이버 검색 알고리즘 이해",
-      "구글 알고리즘 업데이트 대응",
       "E-E-A-T 신호 강화 방법",
       "로컬 SEO 최적화",
       "SSL/HTTPS가 SEO에 미치는 영향",
       "robots.txt 고급 설정법",
       "페이지 경험 시그널 최적화",
+      // 브랜드 친화
+      "Google Search Console 활용 가이드",
+      "Google Core Web Vitals 2026 대응",
+      "네이버 서치어드바이저 활용 팁",
+      "네이버 검색 알고리즘 이해",
+      "Naver D.I.A. 2.0 콘텐츠 최적화",
+      "Cafe24 쇼핑몰 SEO 핵심 체크리스트",
+      "imweb 사이트 SEO 최적화 가이드",
     ],
   },
   {
     category: "AEO",
     themes: [
+      // 일반 AEO
       "AI 답변 엔진의 콘텐츠 선택 기준",
-      "ChatGPT에 내 콘텐츠 인용시키기",
-      "Perplexity AI 최적화 전략",
-      "뤼튼(Wrtn)에서 브랜드 노출하기",
       "FAQ 마크업으로 AEO 점수 올리기",
       "Q&A 콘텐츠 구조화 전략",
       "AI가 선호하는 콘텐츠 형식",
       "음성 검색 최적화와 AEO",
       "Featured Snippet 획득 전략",
       "지식 패널 최적화",
+      // 브랜드 친화
+      "ChatGPT에 내 콘텐츠 인용시키기",
+      "ChatGPT Search 최적화 완벽 가이드",
+      "Claude가 신뢰하는 콘텐츠 만들기",
+      "Perplexity AI 최적화 전략",
+      "Perplexity citations에 들어가는 법",
+      "뤼튼(Wrtn)에서 브랜드 노출하기",
+      "Gemini에 내 페이지 인용시키기",
     ],
   },
   {
     category: "GEO",
     themes: [
-      "Google SGE 대응 전략",
-      "Naver Cue: 최적화 방법",
-      "Bing Copilot에서 인용되기",
+      // 일반 GEO
       "AI 크롤러 관리 전략",
       "생성형 검색 시대의 콘텐츠 전략",
       "AI 검색에서의 브랜드 권위 구축",
       "구조화 데이터와 GEO의 관계",
-      "클로바X(Clova X) SEO 전략",
       "멀티모달 AI 검색 대비",
+      // 브랜드 친화
+      "Google SGE 대응 전략",
+      "Google AI Overview 노출 전략",
+      "Naver Cue: 최적화 방법",
+      "Bing Copilot에서 인용되기",
+      "Clova X SEO 전략",
+      "ChatGPT vs Gemini: 인용 알고리즘 비교",
     ],
   },
   {
@@ -81,6 +101,25 @@ const TOPICS = [
     ],
   },
 ];
+
+/**
+ * 브랜드 친화 토픽 선택 비율.
+ * 0.6 = 60% 확률로 명확한 브랜드 키워드(ChatGPT/Claude/Naver/Google/Perplexity/Wrtn/Cafe24/imweb 등)가
+ * 들어간 토픽을 우선 선택. 나머지 40%는 일반 토픽.
+ */
+const BRAND_TOPIC_RATIO = 0.6;
+
+const BRAND_KEYWORDS = [
+  "chatgpt", "claude", "gemini", "perplexity", "wrtn", "뤼튼",
+  "google", "구글", "naver", "네이버", "cue:", "clova", "클로바",
+  "bing", "copilot", "cafe24", "카페24", "imweb", "아임웹",
+  "ai overview", "sge", "search console", "서치어드바이저", "d.i.a",
+];
+
+function isBrandTopic(theme: string): boolean {
+  const lower = theme.toLowerCase();
+  return BRAND_KEYWORDS.some((kw) => lower.includes(kw));
+}
 
 // 3명의 SEO 키워드 기반 필진이 돌아가며 작성
 const AUTHORS = [
@@ -219,30 +258,39 @@ Deno.serve(async (req) => {
       : AUTHORS[Math.floor(Math.random() * AUTHORS.length)];
 
     // Pick a theme: avoid recent titles AND recent categories (prefer variety)
+    // 또한 BRAND_TOPIC_RATIO 확률로 브랜드 키워드가 들어간 토픽을 우선 선택
+    // (ChatGPT/Claude/Naver/Google 등 → OG 분할 카드 비주얼이 자동 적용됨)
     const allThemes = TOPICS.flatMap((t) =>
-      t.themes.map((theme) => ({ category: t.category, theme }))
+      t.themes.map((theme) => ({ category: t.category, theme, isBrand: isBrandTopic(theme) }))
     );
 
-    const shuffled = allThemes.sort(() => Math.random() - 0.5);
-    
-    // First try: avoid both recent title AND recent category
-    let pick = shuffled.find(
-      (t) =>
-        !recentTitles.some((title) => title.includes(t.theme.slice(0, 10).toLowerCase())) &&
-        !recentCategories.includes(t.category)
-    );
-    // Fallback: just avoid recent titles
-    if (!pick) {
-      pick = shuffled.find(
-        (t) => !recentTitles.some((title) => title.includes(t.theme.slice(0, 10).toLowerCase()))
-      );
-    }
-    // Final fallback
-    if (!pick) pick = shuffled[0];
+    const preferBrand = Math.random() < BRAND_TOPIC_RATIO;
+    const primaryPool = preferBrand
+      ? allThemes.filter((t) => t.isBrand)
+      : allThemes.filter((t) => !t.isBrand);
+    const fallbackPool = preferBrand
+      ? allThemes.filter((t) => !t.isBrand)
+      : allThemes.filter((t) => t.isBrand);
+
+    const shuffle = <T,>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
+    const primaryShuffled = shuffle(primaryPool);
+    const fallbackShuffled = shuffle(fallbackPool);
+
+    const matchesRecent = (theme: string) =>
+      recentTitles.some((title) => title.includes(theme.slice(0, 10).toLowerCase()));
+
+    // 1) 선호 풀에서 최근 중복 + 최근 카테고리 모두 회피
+    let pick = primaryShuffled.find((t) => !matchesRecent(t.theme) && !recentCategories.includes(t.category));
+    // 2) 선호 풀에서 최근 타이틀만 회피
+    if (!pick) pick = primaryShuffled.find((t) => !matchesRecent(t.theme));
+    // 3) 폴백 풀에서 최근 타이틀 회피
+    if (!pick) pick = fallbackShuffled.find((t) => !matchesRecent(t.theme));
+    // 4) 최종 폴백
+    if (!pick) pick = primaryShuffled[0] || fallbackShuffled[0] || allThemes[0];
 
     const { category, theme } = pick;
 
-    console.log(`Generating blog post: [${category}] ${theme} by ${author.name}`);
+    console.log(`Generating blog post: [${category}] ${theme} by ${author.name} (brand=${pick.isBrand}, prefer=${preferBrand})`);
 
     const recentTitleList = recentTitles.slice(0, 15).join(", ");
 

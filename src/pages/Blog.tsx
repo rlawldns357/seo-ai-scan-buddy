@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { detectBrand, getBrandStyle, hasExplicitBrand, BRAND_STYLES } from "@/lib/brandMatching";
 
 
 const categoryColor: Record<string, string> = {
@@ -15,130 +16,85 @@ const categoryColor: Record<string, string> = {
   뉴스: "bg-muted text-muted-foreground",
 };
 
-const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
+/**
+ * 브랜드 워드마크 비주얼.
+ * 슬러그/제목/카테고리에서 brand-matching 모듈로 감지된 브랜드를
+ * 해당 브랜드의 시그니처 폰트/컬러로 렌더한다.
+ *
+ * Google처럼 멀티컬러 워드마크는 글자별 색상을 별도로 그린다.
+ * 일반 브랜드는 BRAND_STYLES의 wordmark/fontFamily/fontWeight/color 사용.
+ */
+function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; title?: string; category?: string; size?: "md" | "lg" }) {
+  const key = detectBrand(slug, title, category);
+  const brand = BRAND_STYLES[key];
+  const isLg = size === "lg";
 
-function isNaverPost(slug: string) {
-  return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
-}
+  // Google 멀티컬러
+  if (key === "google" || key === "google-ai-overview") {
+    const letters = "Google".split("");
+    const colors = ["#4285F4", "#EA4335", "#FBBC05", "#4285F4", "#34A853", "#EA4335"];
+    return (
+      <div className="flex flex-col items-center gap-1.5">
+        <span
+          className={isLg ? "text-5xl tracking-tight" : "text-3xl tracking-tight"}
+          style={{ fontFamily: brand.fontFamily, fontWeight: brand.fontWeight }}
+        >
+          {letters.map((ch, i) => (
+            <span key={i} style={{ color: colors[i] }}>{ch}</span>
+          ))}
+        </span>
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
+          {brand.subtitle}
+        </span>
+      </div>
+    );
+  }
 
-function isCafe24Post(slug: string) {
-  return slug.toLowerCase().includes("cafe24");
-}
-
-function isImwebPost(slug: string) {
-  return slug.toLowerCase().includes("imweb");
-}
-
-function isGooglePost(slug: string) {
-  return slug.toLowerCase().includes("google") || slug.toLowerCase().includes("core-web-vitals") || slug.toLowerCase().includes("search-console");
-}
-
-function isChatGPTPost(slug: string) {
-  return slug.toLowerCase().includes("chatgpt") || slug.toLowerCase().includes("searchgpt") || slug.toLowerCase().includes("openai");
-}
-
-function isPerplexityPost(slug: string) {
-  return slug.toLowerCase().includes("perplexity");
-}
-
-function isClaudePost(slug: string) {
-  return slug.toLowerCase().includes("claude");
-}
-
-function isWrtnPost(slug: string) {
-  return slug.toLowerCase().includes("wrtn") || slug.toLowerCase().includes("뤼튼");
-}
-
-function getBrandThumbnail(slug: string, category: string) {
-  // ChatGPT vs Gemini → dual text
-  if (slug.includes("chatgpt") && slug.includes("gemini")) {
+  // ChatGPT vs Gemini (정확히 둘 다 언급된 비교 글)
+  if ((slug.toLowerCase().includes("chatgpt") || (title || "").toLowerCase().includes("chatgpt")) &&
+      (slug.toLowerCase().includes("gemini") || (title || "").toLowerCase().includes("gemini"))) {
     return (
       <div className="flex items-center gap-3">
-        <span className="text-xl font-semibold" style={{ fontFamily: "'Inter', sans-serif", color: "#1A1A1A" }}>ChatGPT</span>
+        <span className={isLg ? "text-3xl font-semibold" : "text-xl font-semibold"} style={{ fontFamily: BRAND_STYLES.chatgpt.fontFamily, color: BRAND_STYLES.chatgpt.color }}>ChatGPT</span>
         <span className="text-xs font-bold text-muted-foreground/40">VS</span>
-        <span className="text-xl font-semibold" style={{ fontFamily: "'Inter', sans-serif", color: "#4285F4" }}>Gemini</span>
+        <span className={isLg ? "text-3xl font-semibold" : "text-xl font-semibold"} style={{ fontFamily: BRAND_STYLES.gemini.fontFamily, color: BRAND_STYLES.gemini.color }}>Gemini</span>
       </div>
     );
   }
-  // OpenAI / ChatGPT
-  if (isChatGPTPost(slug)) {
-    return (
-      <span className="text-3xl font-semibold tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: "#1A1A1A" }}>ChatGPT</span>
-    );
-  }
-  // Perplexity
-  if (isPerplexityPost(slug)) {
-    return (
-      <span className="text-3xl tracking-tight" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500, color: "#1B1B1B", letterSpacing: "-0.03em" }}>perplexity</span>
-    );
-  }
-  // Claude
-  if (isClaudePost(slug)) {
-    return (
-      <span className="text-[32px]" style={{ fontFamily: "Georgia, 'Times New Roman', serif", fontWeight: 400, color: "#CC785C", letterSpacing: "-0.01em" }}>claude</span>
-    );
-  }
-  // 뤼튼 / Wrtn
-  if (isWrtnPost(slug)) {
-    return (
-      <span className="text-3xl font-black tracking-tight" style={{ fontFamily: "'Inter', sans-serif", color: "#FF6B00", letterSpacing: "-0.02em" }}>wrtn.</span>
-    );
-  }
-  // Google AI Overview
-  if (slug.includes("ai-overview")) {
-    return (
-      <div className="flex flex-col items-center gap-1">
-        <span className="text-2xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
-          <span style={{ color: "#4285F4" }}>G</span><span style={{ color: "#EA4335" }}>o</span><span style={{ color: "#FBBC05" }}>o</span><span style={{ color: "#4285F4" }}>g</span><span style={{ color: "#34A853" }}>l</span><span style={{ color: "#EA4335" }}>e</span>
-        </span>
-        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">AI Overview</span>
-      </div>
-    );
-  }
-  // Google
-  if (isGooglePost(slug)) {
-    return (
-      <div className="flex flex-col items-center gap-1.5">
-        <span className="text-3xl tracking-tight" style={{ fontFamily: "'Poppins', sans-serif", fontWeight: 600 }}>
-          <span style={{ color: "#4285F4" }}>G</span><span style={{ color: "#EA4335" }}>o</span><span style={{ color: "#FBBC05" }}>o</span><span style={{ color: "#4285F4" }}>g</span><span style={{ color: "#34A853" }}>l</span><span style={{ color: "#EA4335" }}>e</span>
-        </span>
-        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">Google SEO</span>
-      </div>
-    );
-  }
-  // Naver
-  if (isNaverPost(slug)) {
-    return (
-      <div className="flex flex-col items-center gap-1.5">
-        <span className="text-3xl font-extrabold tracking-tight" style={{ color: "#03C75A" }}>NAVER</span>
-        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">Naver SEO</span>
-      </div>
-    );
-  }
-  // Cafe24
-  if (isCafe24Post(slug)) {
-    return (
-      <div className="flex flex-col items-center gap-1.5">
-        <span className="text-3xl font-bold tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-          <span style={{ color: "#1B1B1B" }}>cafe</span><span style={{ color: "#0066BE" }}>24</span>
-        </span>
-        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">Cafe24 SEO</span>
-      </div>
-    );
-  }
-  // imweb
-  if (isImwebPost(slug)) {
-    return (
-      <div className="flex flex-col items-center gap-1.5">
-        <span className="text-3xl font-bold tracking-tight" style={{ color: "#1A1A1A" }}>imweb</span>
-        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">아임웹 SEO</span>
-      </div>
-    );
-  }
-  // Default: SearchTune OS
+
+  // 일반 브랜드: 단일 워드마크 + 부제
+  const wordmarkClass = isLg
+    ? "text-5xl tracking-tight"
+    : (brand.wordmark.length > 7 ? "text-2xl tracking-tight" : "text-3xl tracking-tight");
+
   return (
-    <div className="flex flex-col items-center gap-1">
-      <span className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent tracking-tight leading-none">
+    <div className="flex flex-col items-center gap-1.5">
+      <span
+        className={wordmarkClass}
+        style={{
+          fontFamily: brand.fontFamily,
+          fontWeight: brand.fontWeight,
+          color: brand.color,
+          letterSpacing: "-0.02em",
+        }}
+      >
+        {brand.wordmark}
+      </span>
+      <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
+        {brand.subtitle}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * SearchTune 기본 폴백 비주얼 (브랜드 미감지 글).
+ */
+function SearchTuneBadge({ category, size = "md" }: { category: string; size?: "md" | "lg" }) {
+  const isLg = size === "lg";
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <span className={`${isLg ? "text-3xl" : "text-xl"} font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent tracking-tight leading-none`}>
         SearchTune
       </span>
       <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/70">
@@ -148,20 +104,36 @@ function getBrandThumbnail(slug: string, category: string) {
   );
 }
 
+/** 카드 좌측에 표시할 비주얼: 브랜드가 명확하면 워드마크, 아니면 SearchTune 폴백 */
+function CardVisual({ slug, title, category, size = "md" }: { slug: string; title?: string; category?: string; size?: "md" | "lg" }) {
+  if (hasExplicitBrand(slug, title)) {
+    return <BrandWordmark slug={slug} title={title} category={category} size={size} />;
+  }
+  return <SearchTuneBadge category={category || "SEO"} size={size} />;
+}
+
 function formatDate(d: string) {
   const date = new Date(d);
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
 function HeroPost({ post }: { post: BlogPost }) {
+  const brandKey = detectBrand(post.slug, post.title, post.category);
+  const brand = BRAND_STYLES[brandKey];
+  const explicit = hasExplicitBrand(post.slug, post.title);
+
   return (
     <article className="group relative grid md:grid-cols-2 gap-4 md:gap-6 rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-[2/1] md:aspect-auto bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center md:min-h-[220px] relative">
+      <div
+        className="aspect-[2/1] md:aspect-auto flex items-center justify-center md:min-h-[260px] relative"
+        style={{
+          background: explicit
+            ? brand.panelBg
+            : "linear-gradient(135deg, hsl(var(--primary) / 0.20), hsl(var(--accent) / 0.10), hsl(var(--primary) / 0.05))",
+        }}
+      >
         <div className="text-center p-6 md:p-8">
-          <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-            AEO
-          </span>
-          <p className="text-sm text-muted-foreground mt-2">Answer Engine Optimization</p>
+          <CardVisual slug={post.slug} title={post.title} category={post.category} size="lg" />
         </div>
         <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-background/80 backdrop-blur text-foreground border border-border">
           <span className="relative flex h-1.5 w-1.5">
@@ -196,10 +168,21 @@ function HeroPost({ post }: { post: BlogPost }) {
 }
 
 function PostCard({ post }: { post: BlogPost }) {
+  const brandKey = detectBrand(post.slug, post.title, post.category);
+  const brand = BRAND_STYLES[brandKey];
+  const explicit = hasExplicitBrand(post.slug, post.title);
+
   return (
     <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-[16/9] bg-gradient-to-br from-muted to-secondary flex items-center justify-center relative">
-        {getBrandThumbnail(post.slug, post.category)}
+      <div
+        className="aspect-[16/9] flex items-center justify-center relative"
+        style={{
+          background: explicit
+            ? brand.panelBg
+            : "linear-gradient(135deg, hsl(var(--muted)), hsl(var(--secondary)))",
+        }}
+      >
+        <CardVisual slug={post.slug} title={post.title} category={post.category} />
       </div>
       <div className="flex flex-col flex-1 p-5">
         <div className="flex items-center gap-2">
