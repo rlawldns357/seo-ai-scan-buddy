@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
 
     if (!title) title = "SearchTune OS";
 
-    const svg = buildSvgOg({ title, category });
+    const svg = buildSvgOg({ title, category, slug: slug || undefined });
 
     return new Response(svg, {
       headers: {

@@ -104,7 +104,7 @@ Deno.serve(async (req) => {
     // === 2) Fallback: brand-safe SVG ===
     if (!imageBytes) {
       console.log(`[OG] Using SVG fallback (lastError=${lastError})`);
-      const svg = buildSvgOg({ title, category });
+      const svg = buildSvgOg({ title, category, slug });
       imageBytes = new TextEncoder().encode(svg);
       contentType = "image/svg+xml";
       ext = "svg";
