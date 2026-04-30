@@ -289,20 +289,19 @@ async function main() {
   fs.mkdirSync(blogDir, { recursive: true });
 
   for (const post of allPosts) {
-    // Write as /blog/{slug}/index.html so the host serves it as text/html
-    // (extensionless files were being served as application/octet-stream,
-    // causing browsers to download the page instead of rendering it,
-    // and breaking OG previews on KakaoTalk / Facebook crawlers).
-    const postDir = path.join(blogDir, post.slug);
-    const legacyPath = path.join(blogDir, post.slug); // same path, but as a file
+    // Write as /blog/{slug}.html so static hosting serves crawler-ready HTML
+    // before SPA fallback routing can return the main app shell.
+    const legacyPath = path.join(blogDir, post.slug);
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    // If a previous build wrote an extensionless FILE at this path, remove it
+    // Remove previous extensionless file or directory to avoid routing conflicts.
     if (fs.existsSync(legacyPath) && fs.statSync(legacyPath).isFile()) {
       fs.rmSync(legacyPath, { force: true });
     }
-    fs.mkdirSync(postDir, { recursive: true });
-    fs.writeFileSync(path.join(postDir, "index.html"), html, "utf-8");
+    if (fs.existsSync(legacyPath) && fs.statSync(legacyPath).isDirectory()) {
+      fs.rmSync(legacyPath, { recursive: true, force: true });
+    }
+    fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
@@ -332,7 +331,7 @@ function generateBlogListHtml(posts, assets) {
   const desc = "SEO·AEO·GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
 
   const listItems = posts
-    .map(p => `<li><a href="/blog/${p.slug}">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
+    .map(p => `<li><a href="${blogHtmlPath(p.slug)}">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
     .join("\n      ");
 
   return `<!doctype html>
