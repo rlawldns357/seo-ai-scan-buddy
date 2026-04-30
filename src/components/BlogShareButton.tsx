@@ -40,7 +40,7 @@ export default function BlogShareButton({ title, excerpt, url, imageUrl, categor
   const shareText = `${title}\n${desc}\n${url}`;
 
   const handleCopyLink = async () => {
-    trackEvent("blog_share_click", { platform: "copy_link", url });
+    trackEvent("share_click", { platform: "copy_link", url });
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -51,7 +51,7 @@ export default function BlogShareButton({ title, excerpt, url, imageUrl, categor
   };
 
   const handleCopyText = async () => {
-    trackEvent("blog_share_click", { platform: "copy_text", url });
+    trackEvent("share_click", { platform: "copy_text", url });
     try {
       await navigator.clipboard.writeText(shareText);
       setCopied(true);
@@ -62,26 +62,26 @@ export default function BlogShareButton({ title, excerpt, url, imageUrl, categor
   };
 
   const handleTwitter = () => {
-    trackEvent("blog_share_click", { platform: "twitter", url });
+    trackEvent("share_click", { platform: "twitter", url });
     const intent = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
     window.open(intent, "_blank", "noopener,noreferrer,width=600,height=500");
   };
 
   const handleLinkedIn = () => {
-    trackEvent("blog_share_click", { platform: "linkedin", url });
+    trackEvent("share_click", { platform: "linkedin", url });
     const intent = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
     window.open(intent, "_blank", "noopener,noreferrer,width=600,height=600");
   };
 
   const handleThreads = () => {
-    trackEvent("blog_share_click", { platform: "threads", url });
+    trackEvent("share_click", { platform: "threads", url });
     const intent = `https://www.threads.net/intent/post?text=${encodeURIComponent(`${title}\n${url}`)}`;
     window.open(intent, "_blank", "noopener,noreferrer");
   };
 
   const handleKakao = useCallback(async () => {
     if (busyKakao) return;
-    trackEvent("blog_share_click", { platform: "kakao", url });
+    trackEvent("share_click", { platform: "kakao", url });
 
     if (!KAKAO_JS_KEY) {
       try { await navigator.clipboard.writeText(shareText); } catch { /* noop */ }
