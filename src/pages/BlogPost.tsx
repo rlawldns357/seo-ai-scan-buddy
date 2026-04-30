@@ -868,7 +868,7 @@ export default function BlogPost() {
                 {relatedPosts.map((rp) => (
                   <Link
                     key={rp.slug}
-                    to={`/blog/${rp.slug}`}
+                    to={blogPostPath(rp.slug)}
                     className="group flex items-start gap-3 p-3 rounded-xl border border-border/50 hover:border-border hover:bg-muted/30 transition-all"
                   >
                     <div className="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center">
