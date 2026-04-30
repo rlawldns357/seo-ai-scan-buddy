@@ -1,12 +1,14 @@
 /**
- * OG/썸네일 디자인 룰북 (그라데이션 모던 톤)
+ * OG/썸네일 디자인 룰북 (그라데이션 모던 톤 + 브랜드 분할 카드)
  *
  * 모든 자동 생성 OG 이미지는 이 룰북을 강제 적용한다.
- * - 카테고리별 그라데이션·아이콘·악센트 컬러 통일
- * - SearchTune OS 브랜드 마크 좌상단/우하단 고정
- * - Pretendard 한글 굵은 본문 + 영문 보조
+ * - 브랜드가 명확한 글: 좌측 브랜드 워드마크 카드 + 우측 다크 그라데이션 메타
+ * - 그 외: 카테고리별 풀 그라데이션 + 타이틀
  * - 1200x630 (OG/Twitter Card 표준), 썸네일 겸용
+ * - 한글 100% 안전 (SVG 폴백)
  */
+
+import { detectBrand, getBrandStyle, hasExplicitBrand, type BrandKey, type BrandStyle } from "./brand-matching.ts";
 
 export type CategoryKey = "SEO" | "AEO" | "GEO" | "가이드" | "뉴스";
 
