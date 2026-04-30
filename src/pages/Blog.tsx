@@ -29,55 +29,27 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
   const brand = BRAND_STYLES[key];
   const isLg = size === "lg";
 
-  // ─── 개념 카드 (AEO/GEO/SEO) — 임팩트 강화: 거대 그라데이션 + 고스트 백그라운드 ───
+  // ─── 개념 카드 (AEO/GEO/SEO) — 글자별 그라데이션, 톤다운 ───
   if (key === "aeo" || key === "geo" || key === "seo") {
-    const conceptGradient: Record<"aeo" | "geo" | "seo", string> = {
-      aeo: "linear-gradient(135deg, #fbbf24 0%, #9a3412 100%)",
-      geo: "linear-gradient(135deg, #34d399 0%, #0f766e 100%)",
-      seo: "linear-gradient(135deg, #60a5fa 0%, #1e3a8a 100%)",
+    const stops: Record<"aeo" | "geo" | "seo", [string, string, string]> = {
+      // 차분한 한국 IT 톤: 채도 낮은 그라데이션
+      aeo: ["#f59e0b", "#d97706", "#b45309"], // 앰버 → 번트
+      geo: ["#10b981", "#059669", "#047857"], // 에메랄드 → 딥
+      seo: ["#3b82f6", "#2563eb", "#1d4ed8"], // 블루 → 인디고
     };
+    const colors = stops[key];
+    const letters = brand.wordmark.split("");
     return (
-      <div className="relative flex flex-col items-center gap-2">
-        {/* 고스트 아웃라인 백그라운드 */}
+      <div className="flex flex-col items-center gap-2">
         <span
-          aria-hidden
-          className={`${isLg ? "text-[10rem]" : "text-[7rem]"} font-black tracking-tighter leading-none absolute inset-0 flex items-center justify-center pointer-events-none select-none`}
-          style={{
-            WebkitTextStroke: "2px currentColor",
-            color: brand.color,
-            opacity: 0.08,
-            transform: "translateY(-2%)",
-          }}
+          className={isLg ? "text-5xl tracking-tight" : "text-3xl tracking-tight"}
+          style={{ fontFamily: brand.fontFamily, fontWeight: brand.fontWeight, letterSpacing: "-0.04em" }}
         >
-          {brand.wordmark}
+          {letters.map((ch, i) => (
+            <span key={i} style={{ color: colors[i] ?? colors[colors.length - 1] }}>{ch}</span>
+          ))}
         </span>
-        {/* 메인 그라데이션 워드마크 */}
-        <span
-          className={`${isLg ? "text-7xl md:text-8xl" : "text-5xl md:text-6xl"} font-black tracking-tighter leading-none relative z-10`}
-          style={{
-            fontFamily: brand.fontFamily,
-            backgroundImage: conceptGradient[key],
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-            letterSpacing: "-0.06em",
-          }}
-        >
-          {brand.wordmark}
-        </span>
-        {/* 컬러 언더바 */}
-        <span
-          aria-hidden
-          className="block h-1 rounded-full relative z-10"
-          style={{
-            width: isLg ? 72 : 56,
-            background: conceptGradient[key],
-          }}
-        />
-        <span
-          className="text-[11px] md:text-xs font-semibold tracking-wider uppercase relative z-10"
-          style={{ color: brand.color, opacity: 0.75 }}
-        >
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
           {brand.subtitle}
         </span>
       </div>
