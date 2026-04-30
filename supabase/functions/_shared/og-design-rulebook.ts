@@ -349,7 +349,7 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
 
   // Bing — Microsoft 시그니처 블루→사이언 그라데이션
   if (brand.key === "bing-copilot") {
-    const fontSize = 156;
+    const fontSize = 190;
     return `
       <defs>
         <linearGradient id="bingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -357,7 +357,7 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
           <stop offset="100%" stop-color="#00B7C3"/>
         </linearGradient>
       </defs>
-      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-4">${escXml(brand.wordmark)}</text>
+      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="700" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-5">${escXml(brand.wordmark)}</text>
     `;
   }
 
