@@ -78,4 +78,5 @@
 - [Blog Rulebook Compliance](mem://style/blog-naver-rulebook-compliance) — BlogPost.tsx 룰북 준수: alt 폴백(파일명 추출), 무의미 anchor 보강(도메인 부착), `<time datetime>` 시맨틱
 - [ASCII-Only Slugs](mem://constraints/ascii-only-slugs) — 자동 생성 블로그 slug는 영문만. AI가 slug_en 직접 생성, buildSafeSlug 검증, 한글 폴백 절대 금지 (네이버 색인/공유성)
 - [Naver Store Cache](mem://logic/naver-store-cache) — 네이버 스토어 분석 결과 24h 캐시 (storeUrl 키, IP 무관, engineMeta.cache 메타 동봉)
-- [OG PNG Rendering](mem://technical/og-font-embedding) — **OG 항상 PNG 출력** (카톡 SVG 미지원). resvg-wasm + Pretendard-Bold.ttf fontBuffers 주입. Blog share URL은 `/blog/{slug}/` trailing slash + `index.html`만 허용(확장자 없는 파일 금지).
+- [OG PNG Rendering](mem://technical/og-font-embedding) — **OG 항상 PNG 출력** (카톡 SVG 미지원). resvg-wasm + Pretendard-Bold.ttf fontBuffers 주입.
+- [Blog URL Canonical](mem://technical/blog-url-canonical-form) — ✅ 확정: 블로그 공유 URL은 `/blog/{slug}/index.html` 명시 경로만 카카오 OG 정상. 확장자 없는 파일/단독 .html/trailing slash 단독 모두 깨짐. 카카오 디버거 검증 완료 (2026-04-30)
