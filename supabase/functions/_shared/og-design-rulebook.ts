@@ -205,24 +205,27 @@ function tidyTitleForOg(rawTitle: string): string {
  */
 function buildBrandSplitSvg(opts: { title: string; category: string; slug?: string }): string {
   const brand = getBrandStyle(opts.slug || "", opts.title, opts.category);
+  const categoryStyle = resolveStyle(opts.category);
+  const accent = categoryStyle.accent; // 좌우 액센트 바 컬러
 
-  // 워드마크 중앙 — 카톡 작은 썸네일에서도 브랜드가 꽉 차게 보이도록 위쪽으로 올리고 더 크게
+  // 세로 균등 3분할: 메타(y=210) → 워드마크(cy=315) → 부제(y=420)
+  // 위 여백 210 / 아래 여백 210, 워드마크 정중앙
   const cx = 600;
-  const cy = 300;
+  const cy = 322;
   const wordmarkSvg = renderBrandWordmark(brand, cx, cy);
 
-  // 위쪽 작은 메타: 회사 · 카테고리 (eyebrow) — 더 진하게, 살짝 크게
+  // eyebrow 메타: 회사 · 카테고리
   const meta = brand.subtitle.toUpperCase();
   const metaFontSize = meta.length > 28 ? 16 : 18;
 
-  // 아래 후킹 부제: 제목 정갈 요약. 워드마크 바로 아래에 한 덩어리로 붙이고 크게.
+  // 부제: 제목 정갈 요약 (워드마크 바로 아래, 밀착)
   const tidyTitle = tidyTitleForOg(opts.title);
   const titleLines = wrapTitle(tidyTitle, 18).slice(0, 2);
   const titleFontSize = titleLines.length > 1
-    ? (titleLines.some((line) => line.length > 16) ? 38 : 42)
-    : (tidyTitle.length > 14 ? 46 : 52);
+    ? (titleLines.some((line) => line.length > 16) ? 36 : 40)
+    : (tidyTitle.length > 14 ? 44 : 48);
   const lineGap = titleFontSize + 8;
-  const titleStartY = titleLines.length > 1 ? 410 : 432;
+  const titleStartY = titleLines.length > 1 ? 432 : 446;
   const titleSvg = titleLines
     .map((line, i) => `<text x="${cx}" y="${titleStartY + i * lineGap}" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="800" fill="rgba(0,0,0,0.86)" text-anchor="middle" letter-spacing="-1">${escXml(line)}</text>`)
     .join("\n  ");
@@ -239,7 +242,7 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
     <!-- 모서리 비네팅 (아주 살짝) -->
     <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
       <stop offset="60%" stop-color="${brand.panelBg}" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.05"/>
     </radialGradient>
   </defs>
 
@@ -250,17 +253,36 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   <!-- 미세한 비네팅 -->
   <rect width="1200" height="630" fill="url(#vignette)"/>
 
-  <!-- 위쪽 작은 메타: 회사 · 카테고리 (eyebrow) -->
-  <text x="${cx}" y="138" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${metaFontSize}" font-weight="800" fill="rgba(0,0,0,0.58)" text-anchor="middle" letter-spacing="6">${escXml(meta)}</text>
+  <!-- 좌우 액센트 바 (카테고리 컬러, 중앙 정렬, h=140) -->
+  <rect x="56" y="245" width="4" height="140" rx="2" fill="${accent}" opacity="0.85"/>
+  <rect x="1140" y="245" width="4" height="140" rx="2" fill="${accent}" opacity="0.85"/>
 
-  <!-- 워드마크 (중앙) -->
+  <!-- 4코너 모서리 마크 (사진 프레임 느낌, 카테고리 컬러) -->
+  <g stroke="${accent}" stroke-width="2.5" fill="none" opacity="0.55" stroke-linecap="square">
+    <!-- top-left -->
+    <path d="M 56 80 L 56 56 L 80 56"/>
+    <!-- top-right -->
+    <path d="M 1120 56 L 1144 56 L 1144 80"/>
+    <!-- bottom-left -->
+    <path d="M 56 550 L 56 574 L 80 574"/>
+    <!-- bottom-right -->
+    <path d="M 1120 574 L 1144 574 L 1144 550"/>
+  </g>
+
+  <!-- 위쪽 eyebrow 메타: 회사 · 카테고리 -->
+  <text x="${cx}" y="158" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${metaFontSize}" font-weight="800" fill="rgba(0,0,0,0.58)" text-anchor="middle" letter-spacing="6">${escXml(meta)}</text>
+
+  <!-- eyebrow 아래 카테고리 점 (브랜드 액센트 시각 강화) -->
+  <circle cx="${cx}" cy="186" r="3" fill="${accent}" opacity="0.85"/>
+
+  <!-- 워드마크 (정중앙) -->
   ${wordmarkSvg}
 
-  <!-- 아래 후킹 부제: 제목 정갈 요약 (워드마크 바로 아래, 한 덩어리) -->
+  <!-- 부제: 제목 정갈 요약 (워드마크 바로 아래) -->
   ${titleSvg}
 
-  <!-- 우측 하단 워터마크 -->
-  <text x="1140" y="588" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="17" font-weight="700" fill="rgba(0,0,0,0.42)" text-anchor="end" letter-spacing="2">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
+  <!-- 중앙 하단 워터마크 (좌우 균형) -->
+  <text x="${cx}" y="544" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="14" font-weight="700" fill="rgba(0,0,0,0.36)" text-anchor="middle" letter-spacing="3">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
 </svg>`;
 }
 
