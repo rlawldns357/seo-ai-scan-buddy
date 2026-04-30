@@ -134,6 +134,35 @@ export function buildSvgOg(opts: { title: string; category: string; slug?: strin
 }
 
 /**
+ * 모든 OG SVG에 주입하는 폰트 임베드 블록.
+ *
+ * 왜 필요한가:
+ *  - SVG `font-family="'Pretendard',...'Noto Sans KR'"` 만으로는
+ *    카톡/페북/트위터/슬랙 같은 외부 OG 렌더러가 시스템에 해당 폰트가 없을 때 한글이 깨진다.
+ *  - SVG `<style>` 안에 `@import` 를 넣으면 SVG를 PNG로 래스터라이즈하는 서버
+ *    (예: linkpreview, slack-imgproxy)들이 fetch해서 사용 가능.
+ *  - 브라우저(<img src=...svg>)도 원격 폰트 fetch하므로 사이트 안에서도 일관됨.
+ *
+ * 폰트 선택:
+ *  - Pretendard: jsdelivr CDN의 woff2 (한국어 표준)
+ *  - Noto Sans KR: Google Fonts (가장 널리 쓰이는 한국어 웹폰트, 보편적 폴백)
+ *  - Inter: Google Fonts (영문 brand-clean)
+ *
+ * 모든 buildSvgOg 산출물에 무조건 prepend.
+ */
+const FONT_EMBED = `<defs>
+    <style type="text/css"><![CDATA[
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap');
+      @font-face {
+        font-family: 'Pretendard';
+        font-weight: 400 900;
+        font-display: swap;
+        src: url('https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+      }
+    ]]></style>
+  </defs>`;
+
+/**
  * 제목을 OG 부제용으로 "정갈하게" 요약.
  * - 콜론/대시 뒤 보조 설명 제거: "Q&A 4단계 전략 (AEO 최적화)" → "Q&A 4단계 전략"
  * - 괄호 안 부가 설명 제거
@@ -195,6 +224,7 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
     tidyTitle.length > 12 ? 36 : 40;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  ${FONT_EMBED}
   <defs>
     <!-- 살짝 그레인 노이즈 (한국적 종이 질감) -->
     <filter id="grain" x="0" y="0" width="100%" height="100%">
@@ -252,6 +282,7 @@ function buildGradientSvg(opts: { title: string; category: string }): string {
       : "";
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  ${FONT_EMBED}
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="${style.gradient.from}"/>
