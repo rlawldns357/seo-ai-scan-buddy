@@ -127,6 +127,9 @@ function getBrandThumbnail(slug: string, category: string, large = false) {
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
               letterSpacing: "-0.04em",
+              lineHeight: 1.25,
+              paddingBottom: "0.15em",
+              display: "inline-block",
             }}
           >
             {brand.wordmark}
