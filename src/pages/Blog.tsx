@@ -118,14 +118,22 @@ function formatDate(d: string) {
 }
 
 function HeroPost({ post }: { post: BlogPost }) {
+  const brandKey = detectBrand(post.slug, post.title, post.category);
+  const brand = BRAND_STYLES[brandKey];
+  const explicit = hasExplicitBrand(post.slug, post.title);
+
   return (
     <article className="group relative grid md:grid-cols-2 gap-4 md:gap-6 rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-[2/1] md:aspect-auto bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center md:min-h-[220px] relative">
+      <div
+        className="aspect-[2/1] md:aspect-auto flex items-center justify-center md:min-h-[260px] relative"
+        style={{
+          background: explicit
+            ? brand.panelBg
+            : "linear-gradient(135deg, hsl(var(--primary) / 0.20), hsl(var(--accent) / 0.10), hsl(var(--primary) / 0.05))",
+        }}
+      >
         <div className="text-center p-6 md:p-8">
-          <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-            AEO
-          </span>
-          <p className="text-sm text-muted-foreground mt-2">Answer Engine Optimization</p>
+          <CardVisual slug={post.slug} title={post.title} category={post.category} size="lg" />
         </div>
         <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-background/80 backdrop-blur text-foreground border border-border">
           <span className="relative flex h-1.5 w-1.5">
@@ -160,10 +168,21 @@ function HeroPost({ post }: { post: BlogPost }) {
 }
 
 function PostCard({ post }: { post: BlogPost }) {
+  const brandKey = detectBrand(post.slug, post.title, post.category);
+  const brand = BRAND_STYLES[brandKey];
+  const explicit = hasExplicitBrand(post.slug, post.title);
+
   return (
     <article className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-[16/9] bg-gradient-to-br from-muted to-secondary flex items-center justify-center relative">
-        {getBrandThumbnail(post.slug, post.category)}
+      <div
+        className="aspect-[16/9] flex items-center justify-center relative"
+        style={{
+          background: explicit
+            ? brand.panelBg
+            : "linear-gradient(135deg, hsl(var(--muted)), hsl(var(--secondary)))",
+        }}
+      >
+        <CardVisual slug={post.slug} title={post.title} category={post.category} />
       </div>
       <div className="flex flex-col flex-1 p-5">
         <div className="flex items-center gap-2">
