@@ -295,30 +295,27 @@ async function main() {
     const html = generateHtml(post, assets, related);
 
     // Lovable hosting auto-attaches `Content-Type: text/html; charset=utf-8`
-    // (verified via response headers) and adds `X-Content-Type-Options: nosniff`,
-    // so extensionless files render as HTML and are NOT downloaded.
+    // and `X-Content-Type-Options: nosniff` to ALL responses (verified via
+    // production response headers), so extensionless files render as HTML —
+    // they are NOT downloaded.
     //
-    // We MUST write a physical file at /blog/{slug} because Lovable hosting does
-    // NOT auto-resolve directory-index (`{slug}/index.html`) for extensionless
-    // requests — it falls back to the SPA root index.html, which gives the
-    // homepage's OG tags to social crawlers (Kakao/Naver/Facebook). That is
-    // exactly the bug we're fixing here.
+    // We MUST write a physical file at /blog/{slug} because Lovable hosting
+    // does NOT auto-resolve directory-index (`{slug}/index.html`) for
+    // extensionless requests — instead it falls back to the SPA root
+    // index.html, giving social crawlers (Kakao/Naver/Facebook) the homepage's
+    // OG tags. That is the bug we are fixing.
     //
-    // Strategy: write THREE shapes so every URL form returns the post HTML:
-    //   1. /blog/{slug}              ← what users actually paste/share
-    //   2. /blog/{slug}.html         ← legacy / explicit extension
-    //   3. /blog/{slug}/index.html   ← directory-index fallback
+    // Two shapes (a single filesystem name can be either a file or a dir,
+    // not both):
+    //   1. /blog/{slug}        ← extensionless physical file (canonical share URL)
+    //   2. /blog/{slug}.html   ← legacy / explicit extension
     const slugFile = path.join(blogDir, post.slug);
-    // If a previous build created a directory at this path, remove it first
-    // so we can write the extensionless physical file.
+    // If a previous build created a directory at this path, remove it first.
     if (fs.existsSync(slugFile) && fs.statSync(slugFile).isDirectory()) {
       fs.rmSync(slugFile, { recursive: true, force: true });
     }
     fs.writeFileSync(slugFile, html, "utf-8");
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
-    // Re-create the dir + index for crawlers/tools that probe trailing slash.
-    fs.mkdirSync(path.join(blogDir, post.slug + "__dir_tmp"), { recursive: true });
-    fs.rmSync(path.join(blogDir, post.slug + "__dir_tmp"), { recursive: true, force: true });
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
