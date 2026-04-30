@@ -502,7 +502,7 @@ ${naverRulebook}
                       },
                       excerpt: { type: "string", description: "2-3 sentence summary in Korean, max 160 chars" },
                       readTime: { type: "string", enum: ["3분", "4분", "5분"], description: "Read time" },
-                      content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section. MUST include table, numbered list, code/quote, internal link." },
+                      content: { type: "string", description: "Full markdown content in Korean, WITHOUT FAQ section. MUST include ALL of these visual components: (1) `> **TL;DR**` blockquote with 3 bullets right after intro, (2) markdown table, (3) numbered list, (4) code block or quote, (5) internal link, (6) mid-content CTA blockquote `> 💡 **잠깐, 우리 사이트도 점검해 볼까요?**` with `[무료 SEO·AEO·GEO 진단 받기](/)` link at ~60-70% position, (7) `## ✅ 실행 체크리스트` H2 with 5-7 `- [ ] item` GitHub-style checkboxes before conclusion." },
                       faqs: {
                         type: "array",
                         description: "5-6 expert-tone FAQs for body content. Formal voice, 3-5 sentences each, MUST cite data/stats/sources. NO CTA phrases.",
