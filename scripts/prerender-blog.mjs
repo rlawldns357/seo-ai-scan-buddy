@@ -150,8 +150,12 @@ function resolveOgImage(post) {
   return post.og_image;
 }
 
+// Canonical URL form: trailing slash. Lovable/Cloudflare hosting serves
+// /blog/{slug}/ as text/html (auto-resolves to index.html), while the bare
+// /blog/{slug} (no slash, no extension) is served as application/octet-stream
+// which breaks Kakao/Facebook OG crawlers. Always emit the trailing-slash form.
 function blogHtmlPath(slug) {
-  return `/blog/${slug}/index.html`;
+  return `/blog/${slug}/`;
 }
 
 function blogHtmlUrl(slug) {
