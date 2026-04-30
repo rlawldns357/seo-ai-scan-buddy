@@ -163,8 +163,12 @@ function HeroPost({ post }: { post: BlogPost }) {
           </span>
           <p className="text-sm text-muted-foreground mt-2">Answer Engine Optimization</p>
         </div>
-        <span className="absolute top-3 left-3 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
-          ✨ NEW
+        <span className="absolute top-3 left-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-background/80 backdrop-blur text-foreground border border-border">
+          <span className="relative flex h-1.5 w-1.5">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-primary opacity-60 animate-ping" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-primary" />
+          </span>
+          최신
         </span>
       </div>
       <div className="flex flex-col justify-center px-4 pb-5 md:p-8">
