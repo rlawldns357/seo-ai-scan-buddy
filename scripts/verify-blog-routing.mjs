@@ -58,7 +58,7 @@ function main() {
     const indexHtml = path.join(BLOG_DIR, slug, "index.html");
     const unsafeSlugFile = path.join(BLOG_DIR, slug);
     const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
-    const expected = `${SITE}/blog/${slug}/index.html`;
+    const expected = `${SITE}/blog/${slug}/`;
     const errors = [];
 
     // Canonical index.html must exist, and the unsafe extensionless file must not.
