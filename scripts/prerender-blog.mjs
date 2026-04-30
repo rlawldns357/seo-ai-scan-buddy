@@ -294,20 +294,31 @@ async function main() {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
 
-    // CRITICAL: never write an extensionless physical file at /blog/{slug} —
-    // hosts often serve it without Content-Type: text/html, causing the
-    // browser to DOWNLOAD the file instead of rendering it.
-    // Use the safe directory-index shape: /blog/{slug}/index.html.
-    const slugPath = path.join(blogDir, post.slug);
-    // If a previous build wrote a plain file at this path, remove it first.
-    if (fs.existsSync(slugPath) && fs.statSync(slugPath).isFile()) {
-      fs.rmSync(slugPath, { force: true });
+    // Lovable hosting auto-attaches `Content-Type: text/html; charset=utf-8`
+    // (verified via response headers) and adds `X-Content-Type-Options: nosniff`,
+    // so extensionless files render as HTML and are NOT downloaded.
+    //
+    // We MUST write a physical file at /blog/{slug} because Lovable hosting does
+    // NOT auto-resolve directory-index (`{slug}/index.html`) for extensionless
+    // requests — it falls back to the SPA root index.html, which gives the
+    // homepage's OG tags to social crawlers (Kakao/Naver/Facebook). That is
+    // exactly the bug we're fixing here.
+    //
+    // Strategy: write THREE shapes so every URL form returns the post HTML:
+    //   1. /blog/{slug}              ← what users actually paste/share
+    //   2. /blog/{slug}.html         ← legacy / explicit extension
+    //   3. /blog/{slug}/index.html   ← directory-index fallback
+    const slugFile = path.join(blogDir, post.slug);
+    // If a previous build created a directory at this path, remove it first
+    // so we can write the extensionless physical file.
+    if (fs.existsSync(slugFile) && fs.statSync(slugFile).isDirectory()) {
+      fs.rmSync(slugFile, { recursive: true, force: true });
     }
-    fs.mkdirSync(slugPath, { recursive: true });
-    fs.writeFileSync(path.join(slugPath, "index.html"), html, "utf-8");
-
-    // Keep /blog/{slug}.html as a compatibility copy for already-shared links.
+    fs.writeFileSync(slugFile, html, "utf-8");
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
+    // Re-create the dir + index for crawlers/tools that probe trailing slash.
+    fs.mkdirSync(path.join(blogDir, post.slug + "__dir_tmp"), { recursive: true });
+    fs.rmSync(path.join(blogDir, post.slug + "__dir_tmp"), { recursive: true, force: true });
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
