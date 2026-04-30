@@ -415,7 +415,7 @@ export default function Admin() {
                             삭제
                           </Button>
                           <a
-                            href={`/blog/${post.slug}/`}
+                            href={`/blog/${post.slug}.html`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-xs text-primary hover:underline self-center ml-auto"
