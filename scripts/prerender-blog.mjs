@@ -4,10 +4,9 @@
  * index content without executing JavaScript.
  *
  * Runs after `vite build` and writes static HTML files to
- * dist/blog/{slug} (extensionless physical file), plus a compatibility
- * dist/blog/{slug}.html copy.
- * Canonical/share URLs stay extensionless so Kakao/Naver/debuggers receive the
- * post HTML at the same URL users actually paste: /blog/{slug}.
+ * dist/blog/{slug}/index.html, plus a compatibility dist/blog/{slug}.html copy.
+ * Canonical/share URLs include /index.html because Kakao's debugger rejects
+ * extensionless responses when hosting serves them as application/octet-stream.
  */
 
 import fs from "fs";
@@ -152,7 +151,7 @@ function resolveOgImage(post) {
 }
 
 function blogHtmlPath(slug) {
-  return `/blog/${slug}`;
+  return `/blog/${slug}/index.html`;
 }
 
 function blogHtmlUrl(slug) {
