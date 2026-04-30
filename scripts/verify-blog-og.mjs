@@ -67,19 +67,11 @@ function collectBlogFiles() {
   const files = [];
 
   for (const entry of entries) {
-    // Canonical shape: extensionless physical file at dist/blog/{slug}
-    // (Lovable hosting serves this with Content-Type: text/html; nosniff,
-    // so browsers render — not download — it.)
-    if (entry.isFile() && !entry.name.includes(".")) {
-      files.push({ slug: entry.name, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name) });
-      continue;
-    }
-
-    // Legacy directory-index shape (kept for backward compat if any remain)
+    // Canonical shape: directory index at dist/blog/{slug}/index.html
     if (entry.isDirectory()) {
       const idx = path.join(BLOG_DIR, entry.name, "index.html");
       if (fs.existsSync(idx)) {
-        files.push({ slug: entry.name, label: `/blog/${entry.name}/`, path: idx, compatibility: true });
+        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx });
       }
       continue;
     }
@@ -109,7 +101,7 @@ function main() {
   let failed = 0;
   const canonicalSlugs = new Set(files.filter((f) => !f.compatibility).map((f) => f.slug));
   for (const file of files) {
-    const expectedUrl = `${SITE}/blog/${file.slug}`;
+    const expectedUrl = `${SITE}/blog/${file.slug}/index.html`;
     const errors = verifyFile(file.path, expectedUrl);
     if (file.compatibility && !canonicalSlugs.has(file.slug)) {
       errors.push(`missing canonical /blog/${file.slug}/index.html`);
