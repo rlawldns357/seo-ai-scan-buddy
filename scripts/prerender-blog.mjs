@@ -3,7 +3,9 @@
  * so that search engine crawlers (especially Naver Yeti) can
  * index content without executing JavaScript.
  *
- * Runs after `vite build` and writes files to dist/blog/{slug}/index.html
+ * Runs after `vite build` and writes extensionless files to dist/blog/{slug}
+ * because Lovable hosting's SPA fallback does not serve nested index.html
+ * for social crawler requests to /blog/{slug}.
  */
 
 import fs from "fs";
@@ -270,18 +272,22 @@ async function main() {
   // Build a "related posts" pool (latest 5 excluding current)
   const relatedPool = allPosts.slice(0, 20);
 
+  const blogDir = path.join(DIST, "blog");
+  fs.mkdirSync(blogDir, { recursive: true });
+
   for (const post of allPosts) {
-    const dir = path.join(DIST, "blog", post.slug);
-    fs.mkdirSync(dir, { recursive: true });
+    const postPath = path.join(blogDir, post.slug);
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    fs.writeFileSync(path.join(dir, "index.html"), html, "utf-8");
+    if (fs.existsSync(postPath) && fs.statSync(postPath).isDirectory()) {
+      fs.rmSync(postPath, { recursive: true, force: true });
+    }
+    fs.writeFileSync(postPath, html, "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
-  const blogListDir = path.join(DIST, "blog");
   const listHtml = generateBlogListHtml(allPosts, assets);
-  fs.writeFileSync(path.join(blogListDir, "index.html"), listHtml, "utf-8");
+  fs.writeFileSync(path.join(blogDir, "index.html"), listHtml, "utf-8");
 
   // Generate static /about/index.html with key copy + sitemap-style internal links
   const aboutHtml = generateAboutHtml(allPosts.slice(0, 6), assets);
