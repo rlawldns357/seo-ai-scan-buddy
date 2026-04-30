@@ -495,7 +495,7 @@ function ArticleJsonLd({ post }: { post: BlogPostType }) {
     dateModified: post.date,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://searchtuneos.com/blog/${post.slug}`,
+      "@id": blogPostUrl(post.slug),
     },
     image: post.thumbnail !== "/placeholder.svg"
       ? post.thumbnail
