@@ -42,6 +42,7 @@ const App = () => (
             {/* 기타 공개 페이지 */}
             <Route path="/about" element={<About />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug.html" element={<BlogPost />} />
             <Route path="/blog/:slug/index.html" element={<BlogPost />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/privacy" element={<Privacy />} />
