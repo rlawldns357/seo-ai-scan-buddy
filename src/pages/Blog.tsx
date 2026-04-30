@@ -266,8 +266,12 @@ export default function Blog() {
     fetchDbPosts();
   }, []);
 
-  const featured = allPosts.find((p) => p.featured);
-  const rest = allPosts.filter((p) => !p.featured);
+  // 항상 최신 글이 Hero (밀어내기 형식)
+  const sorted = [...allPosts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  const hero = sorted[0];
+  const rest = sorted.slice(1);
 
   const blogTitle = "블로그 – 서치튠OS | SEO·AEO·GEO 실전 가이드";
   const blogDesc = "SEO·AEO·GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
@@ -311,11 +315,18 @@ export default function Blog() {
             SEO · AEO · GEO에 대해 알아야 할 모든 것. 실전 가이드와 인사이트를 공유합니다.
           </p>
         </div>
-        {featured && (
+        {hero && (
           <div className="mb-12">
-            <Link to={`/blog/${featured.slug}`}>
-              <FeaturedPost post={featured} />
+            <Link to={`/blog/${hero.slug}`}>
+              <HeroPost post={hero} />
             </Link>
+          </div>
+        )}
+
+        {rest.length > 0 && (
+          <div className="mb-5 flex items-baseline justify-between">
+            <h2 className="text-lg md:text-xl font-bold text-foreground">이전 글</h2>
+            <span className="text-xs text-muted-foreground">{rest.length}개</span>
           </div>
         )}
 
