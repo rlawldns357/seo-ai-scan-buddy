@@ -4,8 +4,39 @@ import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
-import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { Calendar, Clock, ArrowRight, Share2, Check } from "lucide-react";
 import { detectBrand, getBrandStyle, hasExplicitBrand, BRAND_STYLES } from "@/lib/brandMatching";
+import { trackEvent } from "@/lib/analytics";
+
+const SITE_ORIGIN = "https://searchtuneos.com";
+
+function ShareIconButton({ slug, title }: { slug: string; title: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = `${SITE_ORIGIN}${blogPostPath(slug)}`;
+    trackEvent("share_click", { platform: "copy_link", url, source: "blog_list" });
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* noop */
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      aria-label={`${title} 링크 복사`}
+      title={copied ? "링크 복사됨" : "링크 복사"}
+      className="absolute top-3 right-3 z-10 inline-flex items-center justify-center w-8 h-8 rounded-full bg-background/80 backdrop-blur border border-border text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-background transition-colors shadow-sm"
+    >
+      {copied ? <Check className="w-3.5 h-3.5 text-primary" /> : <Share2 className="w-3.5 h-3.5" />}
+    </button>
+  );
+}
 
 const blogPostPath = (slug: string) => `/blog/${slug}.html`;
 
@@ -198,6 +229,7 @@ function HeroPost({ post }: { post: BlogPost }) {
           </span>
           최신
         </span>
+        <ShareIconButton slug={post.slug} title={post.title} />
       </div>
       <div className="flex flex-col justify-center px-4 pb-5 md:p-8">
         <span className={`self-start px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
@@ -239,6 +271,7 @@ function PostCard({ post }: { post: BlogPost }) {
         }}
       >
         <CardVisual slug={post.slug} title={post.title} category={post.category} />
+        <ShareIconButton slug={post.slug} title={post.title} />
       </div>
       <div className="flex flex-col flex-1 p-5">
         <div className="flex items-center gap-2">
