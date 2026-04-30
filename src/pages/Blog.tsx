@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { blogPosts, type BlogPost } from "@/data/blogPosts";
 import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
+import { detectBrand, getBrandStyle, hasExplicitBrand, BRAND_STYLES } from "@/lib/brandMatching";
 
 
 const categoryColor: Record<string, string> = {
