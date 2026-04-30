@@ -1,52 +1,77 @@
 ---
-name: OG SVG Font Embedding
-description: 모든 OG SVG에 Pretendard/Noto Sans KR 웹폰트를 @font-face/@import로 임베드해 외부 OG 크롤러(카톡/페북/트위터/슬랙)에서도 한글이 깨지지 않도록 강제
+name: OG SVG → PNG Font Embedding
+description: OG는 항상 PNG. resvg-wasm + Pretendard-Bold.ttf ArrayBuffer를 fontBuffers로 직접 주입해서 한글 100% 보장. @font-face/@import 의존 X
 type: technical
 ---
 
-## 문제
-SVG `<text font-family="'Pretendard','Noto Sans KR'">` 만으로는 외부 OG 렌더러가 시스템에 해당 폰트가 없을 때 한글이 □□로 깨진다. 카톡/페북/트위터/슬랙은 자체 서버에서 SVG를 PNG로 래스터라이즈하므로 우리 사이트의 폰트 로딩과 무관하다.
+## 결론: PNG 강제 + Pretendard ttf ArrayBuffer 임베드
 
-## 해결
-`supabase/functions/_shared/og-design-rulebook.ts`의 `FONT_EMBED` 상수를 모든 OG SVG의 `<svg>` 직속 자식으로 prepend.
+**SVG 직접 호스팅 금지.** 모든 OG는 PNG로 발행해야 한국 메신저(특히 카카오톡)에서 미리보기가 뜬다.
 
-```xml
-<defs>
-  <style type="text/css"><![CDATA[
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap');
-    @font-face {
-      font-family: 'Pretendard';
-      font-weight: 400 900;
-      font-display: swap;
-      src: url('https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
-    }
-  ]]></style>
-</defs>
+## 왜 SVG로는 안 됐나
+
+| 플랫폼 | SVG OG 처리 | 결과 |
+|---|---|---|
+| 카카오톡 | image/svg+xml MIME 거부 | **미리보기 안 뜸** (디버거에서도 옛 placeholder만) |
+| Facebook | 자체 서버 SVG→PNG | `@import`/`@font-face` 무시하는 렌더러 多 → 한글 □□ |
+| Twitter/X | 자체 서버 SVG→PNG | 동일 |
+| Slack | imgproxy로 변환 | 일부 환경에서 fontconfig 누락 → 한글 깨짐 |
+
+## 해결: 서버사이드 PNG 래스터라이즈 + ttf 직접 주입
+
+```ts
+// supabase/functions/_shared/og-png-renderer.ts
+import { Resvg, initWasm } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
+
+const PRETENDARD_BOLD_TTF =
+  "https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/public/static/alternative/Pretendard-Bold.ttf";
+// Pretendard는 KR+EN 통합 폰트 (단일 ttf로 한글/영문/숫자 전부 커버, 2.6MB)
+
+const resvg = new Resvg(svg, {
+  fitTo: { mode: "width", value: 1200 },
+  font: {
+    fontBuffers: [new Uint8Array(pretendardTtfArrayBuffer)],
+    loadSystemFonts: false,
+    defaultFontFamily: "Pretendard",
+  },
+});
+const png = resvg.render().asPng();
 ```
 
-## CDN 결정 근거
-- ✅ `cdn.jsdelivr.net/npm/pretendard@1.3.9/...` — HTTP 200, CORS `*`
-- ❌ `cdn.jsdelivr.net/gh/orioncactus/pretendard/...` — HTTP 403 (jsdelivr가 일부 GitHub raw woff2 차단)
-- ✅ `fonts.googleapis.com/css2?family=Noto+Sans+KR&family=Inter` — HTTP 200, 보편적
+핵심:
+- **`fontBuffers`로 ArrayBuffer 직접 주입** → resvg가 글리프를 직접 렌더 → @font-face/@import에 의존하지 않음
+- **`loadSystemFonts: false`** → Edge 환경에 시스템 폰트 없으니 명시적으로 끄기
+- **`defaultFontFamily: "Pretendard"`** → SVG의 font-family 스택을 무시하고 임베드한 폰트로 강제
 
-## 폰트 우선순위 (font-family 스택)
-1. **Pretendard** — 한국어 표준 (jsdelivr CDN)
-2. **Noto Sans KR** — Google Fonts 보편 폴백
-3. **Inter** — 영문 brand-clean
-4. **Apple SD Gothic Neo, -apple-system** — macOS/iOS 시스템 폴백
-5. **sans-serif** — 최종 폴백
+## CDN 결정 근거
+- ✅ `cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/public/static/alternative/Pretendard-Bold.ttf` — HTTP 200, CORS `*`, 2.6MB
+- ❌ `gh/orioncactus/pretendard@v1.3.9/...` — 일부 raw 경로 403/404
+- ❌ resvg-wasm은 woff2 직접 파싱 못함 (ttf/otf만 지원) → 반드시 ttf 미러 사용
+
+## 캐시 전략
+- `wasmReady: Promise<void>` 모듈 스코프 캐시 → wasm 초기화 1회만
+- `pretendardFontPromise: Promise<ArrayBuffer>` 모듈 스코프 캐시 → ttf fetch 1회만
+- 첫 호출 ~3-5초, 이후 200-500ms (cold start 후)
 
 ## 적용 범위
-- `buildBrandSplitSvg` (미니멀 단일 패널, 메인 OG) ✓
-- `buildGradientSvg` (SearchTune OS 풀 그라데이션 폴백) ✓
-- 두 빌더 모두 `<svg>` 바로 다음에 `${FONT_EMBED}` 주입
+- `generate-og-image` POST → 룰북 SVG 빌드 → `svgToPng()` → Storage `.png` 업로드
+- `og-svg` GET → 룰북 SVG 빌드 → `svgToPng()` → `Content-Type: image/png` 응답 (Cloudflare 24h 캐시)
+- 두 endpoint 모두 동일한 PNG 출력 보장
 
 ## 검증 (2026-04-30)
-- `og-svg` endpoint: FONT_EMBED 정상 주입 확인 (`@import`, `@font-face` 둘 다 grep ✓)
-- 브라우저 직접 렌더: 한글/영문 모두 Pretendard 적용 ✓
-- 발행된 모든 글 OG (57개) FONT_EMBED 적용해서 재생성 완료
-- 외부 검증 권장: Facebook Sharing Debugger, Twitter Card Validator로 실제 미리보기 확인
+- 발행글 57개 일괄 재생성 → DB 검사: `png_count=57, svg_count=0` ✓
+- 카카오톡 UA fetch: `Content-Type: image/png`, 200 OK ✓
+- Facebook UA fetch: 200 OK, REVALIDATED ✓
+- 시각 QA: Google 멀티컬러 / Naver 그린 / Perplexity 검정 워드마크 + 한글 후킹 부제 모두 깨끗 ✓
+
+## SVG 폰트 임베드는 폐기
+이전 버전에서 SVG `<style>` 안에 `@import` + `@font-face`로 폰트 주입했지만,
+PNG 변환 단계에서 무시되는 케이스가 많아 신뢰 불가. 이제는 resvg에 ArrayBuffer로 직접 주입하는 방식만 신뢰.
+
+SVG의 font-family 스택은 그대로 둬도 무방 (브라우저 직접 미리보기 시에만 사용).
 
 ## 주의
-- 외부 폰트 fetch가 막힌 환경(에어갭 서버 등)에서는 시스템 폴백으로 떨어짐 — 이때도 한국어 시스템 폰트가 있으면 한글은 깨지지 않음 (font-family 스택의 마지막 안전망 역할)
-- `font-display: swap` 으로 폰트 로딩 지연 시에도 텍스트는 즉시 보임
+- resvg-wasm은 woff2 못 읽음 → **반드시 ttf/otf 미러 사용**
+- ttf는 woff2보다 ~3배 무거움 (2.6MB vs 0.9MB) → 모듈 스코프 캐시로 cold start 비용만 감수
+- Pretendard 단일 폰트로 디자인 통일 (Inter/Noto 별도 임베드 불필요)
+
