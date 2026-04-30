@@ -252,7 +252,7 @@ function buildGradientSvg(opts: { title: string; category: string }): string {
  * (cx, cy) 는 워드마크 중심점.
  */
 function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string {
-  // 개념 카드 (AEO/GEO/SEO) — 글자별 그라데이션, 다른 브랜드와 동급 사이즈
+  // 개념 카드 (AEO/GEO/SEO) — 글자별 그라데이션, 크게
   if (brand.key === "aeo" || brand.key === "geo" || brand.key === "seo") {
     const stops: Record<"aeo" | "geo" | "seo", [string, string, string]> = {
       aeo: ["#f59e0b", "#d97706", "#b45309"],
@@ -261,21 +261,21 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
     };
     const colors = stops[brand.key];
     const letters = brand.wordmark.split("");
-    const fontSize = 96;
+    const fontSize = 180;
     const charW = fontSize * 0.62;
     const totalW = charW * letters.length;
     const startX = cx - totalW / 2;
     return letters
       .map(
         (ch, i) =>
-          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="${colors[i] ?? colors[colors.length - 1]}" text-anchor="middle" letter-spacing="-3">${escXml(ch)}</text>`,
+          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="${colors[i] ?? colors[colors.length - 1]}" text-anchor="middle" letter-spacing="-5">${escXml(ch)}</text>`,
       )
       .join("");
   }
 
   // Bing — Microsoft 시그니처 블루→사이언 그라데이션
   if (brand.key === "bing-copilot") {
-    const fontSize = 80;
+    const fontSize = 156;
     return `
       <defs>
         <linearGradient id="bingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -283,31 +283,30 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
           <stop offset="100%" stop-color="#00B7C3"/>
         </linearGradient>
       </defs>
-      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-2">${escXml(brand.wordmark)}</text>
+      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-4">${escXml(brand.wordmark)}</text>
     `;
   }
 
-  const fontSize = brand.wordmark.length > 7 ? 56 : 72;
+  // 일반 브랜드 — 워드마크 길이에 따라 사이즈 조정
+  const fontSize = brand.wordmark.length > 8 ? 120 : brand.wordmark.length > 5 ? 140 : 160;
 
   // Google 멀티컬러
   if (brand.key === "google" || brand.key === "google-ai-overview") {
     const colors = ["#4285F4", "#EA4335", "#FBBC05", "#4285F4", "#34A853", "#EA4335"];
     const letters = "Google".split("");
-    // 글자별 x 오프셋 근사 (모노스페이스 가정)
     const charW = fontSize * 0.55;
     const totalW = charW * letters.length;
     const startX = cx - totalW / 2;
-    const letterTags = letters
+    return letters
       .map(
         (ch, i) =>
-          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${colors[i]}" text-anchor="middle" letter-spacing="-1">${ch}</text>`,
+          `<text x="${startX + i * charW + charW / 2}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${colors[i]}" text-anchor="middle" letter-spacing="-2">${ch}</text>`,
       )
       .join("");
-    return letterTags;
   }
 
   // 일반 브랜드: 단일 컬러 워드마크
-  return `<text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${brand.color}" text-anchor="middle" letter-spacing="-1.5">${escXml(brand.wordmark)}</text>`;
+  return `<text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${brand.color}" text-anchor="middle" letter-spacing="-3">${escXml(brand.wordmark)}</text>`;
 }
 
 function escXml(s: string): string {
