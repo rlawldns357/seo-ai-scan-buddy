@@ -157,7 +157,7 @@ const FONT_EMBED = `<defs>
         font-family: 'Pretendard';
         font-weight: 400 900;
         font-display: swap;
-        src: url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+        src: url('https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
       }
     ]]></style>
   </defs>`;
