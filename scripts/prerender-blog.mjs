@@ -293,27 +293,16 @@ async function main() {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
 
-    // Lovable hosting auto-attaches `Content-Type: text/html; charset=utf-8`
-    // and `X-Content-Type-Options: nosniff` to ALL responses (verified via
-    // production response headers), so extensionless files render as HTML —
-    // they are NOT downloaded.
-    //
-    // We MUST write a physical file at /blog/{slug} because Lovable hosting
-    // does NOT auto-resolve directory-index (`{slug}/index.html`) for
-    // extensionless requests — instead it falls back to the SPA root
-    // index.html, giving social crawlers (Kakao/Naver/Facebook) the homepage's
-    // OG tags. That is the bug we are fixing.
-    //
-    // Two shapes (a single filesystem name can be either a file or a dir,
-    // not both):
-    //   1. /blog/{slug}        ← extensionless physical file (canonical share URL)
-    //   2. /blog/{slug}.html   ← legacy / explicit extension
-    const slugFile = path.join(blogDir, post.slug);
-    // If a previous build created a directory at this path, remove it first.
-    if (fs.existsSync(slugFile) && fs.statSync(slugFile).isDirectory()) {
-      fs.rmSync(slugFile, { recursive: true, force: true });
+    // Kakao rejects extensionless physical files if the host serves them as
+    // application/octet-stream. Use the explicit HTML document URL as canonical.
+    // Remove any previously generated extensionless file before making the
+    // slug directory, then keep .html as a legacy compatibility copy.
+    const slugDir = path.join(blogDir, post.slug);
+    if (fs.existsSync(slugDir) && fs.statSync(slugDir).isFile()) {
+      fs.rmSync(slugDir, { force: true });
     }
-    fs.writeFileSync(slugFile, html, "utf-8");
+    fs.mkdirSync(slugDir, { recursive: true });
+    fs.writeFileSync(path.join(slugDir, "index.html"), html, "utf-8");
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
   }
 
