@@ -206,22 +206,25 @@ function tidyTitleForOg(rawTitle: string): string {
 function buildBrandSplitSvg(opts: { title: string; category: string; slug?: string }): string {
   const brand = getBrandStyle(opts.slug || "", opts.title, opts.category);
 
-  // 워드마크 중앙 — 작은 공유 카드에서도 브랜드가 먼저 보이도록 살짝 키움
+  // 워드마크 중앙 — 카톡 작은 썸네일에서도 브랜드가 꽉 차게 보이도록 위쪽으로 올리고 더 크게
   const cx = 600;
-  const cy = 312;
+  const cy = 300;
   const wordmarkSvg = renderBrandWordmark(brand, cx, cy);
 
-  // 위쪽 작은 메타: 회사 · 카테고리 (eyebrow)
+  // 위쪽 작은 메타: 회사 · 카테고리 (eyebrow) — 더 진하게, 살짝 크게
   const meta = brand.subtitle.toUpperCase();
-  const metaFontSize = meta.length > 28 ? 14 : 16;
+  const metaFontSize = meta.length > 28 ? 16 : 18;
 
-  // 아래 후킹 부제: 제목 정갈 요약. 작은 카톡 카드에서 읽히도록 최대 2줄 허용.
+  // 아래 후킹 부제: 제목 정갈 요약. 워드마크 바로 아래에 한 덩어리로 붙이고 크게.
   const tidyTitle = tidyTitleForOg(opts.title);
-  const titleLines = wrapTitle(tidyTitle, 20).slice(0, 2);
-  const titleFontSize = titleLines.some((line) => line.length > 18) ? 34 : 38;
-  const titleStartY = titleLines.length > 1 ? 422 : 438;
+  const titleLines = wrapTitle(tidyTitle, 18).slice(0, 2);
+  const titleFontSize = titleLines.length > 1
+    ? (titleLines.some((line) => line.length > 16) ? 38 : 42)
+    : (tidyTitle.length > 14 ? 46 : 52);
+  const lineGap = titleFontSize + 8;
+  const titleStartY = titleLines.length > 1 ? 410 : 432;
   const titleSvg = titleLines
-    .map((line, i) => `<text x="${cx}" y="${titleStartY + i * 46}" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="700" fill="rgba(0,0,0,0.76)" text-anchor="middle" letter-spacing="0">${escXml(line)}</text>`)
+    .map((line, i) => `<text x="${cx}" y="${titleStartY + i * lineGap}" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="800" fill="rgba(0,0,0,0.86)" text-anchor="middle" letter-spacing="-1">${escXml(line)}</text>`)
     .join("\n  ");
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
