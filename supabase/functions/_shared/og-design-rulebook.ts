@@ -352,7 +352,7 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
 
   // Bing — Microsoft 시그니처 블루→사이언 그라데이션
   if (brand.key === "bing-copilot") {
-    const fontSize = 190;
+    const fontSize = 220;
     return `
       <defs>
         <linearGradient id="bingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -360,12 +360,12 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
           <stop offset="100%" stop-color="#00B7C3"/>
         </linearGradient>
       </defs>
-      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="700" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-5">${escXml(brand.wordmark)}</text>
+      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="700" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-6">${escXml(brand.wordmark)}</text>
     `;
   }
 
-  // 일반 브랜드 — 워드마크 길이에 따라 사이즈 조정
-  const fontSize = brand.wordmark.length > 8 ? 120 : brand.wordmark.length > 5 ? 140 : 160;
+  // 일반 브랜드 — 워드마크 길이에 따라 사이즈 조정 (전체적으로 +20)
+  const fontSize = brand.wordmark.length > 8 ? 140 : brand.wordmark.length > 5 ? 160 : 190;
 
   // Google 멀티컬러
   if (brand.key === "google" || brand.key === "google-ai-overview") {
