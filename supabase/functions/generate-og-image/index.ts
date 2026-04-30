@@ -26,7 +26,8 @@ Deno.serve(async (req) => {
     const slug = body?.slug as string | undefined;
     const title = body?.title as string | undefined;
     const category = (body?.category as string | undefined) || "가이드";
-    const preferSvg = body?.prefer_svg === true;
+    // 룰북 SVG가 SSOT. AI 이미지는 명시적으로 prefer_ai=true 줄 때만 시도 (한글 깨짐/스타일 불일치 위험).
+    const preferSvg = body?.prefer_ai !== true;
 
     if (!slug || !title) {
       return new Response(
