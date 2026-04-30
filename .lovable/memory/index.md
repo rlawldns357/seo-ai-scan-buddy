@@ -78,4 +78,4 @@
 - [Blog Rulebook Compliance](mem://style/blog-naver-rulebook-compliance) — BlogPost.tsx 룰북 준수: alt 폴백(파일명 추출), 무의미 anchor 보강(도메인 부착), `<time datetime>` 시맨틱
 - [ASCII-Only Slugs](mem://constraints/ascii-only-slugs) — 자동 생성 블로그 slug는 영문만. AI가 slug_en 직접 생성, buildSafeSlug 검증, 한글 폴백 절대 금지 (네이버 색인/공유성)
 - [Naver Store Cache](mem://logic/naver-store-cache) — 네이버 스토어 분석 결과 24h 캐시 (storeUrl 키, IP 무관, engineMeta.cache 메타 동봉)
-- [OG Font Embedding](mem://technical/og-font-embedding) — 모든 OG SVG에 Pretendard(jsdelivr npm)/Noto Sans KR(Google Fonts) @font-face 임베드. 카톡/페북/트위터/슬랙 외부 렌더에서도 한글 안 깨짐. 검증 완료(57개 재생성)
+- [OG PNG Rendering](mem://technical/og-font-embedding) — **OG 항상 PNG 출력** (카톡 SVG 미지원). resvg-wasm + Pretendard-Bold.ttf ArrayBuffer를 fontBuffers로 직접 주입(한글 100%). generate-og-image/og-svg 둘 다 PNG. prerender는 .svg 발견 시 og-svg endpoint(PNG)로 강제 치환. 57개 재생성 완료

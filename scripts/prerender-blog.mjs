@@ -128,10 +128,24 @@ function getAssetTags() {
 }
 
 // ── 6. Generate HTML for a post ─────────────────────────────────────
+// og:image는 반드시 PNG여야 카카오톡 미리보기가 뜸 (SVG는 카톡 미지원).
+// post.og_image가 .svg로 끝나거나 비어있으면 og-svg edge function의 PNG 폴백 사용.
+function resolveOgImage(post) {
+  const supaProj = (env.VITE_SUPABASE_PROJECT_ID || "").trim();
+  const fnBase = supaProj
+    ? `https://${supaProj}.supabase.co/functions/v1/og-svg`
+    : `${SITE}/og-image.png`;
+  const fallback = `${fnBase}?slug=${encodeURIComponent(post.slug)}`;
+  if (!post.og_image) return fallback;
+  // .svg URL은 카톡 미리보기에서 안 뜨므로 PNG endpoint로 강제 치환
+  if (/\.svg(\?|$)/i.test(post.og_image)) return fallback;
+  return post.og_image;
+}
+
 function generateHtml(post, assets, related = []) {
   const postUrl = `${SITE}/blog/${post.slug}`;
   const title = `${post.title} – 서치튠OS 블로그`;
-  const ogImage = post.og_image || `${SITE}/og-image.png`;
+  const ogImage = resolveOgImage(post);
   const contentHtml = mdToHtml(post.content || "");
 
   const articleJsonLd = JSON.stringify({

@@ -1,15 +1,30 @@
 ---
 name: OG/Thumbnail Rulebook
-description: OG=썸네일. 미니멀 단일 패널(좌/우 분할 폐기) — 브랜드별 크림/오프화이트 panelBg + 그레인 노이즈 + 중앙 워드마크 + 부제 "회사 · 카테고리". 한글 100% 안전 SVG 폴백
+description: OG=썸네일. **항상 PNG 출력** (카카오톡 호환). 룰북 SVG 빌드 → resvg-wasm + Pretendard ttf로 래스터라이즈. 단일 패널 미니멀 + 그레인 + 후킹 부제
 type: design
 ---
 
-## 컨셉 (v2 — 미니멀)
+## 출력 형식 (v4 — PNG 강제, 2026-04-30)
+
+**모든 OG 이미지는 PNG로 발행한다.** SVG 직접 호스팅 금지.
+
+이유:
+- **카카오톡**은 OG 이미지로 SVG 미지원 → 미리보기 자체가 안 뜸
+- **페북/트위터/슬랙**은 SVG → PNG 변환 시 `@font-face`/`@import`를 무시하는 렌더러 多 → 한글 □□
+
+해결 (`supabase/functions/_shared/og-png-renderer.ts`):
+1. 룰북이 SVG 빌드 (`buildSvgOg` — 디자인 SSOT)
+2. `svgToPng(svg)`로 resvg-wasm 래스터라이즈
+3. **Pretendard-Bold.ttf** (jsdelivr `npm/pretendard@1.3.9/dist/public/static/alternative/`, 2.6MB) ArrayBuffer를 `fontBuffers`로 직접 주입 → @font-face 의존 X, 한글 100% 보장
+4. `og-images` 버킷에 `.png` 업로드, `og_image`/`thumbnail` 양쪽 저장
+
+## 컨셉 (v2 유지 — 미니멀 단일 패널)
 업로드한 ChatGPT/Claude/AEO 예시 톤. 좌우 분할/그라데이션 시끄러움 폐기.
 - **단일 패널**: 1200x630 풀 크림/오프화이트 (`brand.panelBg`)
 - **그레인 노이즈**: SVG `<filter>` feTurbulence 6% opacity (한국적 종이 질감)
 - **워드마크 중앙**: brand.wordmark, brand.color (Bing은 그라데이션 fill, AEO/GEO/SEO는 글자별 그라데이션, Google은 멀티컬러)
-- **부제**: `회사 · 카테고리` (예: `OPENAI · AEO`, `ANTHROPIC · AEO`, `MICROSOFT · SEO`). brand.subtitle을 toUpperCase + letter-spacing 3
+- **위 메타** (eyebrow): `회사 · 카테고리` (예: `OPENAI · AEO`). brand.subtitle.toUpperCase + letter-spacing 4
+- **아래 후킹 부제**: `tidyTitleForOg(title)` — 제목 정갈 요약 한 줄 (Pretendard 600, 회색 0.72)
 - **워터마크**: 우측 하단 `SEARCHTUNE OS · SEARCHTUNEOS.COM` (회색 0.32)
 
 ## 3-Tier 폴백 (유지)
@@ -23,25 +38,35 @@ type: design
 - 워드마크: `length > 8 → 120 / > 5 → 140 / else → 160`
 - 컨셉(AEO/GEO/SEO): 180
 - Bing: 156 (그라데이션 fill, descender padding)
-- 부제: `subtitle.length > 28 → 18 / else → 22`
+- 부제(eyebrow): `length > 28 → 14 / else → 16`
+- 후킹 부제(아래): 길이별 자동 28-40 (28 → 32 → 36 → 40)
+
+## tidyTitleForOg 룰
+- 괄호 안 부가 설명 제거
+- 콜론/대시 뒤 보조 설명 컷 (앞부분 8자 이상일 때)
+- 연도 prefix(`2026년`) 제거
+- 32자 초과 시 단어 경계로 컷 + `…`
 
 ## 구현
 - 공유 모듈: `src/lib/brandMatching.ts` ↔ `supabase/functions/_shared/brand-matching.ts` (mirror)
-- 룰북: `supabase/functions/_shared/og-design-rulebook.ts` — `buildBrandSplitSvg` (이름 유지하되 단일 패널), `buildGradientSvg` (SearchTune 폴백만)
+- 룰북 SVG 빌더: `supabase/functions/_shared/og-design-rulebook.ts`
+- **PNG 렌더러**: `supabase/functions/_shared/og-png-renderer.ts` (resvg-wasm + Pretendard ttf)
 
 ## Endpoints
-- `og-svg` GET `?slug=...&title=...&category=...` — 영구 폴백 (Cache 24h)
-- `generate-og-image` POST — AI 시도 후 실패 시 SVG 폴백, Storage(og-images, UUID) 업로드
+- `og-svg` GET `?slug=...&title=...&category=...` — **PNG 응답** (Cloudflare 24h 캐시). `?format=svg`는 디버그용
+- `generate-og-image` POST `{slug,title,category}` — 룰북 SVG → PNG → Storage 업로드 → DB 갱신
 
-## v3 업데이트 (2026-04-30): SVG SSOT + 후킹 부제
-- **`generate-og-image` 기본값 SVG-first**: AI 이미지는 `prefer_ai=true` 명시할 때만 시도. 룰북 SVG가 단일 진실 소스 (한글 안전 + 스타일 일관성).
-- **부제 2층 구조** in `buildBrandSplitSvg`:
-  - **위 메타** (y=180, 14-16px, 회색 0.42, letter-spacing 4): `회사 · 카테고리` (예: `MICROSOFT · SEO`)
-  - **워드마크** (중앙, y=305): 기존 그라데이션 유지
-  - **아래 후킹 부제** (y=430, 28-40px 자동, Pretendard 600, 회색 0.72): 제목 정갈 요약 → 클릭 유도
-- **`tidyTitleForOg(title)` 헬퍼**:
-  - 괄호 안 부가 설명 제거 (`Q&A 4단계 전략 (AEO 최적화)` → `Q&A 4단계 전략`)
-  - 콜론/대시 뒤 보조 설명 컷 (`완벽 가이드: 중복 콘텐츠 해결` → `완벽 가이드`)
-  - 연도 prefix 제거 (`2026년 ...` → `...`)
-  - 32자 초과 시 단어 경계로 컷 + `…`
-- 발행된 모든 글 OG 일괄 재생성 (57개) — 모두 SVG 룰북 적용 완료.
+## prerender-blog.mjs
+- `resolveOgImage(post)`: `og_image`가 비었거나 `.svg`로 끝나면 `og-svg` PNG endpoint URL로 강제 치환
+- 모든 `<meta property="og:image">`는 반드시 PNG URL을 가리킴
+
+## 신규 발행 자동 규칙 (CRD에 박힘)
+1. 발행 시 `generate-og-image` 자동 호출 → og_image/thumbnail에 .png URL 저장
+2. 만약 호출 실패해도 prerender가 og-svg endpoint(PNG)로 fallback → og:image는 항상 PNG 보장
+3. SVG 직접 저장 금지 (Storage에 .svg 파일 새로 만들지 말 것)
+
+## 검증 (v4)
+- 발행글 57개 모두 PNG로 일괄 재생성 완료 (2026-04-30)
+- 카카오톡 / Facebook 크롤러 UA로 fetch 테스트 → `Content-Type: image/png`, 200 OK
+- 한글/영문 혼합 테스트: Google/Naver/Perplexity/AEO 카드 모두 Pretendard로 깨끗하게 렌더 ✓
+

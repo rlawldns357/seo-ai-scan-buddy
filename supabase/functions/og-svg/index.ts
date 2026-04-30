@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 import { buildSvgOg } from "../_shared/og-design-rulebook.ts";
+import { svgToPng } from "../_shared/og-png-renderer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,15 +9,16 @@ const corsHeaders = {
 };
 
 /**
- * On-demand brand-safe SVG OG image.
+ * On-demand OG 이미지 폴백 endpoint.
  *
- * Used as a permanent fallback in BlogPost.tsx when og_image / thumbnail are
- * missing or broken. Always returns a valid 1200x630 SVG matching the brand
- * design rulebook — Korean text renders perfectly.
+ * **항상 PNG 응답** (카카오톡 호환). 함수 이름은 호환성 유지.
+ * - 룰북 SVG 빌드 → resvg-wasm + Pretendard ttf로 PNG 래스터라이즈
+ * - 24h Cloudflare 캐시
  *
  * Usage:
  *   GET /functions/v1/og-svg?slug=...
  *   GET /functions/v1/og-svg?title=...&category=...
+ *   GET /functions/v1/og-svg?slug=...&format=svg  ← 디버그용 SVG raw 출력
  */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -28,8 +30,8 @@ Deno.serve(async (req) => {
     let title = url.searchParams.get("title") || "";
     let category = url.searchParams.get("category") || "가이드";
     const slug = url.searchParams.get("slug");
+    const format = url.searchParams.get("format") || "png";
 
-    // Look up post by slug if title not provided
     if (!title && slug) {
       const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
       const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -49,19 +51,39 @@ Deno.serve(async (req) => {
 
     const svg = buildSvgOg({ title, category, slug: slug || undefined });
 
-    return new Response(svg, {
+    // 디버그용 — SVG raw 응답
+    if (format === "svg") {
+      return new Response(svg, {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "image/svg+xml; charset=utf-8",
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
+    }
+
+    // 기본 — PNG (카카오톡 호환)
+    const png = await svgToPng(svg);
+    return new Response(png, {
       headers: {
         ...corsHeaders,
-        "Content-Type": "image/svg+xml; charset=utf-8",
+        "Content-Type": "image/png",
         "Cache-Control": "public, max-age=86400, s-maxage=86400",
       },
     });
   } catch (error) {
     console.error("[og-svg] Error:", error);
-    // Even on error, return a valid SVG so previews never break
-    const svg = buildSvgOg({ title: "SearchTune OS", category: "가이드" });
-    return new Response(svg, {
-      headers: { ...corsHeaders, "Content-Type": "image/svg+xml; charset=utf-8" },
-    });
+    // 에러여도 SVG 반환 (최후 폴백)
+    const fallback = buildSvgOg({ title: "SearchTune OS", category: "가이드" });
+    try {
+      const png = await svgToPng(fallback);
+      return new Response(png, {
+        headers: { ...corsHeaders, "Content-Type": "image/png" },
+      });
+    } catch {
+      return new Response(fallback, {
+        headers: { ...corsHeaders, "Content-Type": "image/svg+xml; charset=utf-8" },
+      });
+    }
   }
 });

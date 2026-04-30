@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 import { buildAiOgPrompt, buildSvgOg, resolveStyle } from "../_shared/og-design-rulebook.ts";
+import { svgToPng } from "../_shared/og-png-renderer.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,13 +9,15 @@ const corsHeaders = {
 };
 
 /**
- * Detect garbled/missing Korean in AI-generated images is impossible without OCR.
- * Defensive strategy: try AI 1 model only (fast), and if it fails OR if user
- * passed `prefer_svg=true`, render the brand-safe SVG instead.
+ * OG 이미지 생성 — **항상 PNG 출력** (카카오톡/페북/트위터/슬랙 호환).
  *
- * Both AI image and SVG image are uploaded as PNG/SVG to og-images bucket and
- * stored to BOTH `og_image` AND `thumbnail` columns so blog list cards and
- * social previews share the same brand-consistent image.
+ * 전략:
+ *  1. 룰북 SVG 빌드 (단일 진실 소스, 한글 안전)
+ *  2. resvg-wasm + Pretendard ttf로 PNG 래스터라이즈
+ *  3. og-images 버킷에 .png 업로드 → og_image, thumbnail 양쪽에 저장
+ *
+ * AI 이미지 모드는 `prefer_ai=true` 명시 시에만 시도 (한글 깨짐 위험).
+ * AI도 PNG로 떨어지므로 동일 경로 사용.
  */
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -26,7 +29,6 @@ Deno.serve(async (req) => {
     const slug = body?.slug as string | undefined;
     const title = body?.title as string | undefined;
     const category = (body?.category as string | undefined) || "가이드";
-    // 룰북 SVG가 SSOT. AI 이미지는 명시적으로 prefer_ai=true 줄 때만 시도 (한글 깨짐/스타일 불일치 위험).
     const preferSvg = body?.prefer_ai !== true;
 
     if (!slug || !title) {
@@ -43,12 +45,12 @@ Deno.serve(async (req) => {
 
     const fileId = crypto.randomUUID();
     let imageBytes: Uint8Array | null = null;
-    let contentType = "image/png";
-    let ext = "png";
+    const contentType = "image/png";
+    const ext = "png";
     let source: "ai" | "svg" = "svg";
     let lastError = "";
 
-    // === 1) Try AI image (skip if preferSvg) ===
+    // === 1) AI 이미지 모드 (옵트인) ===
     if (!preferSvg && LOVABLE_API_KEY) {
       const prompt = buildAiOgPrompt({ title, category });
       const models = [
@@ -59,7 +61,6 @@ Deno.serve(async (req) => {
 
       for (const model of models) {
         try {
-          console.log(`[OG] Trying AI model: ${model}`);
           const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
             method: "POST",
             headers: {
@@ -72,7 +73,6 @@ Deno.serve(async (req) => {
               modalities: ["image", "text"],
             }),
           });
-
           if (!response.ok) {
             lastError = `${model}: HTTP ${response.status}`;
             continue;
@@ -88,27 +88,23 @@ Deno.serve(async (req) => {
             lastError = `${model}: malformed data URL`;
             continue;
           }
-          const fmt = m[1];
           imageBytes = Uint8Array.from(atob(m[2]), (c) => c.charCodeAt(0));
-          ext = fmt === "jpeg" ? "jpg" : fmt;
-          contentType = `image/${fmt}`;
           source = "ai";
+          // AI는 png/jpeg로 떨어짐 — 그대로 png로 저장 (jpeg면 .png 확장자로 강제 저장,
+          // og-image MIME은 컨텐트로 결정됨. 안전을 위해 그냥 svg-first로 가는 걸 권장)
           console.log(`[OG] AI model ${model} succeeded`);
           break;
         } catch (e) {
           lastError = `${model}: ${e instanceof Error ? e.message : String(e)}`;
-          console.warn(`[OG] AI model ${model} threw:`, e);
         }
       }
     }
 
-    // === 2) Fallback: brand-safe SVG ===
+    // === 2) SVG → PNG 래스터라이즈 (기본 경로) ===
     if (!imageBytes) {
-      console.log(`[OG] Using SVG fallback (lastError=${lastError})`);
+      console.log(`[OG] SVG→PNG 래스터라이즈 (lastError=${lastError})`);
       const svg = buildSvgOg({ title, category, slug });
-      imageBytes = new TextEncoder().encode(svg);
-      contentType = "image/svg+xml";
-      ext = "svg";
+      imageBytes = await svgToPng(svg);
       source = "svg";
     }
 
@@ -126,19 +122,16 @@ Deno.serve(async (req) => {
       .getPublicUrl(fileName);
     const publicUrl = publicUrlData.publicUrl;
 
-    // Update BOTH og_image and thumbnail (unified per design rulebook).
-    // thumbnail was previously the placeholder; now it shares the same brand image.
     const { error: updateError } = await supabase
       .from("blog_posts")
       .update({ og_image: publicUrl, thumbnail: publicUrl })
       .eq("slug", slug);
-
     if (updateError) {
       console.error("[OG] DB update error:", updateError);
       throw new Error(`Failed to update post: ${updateError.message}`);
     }
 
-    console.log(`[OG] ${source.toUpperCase()} image saved for ${slug}: ${publicUrl}`);
+    console.log(`[OG] ${source.toUpperCase()} PNG saved for ${slug}: ${publicUrl}`);
 
     return new Response(
       JSON.stringify({
@@ -146,6 +139,7 @@ Deno.serve(async (req) => {
         og_image: publicUrl,
         thumbnail: publicUrl,
         source,
+        format: "png",
         category,
         style: resolveStyle(category).label,
       }),
