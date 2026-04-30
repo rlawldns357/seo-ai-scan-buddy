@@ -5,8 +5,8 @@
  *
  * Runs after `vite build` and writes static HTML files to
  * dist/blog/{slug}/index.html, plus a compatibility dist/blog/{slug}.html copy.
- * Canonical/share URLs include /index.html because Kakao's debugger rejects
- * extensionless responses when hosting serves them as application/octet-stream.
+ * Canonical/share URLs include /index.html because the published custom domain
+ * may route /blog/{slug} and /blog/{slug}/ to the SPA root fallback.
  */
 
 import fs from "fs";
@@ -150,12 +150,11 @@ function resolveOgImage(post) {
   return post.og_image;
 }
 
-// Canonical URL form: trailing slash. Lovable/Cloudflare hosting serves
-// /blog/{slug}/ as text/html (auto-resolves to index.html), while the bare
-// /blog/{slug} (no slash, no extension) is served as application/octet-stream
-// which breaks Kakao/Facebook OG crawlers. Always emit the trailing-slash form.
+// Canonical URL form: explicit physical HTML file. On the published custom
+// domain, /blog/{slug} and /blog/{slug}/ can hit the SPA root fallback, so
+// crawlers see the home OG image instead of the article OG image.
 function blogHtmlPath(slug) {
-  return `/blog/${slug}/`;
+  return `/blog/${slug}/index.html`;
 }
 
 function blogHtmlUrl(slug) {
@@ -297,10 +296,9 @@ async function main() {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
 
-    // Canonical form is /blog/{slug}/ — Cloudflare/Lovable resolves the trailing
-    // slash to /blog/{slug}/index.html and serves it as text/html. Make sure no
-    // extensionless physical file (/blog/{slug}) exists, since the host returns
-    // those as application/octet-stream and breaks Kakao/Facebook OG crawlers.
+    // Canonical form is /blog/{slug}/index.html. Make sure no extensionless
+    // physical file (/blog/{slug}) exists, since older builds could be served as
+    // a downloadable object by some crawlers/hosting paths.
     const slugDir = path.join(blogDir, post.slug);
     const extensionlessFile = path.join(blogDir, post.slug); // same path, but as a file
     if (fs.existsSync(extensionlessFile) && fs.statSync(extensionlessFile).isFile()) {
