@@ -1,26 +1,34 @@
 ---
 name: OG/Thumbnail Rulebook
-description: OG=썸네일 통합. 3-tier 폴백 — (1) 명확 브랜드 워드마크 카드 (2) 카테고리만 명확 → AEO/GEO/SEO 개념 카드 (3) SearchTune 폴백. AI 실패 시 SVG 폴백, og-svg endpoint
+description: OG=썸네일. 미니멀 단일 패널(좌/우 분할 폐기) — 브랜드별 크림/오프화이트 panelBg + 그레인 노이즈 + 중앙 워드마크 + 부제 "회사 · 카테고리". 한글 100% 안전 SVG 폴백
 type: design
 ---
 
-## 3-Tier 폴백 전략
-1. **명확 브랜드** (`detectBrand` 매칭): ChatGPT/Claude/Gemini/Perplexity/Wrtn/Google/Google AI Overview/**Naver/Naver Cue:/Clova X (한국 브랜드 우선)**/Cafe24/imweb/Bing Copilot → 좌 480px 라이트 패널(브랜드 시그니처 폰트·컬러 워드마크 + 부제) + 우 720px 카테고리 그라데이션 메타
-2. **카테고리만 명확** (AEO/GEO/SEO): 개념 카드 — `aeo`/`geo`/`seo` BrandStyle (Inter 900, 카테고리 컬러). "GEO?" 호기심 유발 + 키워드 SEO 강화
-3. **둘 다 없음**: SearchTune OS 폴백 (About/공지 등 자사 콘텐츠 전용)
+## 컨셉 (v2 — 미니멀)
+업로드한 ChatGPT/Claude/AEO 예시 톤. 좌우 분할/그라데이션 시끄러움 폐기.
+- **단일 패널**: 1200x630 풀 크림/오프화이트 (`brand.panelBg`)
+- **그레인 노이즈**: SVG `<filter>` feTurbulence 6% opacity (한국적 종이 질감)
+- **워드마크 중앙**: brand.wordmark, brand.color (Bing은 그라데이션 fill, AEO/GEO/SEO는 글자별 그라데이션, Google은 멀티컬러)
+- **부제**: `회사 · 카테고리` (예: `OPENAI · AEO`, `ANTHROPIC · AEO`, `MICROSOFT · SEO`). brand.subtitle을 toUpperCase + letter-spacing 3
+- **워터마크**: 우측 하단 `SEARCHTUNE OS · SEARCHTUNEOS.COM` (회색 0.32)
 
-## 한국 시장 우선순위
-- `detectBrand` 순서: 구체 케이스(AI Overview/Cue:/Clova) → 한국 브랜드(Naver/뤼튼) → 글로벌(ChatGPT/Claude/Gemini/Perplexity/Bing/Google) → 플랫폼(Cafe24/imweb) → 카테고리 폴백 → searchtune
-- Bing Copilot은 한국 시장 가치 낮음 → Naver 계열보다 아래로
+## 3-Tier 폴백 (유지)
+1. **명확 브랜드**: ChatGPT/Claude/Gemini/Perplexity/Wrtn/Google/Naver/Cue:/Clova X/Cafe24/imweb/Bing → 워드마크 카드
+2. **카테고리만**: AEO/GEO/SEO → 개념 카드 (글자별 그라데이션, 부제는 풀네임 `ANSWER ENGINE OPTIMIZATION`)
+3. **둘 다 없음**: SearchTune OS 풀 그라데이션 폴백 (`buildGradientSvg`)
+
+⚠️ `hasExplicitBrand(slug, title, category)` — category 인자 필수. 안 넘기면 AEO/GEO/SEO 컨셉 카드 폴백 안 됨
+
+## 폰트 사이즈 룰
+- 워드마크: `length > 8 → 120 / > 5 → 140 / else → 160`
+- 컨셉(AEO/GEO/SEO): 180
+- Bing: 156 (그라데이션 fill, descender padding)
+- 부제: `subtitle.length > 28 → 18 / else → 22`
 
 ## 구현
 - 공유 모듈: `src/lib/brandMatching.ts` ↔ `supabase/functions/_shared/brand-matching.ts` (mirror)
-- `hasExplicitBrand(slug, title, category)` 가 true면 워드마크 카드 렌더 (개념 카드 포함)
-- `buildBrandSplitSvg`: 좌 패널 워드마크 + 우 패널 그라데이션 메타. 한글 100% 안전
-- `buildGradientSvg`: SearchTune 폴백만 사용 (카테고리 풀 그라데이션 + 타이틀)
-- 1200x630, og_image와 thumbnail 동일 이미지
+- 룰북: `supabase/functions/_shared/og-design-rulebook.ts` — `buildBrandSplitSvg` (이름 유지하되 단일 패널), `buildGradientSvg` (SearchTune 폴백만)
 
 ## Endpoints
 - `og-svg` GET `?slug=...&title=...&category=...` — 영구 폴백 (Cache 24h)
-- `generate-og-image` POST — AI 시도 후 실패 시 SVG 폴백, Storage(og-images, UUID 파일명) 업로드
-- 둘 다 brand-aware: slug+category로 자동 분기
+- `generate-og-image` POST — AI 시도 후 실패 시 SVG 폴백, Storage(og-images, UUID) 업로드
