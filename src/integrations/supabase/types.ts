@@ -529,6 +529,30 @@ export type Database = {
         }
         Relationships: []
       }
+      naver_store_analysis_cache: {
+        Row: {
+          analyzed_at: string
+          created_at: string
+          id: string
+          result_data: Json
+          url: string
+        }
+        Insert: {
+          analyzed_at?: string
+          created_at?: string
+          id?: string
+          result_data: Json
+          url: string
+        }
+        Update: {
+          analyzed_at?: string
+          created_at?: string
+          id?: string
+          result_data?: Json
+          url?: string
+        }
+        Relationships: []
+      }
       regeneration_credits: {
         Row: {
           addon_balance: number

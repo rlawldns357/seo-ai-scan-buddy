@@ -488,8 +488,46 @@ Deno.serve(async (req) => {
     );
   }
 
-  // ── 룰북 로드 (DB 우선, fallback 자동) ──
+  // ── Supabase 클라이언트 + 24h 캐시 조회 ──
+  // 같은 스토어 URL은 24시간 동안 동일 결과 반환 (재현성·어뷰징 방지·API 비용 절감).
+  // 캐시 키는 정규화된 storeUrl(쿼리스트링·해시 제거).
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  const cacheKey = store.storeUrl;
+  const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+
+  try {
+    const { data: cached } = await supabase
+      .from("naver_store_analysis_cache")
+      .select("result_data, analyzed_at")
+      .eq("url", cacheKey)
+      .maybeSingle();
+
+    if (cached?.result_data && cached.analyzed_at) {
+      const ageMs = Date.now() - new Date(cached.analyzed_at).getTime();
+      if (ageMs < CACHE_TTL_MS) {
+        // 캐시 HIT: 메타에 캐시 정보 주입해 반환
+        const cachedResult = cached.result_data as Record<string, unknown>;
+        const engineMeta = (cachedResult.engineMeta as Record<string, unknown>) ?? {};
+        cachedResult.engineMeta = {
+          ...engineMeta,
+          cache: {
+            hit: true,
+            analyzedAt: cached.analyzed_at,
+            ageMinutes: Math.floor(ageMs / 60000),
+            ttlHours: 24,
+          },
+        };
+        return new Response(
+          JSON.stringify({ success: true, data: cachedResult }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+  } catch (e) {
+    console.warn("[naver-store-cache] read failed, proceeding fresh:", e);
+  }
+
+  // ── 룰북 로드 (DB 우선, fallback 자동) ──
   const rulebook = await loadNaverRulebook(supabase).catch(() => null);
 
   const query = store.slug;
@@ -623,6 +661,18 @@ Deno.serve(async (req) => {
       signals: { storeShare, ownSiteShare, slugMatch, leakageRatio, recovered },
     },
   };
+
+  // ── 캐시 저장 (24h TTL) ── 같은 storeUrl 행 덮어쓰기
+  try {
+    await supabase
+      .from("naver_store_analysis_cache")
+      .upsert(
+        { url: cacheKey, result_data: result, analyzed_at: new Date().toISOString() },
+        { onConflict: "url" },
+      );
+  } catch (e) {
+    console.warn("[naver-store-cache] write failed:", e);
+  }
 
   return new Response(
     JSON.stringify({ success: true, data: result }),
