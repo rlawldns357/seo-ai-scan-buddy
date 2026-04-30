@@ -25,11 +25,11 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-// Lovable hosting does not reliably resolve /blog/{slug}/ to the prerendered
-// directory index on the published custom domain. Use the explicit physical
-// file URL so copying the address bar always gives Kakao/Facebook the real OG.
-const blogPostPath = (slug: string) => `/blog/${slug}/index.html`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}/index.html`;
+// Lovable hosting serves /blog/{slug}/ as the SPA home fallback on the custom
+// domain, so crawlers see the home OG. Use the explicit .html file as the
+// public share URL; it returns the prerendered article HTML with text/html.
+const blogPostPath = (slug: string) => `/blog/${slug}.html`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
 
 function isNaverPost(slug: string) {
   return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
@@ -550,9 +550,9 @@ export default function BlogPost() {
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
-  // Canonical URL form is /blog/{slug}/index.html. If the user landed on
-  // /blog/{slug}, /blog/{slug}/, or /blog/{slug}.html, normalise the address bar
-  // so any subsequent copy-paste yields a Kakao/Facebook-friendly URL.
+  // Canonical URL form is /blog/{slug}.html. If the user landed on
+  // /blog/{slug}, /blog/{slug}/, or /blog/{slug}/index.html, normalise the
+  // address bar so copy-paste yields crawler-friendly article metadata.
   useEffect(() => {
     if (!slug) return;
     const canonical = blogPostPath(slug);
