@@ -30,9 +30,10 @@ interface BlogShareButtonProps {
   url: string;       // canonical share URL (absolute)
   imageUrl?: string; // OG image (absolute https URL)
   category?: string;
+  variant?: "primary" | "subtle"; // primary = filled CTA, subtle = inline meta-row tone
 }
 
-export default function BlogShareButton({ title, excerpt, url, imageUrl, category }: BlogShareButtonProps) {
+export default function BlogShareButton({ title, excerpt, url, imageUrl, category, variant = "primary" }: BlogShareButtonProps) {
   const [copied, setCopied] = useState(false);
   const [busyKakao, setBusyKakao] = useState(false);
 
