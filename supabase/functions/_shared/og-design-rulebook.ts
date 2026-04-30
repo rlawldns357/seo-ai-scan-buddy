@@ -290,8 +290,8 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   <!-- 부제: 제목 정갈 요약 (워드마크 바로 아래) -->
   ${titleSvg}
 
-  <!-- 중앙 하단 워터마크 (부제 바로 아래로 끌어올림 — 하단 여백 축소) -->
-  <text x="${cx}" y="510" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="13" font-weight="700" fill="rgba(0,0,0,0.32)" text-anchor="middle" letter-spacing="3">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
+  <!-- 중앙 하단 워터마크 (부제와 충분히 떨어뜨려 호흡) -->
+  <text x="${cx}" y="548" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="13" font-weight="700" fill="rgba(0,0,0,0.32)" text-anchor="middle" letter-spacing="3">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
 </svg>`;
 }
 
