@@ -229,6 +229,7 @@ function HeroPost({ post }: { post: BlogPost }) {
           </span>
           최신
         </span>
+        <ShareIconButton slug={post.slug} title={post.title} />
       </div>
       <div className="flex flex-col justify-center px-4 pb-5 md:p-8">
         <span className={`self-start px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
