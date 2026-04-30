@@ -153,34 +153,40 @@ function formatDate(d: string) {
   return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
 }
 
-function FeaturedPost({ post }: { post: BlogPost }) {
+function HeroPost({ post }: { post: BlogPost }) {
   return (
-    <article className="group relative grid md:grid-cols-2 gap-4 md:gap-6 rounded-2xl border border-border bg-card overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="aspect-[2/1] md:aspect-auto bg-gradient-to-br from-primary/20 via-accent/10 to-primary/5 flex items-center justify-center md:min-h-[220px]">
-        <div className="text-center p-6 md:p-8">
-          <span className="text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent">
-            AEO
-          </span>
-          <p className="text-sm text-muted-foreground mt-2">Answer Engine Optimization</p>
+    <article className="group relative grid md:grid-cols-5 gap-0 rounded-3xl border border-border bg-card overflow-hidden hover:shadow-2xl hover:border-primary/30 transition-all duration-300">
+      <div className="md:col-span-2 aspect-[16/10] md:aspect-auto bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center md:min-h-[320px] relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 to-transparent" />
+        <div className="relative z-10 scale-110">
+          {getBrandThumbnail(post.slug, post.category)}
         </div>
-      </div>
-      <div className="flex flex-col justify-center px-4 pb-5 md:p-8">
-        <span className={`self-start px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
-          {post.category}
+        <span className="absolute top-4 left-4 inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-extrabold bg-gradient-to-r from-primary to-accent text-primary-foreground shadow-lg">
+          ✨ NEW
         </span>
-        <h2 className="mt-3 text-lg md:text-2xl font-bold text-foreground leading-snug group-hover:text-primary transition-colors">
+      </div>
+      <div className="md:col-span-3 flex flex-col justify-center px-5 py-6 md:p-10">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className={`px-2.5 py-1 rounded-md text-xs font-bold ${categoryColor[post.category]}`}>
+            {post.category}
+          </span>
+          <span className="text-[11px] font-semibold tracking-wider uppercase text-primary">
+            최신 발행
+          </span>
+        </div>
+        <h2 className="mt-3 text-xl md:text-3xl font-extrabold text-foreground leading-tight group-hover:text-primary transition-colors">
           {post.title}
         </h2>
-        <p className="mt-2 md:mt-3 text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+        <p className="mt-3 text-sm md:text-base text-muted-foreground line-clamp-3 leading-relaxed">
           {post.excerpt}
         </p>
-        <div className="mt-3 md:mt-4 flex items-center gap-4 text-xs text-muted-foreground">
+        <div className="mt-4 flex items-center gap-4 text-xs text-muted-foreground">
           <span className="flex items-center gap-1"><Calendar className="w-3.5 h-3.5" />{formatDate(post.date)}</span>
           <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" />{post.readTime} 읽기</span>
         </div>
-        <div className="mt-4 md:mt-5">
-          <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary group-hover:gap-2 transition-all">
-            자세히 보기 <ArrowRight className="w-4 h-4" />
+        <div className="mt-5">
+          <span className="inline-flex items-center gap-1.5 text-sm font-bold text-primary group-hover:gap-2.5 transition-all">
+            지금 읽기 <ArrowRight className="w-4 h-4" />
           </span>
         </div>
       </div>
@@ -260,8 +266,12 @@ export default function Blog() {
     fetchDbPosts();
   }, []);
 
-  const featured = allPosts.find((p) => p.featured);
-  const rest = allPosts.filter((p) => !p.featured);
+  // 항상 최신 글이 Hero (밀어내기 형식)
+  const sorted = [...allPosts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  const hero = sorted[0];
+  const rest = sorted.slice(1);
 
   const blogTitle = "블로그 – 서치튠OS | SEO·AEO·GEO 실전 가이드";
   const blogDesc = "SEO·AEO·GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
@@ -305,11 +315,18 @@ export default function Blog() {
             SEO · AEO · GEO에 대해 알아야 할 모든 것. 실전 가이드와 인사이트를 공유합니다.
           </p>
         </div>
-        {featured && (
+        {hero && (
           <div className="mb-12">
-            <Link to={`/blog/${featured.slug}`}>
-              <FeaturedPost post={featured} />
+            <Link to={`/blog/${hero.slug}`}>
+              <HeroPost post={hero} />
             </Link>
+          </div>
+        )}
+
+        {rest.length > 0 && (
+          <div className="mb-5 flex items-baseline justify-between">
+            <h2 className="text-lg md:text-xl font-bold text-foreground">이전 글</h2>
+            <span className="text-xs text-muted-foreground">{rest.length}개</span>
           </div>
         )}
 
