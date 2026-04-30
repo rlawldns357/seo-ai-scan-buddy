@@ -206,22 +206,23 @@ function tidyTitleForOg(rawTitle: string): string {
 function buildBrandSplitSvg(opts: { title: string; category: string; slug?: string }): string {
   const brand = getBrandStyle(opts.slug || "", opts.title, opts.category);
 
-  // 워드마크 중앙
+  // 워드마크 중앙 — 작은 공유 카드에서도 브랜드가 먼저 보이도록 살짝 키움
   const cx = 600;
-  const cy = 305;
+  const cy = 312;
   const wordmarkSvg = renderBrandWordmark(brand, cx, cy);
 
   // 위쪽 작은 메타: 회사 · 카테고리 (eyebrow)
   const meta = brand.subtitle.toUpperCase();
   const metaFontSize = meta.length > 28 ? 14 : 16;
 
-  // 아래 후킹 부제: 제목 정갈 요약
+  // 아래 후킹 부제: 제목 정갈 요약. 작은 카톡 카드에서 읽히도록 최대 2줄 허용.
   const tidyTitle = tidyTitleForOg(opts.title);
-  // 한국어는 글자당 폭이 넓으니 길이별 폰트 자동 조정
-  const titleFontSize =
-    tidyTitle.length > 26 ? 28 :
-    tidyTitle.length > 18 ? 32 :
-    tidyTitle.length > 12 ? 36 : 40;
+  const titleLines = wrapTitle(tidyTitle, 20).slice(0, 2);
+  const titleFontSize = titleLines.some((line) => line.length > 18) ? 34 : 38;
+  const titleStartY = titleLines.length > 1 ? 422 : 438;
+  const titleSvg = titleLines
+    .map((line, i) => `<text x="${cx}" y="${titleStartY + i * 46}" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="700" fill="rgba(0,0,0,0.76)" text-anchor="middle" letter-spacing="0">${escXml(line)}</text>`)
+    .join("\n  ");
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   ${FONT_EMBED}
@@ -247,16 +248,16 @@ function buildBrandSplitSvg(opts: { title: string; category: string; slug?: stri
   <rect width="1200" height="630" fill="url(#vignette)"/>
 
   <!-- 위쪽 작은 메타: 회사 · 카테고리 (eyebrow) -->
-  <text x="${cx}" y="180" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${metaFontSize}" font-weight="700" fill="rgba(0,0,0,0.42)" text-anchor="middle" letter-spacing="4">${escXml(meta)}</text>
+  <text x="${cx}" y="150" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${metaFontSize}" font-weight="800" fill="rgba(0,0,0,0.46)" text-anchor="middle" letter-spacing="4">${escXml(meta)}</text>
 
   <!-- 워드마크 (중앙) -->
   ${wordmarkSvg}
 
   <!-- 아래 후킹 부제: 제목 정갈 요약 (한 줄, 굵직, 진한 회색) -->
-  <text x="${cx}" y="430" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="600" fill="rgba(0,0,0,0.72)" text-anchor="middle" letter-spacing="-0.5">${escXml(tidyTitle)}</text>
+  ${titleSvg}
 
   <!-- 우측 하단 워터마크 -->
-  <text x="1140" y="595" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="14" font-weight="500" fill="rgba(0,0,0,0.32)" text-anchor="end" letter-spacing="1">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
+  <text x="1140" y="584" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="15" font-weight="600" fill="rgba(0,0,0,0.34)" text-anchor="end" letter-spacing="1">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
 </svg>`;
 }
 
@@ -348,7 +349,7 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
 
   // Bing — Microsoft 시그니처 블루→사이언 그라데이션
   if (brand.key === "bing-copilot") {
-    const fontSize = 156;
+    const fontSize = 190;
     return `
       <defs>
         <linearGradient id="bingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -356,7 +357,7 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
           <stop offset="100%" stop-color="#00B7C3"/>
         </linearGradient>
       </defs>
-      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-4">${escXml(brand.wordmark)}</text>
+      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="700" fill="url(#bingGrad)" text-anchor="middle" letter-spacing="-5">${escXml(brand.wordmark)}</text>
     `;
   }
 
