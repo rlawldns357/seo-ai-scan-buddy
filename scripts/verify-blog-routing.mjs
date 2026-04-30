@@ -1,13 +1,13 @@
 /**
  * Routing compatibility test:
  * For every blog slug, ensures that both URL shapes
- *   - /blog/{slug}             (extensionless physical file)
- *   - /blog/{slug}.html        (legacy / explicit extension)
+ *   - /blog/{slug}        (served via dist/blog/{slug}/index.html)
+ *   - /blog/{slug}.html   (legacy / explicit extension)
  * resolve to the SAME canonical and og:url.
  *
- * This guards against regressions where one variant points at
- * the SPA shell (site-wide OG) while the other is correctly prerendered,
- * which is what breaks Kakao/Naver/Slack share previews.
+ * CRITICAL: We do NOT write an extensionless physical file at dist/blog/{slug}
+ * because hosts often serve such files without Content-Type: text/html, which
+ * causes browsers to DOWNLOAD the file instead of rendering it.
  *
  * Fails the build (exit 1) on any mismatch.
  */
@@ -32,7 +32,7 @@ function listSlugs() {
   if (!fs.existsSync(BLOG_DIR)) return [];
   const slugs = new Set();
   for (const entry of fs.readdirSync(BLOG_DIR, { withFileTypes: true })) {
-    if (entry.isFile() && !entry.name.includes(".")) {
+    if (entry.isDirectory()) {
       slugs.add(entry.name);
     } else if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
       slugs.add(entry.name.replace(/\.html$/, ""));
@@ -55,21 +55,26 @@ function main() {
 
   let failed = 0;
   for (const slug of slugs) {
-    const extless = path.join(BLOG_DIR, slug);
+    const dirIndex = path.join(BLOG_DIR, slug, "index.html");
     const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
+    const stray = path.join(BLOG_DIR, slug);
     const expected = `${SITE}/blog/${slug}`;
     const errors = [];
 
-    if (!fs.existsSync(extless) || !fs.statSync(extless).isFile()) errors.push(`missing extensionless physical file (/blog/${slug})`);
-    if (!fs.existsSync(dotHtml)) errors.push(`missing .html file (/blog/${slug}.html)`);
+    // Guard: a plain extensionless file would cause MIME-less downloads
+    if (fs.existsSync(stray) && fs.statSync(stray).isFile()) {
+      errors.push(`UNSAFE: extensionless physical file exists at /blog/${slug} — browsers may download it instead of rendering`);
+    }
+    if (!fs.existsSync(dirIndex)) errors.push(`missing /blog/${slug}/index.html`);
+    if (!fs.existsSync(dotHtml)) errors.push(`missing /blog/${slug}.html`);
 
     if (errors.length === 0) {
-      const a = readMeta(extless);
+      const a = readMeta(dirIndex);
       const b = readMeta(dotHtml);
 
-      if (a.canonical !== expected) errors.push(`extensionless canonical "${a.canonical}" ≠ "${expected}"`);
+      if (a.canonical !== expected) errors.push(`dir-index canonical "${a.canonical}" ≠ "${expected}"`);
       if (b.canonical !== expected) errors.push(`.html canonical "${b.canonical}" ≠ "${expected}"`);
-      if (a.ogUrl !== expected) errors.push(`extensionless og:url "${a.ogUrl}" ≠ "${expected}"`);
+      if (a.ogUrl !== expected) errors.push(`dir-index og:url "${a.ogUrl}" ≠ "${expected}"`);
       if (b.ogUrl !== expected) errors.push(`.html og:url "${b.ogUrl}" ≠ "${expected}"`);
 
       if (a.canonical !== b.canonical) errors.push(`canonical mismatch between variants: "${a.canonical}" vs "${b.canonical}"`);

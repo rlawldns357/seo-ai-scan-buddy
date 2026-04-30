@@ -291,17 +291,21 @@ async function main() {
   fs.mkdirSync(blogDir, { recursive: true });
 
   for (const post of allPosts) {
-    // Write a real extensionless file at /blog/{slug}. Lovable hosting does not
-    // serve /blog/{slug}/index.html for /blog/{slug}; otherwise crawlers receive
-    // the SPA shell before React Helmet can update OG tags.
-    const extensionlessPath = path.join(blogDir, post.slug);
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    // Remove the previous directory-index shape before writing the file shape.
-    if (fs.existsSync(extensionlessPath)) {
-      fs.rmSync(extensionlessPath, { recursive: true, force: true });
+
+    // CRITICAL: never write an extensionless physical file at /blog/{slug} —
+    // hosts often serve it without Content-Type: text/html, causing the
+    // browser to DOWNLOAD the file instead of rendering it.
+    // Use the safe directory-index shape: /blog/{slug}/index.html.
+    const slugPath = path.join(blogDir, post.slug);
+    // If a previous build wrote a plain file at this path, remove it first.
+    if (fs.existsSync(slugPath) && fs.statSync(slugPath).isFile()) {
+      fs.rmSync(slugPath, { force: true });
     }
-    fs.writeFileSync(extensionlessPath, html, "utf-8");
+    fs.mkdirSync(slugPath, { recursive: true });
+    fs.writeFileSync(path.join(slugPath, "index.html"), html, "utf-8");
+
     // Keep /blog/{slug}.html as a compatibility copy for already-shared links.
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
   }

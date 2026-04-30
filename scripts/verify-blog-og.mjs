@@ -67,9 +67,19 @@ function collectBlogFiles() {
   const files = [];
 
   for (const entry of entries) {
-    if (entry.isFile() && !entry.name.includes(".")) {
-      files.push({ slug: entry.name, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name) });
+    // Canonical shape: dist/blog/{slug}/index.html
+    if (entry.isDirectory()) {
+      const idx = path.join(BLOG_DIR, entry.name, "index.html");
+      if (fs.existsSync(idx)) {
+        files.push({ slug: entry.name, label: `/blog/${entry.name}`, path: idx });
+      }
       continue;
+    }
+
+    // Hard fail: extensionless physical files cause MIME-less downloads
+    if (entry.isFile() && !entry.name.includes(".")) {
+      console.error(`[verify-og] ❌ UNSAFE extensionless file at /blog/${entry.name} — would trigger browser download`);
+      process.exit(1);
     }
 
     if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
@@ -100,7 +110,7 @@ function main() {
     const expectedUrl = `${SITE}/blog/${file.slug}`;
     const errors = verifyFile(file.path, expectedUrl);
     if (file.compatibility && !canonicalSlugs.has(file.slug)) {
-      errors.push(`missing canonical extensionless file: dist/blog/${file.slug}`);
+      errors.push(`missing canonical /blog/${file.slug}/index.html`);
     }
     if (errors.length) {
       failed++;
