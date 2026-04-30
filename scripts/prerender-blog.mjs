@@ -3,8 +3,8 @@
  * so that search engine crawlers (especially Naver Yeti) can
  * index content without executing JavaScript.
  *
- * Runs after `vite build` and writes extensionless HTML files to dist/blog/{slug}.
- * Blog canonical/share URLs intentionally use the physical extensionless URL so
+ * Runs after `vite build` and writes static HTML files to dist/blog/{slug}.html.
+ * Blog canonical/share URLs intentionally use the physical .html URL so
  * crawlers receive the post HTML instead of Lovable's SPA fallback index.html.
  */
 
@@ -149,8 +149,16 @@ function resolveOgImage(post) {
   return post.og_image;
 }
 
+function blogHtmlPath(slug) {
+  return `/blog/${slug}.html`;
+}
+
+function blogHtmlUrl(slug) {
+  return `${SITE}${blogHtmlPath(slug)}`;
+}
+
 function generateHtml(post, assets, related = []) {
-  const postUrl = `${SITE}/blog/${post.slug}`;
+  const postUrl = blogHtmlUrl(post.slug);
   const title = `${post.title} – 서치튠OS 블로그`;
   const ogImage = resolveOgImage(post);
   const contentHtml = mdToHtml(post.content || "");
@@ -230,7 +238,7 @@ function generateHtml(post, assets, related = []) {
       ${related.length ? `<aside style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee">
         <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:0.75rem">관련 글</h2>
         <ul style="list-style:none;padding:0;margin:0">
-          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="/blog/${r.slug}" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
+          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="${blogHtmlPath(r.slug)}" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
         </ul>
       </aside>` : ""}
       <footer style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.85rem;color:#888">
