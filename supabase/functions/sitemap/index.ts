@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
         if (!slugSet.has(post.slug)) {
           slugSet.add(post.slug);
           entries.push({
-            loc: `${SITE_URL}/blog/${post.slug}`,
+            loc: `${SITE_URL}/blog/${post.slug}/`,
             lastmod: post.date,
             priority: "0.7",
           });
