@@ -1,7 +1,7 @@
 /**
  * Routing compatibility test:
  * For every blog slug, ensures that both URL shapes
- *   - /blog/{slug}/index.html  (extensionless: /blog/{slug})
+ *   - /blog/{slug}             (extensionless physical file)
  *   - /blog/{slug}.html        (legacy / explicit extension)
  * resolve to the SAME canonical and og:url.
  *
@@ -32,7 +32,7 @@ function listSlugs() {
   if (!fs.existsSync(BLOG_DIR)) return [];
   const slugs = new Set();
   for (const entry of fs.readdirSync(BLOG_DIR, { withFileTypes: true })) {
-    if (entry.isDirectory() && fs.existsSync(path.join(BLOG_DIR, entry.name, "index.html"))) {
+    if (entry.isFile() && !entry.name.includes(".")) {
       slugs.add(entry.name);
     } else if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
       slugs.add(entry.name.replace(/\.html$/, ""));
@@ -55,12 +55,12 @@ function main() {
 
   let failed = 0;
   for (const slug of slugs) {
-    const extless = path.join(BLOG_DIR, slug, "index.html");
+    const extless = path.join(BLOG_DIR, slug);
     const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
     const expected = `${SITE}/blog/${slug}`;
     const errors = [];
 
-    if (!fs.existsSync(extless)) errors.push(`missing extensionless file (/blog/${slug})`);
+    if (!fs.existsSync(extless) || !fs.statSync(extless).isFile()) errors.push(`missing extensionless physical file (/blog/${slug})`);
     if (!fs.existsSync(dotHtml)) errors.push(`missing .html file (/blog/${slug}.html)`);
 
     if (errors.length === 0) {

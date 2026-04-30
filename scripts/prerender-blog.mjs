@@ -4,7 +4,8 @@
  * index content without executing JavaScript.
  *
  * Runs after `vite build` and writes static HTML files to
- * dist/blog/{slug}/index.html, plus a compatibility dist/blog/{slug}.html copy.
+ * dist/blog/{slug} (extensionless physical file), plus a compatibility
+ * dist/blog/{slug}.html copy.
  * Canonical/share URLs stay extensionless so Kakao/Naver/debuggers receive the
  * post HTML at the same URL users actually paste: /blog/{slug}.
  */
@@ -290,17 +291,17 @@ async function main() {
   fs.mkdirSync(blogDir, { recursive: true });
 
   for (const post of allPosts) {
-    // Write /blog/{slug}/index.html so extensionless share/debugger URLs receive
-    // crawler-ready HTML before SPA fallback can return the main app shell.
-    const legacyPath = path.join(blogDir, post.slug);
+    // Write a real extensionless file at /blog/{slug}. Lovable hosting does not
+    // serve /blog/{slug}/index.html for /blog/{slug}; otherwise crawlers receive
+    // the SPA shell before React Helmet can update OG tags.
+    const extensionlessPath = path.join(blogDir, post.slug);
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    // Remove a previous extensionless file, then create the directory-index URL.
-    if (fs.existsSync(legacyPath) && fs.statSync(legacyPath).isFile()) {
-      fs.rmSync(legacyPath, { force: true });
+    // Remove the previous directory-index shape before writing the file shape.
+    if (fs.existsSync(extensionlessPath)) {
+      fs.rmSync(extensionlessPath, { recursive: true, force: true });
     }
-    fs.mkdirSync(legacyPath, { recursive: true });
-    fs.writeFileSync(path.join(legacyPath, "index.html"), html, "utf-8");
+    fs.writeFileSync(extensionlessPath, html, "utf-8");
     // Keep /blog/{slug}.html as a compatibility copy for already-shared links.
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
   }
