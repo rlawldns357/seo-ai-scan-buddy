@@ -59,8 +59,9 @@ const png = resvg.render().asPng();
 - 두 endpoint 모두 동일한 PNG 출력 보장
 
 ## 카카오 URL 규칙 (2026-04-30 추가)
-- 블로그 canonical/share/og:url/sitemap/internal link는 `/blog/{slug}/` **trailing slash**로 통일
+- 블로그 canonical/share/og:url/sitemap/internal link는 `/blog/{slug}/index.html` 실물 파일 URL로 통일
 - prerender 산출물은 `dist/blog/{slug}/index.html`만 허용
+- `/blog/{slug}/`는 Lovable hosting SPA fallback이 기본 `index.html`을 반환해 카카오가 홈 OG를 집을 수 있으므로 공유 URL로 금지
 - 확장자 없는 `dist/blog/{slug}` 파일은 Lovable hosting에서 `Content-Type: application/octet-stream`으로 나가 카카오 공유 디버거가 **Invalid URL**로 판정할 수 있으므로 금지
 
 ## 검증 (2026-04-30)
