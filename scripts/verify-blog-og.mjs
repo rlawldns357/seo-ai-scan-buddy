@@ -67,19 +67,21 @@ function collectBlogFiles() {
   const files = [];
 
   for (const entry of entries) {
-    // Canonical shape: dist/blog/{slug}/index.html
-    if (entry.isDirectory()) {
-      const idx = path.join(BLOG_DIR, entry.name, "index.html");
-      if (fs.existsSync(idx)) {
-        files.push({ slug: entry.name, label: `/blog/${entry.name}`, path: idx });
-      }
+    // Canonical shape: extensionless physical file at dist/blog/{slug}
+    // (Lovable hosting serves this with Content-Type: text/html; nosniff,
+    // so browsers render — not download — it.)
+    if (entry.isFile() && !entry.name.includes(".")) {
+      files.push({ slug: entry.name, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name) });
       continue;
     }
 
-    // Hard fail: extensionless physical files cause MIME-less downloads
-    if (entry.isFile() && !entry.name.includes(".")) {
-      console.error(`[verify-og] ❌ UNSAFE extensionless file at /blog/${entry.name} — would trigger browser download`);
-      process.exit(1);
+    // Legacy directory-index shape (kept for backward compat if any remain)
+    if (entry.isDirectory()) {
+      const idx = path.join(BLOG_DIR, entry.name, "index.html");
+      if (fs.existsSync(idx)) {
+        files.push({ slug: entry.name, label: `/blog/${entry.name}/`, path: idx, compatibility: true });
+      }
+      continue;
     }
 
     if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
