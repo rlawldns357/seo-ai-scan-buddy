@@ -59,12 +59,12 @@ type: design
 ## prerender-blog.mjs
 - `resolveOgImage(post)`: `og_image`가 비었거나 `.svg`로 끝나면 `og-svg` PNG endpoint URL로 강제 치환
 - 모든 `<meta property="og:image">`는 반드시 PNG URL을 가리킴
-- 블로그 상세는 `dist/blog/{slug}` **확장자 없는 파일**로 생성한다. `dist/blog/{slug}/index.html`은 공유 URL `/blog/{slug}`에서 Lovable hosting SPA fallback에 밀려 카카오/페북 크롤러가 기본 메타를 읽는 문제가 있음
+- 블로그 상세는 `dist/blog/{slug}/index.html`로 생성하고, canonical/share URL은 반드시 `/blog/{slug}/` **trailing slash**를 붙인다. 확장자 없는 `dist/blog/{slug}` 파일은 Lovable hosting에서 `application/octet-stream`으로 서빙되어 카카오 공유 디버거가 Invalid URL로 판정할 수 있으므로 금지.
 
 ## 신규 발행 자동 규칙 (CRD에 박힘)
 1. 발행 시 `generate-og-image` 자동 호출 → og_image/thumbnail에 .png URL 저장
 2. 만약 호출 실패해도 prerender가 og-svg endpoint(PNG)로 fallback → og:image는 항상 PNG 보장
-3. 신규/기존 글 prerender 산출물은 `/blog/{slug}` 요청과 1:1 매칭되는 확장자 없는 HTML 파일로 생성
+3. 신규/기존 글 prerender 산출물은 `/blog/{slug}/index.html`로 생성하고 모든 내부 링크/sitemap/canonical/og:url은 `/blog/{slug}/`로 통일
 4. SVG 직접 저장 금지 (Storage에 .svg 파일 새로 만들지 말 것)
 
 ## 검증 (v4)

@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { detectBrand, getBrandStyle, hasExplicitBrand, BRAND_STYLES } from "@/lib/brandMatching";
 
+const blogPostPath = (slug: string) => `/blog/${slug}/`;
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
@@ -356,7 +357,7 @@ export default function Blog() {
         </div>
         {hero && (
           <div className="mb-12">
-            <Link to={`/blog/${hero.slug}`}>
+            <Link to={blogPostPath(hero.slug)}>
               <HeroPost post={hero} />
             </Link>
           </div>
@@ -371,7 +372,7 @@ export default function Blog() {
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {rest.map((post) => (
-            <Link key={post.slug} to={`/blog/${post.slug}`} className="flex">
+            <Link key={post.slug} to={blogPostPath(post.slug)} className="flex">
               <PostCard post={post} />
             </Link>
           ))}

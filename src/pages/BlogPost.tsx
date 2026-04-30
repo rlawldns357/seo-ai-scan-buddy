@@ -25,6 +25,9 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
+const blogPostPath = (slug: string) => `/blog/${slug}/`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}/`;
+
 function isNaverPost(slug: string) {
   return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
 }
@@ -492,7 +495,7 @@ function ArticleJsonLd({ post }: { post: BlogPostType }) {
     dateModified: post.date,
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://searchtuneos.com/blog/${post.slug}`,
+      "@id": blogPostUrl(post.slug),
     },
     image: post.thumbnail !== "/placeholder.svg"
       ? post.thumbnail
@@ -522,7 +525,7 @@ function PostNavCard({ post, direction }: { post: BlogPostType; direction: "prev
 
   return (
     <Link
-      to={`/blog/${post.slug}`}
+      to={blogPostPath(post.slug)}
       className={`group flex-1 flex flex-col gap-1 py-3 px-3 rounded-lg border border-border/50 hover:border-border hover:bg-muted/30 transition-all ${direction === "next" ? "items-end text-right" : "items-start"}`}
     >
       <span className="flex items-center gap-1 text-xs font-medium text-muted-foreground">
@@ -658,7 +661,7 @@ export default function BlogPost() {
             .eq("old_slug", decoded)
             .maybeSingle();
           if (redirect?.new_slug) {
-            navigate(`/blog/${redirect.new_slug}`, { replace: true });
+            navigate(blogPostPath(redirect.new_slug), { replace: true });
             return;
           }
         } catch (e) {
@@ -730,7 +733,7 @@ export default function BlogPost() {
   const faqShort = post.faqShort;
   const naver = isNaverPost(post.slug);
 
-  const postUrl = `https://searchtuneos.com/blog/${post.slug}`;
+  const postUrl = blogPostUrl(post.slug);
   const postTitle = `${post.title} – 서치튠OS 블로그`;
   // OG image fallback chain: explicit og_image → custom thumbnail → on-demand brand SVG
   // The SVG endpoint always returns a valid 1200x630 brand-consistent image, so previews never break.
@@ -865,7 +868,7 @@ export default function BlogPost() {
                 {relatedPosts.map((rp) => (
                   <Link
                     key={rp.slug}
-                    to={`/blog/${rp.slug}`}
+                    to={blogPostPath(rp.slug)}
                     className="group flex items-start gap-3 p-3 rounded-xl border border-border/50 hover:border-border hover:bg-muted/30 transition-all"
                   >
                     <div className="shrink-0 w-10 h-10 rounded-lg bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center">
