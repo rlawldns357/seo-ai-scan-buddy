@@ -674,7 +674,7 @@ ${naverRulebook}
     let bestIssues: string[] = [];
     let bestScore = -1; // (content length) - (issues.length * 1000)
     let attempt = 0;
-    const MAX_ATTEMPTS = 3;
+    const MAX_ATTEMPTS = 4;
     let lastFeedback = "";
     while (attempt < MAX_ATTEMPTS) {
       attempt++;
