@@ -553,6 +553,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_config: {
+        Row: {
+          email_bonus: number
+          free_limit: number
+          id: number
+          updated_at: string
+        }
+        Insert: {
+          email_bonus?: number
+          free_limit?: number
+          id?: number
+          updated_at?: string
+        }
+        Update: {
+          email_bonus?: number
+          free_limit?: number
+          id?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       regeneration_credits: {
         Row: {
           addon_balance: number
