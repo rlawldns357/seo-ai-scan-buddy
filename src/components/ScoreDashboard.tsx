@@ -9,8 +9,10 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Search, Bot, Sparkles,
   AlertTriangle, CheckCircle, Zap, Wrench, Plus, TrendingUp, AlertCircle,
-  Lock, ShieldAlert, ChevronDown, ArrowRight,
+  Lock, ShieldAlert, ChevronDown, ArrowRight, Copy, ClipboardCheck,
 } from "lucide-react";
+import { toast } from "sonner";
+import { buildImprovementPrompt, buildAxisPrompt } from "@/lib/promptBuilder";
 
 interface ScoreDashboardProps {
   result: DemoResult;
