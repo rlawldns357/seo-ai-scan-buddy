@@ -7,9 +7,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// NOTE: 세션용 임시 상향 (평소 3). 세션 종료 후 3으로 원복 권장.
-const FREE_LIMIT = 50;
-const EMAIL_BONUS = 5;
+// Defaults (used as fallback if rate_limit_config row missing)
+const DEFAULT_FREE_LIMIT = 3;
+const DEFAULT_EMAIL_BONUS = 5;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
