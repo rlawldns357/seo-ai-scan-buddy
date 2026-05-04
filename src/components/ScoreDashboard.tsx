@@ -156,9 +156,9 @@ function ImprovementRow({ icon, label, item, urgent, onCopy }: { icon: React.Rea
 
 /* ── Summary card (clickable, no detail inside) ── */
 function SummaryCard({
-  axis, score, delay, selected, onClick, compact,
+  axis, score, delay, selected, onClick, compact, url,
 }: {
-  axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void; compact?: boolean;
+  axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void; compact?: boolean; url?: string;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const config = axisConfig[axis.label];
