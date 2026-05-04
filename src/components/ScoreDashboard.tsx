@@ -903,9 +903,6 @@ export default function ScoreDashboard({ result, url, disabledMode, disabledReas
         </div>
       )}
 
-      {/* Sub-signal pass/warn/fail summary */}
-      {!disabledMode && <SignalSummaryStrip axes={axes} />}
-
       {/* Mobile: card + inline detail for each axis */}
       <div className={`sm:hidden space-y-2 ${disabledMode ? "grayscale opacity-60 pointer-events-none select-none" : ""}`}>
          {axes.map(({ axis, score, key }, i) => (
