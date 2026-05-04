@@ -32,6 +32,15 @@ serve(async (req) => {
 
     const today = new Date().toISOString().split("T")[0];
 
+    // Read dynamic limits from rate_limit_config (singleton row id=1)
+    const { data: cfg } = await supabase
+      .from("rate_limit_config")
+      .select("free_limit, email_bonus")
+      .eq("id", 1)
+      .maybeSingle();
+    const FREE_LIMIT = cfg?.free_limit ?? DEFAULT_FREE_LIMIT;
+    const EMAIL_BONUS = cfg?.email_bonus ?? DEFAULT_EMAIL_BONUS;
+
     // Get or create today's usage record
     const { data: existing } = await supabase
       .from("analysis_usage")
