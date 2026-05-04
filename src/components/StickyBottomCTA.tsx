@@ -45,12 +45,13 @@ export default function StickyBottomCTA() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="leading-tight">
-              <span className="text-white font-black text-lg tracking-tight drop-shadow-sm">
+            <p className="leading-tight flex items-baseline gap-2 flex-wrap">
+              <span className="font-black text-lg tracking-tight bg-gradient-to-r from-white via-[hsl(40_100%_92%)] to-white bg-clip-text text-transparent drop-shadow-sm">
                 Auto-Blog
               </span>
-              <span className="text-white/95 text-sm font-semibold ml-2">
-                진단했다면, 이제 발행도 자동화
+              <span className="text-white/85 text-[11px] font-bold">(오토 블로그)</span>
+              <span className="text-white/95 text-sm font-semibold">
+                · 진단했다면, 이제 발행도 자동화
               </span>
             </p>
             <p className="text-[11px] text-white/80 mt-1">
