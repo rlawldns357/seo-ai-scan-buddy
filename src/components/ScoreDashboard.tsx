@@ -414,6 +414,7 @@ function DetailPanel({ axis, score, inline, url }: { axis: AxisAnalysis; score: 
                 label="🔥 가장 먼저"
                 item={axis.priorityFix}
                 urgent={isCritical}
+                onCopy={() => copyImprovement(axis.priorityFix!, "priority")}
               />
             )}
             {axis.quickFix && (
@@ -421,6 +422,7 @@ function DetailPanel({ axis, score, inline, url }: { axis: AxisAnalysis; score: 
                 icon={<Wrench className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />}
                 label="⚡ 빠른 개선"
                 item={axis.quickFix}
+                onCopy={() => copyImprovement(axis.quickFix!, "quick")}
               />
             )}
             {(axis.additionalFixes || []).map((fix, i) => (
@@ -429,6 +431,7 @@ function DetailPanel({ axis, score, inline, url }: { axis: AxisAnalysis; score: 
                 icon={<Plus className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />}
                 label="추가"
                 item={fix}
+                onCopy={() => copyImprovement(fix, "additional")}
               />
             ))}
           </div>
