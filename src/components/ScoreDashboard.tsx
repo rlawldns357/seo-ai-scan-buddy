@@ -227,7 +227,7 @@ function SummaryCard({
         </button>
         {selected && (
           <div className={`border-t ${config.border}`}>
-            <DetailPanel axis={axis} score={score} inline />
+            <DetailPanel axis={axis} score={score} inline url={url} />
             <button
               onClick={handleCollapse}
               className="flex items-center justify-center gap-1 w-full py-2 border-t border-border/50"
