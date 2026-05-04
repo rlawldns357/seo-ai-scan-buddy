@@ -765,6 +765,41 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
     </>
   );
 }
+/* ── Sub-signal summary strip (ADVoost-style pass/warn/fail counts) ── */
+function SignalSummaryStrip({ axes }: { axes: { axis: AxisAnalysis; score: number }[] }) {
+  let pass = 0, warn = 0, fail = 0;
+  for (const { axis } of axes) {
+    for (const s of axis.subSignals || []) {
+      if (s.score >= 75) pass++;
+      else if (s.score >= 60) warn++;
+      else fail++;
+    }
+  }
+  const total = pass + warn + fail;
+  if (total === 0) return null;
+
+  return (
+    <div
+      className="rounded-xl bg-card shadow-card px-4 py-3 animate-fade-up flex items-center justify-center gap-2 sm:gap-4 flex-wrap"
+      style={{ animationDelay: "0.15s" }}
+    >
+      <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">총 {total}개 신호</span>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-score-excellent/10 border border-score-excellent/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-score-excellent" />
+        <span className="text-[11px] sm:text-xs font-semibold text-score-excellent">통과 {pass}</span>
+      </span>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-score-warning/10 border border-score-warning/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-score-warning" />
+        <span className="text-[11px] sm:text-xs font-semibold text-score-warning">주의 {warn}</span>
+      </span>
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-score-poor/10 border border-score-poor/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-score-poor" />
+        <span className="text-[11px] sm:text-xs font-semibold text-score-poor">개선 필요 {fail}</span>
+      </span>
+    </div>
+  );
+}
+
 function getVerdict(seo: number, aeo: number, geo: number): string {
   const avg = (seo + aeo + geo) / 3;
   if (avg >= 75) return "AI 검색 반영 가능성이 높아요. 현재 상태를 유지하세요!";
