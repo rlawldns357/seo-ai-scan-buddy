@@ -284,11 +284,27 @@ function SummaryCard({
 }
 
 /* ── Full-width detail panel ── */
-function DetailPanel({ axis, score, inline }: { axis: AxisAnalysis; score: number; inline?: boolean }) {
+function DetailPanel({ axis, score, inline, url }: { axis: AxisAnalysis; score: number; inline?: boolean; url?: string }) {
   const config = axisConfig[axis.label];
   const Icon = config.icon;
   const severity = getSeverity(score);
   const isCritical = severity === "critical";
+
+  const copyImprovement = (improvement: Improvement, fixType: "priority" | "quick" | "additional") => {
+    const text = buildImprovementPrompt({ axis, score, improvement, fixType, url });
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("프롬프트가 복사됐어요", { description: "ChatGPT/Claude에 붙여넣어 보세요." });
+      trackEvent("copy_prompt", { axis: axis.label, fix_type: fixType });
+    }).catch(() => toast.error("복사에 실패했어요."));
+  };
+
+  const copyAxis = () => {
+    const text = buildAxisPrompt({ axis, score, url });
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("이 축 진단 전체를 복사했어요", { description: "AI에 그대로 붙여넣어 액션 플랜을 받아보세요." });
+      trackEvent("copy_prompt", { axis: axis.label, fix_type: "axis_all" });
+    }).catch(() => toast.error("복사에 실패했어요."));
+  };
 
   return (
     <div className={`${inline ? "animate-fade-up" : `rounded-2xl bg-card ring-1 ${config.ring} overflow-hidden animate-fade-up ${config.shadow}`}`}>
@@ -302,6 +318,27 @@ function DetailPanel({ axis, score, inline }: { axis: AxisAnalysis; score: numbe
               우선 확인
             </span>
           )}
+          <button
+            type="button"
+            onClick={copyAxis}
+            className="ml-auto inline-flex items-center gap-1.5 h-7 px-2.5 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-[11px] font-semibold transition-colors"
+            title="이 축 진단 전체를 AI 프롬프트로 복사"
+          >
+            <ClipboardCheck className="w-3 h-3" />
+            AI에게 물어보기
+          </button>
+        </div>
+      )}
+      {inline && (
+        <div className="px-4 pt-3 -mb-1 flex justify-end">
+          <button
+            type="button"
+            onClick={copyAxis}
+            className="inline-flex items-center gap-1 h-6 px-2 rounded-full bg-primary/10 hover:bg-primary/20 text-primary text-[10px] font-semibold transition-colors"
+          >
+            <ClipboardCheck className="w-2.5 h-2.5" />
+            AI에게 물어보기
+          </button>
         </div>
       )}
 
