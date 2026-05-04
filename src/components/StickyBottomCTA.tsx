@@ -45,13 +45,15 @@ export default function StickyBottomCTA() {
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white leading-tight">
-              <span className="text-white font-extrabold">
+            <p className="leading-tight">
+              <span className="text-white font-black text-lg tracking-tight drop-shadow-sm">
                 Auto-Blog
               </span>
-              <span className="text-white/95"> · 진단했다면, 이제 발행도 자동화</span>
+              <span className="text-white/95 text-sm font-semibold ml-2">
+                진단했다면, 이제 발행도 자동화
+              </span>
             </p>
-            <p className="text-[11px] text-white/80 mt-0.5">
+            <p className="text-[11px] text-white/80 mt-1">
               SEO·AEO·GEO 콘텐츠 30편을 큐에 쌓아 매일 자동 발행 · 별도 SaaS
             </p>
           </div>
