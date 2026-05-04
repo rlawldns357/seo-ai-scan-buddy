@@ -49,7 +49,9 @@ export default function StickyBottomCTA() {
               <span className="font-black text-lg tracking-tight bg-gradient-to-r from-white via-[hsl(40_100%_92%)] to-white bg-clip-text text-transparent drop-shadow-sm">
                 Auto-Blog
               </span>
-              <span className="text-white/85 text-[11px] font-bold">(오토 블로그)</span>
+              <span className="font-black text-lg tracking-tight bg-gradient-to-r from-white via-[hsl(40_100%_92%)] to-white bg-clip-text text-transparent drop-shadow-sm">
+                오토 블로그
+              </span>
               <span className="text-white/95 text-sm font-semibold">
                 · 진단했다면, 이제 발행도 자동화
               </span>
