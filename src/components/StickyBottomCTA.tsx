@@ -15,8 +15,8 @@ export default function StickyBottomCTA() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-40">
-      {/* 상단 그라데이션 액센트 라인 — 본문과 분리감 */}
-      <div className="h-[3px] w-full bg-gradient-to-r from-primary via-accent to-primary" />
+      {/* 상단 액센트 라인 — 본문과 분리감 */}
+      <div className="h-[3px] w-full bg-gradient-to-r from-[hsl(351_90%_72%)] via-[hsl(351_85%_60%)] to-[hsl(351_90%_72%)]" />
 
       {/* Desktop layout */}
       <a
