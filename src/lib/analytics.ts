@@ -14,7 +14,8 @@ type EventName =
   | "result_email_submit"
   | "report_email_sent"
   | "share_click"
-  | "naver_store_teaser_click";
+  | "naver_store_teaser_click"
+  | "copy_prompt";
 
 let sessionId: string | null = null;
 
