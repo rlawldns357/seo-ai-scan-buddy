@@ -879,6 +879,7 @@ export default function ScoreDashboard({ result, url, disabledMode, disabledReas
               selected={selected === key}
               onClick={() => setSelected(selected === key ? null : key)}
               compact
+              url={url}
             />
         ))}
       </div>
@@ -894,12 +895,13 @@ export default function ScoreDashboard({ result, url, disabledMode, disabledReas
               delay={200 + i * 200}
               selected={selected === key}
             onClick={() => setSelected(selected === key ? null : key)}
+            url={url}
             />
           ))}
         </div>
         {!disabledMode && selectedEntry && (
           <div id={`detail-${selected}`}>
-            <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} />
+            <DetailPanel axis={selectedEntry.axis} score={selectedEntry.score} url={url} />
           </div>
         )}
       </div>
