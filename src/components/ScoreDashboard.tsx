@@ -124,7 +124,7 @@ function SignalBar({ name, score, weight }: { name: string; score: number; weigh
 }
 
 /* ── Improvement row ── */
-function ImprovementRow({ icon, label, item, urgent }: { icon: React.ReactNode; label: string; item: Improvement; urgent?: boolean }) {
+function ImprovementRow({ icon, label, item, urgent, onCopy }: { icon: React.ReactNode; label: string; item: Improvement; urgent?: boolean; onCopy?: () => void }) {
   return (
     <div className={`flex items-start gap-2 ${urgent ? "px-3 py-2 -mx-1 rounded-lg bg-score-poor/[0.04] border border-score-poor/10" : ""}`}>
       {icon}
@@ -139,6 +139,17 @@ function ImprovementRow({ icon, label, item, urgent }: { icon: React.ReactNode; 
       }`}>
         {item.pointRange}
       </span>
+      {onCopy && (
+        <button
+          type="button"
+          onClick={onCopy}
+          aria-label="AI에게 물어볼 프롬프트 복사"
+          title="AI에게 물어볼 프롬프트 복사"
+          className="shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+        >
+          <Copy className="w-3 h-3" />
+        </button>
+      )}
     </div>
   );
 }
