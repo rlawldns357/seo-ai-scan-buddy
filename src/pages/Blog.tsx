@@ -9,13 +9,15 @@ import { detectBrand, getBrandStyle, hasExplicitBrand, BRAND_STYLES } from "@/li
 import { trackEvent } from "@/lib/analytics";
 
 const SITE_ORIGIN = "https://searchtuneos.com";
+const BLOG_SHARE_FUNCTION = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share`;
+const blogShareUrl = (slug: string) => `${BLOG_SHARE_FUNCTION}?slug=${encodeURIComponent(slug)}`;
 
 function ShareIconButton({ slug, title }: { slug: string; title: string }) {
   const [copied, setCopied] = useState(false);
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const url = `${SITE_ORIGIN}${blogPostPath(slug)}`;
+    const url = blogShareUrl(slug);
     trackEvent("share_click", { platform: "copy_link", url, source: "blog_list" });
     try {
       await navigator.clipboard.writeText(url);
