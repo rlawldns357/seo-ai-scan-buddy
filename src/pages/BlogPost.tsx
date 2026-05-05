@@ -26,11 +26,11 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-// Lovable hosting serves /blog/{slug}/ as the SPA home fallback on the custom
-// domain, so crawlers see the home OG. Use the explicit .html file as the
-// public share URL; it returns the prerendered article HTML with text/html.
+// App route stays local; public share URLs use a live backend-rendered OG page
+// so newly published posts get article images without waiting for a frontend deploy.
 const blogPostPath = (slug: string) => `/blog/${slug}.html`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}`;
+const blogShareUrl = (slug: string) => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share?slug=${encodeURIComponent(slug)}`;
 
 function isNaverPost(slug: string) {
   return NAVER_SLUGS.includes(slug) || slug.toLowerCase().includes("naver");
@@ -750,6 +750,7 @@ export default function BlogPost() {
   const naver = isNaverPost(post.slug);
 
   const postUrl = blogPostUrl(post.slug);
+  const shareUrl = blogShareUrl(post.slug);
   const postTitle = `${post.title} – 서치튠OS 블로그`;
   // OG image fallback chain: explicit og_image → custom thumbnail → on-demand brand SVG
   // The SVG endpoint always returns a valid 1200x630 brand-consistent image, so previews never break.
@@ -837,7 +838,7 @@ export default function BlogPost() {
                 variant="subtle"
                 title={post.title}
                 excerpt={post.excerpt}
-                url={postUrl}
+                url={shareUrl}
                 imageUrl={ogImage}
                 category={post.category}
               />
