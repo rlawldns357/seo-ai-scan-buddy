@@ -8,6 +8,12 @@ const headers = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const htmlHeaders = {
+  ...headers,
+  "content-type": "text/html; charset=utf-8",
+  "cache-control": "public, max-age=300, s-maxage=300",
+};
+
 function esc(value: unknown) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -118,11 +124,7 @@ Deno.serve(async (req) => {
 
     return new Response(buildHtml(data), {
       status: 200,
-      headers: {
-        ...headers,
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=300, s-maxage=300",
-      },
+      headers: htmlHeaders,
     });
   } catch (error) {
     console.error("[blog-share] error", error);
