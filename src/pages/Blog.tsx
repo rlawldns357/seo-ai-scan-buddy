@@ -8,7 +8,6 @@ import { Calendar, Clock, ArrowRight, Share2, Check } from "lucide-react";
 import { detectBrand, getBrandStyle, hasExplicitBrand, BRAND_STYLES } from "@/lib/brandMatching";
 import { trackEvent } from "@/lib/analytics";
 
-const SITE_ORIGIN = "https://searchtuneos.com";
 const BLOG_SHARE_FUNCTION = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share`;
 const blogShareUrl = (slug: string) => `${BLOG_SHARE_FUNCTION}?slug=${encodeURIComponent(slug)}`;
 
