@@ -750,6 +750,7 @@ export default function BlogPost() {
   const naver = isNaverPost(post.slug);
 
   const postUrl = blogPostUrl(post.slug);
+  const shareUrl = blogShareUrl(post.slug);
   const postTitle = `${post.title} – 서치튠OS 블로그`;
   // OG image fallback chain: explicit og_image → custom thumbnail → on-demand brand SVG
   // The SVG endpoint always returns a valid 1200x630 brand-consistent image, so previews never break.
@@ -837,7 +838,7 @@ export default function BlogPost() {
                 variant="subtle"
                 title={post.title}
                 excerpt={post.excerpt}
-                url={postUrl}
+                url={shareUrl}
                 imageUrl={ogImage}
                 category={post.category}
               />
