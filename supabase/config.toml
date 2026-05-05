@@ -13,3 +13,5 @@ project_id = "dmnrbmarbvirtymhszww"
     verify_jwt = true
   [functions.send-transactional-email]
     verify_jwt = true
+  [functions.blog-share]
+    verify_jwt = false
