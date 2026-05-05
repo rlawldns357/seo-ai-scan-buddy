@@ -8,11 +8,12 @@ const headers = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const htmlHeaders = {
-  ...headers,
-  "content-type": "text/html; charset=utf-8",
-  "cache-control": "public, max-age=300, s-maxage=300",
-};
+function buildHtmlHeaders() {
+  const h = new Headers(headers);
+  h.set("Content-Type", "text/html; charset=utf-8");
+  h.set("Cache-Control", "public, max-age=300, s-maxage=300");
+  return h;
+}
 
 function esc(value: unknown) {
   return String(value ?? "")
@@ -122,9 +123,9 @@ Deno.serve(async (req) => {
       return new Response("Blog post not found", { status: 404, headers: { ...headers, "Content-Type": "text/plain; charset=utf-8" } });
     }
 
-    return new Response(buildHtml(data), {
+    return new Response(new TextEncoder().encode(buildHtml(data)), {
       status: 200,
-      headers: htmlHeaders,
+      headers: buildHtmlHeaders(),
     });
   } catch (error) {
     console.error("[blog-share] error", error);
