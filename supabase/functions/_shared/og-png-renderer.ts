@@ -28,9 +28,9 @@ const PRETENDARD_BOLD_TTF =
   "https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/public/static/alternative/Pretendard-Bold.ttf";
 
 // Serif 폰트 (Claude/Anthropic 등 Georgia 계열 워드마크용)
-// Lora는 Google Fonts의 modern serif, jsdelivr fontsource로 ttf 직접 fetch 가능
-const SERIF_BOLD_TTF =
-  "https://cdn.jsdelivr.net/fontsource/fonts/lora@latest/latin-700-normal.ttf";
+// Claude 워드마크는 weight 400 (regular) — Bold 임베드 시 너무 굵게 렌더됨
+const SERIF_REGULAR_TTF =
+  "https://cdn.jsdelivr.net/fontsource/fonts/lora@latest/latin-400-normal.ttf";
 
 async function ensureWasm(): Promise<void> {
   if (!wasmReady) {
@@ -61,7 +61,7 @@ async function ensureFont(): Promise<ArrayBuffer> {
 async function ensureSerifFont(): Promise<ArrayBuffer | null> {
   if (!serifFontPromise) {
     serifFontPromise = (async () => {
-      const res = await fetch(SERIF_BOLD_TTF);
+      const res = await fetch(SERIF_REGULAR_TTF);
       if (!res.ok) throw new Error(`Lora ttf fetch failed: ${res.status}`);
       return await res.arrayBuffer();
     })();
