@@ -211,7 +211,10 @@ declare global {
     Kakao?: {
       isInitialized: () => boolean;
       init: (key: string) => void;
-      Share?: { sendDefault: (opts: Record<string, unknown>) => void };
+      Share?: {
+        sendDefault: (opts: Record<string, unknown>) => void;
+        uploadImage?: (opts: { file: File[] }) => Promise<{ infos?: { original?: { url?: string } } }>;
+      };
     };
   }
 }
