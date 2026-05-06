@@ -58,22 +58,42 @@ async function ensureFont(): Promise<ArrayBuffer> {
   return pretendardFontPromise;
 }
 
+async function ensureSerifFont(): Promise<ArrayBuffer | null> {
+  if (!serifFontPromise) {
+    serifFontPromise = (async () => {
+      const res = await fetch(SERIF_BOLD_TTF);
+      if (!res.ok) throw new Error(`Lora ttf fetch failed: ${res.status}`);
+      return await res.arrayBuffer();
+    })();
+  }
+  try {
+    return await serifFontPromise;
+  } catch (e) {
+    console.warn("[OG] serif font load failed, falling back to Pretendard:", e);
+    serifFontPromise = null;
+    return null;
+  }
+}
+
 /**
  * SVG 문자열을 1200x630 PNG Uint8Array로 변환.
- * Pretendard ttf를 임베드해서 한글이 100% 안전하게 렌더됨.
+ * Pretendard ttf + Lora(serif) ttf를 임베드해서 한글 + Claude/Georgia 계열 워드마크 모두 안전.
  */
 export async function svgToPng(svg: string): Promise<Uint8Array> {
   await ensureWasm();
-  const fontData = await ensureFont();
+  const [fontData, serifData] = await Promise.all([ensureFont(), ensureSerifFont()]);
+
+  const fontBuffers = [new Uint8Array(fontData)];
+  if (serifData) fontBuffers.push(new Uint8Array(serifData));
 
   const resvg = new Resvg(svg, {
     fitTo: { mode: "width", value: 1200 },
     background: "rgba(255,255,255,1)",
     font: {
-      fontBuffers: [new Uint8Array(fontData)],
+      fontBuffers,
       loadSystemFonts: false,
       defaultFontFamily: "Pretendard",
-      serifFamily: "Pretendard",
+      serifFamily: "Lora",
       sansSerifFamily: "Pretendard",
       monospaceFamily: "Pretendard",
     },
