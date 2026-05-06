@@ -53,7 +53,7 @@ export interface BrandStyle {
 const PRETENDARD = `'Pretendard','Noto Sans KR','Apple SD Gothic Neo',-apple-system,BlinkMacSystemFont,sans-serif`;
 const INTER = `'Inter','Pretendard','Noto Sans KR',sans-serif`;
 const POPPINS = `'Poppins','Inter','Pretendard',sans-serif`;
-const SERIF = `Georgia,'Times New Roman',serif`;
+const SERIF = `'Lora',Georgia,'Times New Roman',serif`;
 
 export const BRAND_STYLES: Record<BrandKey, BrandStyle> = {
   chatgpt: {
