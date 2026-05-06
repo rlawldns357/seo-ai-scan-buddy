@@ -35,9 +35,9 @@ function resolveSlug(req: Request) {
   return decodeURIComponent(slug || "").replace(/\.html$/i, "");
 }
 
-function buildHtml(post: Record<string, any>) {
+function buildHtml(post: Record<string, any>, req: Request) {
   const articleUrl = `${SITE}/blog/${encodeURIComponent(post.slug)}`;
-  const shareUrl = `${SITE}/blog/${encodeURIComponent(post.slug)}`;
+  const shareUrl = req.url;
   const title = `${post.title} – 서치튠OS 블로그`;
   const description = post.excerpt || "SEO·AEO·GEO 실전 가이드";
   const image = post.og_image || post.thumbnail || FALLBACK_IMAGE;
@@ -68,7 +68,7 @@ function buildHtml(post: Record<string, any>) {
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}" />
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
-  <link rel="canonical" href="${shareUrl}" />
+  <link rel="canonical" href="${articleUrl}" />
   <meta property="og:title" content="${esc(title)}" />
   <meta property="og:description" content="${esc(description)}" />
   <meta property="og:url" content="${shareUrl}" />
@@ -87,8 +87,13 @@ function buildHtml(post: Record<string, any>) {
   <meta name="twitter:description" content="${esc(description)}" />
   <meta name="twitter:image" content="${esc(image)}" />
   <script type="application/ld+json">${articleJsonLd}</script>
-  <meta http-equiv="refresh" content="1;url=${articleUrl}" />
-  <script>setTimeout(function(){ location.replace(${JSON.stringify(articleUrl)}); }, 700);</script>
+  <script>
+    (function(){
+      var ua = navigator.userAgent || "";
+      var isCrawler = /kakao|facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|bot|crawler|spider/i.test(ua);
+      if (!isCrawler) setTimeout(function(){ location.replace(${JSON.stringify(articleUrl)}); }, 900);
+    })();
+  </script>
 </head>
 <body style="margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fff;color:#111;display:grid;place-items:center;min-height:100vh;padding:24px">
   <main style="max-width:640px;text-align:center">
@@ -123,7 +128,7 @@ Deno.serve(async (req) => {
       return new Response("Blog post not found", { status: 404, headers: { ...headers, "Content-Type": "text/plain; charset=utf-8" } });
     }
 
-    return new Response(new TextEncoder().encode(buildHtml(data)), {
+    return new Response(new TextEncoder().encode(buildHtml(data, req)), {
       status: 200,
       headers: buildHtmlHeaders(),
     });
