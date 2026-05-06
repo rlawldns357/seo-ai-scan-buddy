@@ -61,7 +61,7 @@ async function ensureFont(): Promise<ArrayBuffer> {
 async function ensureSerifFont(): Promise<ArrayBuffer | null> {
   if (!serifFontPromise) {
     serifFontPromise = (async () => {
-      const res = await fetch(SERIF_BOLD_TTF);
+      const res = await fetch(SERIF_REGULAR_TTF);
       if (!res.ok) throw new Error(`Lora ttf fetch failed: ${res.status}`);
       return await res.arrayBuffer();
     })();
