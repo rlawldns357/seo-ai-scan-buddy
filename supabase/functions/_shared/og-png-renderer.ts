@@ -20,11 +20,17 @@ import { Resvg, initWasm } from "https://esm.sh/@resvg/resvg-wasm@2.6.2";
 
 let wasmReady: Promise<void> | null = null;
 let pretendardFontPromise: Promise<ArrayBuffer> | null = null;
+let serifFontPromise: Promise<ArrayBuffer> | null = null;
 
 // jsdelivr가 직접 호스팅하는 Pretendard 1.3.9 ttf (KR+EN 통합, 2.6MB)
 // orioncactus/pretendard 공식 npm 패키지 dist 경로
 const PRETENDARD_BOLD_TTF =
   "https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/public/static/alternative/Pretendard-Bold.ttf";
+
+// Serif 폰트 (Claude/Anthropic 등 Georgia 계열 워드마크용)
+// Lora는 Google Fonts의 modern serif, jsdelivr fontsource로 ttf 직접 fetch 가능
+const SERIF_BOLD_TTF =
+  "https://cdn.jsdelivr.net/fontsource/fonts/lora@latest/latin-700-normal.ttf";
 
 async function ensureWasm(): Promise<void> {
   if (!wasmReady) {
