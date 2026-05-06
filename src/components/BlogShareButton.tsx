@@ -10,8 +10,31 @@ declare global {
     Kakao?: {
       isInitialized: () => boolean;
       init: (key: string) => void;
-      Share?: { sendDefault: (opts: Record<string, unknown>) => void };
+      Share?: {
+        sendDefault: (opts: Record<string, unknown>) => void;
+        uploadImage?: (opts: { file: File[] }) => Promise<{ infos?: { original?: { url?: string } } }>;
+      };
     };
+  }
+}
+
+async function uploadKakaoImage(imageUrl?: string) {
+  if (!imageUrl || !window.Kakao?.Share?.uploadImage) return imageUrl || "";
+
+  try {
+    const response = await fetch(imageUrl, { mode: "cors", cache: "force-cache" });
+    if (!response.ok) throw new Error(`Image fetch failed: ${response.status}`);
+
+    const blob = await response.blob();
+    if (!blob.type.startsWith("image/")) throw new Error(`Invalid image type: ${blob.type}`);
+
+    const ext = blob.type.includes("jpeg") ? "jpg" : blob.type.includes("webp") ? "webp" : "png";
+    const file = new File([blob], `searchtune-og.${ext}`, { type: blob.type || "image/png" });
+    const uploaded = await window.Kakao.Share.uploadImage({ file: [file] });
+    return uploaded?.infos?.original?.url || imageUrl;
+  } catch (error) {
+    console.warn("[kakao] image upload failed, falling back to direct URL", error);
+    return imageUrl;
   }
 }
 
@@ -95,12 +118,14 @@ export default function BlogShareButton({ title, excerpt, url, imageUrl, categor
       const ready = ensureKakaoInit();
       if (!ready) throw new Error("Kakao SDK not ready");
 
+      const kakaoImageUrl = await uploadKakaoImage(imageUrl);
+
       window.Kakao!.Share!.sendDefault({
         objectType: "feed",
         content: {
           title,
           description: desc,
-          imageUrl: imageUrl || "",
+          imageUrl: kakaoImageUrl,
           link: { mobileWebUrl: url, webUrl: url },
         },
         buttons: [
