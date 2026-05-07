@@ -49,8 +49,8 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
               </span>
               Naver Store
             </span>
-            <span className="mt-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/70 leading-none">
-              {active ? "활성화됨" : "눌러서 켜기"}
+            <span className="mt-1.5 text-[10px] font-medium tracking-wider uppercase text-muted-foreground/80 leading-none">
+              신기능 안내
             </span>
           </div>
 
