@@ -282,67 +282,64 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           </div>
         </div>
 
-        {/* Hero — 텍스트 왼쪽 / AI 로고 오른쪽 */}
-        <div className="relative">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5 sm:gap-8">
-            {/* Left: 타이포 메시지 */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
-                  {recommended}
-                </span>
-                <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground/60 tabular-nums">
-                  / {measurable}
-                </span>
-                <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                  AI에서 추천
-                </span>
-              </div>
-              <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
-                {heroMessage.title}
-              </h3>
-              <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug max-w-md">
-                {heroMessage.sub}
-              </p>
+        {/* Hero — 세로 정렬: 숫자 → 메시지 → AI 로고 */}
+        <div className="relative space-y-4 sm:space-y-5">
+          <div>
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
+                {recommended}
+              </span>
+              <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground/60 tabular-nums">
+                / {measurable}
+              </span>
+              <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                AI에서 추천
+              </span>
             </div>
-
-            {/* Right: AI 로고 도트 — 모바일 3x2, 데스크탑 6x1 */}
-            {measurable > 0 && (
-              <div className="shrink-0 grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
-                {sortedBrands.map((b) => {
-                  const meta = BRAND_META[b.brand];
-                  const isRec = b.status === "ok" && b.recommendation?.mentioned;
-                  const isAwareDot = b.status === "ok" && b.awareness === "yes";
-                  const isLocked = b.status === "unsupported";
-                  const state = isRec ? "rec" : isAwareDot ? "aware" : isLocked ? "lock" : "miss";
-                  const styleMap = {
-                    rec:   `${toneClasses.bg} ${toneClasses.border} border-2 ${toneClasses.text} shadow-sm`,
-                    aware: "bg-card border border-border text-foreground/70",
-                    miss:  "bg-muted/40 border border-border/60 text-muted-foreground/40",
-                    lock:  "bg-muted/30 border border-dashed border-border/60 text-muted-foreground/40",
-                  }[state];
-                  return (
-                    <div
-                      key={b.brand}
-                      className={`group relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-xl ${styleMap} transition-transform hover:scale-110`}
-                      style={isRec ? { color: meta.brandColor } : undefined}
-                      title={`${meta.name} · ${isRec ? "추천 노출" : isAwareDot ? "인지함" : isLocked ? "준비 중" : "미노출"}`}
-                    >
-                      <meta.Logo className="w-4 h-4 sm:w-5 sm:h-5" />
-                      {isRec && (
-                        <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-card flex items-center justify-center text-[7px] font-black ${toneClasses.text.replace("text-", "bg-")} text-white`}>
-                          ✓
-                        </span>
-                      )}
-                      {isLocked && (
-                        <Lock className="absolute -bottom-1 -right-1 w-2.5 h-2.5 text-muted-foreground/60 bg-card rounded-full p-0.5" />
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+            <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
+              {heroMessage.title}
+            </h3>
+            <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug max-w-md">
+              {heroMessage.sub}
+            </p>
           </div>
+
+          {/* AI 로고 — 한 줄로 */}
+          {measurable > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1">
+              {sortedBrands.map((b) => {
+                const meta = BRAND_META[b.brand];
+                const isRec = b.status === "ok" && b.recommendation?.mentioned;
+                const isAwareDot = b.status === "ok" && b.awareness === "yes";
+                const isLocked = b.status === "unsupported";
+                const state = isRec ? "rec" : isAwareDot ? "aware" : isLocked ? "lock" : "miss";
+                const styleMap = {
+                  rec:   `${toneClasses.bg} ${toneClasses.border} border-2 ${toneClasses.text} shadow-sm`,
+                  aware: "bg-card border border-border text-foreground/70",
+                  miss:  "bg-muted/40 border border-border/60 text-muted-foreground/40",
+                  lock:  "bg-muted/30 border border-dashed border-border/60 text-muted-foreground/40",
+                }[state];
+                return (
+                  <div
+                    key={b.brand}
+                    className={`group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${styleMap} transition-transform hover:scale-110`}
+                    style={isRec ? { color: meta.brandColor } : undefined}
+                    title={`${meta.name} · ${isRec ? "추천 노출" : isAwareDot ? "인지함" : isLocked ? "준비 중" : "미노출"}`}
+                  >
+                    <meta.Logo className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+                    {isRec && (
+                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-card flex items-center justify-center text-[7px] font-black ${toneClasses.text.replace("text-", "bg-")} text-white`}>
+                        ✓
+                      </span>
+                    )}
+                    {isLocked && (
+                      <Lock className="absolute -bottom-1 -right-1 w-2.5 h-2.5 text-muted-foreground/60 bg-card rounded-full p-0.5" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
