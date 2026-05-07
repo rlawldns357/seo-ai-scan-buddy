@@ -30,7 +30,7 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
         onClick={handleClick}
         aria-pressed={active}
         className={`group block w-full text-left rounded-2xl border bg-card hover:shadow-elevated transition-all duration-300 ${
-          active ? "border-naver/60 shadow-naver" : "border-border hover:border-naver/40"
+          active ? "border-naver/60 shadow-elevated" : "border-border hover:border-naver/40"
         }`}
       >
         <div className="px-5 sm:px-6 py-4 flex items-center gap-4 sm:gap-5">
