@@ -54,7 +54,7 @@ const BRAND_META: Record<BrandKey, { name: string; Logo: React.ComponentType<{ c
   gemini:     { name: "Gemini",         Logo: SiGooglegemini, brandColor: "#1C69FF" },
   perplexity: { name: "Perplexity",     Logo: SiPerplexity,  brandColor: "#20808D" },
   bing:       { name: "Copilot (Bing)", Logo: CopilotMark,   brandColor: "#0078D4" },
-  naver:      { name: "Naver Cue:",     Logo: SiNaver,       brandColor: "#03C75A" },
+  naver:      { name: "네이버 (HyperCLOVA X)", Logo: SiNaver, brandColor: "#03C75A" },
 };
 
 const ORDER: BrandKey[] = ["chatgpt", "claude", "gemini", "perplexity", "bing", "naver"];
