@@ -40,8 +40,12 @@ export default function AskAITeaser({ active, onActivate }: Props) {
         type="button"
         onClick={handleClick}
         aria-pressed={active}
-        className={`group relative block w-full text-left rounded-2xl border bg-card hover:shadow-elevated transition-all duration-300 ${
-          active ? "border-askai/60 shadow-elevated" : "border-askai/30 hover:border-askai/60"
+        aria-disabled={active}
+        tabIndex={active ? -1 : 0}
+        className={`group relative block w-full text-left rounded-2xl border bg-card transition-all duration-300 ${
+          active
+            ? "border-askai/60 shadow-elevated cursor-default"
+            : "border-askai/30 hover:border-askai/60 hover:shadow-elevated"
         }`}
       >
         <span className="absolute -top-2 left-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-askai text-askai-foreground text-[10px] font-semibold tracking-wide shadow-sm">
