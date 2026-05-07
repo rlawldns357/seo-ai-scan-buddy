@@ -1,0 +1,1 @@
+DELETE FROM public.ai_perception_cache;
