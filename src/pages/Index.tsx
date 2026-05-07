@@ -107,6 +107,8 @@ const Index = () => {
 
   // Skip Lighthouse toggle
   const [skipLighthouse, setSkipLighthouse] = useState(false);
+  // Ask AI toggle (default ON — premium signature feature)
+  const [askAIEnabled, setAskAIEnabled] = useState(true);
   const [psiLazyLoading, setPsiLazyLoading] = useState(false);
   const [psiRetryError, setPsiRetryError] = useState<string | null>(null);
   const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
@@ -484,36 +486,69 @@ const Index = () => {
                 ? parseNaverStoreUrl(/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`)
                 : null;
               const forced = !!storeInfoForCheckbox;
-              const effectiveChecked = forced || skipLighthouse;
+              const fastChecked = forced || skipLighthouse;
               return (
                 <>
-                  <label
-                    className={`flex items-center gap-2 justify-center mt-5 sm:mt-3 select-none group ${
-                      forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"
-                    }`}
-                    title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={effectiveChecked}
+                  <div className="mt-5 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
+                    {/* 빠른 분석 */}
+                    <button
+                      type="button"
+                      onClick={() => !forced && setSkipLighthouse((v) => !v)}
                       disabled={forced}
-                      onChange={(e) => setSkipLighthouse(e.target.checked)}
-                      className="sr-only peer"
-                    />
-                    <div className="w-4 h-4 rounded border border-muted-foreground/30 peer-checked:bg-primary peer-checked:border-primary flex items-center justify-center transition-colors">
-                      {effectiveChecked && <Zap className="w-3 h-3 text-primary-foreground" />}
-                    </div>
-                    <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
-                      ⚡ 빠른 분석 <span className="text-muted-foreground/60">(Lighthouse 건너뛰기)</span>
-                      {forced && <span className="ml-1 text-primary font-medium">· 네이버 자동 적용</span>}
-                    </span>
-                  </label>
-                  <p className="text-xs text-muted-foreground mt-2 font-medium">
+                      aria-pressed={fastChecked}
+                      title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
+                      className={`group relative h-11 rounded-full border px-3 flex items-center justify-center gap-2 text-xs font-semibold transition-all ${
+                        fastChecked
+                          ? "border-primary/60 bg-primary/10 text-primary shadow-sm"
+                          : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                      } ${forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"}`}
+                    >
+                      <Zap className={`w-3.5 h-3.5 ${fastChecked ? "text-primary" : ""}`} />
+                      <span className="leading-none">빠른 분석</span>
+                      <span
+                        className={`ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border text-[9px] font-black ${
+                          fastChecked ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 text-transparent"
+                        }`}
+                        aria-hidden
+                      >
+                        ✓
+                      </span>
+                    </button>
+
+                    {/* AI에게 물어보기 */}
+                    <button
+                      type="button"
+                      onClick={() => setAskAIEnabled((v) => !v)}
+                      aria-pressed={askAIEnabled}
+                      className={`group relative h-11 rounded-full border px-3 flex items-center justify-center gap-2 text-xs font-semibold transition-all ${
+                        askAIEnabled
+                          ? "border-askai/60 bg-askai/10 text-askai shadow-sm"
+                          : "border-border bg-card text-muted-foreground hover:border-askai/40 hover:text-foreground"
+                      }`}
+                    >
+                      <span className="relative flex w-2 h-2 items-center justify-center">
+                        {askAIEnabled && (
+                          <span className="absolute inline-flex w-full h-full rounded-full bg-askai/60 animate-live-ping" />
+                        )}
+                        <span className={`relative inline-flex w-2 h-2 rounded-full ${askAIEnabled ? "bg-askai" : "bg-muted-foreground/40"}`} />
+                      </span>
+                      <span className="leading-none">AI에게 물어보기</span>
+                      <span
+                        className={`ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border text-[9px] font-black ${
+                          askAIEnabled ? "bg-askai border-askai text-askai-foreground" : "border-muted-foreground/30 text-transparent"
+                        }`}
+                        aria-hidden
+                      >
+                        ✓
+                      </span>
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3 font-medium text-center">
                     {forced
                       ? "네이버 스토어 전용 진단 · 약 10초"
-                      : effectiveChecked
-                      ? "AI 분석만 실행 · 30초 이내"
-                      : "모바일 + 데스크톱 동시 측정 · 평균 10~30초"}
+                      : fastChecked
+                      ? `AI 분석만 실행 · 30초 이내${askAIEnabled ? " · ChatGPT·Claude·Gemini·Perplexity 동시 질문" : ""}`
+                      : `모바일 + 데스크톱 동시 측정 · 평균 10~30초${askAIEnabled ? " · AI 인식까지 함께" : ""}`}
                   </p>
                 </>
               );
@@ -663,7 +698,7 @@ const Index = () => {
                 <NaverStoreInsights context={result.storeContext} />
               )}
 
-              {result && !result.storeContext && (
+              {result && !result.storeContext && askAIEnabled && (
                 <div id="ai-perception" className="scroll-mt-20">
                   <AIPerceptionCard url={normalizedUrl} />
                 </div>
