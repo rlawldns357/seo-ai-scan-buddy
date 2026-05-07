@@ -91,6 +91,8 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [expandedBrand, setExpandedBrand] = useState<BrandKey | null>(null);
   const [stepIdx, setStepIdx] = useState(0);
+  const [reloadKey, setReloadKey] = useState(0);
+  const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
 
   useEffect(() => {
     if (!url) return;
@@ -101,8 +103,10 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
 
     (async () => {
       try {
+        const adminPw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("admin_pw") : null;
+        const purge = reloadKey > 0 && !!adminPw;
         const { data: resp, error: invErr } = await supabase.functions.invoke("probe-ai-perception", {
-          body: { url, brand, category },
+          body: { url, brand, category, ...(purge ? { purge: true, adminPassword: adminPw } : {}) },
         });
         if (cancelled) return;
         if (invErr) throw invErr;
@@ -122,7 +126,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
     })();
 
     return () => { cancelled = true; };
-  }, [url, brand, category]);
+  }, [url, brand, category, reloadKey]);
 
   // Loading step ticker (advance every ~2.2s, hold on last)
   useEffect(() => {
