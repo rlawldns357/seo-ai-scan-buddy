@@ -109,6 +109,8 @@ const Index = () => {
   const [skipLighthouse, setSkipLighthouse] = useState(false);
   // Ask AI toggle (default ON — premium signature feature)
   const [askAIEnabled, setAskAIEnabled] = useState(true);
+  // Naver Store mode (teaser 클릭으로 활성화 — 검색창 초록 띠)
+  const [naverMode, setNaverMode] = useState(false);
   const [psiLazyLoading, setPsiLazyLoading] = useState(false);
   const [psiRetryError, setPsiRetryError] = useState<string | null>(null);
   const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
@@ -434,8 +436,16 @@ const Index = () => {
 
               <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-3 my-2 sm:my-0">
                 <div className="relative w-full sm:flex-1">
+                  {/* Naver mode 활성화 시: 입력창 둘레 그라데이션 초록 띠 */}
+                  {naverMode && (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute -inset-[2px] rounded-2xl bg-[linear-gradient(135deg,hsl(var(--naver))_0%,hsl(var(--naver-deep))_55%,hsl(var(--naver))_100%)] opacity-90 animate-naver-shimmer"
+                      style={{ backgroundSize: "200% 200%" }}
+                    />
+                  )}
                   <Search
-                    className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60 pointer-events-none transition-colors group-focus-within:text-primary"
+                    className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60 pointer-events-none transition-colors group-focus-within:text-primary z-10"
                     strokeWidth={2.5}
                   />
                   <input
@@ -443,8 +453,12 @@ const Index = () => {
                     value={url}
                     onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-                    placeholder={url ? "" : rotatingPlaceholder}
-                    className="w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border border-input bg-card/80 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary text-base sm:text-lg shadow-sm focus:shadow-lg transition-all"
+                    placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
+                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/80 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
+                      naverMode
+                        ? "border-transparent focus:ring-0"
+                        : "border-input focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                    }`}
                     style={{ paddingLeft: "3rem" }}
                   />
                 </div>
@@ -490,7 +504,7 @@ const Index = () => {
               return (
                 <>
                   <div className="mt-5 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
-                    {/* 빠른 분석 */}
+                    {/* 빠른 분석 — Amber/Yellow */}
                     <button
                       type="button"
                       onClick={() => !forced && setSkipLighthouse((v) => !v)}
@@ -499,15 +513,15 @@ const Index = () => {
                       title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
                       className={`group relative h-11 rounded-full border px-3 flex items-center justify-center gap-2 text-xs font-semibold transition-all ${
                         fastChecked
-                          ? "border-primary/60 bg-primary/10 text-primary shadow-sm"
-                          : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                          ? "border-score-warning/60 bg-score-warning/10 text-score-warning shadow-sm"
+                          : "border-border bg-card text-muted-foreground hover:border-score-warning/40 hover:text-foreground"
                       } ${forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"}`}
                     >
-                      <Zap className={`w-3.5 h-3.5 ${fastChecked ? "text-primary" : ""}`} />
+                      <Zap className={`w-3.5 h-3.5 ${fastChecked ? "text-score-warning" : ""}`} />
                       <span className="leading-none">빠른 분석</span>
                       <span
                         className={`ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border text-[9px] font-black ${
-                          fastChecked ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 text-transparent"
+                          fastChecked ? "bg-score-warning border-score-warning text-white" : "border-muted-foreground/30 text-transparent"
                         }`}
                         aria-hidden
                       >
@@ -589,7 +603,10 @@ const Index = () => {
                 />
               )}
               <AskAITeaser onActivate={() => setAskAIEnabled(true)} />
-              <NaverStoreTeaser />
+              <NaverStoreTeaser
+                active={naverMode}
+                onActivate={() => setNaverMode((v) => !v)}
+              />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
