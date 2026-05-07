@@ -8,9 +8,8 @@ import NaverStoreDetectedBanner from "@/components/NaverStoreDetectedBanner";
 import RateLimitBanner from "@/components/RateLimitBanner";
 import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
-
-
-
+import NaverStoreTeaser from "@/components/NaverStoreTeaser";
+import AskAITeaser from "@/components/AskAITeaser";
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
 import type { ExtendedDemoResult } from "@/lib/analyze";
