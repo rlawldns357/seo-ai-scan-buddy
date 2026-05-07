@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
+import AIPerceptionCard from "@/components/AIPerceptionCard";
 import LighthouseScores from "@/components/LighthouseScores";
 import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
