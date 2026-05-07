@@ -247,15 +247,15 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
         <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
         <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
-          <div className="group inline-flex items-center gap-2 pl-2.5 pr-3 py-1.5 rounded-full bg-gradient-to-b from-white to-slate-50 dark:from-card dark:to-card/80 border border-white/80 ring-1 ring-black/5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_-2px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm">
-            <span className="relative flex w-2 h-2 items-center justify-center">
+          <div className="group inline-flex items-center gap-2.5 pl-3 pr-3.5 py-2 rounded-full bg-gradient-to-b from-white to-slate-50 dark:from-card dark:to-card/80 border border-white/80 ring-1 ring-black/5 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_12px_-2px_rgba(15,23,42,0.08),inset_0_1px_0_rgba(255,255,255,0.9)] backdrop-blur-sm">
+            <span className="relative flex w-2.5 h-2.5 items-center justify-center">
               <span className="absolute inline-flex w-full h-full rounded-full bg-score-excellent animate-live-ping" />
-              <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-gradient-to-br from-score-excellent to-emerald-600 shadow-[0_0_6px_rgba(16,185,129,0.55)] animate-live-pulse" />
+              <span className="relative inline-flex w-2 h-2 rounded-full bg-gradient-to-br from-score-excellent to-emerald-600 shadow-[0_0_6px_rgba(16,185,129,0.55)] animate-live-pulse" />
             </span>
-            <span className="text-[10px] sm:text-[11px] font-semibold tracking-tight text-foreground/75">
+            <span className="text-[12px] sm:text-[13px] font-semibold tracking-tight text-foreground/80">
               AI <span className="font-black bg-gradient-to-br from-foreground to-foreground/70 bg-clip-text text-transparent">{measurable}곳</span>에 직접 물어본 결과
             </span>
-            <span className="text-[8px] font-black uppercase tracking-[0.18em] text-muted-foreground/50 border-l border-border/60 pl-2 animate-live-pulse">LIVE</span>
+            <span className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/60 border-l border-border/60 pl-2.5 animate-live-pulse">LIVE</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {data.cached && (
