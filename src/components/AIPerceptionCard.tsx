@@ -268,7 +268,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
               </span>
             </span>
             <span className="text-[13px] sm:text-sm font-semibold tracking-tight text-foreground">
-              <span className="font-black bg-gradient-to-br from-askai to-askai-deep bg-clip-text text-transparent">Ask AI</span> · AI에게 직접 질문했어요 · <span className="font-black text-askai">{measurable}곳</span>
+              <span className="font-black bg-gradient-to-br from-askai to-askai-deep bg-clip-text text-transparent">Ask AI</span> · AI에게 직접 질문했어요 · <span className="font-black text-askai">{measurable}모델 동시 수집</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
