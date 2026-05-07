@@ -295,15 +295,51 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
 
           {measurable > 0 && (
             <div>
-              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${toneClasses.text.replace("text-", "bg-")}`}
-                  style={{ width: `${Math.max(ratioPct, 2)}%` }}
-                />
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+                  AI별 추천 현황
+                </span>
+                <span className={`text-[11px] font-black tabular-nums ${toneClasses.text}`}>
+                  {ratioPct}% 노출
+                </span>
               </div>
-              <div className="mt-2 flex items-center justify-between text-[11px] sm:text-xs text-muted-foreground">
-                <span>인지 <span className={`font-bold tabular-nums ${aware > 0 ? "text-foreground" : ""}`}>{aware}</span> · 측정 <span className="font-bold text-foreground tabular-nums">{measurable}</span></span>
-                <span className={`font-bold tabular-nums ${toneClasses.text}`}>{ratioPct}%</span>
+              <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+                {sortedBrands.map((b) => {
+                  const meta = BRAND_META[b.brand];
+                  const isRec = b.status === "ok" && b.recommendation?.mentioned;
+                  const isAwareDot = b.status === "ok" && b.awareness === "yes";
+                  const isLocked = b.status === "unsupported";
+                  const state = isRec ? "rec" : isAwareDot ? "aware" : isLocked ? "lock" : "miss";
+                  const styleMap = {
+                    rec:   `${toneClasses.bg} ${toneClasses.border} border-2 ${toneClasses.text} shadow-sm`,
+                    aware: "bg-card border border-border text-foreground/70",
+                    miss:  "bg-muted/40 border border-border/60 text-muted-foreground/40",
+                    lock:  "bg-muted/30 border border-dashed border-border/60 text-muted-foreground/40",
+                  }[state];
+                  return (
+                    <div
+                      key={b.brand}
+                      className={`group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${styleMap} transition-transform hover:scale-110`}
+                      style={isRec ? { color: meta.brandColor } : undefined}
+                      title={`${meta.name} · ${isRec ? "추천 노출" : isAwareDot ? "인지함" : isLocked ? "곧 지원" : "미노출"}`}
+                    >
+                      <meta.Logo className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
+                      {isRec && (
+                        <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-card flex items-center justify-center text-[8px] font-black ${toneClasses.text.replace("text-", "bg-")} text-white`}>
+                          ✓
+                        </span>
+                      )}
+                      {isLocked && (
+                        <Lock className="absolute -bottom-1 -right-1 w-3 h-3 text-muted-foreground/60 bg-card rounded-full p-0.5" />
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mt-2.5 flex items-center gap-3 text-[10px] text-muted-foreground/80">
+                <span className="inline-flex items-center gap-1"><span className={`w-2 h-2 rounded-full ${toneClasses.text.replace("text-", "bg-")}`} />추천</span>
+                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-foreground/40" />인지만</span>
+                <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted-foreground/30" />미노출</span>
               </div>
             </div>
           )}
