@@ -49,10 +49,7 @@ export default function NaverStoreTeaser({ onActivate }: Props) {
             </p>
           </div>
 
-          <div className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
-            <span className="hidden sm:inline">자동</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </div>
+          <ArrowUpRight className="shrink-0 w-4 h-4 text-muted-foreground" />
         </div>
       </button>
     </section>
