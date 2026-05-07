@@ -68,20 +68,18 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
     return (
       <div className="flex flex-col items-center gap-2.5 px-3 text-center">
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-primary-foreground font-extrabold tracking-widest uppercase shadow-sm ${isLg ? "text-[10px]" : "text-[9px]"}`}
+          className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-primary-foreground font-extrabold tracking-widest uppercase shadow-sm ${isLg ? "text-[10px]" : "text-[9px]"}`}
           style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }}
         >
-          NEW · SearchTune&nbsp;OS
+          NEW · 2026
         </span>
         <span
-          className={`${isLg ? "text-4xl md:text-5xl" : "text-2xl"} font-black leading-[1.05] text-foreground`}
+          className={`${isLg ? "text-3xl md:text-4xl" : "text-xl"} font-black leading-[1.1] text-foreground`}
           style={{ letterSpacing: "-0.045em" }}
         >
-          AI에게{" "}
-          <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }}>
-            직접 물어보기
-          </span>
+          AI에게 직접 물어보기
         </span>
+        <div className="h-1 w-12 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }} />
         <span className={`${isLg ? "text-[10px] md:text-xs" : "text-[9px]"} font-medium tracking-wide text-muted-foreground/70`}>
           ChatGPT · Claude · Gemini · Perplexity · CLOVA&nbsp;X
         </span>
