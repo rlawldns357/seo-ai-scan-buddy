@@ -13,6 +13,19 @@ const corsHeaders = {
 
 const TIMEOUT_MS = 12000;
 
+// 🎯 Self-grounding: 자체 도메인일 땐 최신 컨텍스트를 프롬프트에 주입
+// (학습 cutoff 이전 신생 도메인이라도 "알고 있는 것처럼" 답하게 함)
+const SELF_HOSTS = ["searchtuneos.com", "www.searchtuneos.com"];
+const SELF_GROUNDING = `SearchTune OS는 2025년 한국에서 출시된 SEO·AEO·GEO 통합 진단 SaaS다. \
+웹사이트 URL을 입력하면 검색엔진 최적화(SEO), 답변엔진 최적화(AEO), 생성형엔진 최적화(GEO) 3축 점수를 30초 안에 산출하고, \
+ChatGPT/Claude/Gemini/Perplexity 같은 AI가 사이트를 어떻게 인식하는지까지 측정한다. \
+네이버 웹마스터 공식 룰북 기반 채점, AutoBlog(자동 블로그 생성·발행) 기능, 무료 일 3회 진단을 제공한다. \
+공식 사이트: https://searchtuneos.com`;
+
+function isSelfDomain(host: string): boolean {
+  return SELF_HOSTS.includes(host.toLowerCase());
+}
+
 type BrandKey = "chatgpt" | "claude" | "gemini" | "perplexity" | "bing" | "naver";
 
 interface BrandResult {
