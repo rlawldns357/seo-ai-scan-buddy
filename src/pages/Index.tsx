@@ -504,7 +504,7 @@ const Index = () => {
               return (
                 <>
                   <div className="mt-5 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
-                    {/* 빠른 분석 */}
+                    {/* 빠른 분석 — Amber/Yellow */}
                     <button
                       type="button"
                       onClick={() => !forced && setSkipLighthouse((v) => !v)}
@@ -513,15 +513,15 @@ const Index = () => {
                       title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
                       className={`group relative h-11 rounded-full border px-3 flex items-center justify-center gap-2 text-xs font-semibold transition-all ${
                         fastChecked
-                          ? "border-primary/60 bg-primary/10 text-primary shadow-sm"
-                          : "border-border bg-card text-muted-foreground hover:border-primary/30 hover:text-foreground"
+                          ? "border-score-warning/60 bg-score-warning/10 text-score-warning shadow-sm"
+                          : "border-border bg-card text-muted-foreground hover:border-score-warning/40 hover:text-foreground"
                       } ${forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"}`}
                     >
-                      <Zap className={`w-3.5 h-3.5 ${fastChecked ? "text-primary" : ""}`} />
+                      <Zap className={`w-3.5 h-3.5 ${fastChecked ? "text-score-warning" : ""}`} />
                       <span className="leading-none">빠른 분석</span>
                       <span
                         className={`ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border text-[9px] font-black ${
-                          fastChecked ? "bg-primary border-primary text-primary-foreground" : "border-muted-foreground/30 text-transparent"
+                          fastChecked ? "bg-score-warning border-score-warning text-white" : "border-muted-foreground/30 text-transparent"
                         }`}
                         aria-hidden
                       >
