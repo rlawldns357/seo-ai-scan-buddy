@@ -4,11 +4,14 @@ import { trackEvent } from "@/lib/analytics";
 
 /**
  * Premium minimal horizontal teaser — Ask AI 진단.
- * 라인 컬러: askai (Violet #7C3AED). LIVE 펄스 닷으로 출시 신호.
- * 스크롤 anchor: AIPerceptionCard 섹션(#ai-perception)으로 이동.
+ * 클릭 시: Ask AI 토글 ON + URL 입력으로 스크롤/포커스.
+ * 라인 컬러: askai (Violet #7C3AED). 하트비트 펄스로 라이브 신호.
  */
 
-// OpenAI mark (not in simple-icons free set) — same as AIPerceptionCard
+interface Props {
+  onActivate?: () => void;
+}
+
 const OpenAIMark = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
     <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.677l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365 2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z" />
@@ -23,26 +26,24 @@ const BRAND_LOGOS: { name: string; Logo: React.ComponentType<{ className?: strin
   { name: "Naver",      Logo: SiNaver,        color: "#03C75A" },
 ];
 
-export default function AskAITeaser() {
+export default function AskAITeaser({ onActivate }: Props) {
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     trackEvent("ask_ai_teaser_click", { source: "home_teaser" });
-    const el = document.getElementById("ai-perception");
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
-    } else {
-      const input = document.querySelector<HTMLInputElement>('input[type="url"], input[name="url"]');
-      input?.scrollIntoView({ behavior: "smooth", block: "center" });
-      input?.focus();
+    onActivate?.();
+    const input = document.querySelector<HTMLInputElement>('input[type="url"], input[name="url"]');
+    if (input) {
+      input.scrollIntoView({ behavior: "smooth", block: "center" });
+      input.focus({ preventScroll: true });
     }
   };
 
   return (
     <section className="mt-3 max-w-2xl mx-auto">
       <a
-        href="#ai-perception"
+        href="#ask-ai"
         onClick={handleClick}
-        className="group block w-full text-left rounded-2xl border border-border bg-card hover:border-askai/40 hover:shadow-elevated transition-all duration-300"
+        className="group block w-full text-left rounded-2xl border border-askai/30 bg-card hover:border-askai/60 hover:shadow-elevated transition-all duration-300 animate-askai-heartbeat"
       >
         <div className="px-5 sm:px-6 py-4 flex items-center gap-4 sm:gap-5">
           {/* meta label */}
@@ -85,8 +86,8 @@ export default function AskAITeaser() {
           </div>
 
           {/* arrow */}
-          <div className="shrink-0 w-9 h-9 rounded-full border border-border flex items-center justify-center group-hover:bg-askai group-hover:border-askai transition-colors">
-            <ArrowUpRight className="w-4 h-4 text-foreground group-hover:text-askai-foreground transition-colors" />
+          <div className="shrink-0 w-9 h-9 rounded-full border border-askai/40 bg-askai/5 flex items-center justify-center group-hover:bg-askai group-hover:border-askai transition-colors">
+            <ArrowUpRight className="w-4 h-4 text-askai group-hover:text-askai-foreground transition-colors" />
           </div>
         </div>
       </a>

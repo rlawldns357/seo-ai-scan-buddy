@@ -128,3 +128,29 @@
 .animate-pulse-glow {
   animation: pulse-glow 2.5s ease-in-out infinite;
 }
+
+/* Ask AI 라이브 하트비트 — 살짝 두근거리는 보더/섀도 */
+@keyframes askai-heartbeat {
+  0%, 100% {
+    box-shadow: 0 0 0 0 hsl(var(--askai) / 0);
+  }
+  20% {
+    box-shadow: 0 0 0 6px hsl(var(--askai) / 0.10), 0 4px 18px -6px hsl(var(--askai) / 0.25);
+  }
+  40% {
+    box-shadow: 0 0 0 0 hsl(var(--askai) / 0);
+  }
+  55% {
+    box-shadow: 0 0 0 4px hsl(var(--askai) / 0.08);
+  }
+  70% {
+    box-shadow: 0 0 0 0 hsl(var(--askai) / 0);
+  }
+}
+.animate-askai-heartbeat {
+  animation: askai-heartbeat 2.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-askai-heartbeat { animation: none; }
+}
+
