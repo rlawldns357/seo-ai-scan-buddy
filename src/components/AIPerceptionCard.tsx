@@ -33,13 +33,13 @@ interface Props {
   category?: string;
 }
 
-const BRAND_META: Record<BrandKey, { name: string; color: string; ring: string }> = {
-  chatgpt:    { name: "ChatGPT",    color: "text-emerald-600", ring: "ring-emerald-500/30" },
-  claude:     { name: "Claude",     color: "text-orange-600",  ring: "ring-orange-500/30" },
-  gemini:     { name: "Gemini",     color: "text-blue-600",    ring: "ring-blue-500/30" },
-  perplexity: { name: "Perplexity", color: "text-cyan-600",    ring: "ring-cyan-500/30" },
-  bing:       { name: "Copilot (Bing)", color: "text-sky-600", ring: "ring-sky-500/30" },
-  naver:      { name: "Naver Cue:", color: "text-green-600",   ring: "ring-green-500/30" },
+const BRAND_META: Record<BrandKey, { name: string; short: string; gradient: string; ring: string; dot: string }> = {
+  chatgpt:    { name: "ChatGPT",        short: "GP", gradient: "from-emerald-400 to-teal-500",   ring: "ring-emerald-500/20", dot: "bg-emerald-500" },
+  claude:     { name: "Claude",         short: "CL", gradient: "from-orange-400 to-amber-500",   ring: "ring-orange-500/20",  dot: "bg-orange-500" },
+  gemini:     { name: "Gemini",         short: "GE", gradient: "from-blue-400 to-indigo-500",    ring: "ring-blue-500/20",    dot: "bg-blue-500" },
+  perplexity: { name: "Perplexity",     short: "PX", gradient: "from-cyan-400 to-sky-500",       ring: "ring-cyan-500/20",    dot: "bg-cyan-500" },
+  bing:       { name: "Copilot (Bing)", short: "CO", gradient: "from-sky-300 to-blue-400",       ring: "ring-sky-400/20",     dot: "bg-sky-400" },
+  naver:      { name: "Naver Cue:",     short: "NA", gradient: "from-green-400 to-emerald-500",  ring: "ring-green-500/20",   dot: "bg-green-500" },
 };
 
 const ORDER: BrandKey[] = ["chatgpt", "claude", "gemini", "perplexity", "bing", "naver"];
