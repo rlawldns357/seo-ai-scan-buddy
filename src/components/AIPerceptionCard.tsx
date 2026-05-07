@@ -247,18 +247,18 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
         <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
         <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
-          <div className="inline-flex items-center gap-2.5 pl-2.5 pr-3.5 py-1.5 rounded-full bg-white dark:bg-card border border-border/70 shadow-sm">
+          <div className="inline-flex items-center gap-2.5 pl-2.5 pr-3.5 py-1.5 rounded-full bg-white dark:bg-card border border-askai/20 shadow-sm">
             <span
-              className="relative group/live inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-score-excellent/10 cursor-help"
+              className="relative group/live inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-askai/10 cursor-help"
               tabIndex={0}
               role="button"
               aria-label="실시간으로 신호를 요약한 데모 표시"
             >
               <span className="relative flex w-1.5 h-1.5 items-center justify-center">
-                <span className="absolute inline-flex w-full h-full rounded-full bg-score-excellent animate-live-ping" />
-                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-score-excellent animate-live-pulse" />
+                <span className="absolute inline-flex w-full h-full rounded-full bg-askai animate-live-ping" />
+                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-askai animate-live-pulse" />
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-score-excellent">LIVE</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-askai">LIVE</span>
               <span
                 role="tooltip"
                 className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 whitespace-nowrap rounded-lg bg-foreground text-background text-[11px] font-medium px-2.5 py-1.5 shadow-lg opacity-0 group-hover/live:opacity-100 group-focus/live:opacity-100 transition-opacity duration-150"
@@ -268,7 +268,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
               </span>
             </span>
             <span className="text-[13px] sm:text-sm font-semibold tracking-tight text-foreground">
-              <span className="font-black bg-gradient-to-br from-score-excellent to-emerald-600 bg-clip-text text-transparent">AI</span>에게 직접 질문했어요 · <span className="font-black text-score-excellent">{measurable}곳</span>
+              <span className="font-black bg-gradient-to-br from-askai to-askai-deep bg-clip-text text-transparent">Ask AI</span> · AI에게 직접 질문했어요 · <span className="font-black text-askai">{measurable}곳</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">

@@ -61,6 +61,11 @@ export default {
           foreground: "hsl(var(--naver-foreground))",
           deep: "hsl(var(--naver-deep))",
         },
+        askai: {
+          DEFAULT: "hsl(var(--askai))",
+          foreground: "hsl(var(--askai-foreground))",
+          deep: "hsl(var(--askai-deep))",
+        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
