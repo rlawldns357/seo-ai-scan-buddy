@@ -96,8 +96,9 @@ function detectRecommendation(text: string, host: string, brand: string): {
 } {
   if (!text) return { mentioned: false, competitors: [] };
   const lower = text.toLowerCase();
-  const mentioned = lower.includes(host.toLowerCase()) ||
-    (brand.length >= 3 && lower.includes(brand.toLowerCase()));
+  const isNaverHost = /(^|\.)naver\.com$/i.test(host);
+  const mentioned = (!isNaverHost && lower.includes(host.toLowerCase())) ||
+    (brand.length >= 2 && lower.includes(brand.toLowerCase()));
   // 매우 단순한 경쟁사 추출: 1. ~ , 2. ~ 패턴
   const competitors: string[] = [];
   const lines = text.split(/\r?\n/);
