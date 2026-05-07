@@ -68,7 +68,7 @@ export default function AskAITeaser({ active, onActivate }: Props) {
               Ask AI
             </span>
             <span className="mt-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/70 leading-none">
-              {active ? "ON" : "OFF"}
+              {active ? "활성화됨" : "눌러서 켜기"}
             </span>
           </div>
 
@@ -97,18 +97,16 @@ export default function AskAITeaser({ active, onActivate }: Props) {
             </div>
           </div>
 
-          {/* toggle switch */}
+          {/* arrow indicator — points up to the activated button above */}
           <div
             aria-hidden
-            className={`shrink-0 relative w-11 h-6 rounded-full border transition-colors ${
-              active ? "bg-askai border-askai" : "bg-muted border-border"
+            className={`shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full border transition-all ${
+              active
+                ? "bg-askai/10 border-askai text-askai"
+                : "bg-transparent border-border text-muted-foreground group-hover:border-askai/60 group-hover:text-askai"
             }`}
           >
-            <span
-              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
-                active ? "translate-x-[20px]" : "translate-x-0"
-              }`}
-            />
+            <ArrowUpRight className="w-4 h-4" />
           </div>
         </div>
       </button>
