@@ -647,10 +647,12 @@ const Index = () => {
                       </span>
                     </p>
                   </div>
-                  <AIPerceptionCard
-                    url={normalizedUrl}
-                    brand={result.storeContext.slug}
-                  />
+                  <div id="ai-perception" className="scroll-mt-20">
+                    <AIPerceptionCard
+                      url={normalizedUrl}
+                      brand={result.storeContext.slug}
+                    />
+                  </div>
                 </>
               )}
 
@@ -660,7 +662,9 @@ const Index = () => {
               )}
 
               {result && !result.storeContext && (
-                <AIPerceptionCard url={normalizedUrl} />
+                <div id="ai-perception" className="scroll-mt-20">
+                  <AIPerceptionCard url={normalizedUrl} />
+                </div>
               )}
 
               {result && (
