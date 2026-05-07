@@ -1,7 +1,22 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronDown, Lock, Loader2, AlertCircle, Sparkles } from "lucide-react";
+import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
+
+// Official brand logos (inline SVG for OpenAI/Copilot — not in simple-icons free set)
+const OpenAIMark = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+    <path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.677l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365 2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/>
+  </svg>
+);
+
+const CopilotMark = ({ className }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" className={className} fill="currentColor" aria-hidden="true">
+    <path d="M22.788 11.946c.005-.123.014-.246.014-.37C22.802 5.288 17.515 0 11.226 0 4.937 0 0 4.937 0 11.226c0 6.288 5.287 11.226 11.576 11.226 1.165 0 2.292-.179 3.353-.51a11.165 11.165 0 0 0 4.347 1.058c2.504 0 4.535-2.03 4.535-4.535 0-2.392-1.853-4.351-4.21-4.524.748-.66 1.208-1.598 1.187-2.62v-.375zM11.576 19.94c-4.812 0-8.715-3.903-8.715-8.715s3.903-8.714 8.715-8.714c4.811 0 8.714 3.902 8.714 8.714 0 1.182-.235 2.31-.661 3.34a4.516 4.516 0 0 0-2.158-.55c-2.504 0-4.535 2.031-4.535 4.535 0 .553.099 1.083.281 1.572-.531.13-1.082.197-1.641.197z"/>
+  </svg>
+);
+
 
 type BrandKey = "chatgpt" | "claude" | "gemini" | "perplexity" | "bing" | "naver";
 
@@ -33,13 +48,13 @@ interface Props {
   category?: string;
 }
 
-const BRAND_META: Record<BrandKey, { name: string; short: string; gradient: string; ring: string; dot: string }> = {
-  chatgpt:    { name: "ChatGPT",        short: "GP", gradient: "from-emerald-400 to-teal-500",   ring: "ring-emerald-500/20", dot: "bg-emerald-500" },
-  claude:     { name: "Claude",         short: "CL", gradient: "from-orange-400 to-amber-500",   ring: "ring-orange-500/20",  dot: "bg-orange-500" },
-  gemini:     { name: "Gemini",         short: "GE", gradient: "from-blue-400 to-indigo-500",    ring: "ring-blue-500/20",    dot: "bg-blue-500" },
-  perplexity: { name: "Perplexity",     short: "PX", gradient: "from-cyan-400 to-sky-500",       ring: "ring-cyan-500/20",    dot: "bg-cyan-500" },
-  bing:       { name: "Copilot (Bing)", short: "CO", gradient: "from-sky-300 to-blue-400",       ring: "ring-sky-400/20",     dot: "bg-sky-400" },
-  naver:      { name: "Naver Cue:",     short: "NA", gradient: "from-green-400 to-emerald-500",  ring: "ring-green-500/20",   dot: "bg-green-500" },
+const BRAND_META: Record<BrandKey, { name: string; Logo: React.ComponentType<{ className?: string }>; brandColor: string }> = {
+  chatgpt:    { name: "ChatGPT",        Logo: OpenAIMark,    brandColor: "#10A37F" },
+  claude:     { name: "Claude",         Logo: SiClaude,      brandColor: "#D97757" },
+  gemini:     { name: "Gemini",         Logo: SiGooglegemini, brandColor: "#1C69FF" },
+  perplexity: { name: "Perplexity",     Logo: SiPerplexity,  brandColor: "#20808D" },
+  bing:       { name: "Copilot (Bing)", Logo: CopilotMark,   brandColor: "#0078D4" },
+  naver:      { name: "Naver Cue:",     Logo: SiNaver,       brandColor: "#03C75A" },
 };
 
 const ORDER: BrandKey[] = ["chatgpt", "claude", "gemini", "perplexity", "bing", "naver"];
@@ -213,9 +228,9 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
   return (
     <div className="rounded-3xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
       {/* Hero header */}
-      <div className={`relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-gradient-to-br ${toneClasses.glow} via-transparent to-transparent overflow-hidden`}>
-        {/* decorative glow */}
-        <div className={`pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-40 ${toneClasses.bg}`} />
+      <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-muted/30 overflow-hidden">
+        {/* subtle accent bar */}
+        <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
         {/* Eyebrow row */}
         <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
@@ -315,9 +330,12 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                 }}
                 className={`w-full px-4 sm:px-6 py-4 flex items-center gap-3.5 text-left ${canExpand ? "hover:bg-muted/30 cursor-pointer" : "cursor-default"} transition-colors`}
               >
-                {/* Avatar */}
-                <div className={`relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center shrink-0 shadow-md`}>
-                  <span className="text-[12px] sm:text-[13px] font-extrabold text-white tracking-tight">{meta.short}</span>
+                {/* Official brand logo */}
+                <div
+                  className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-card border border-border flex items-center justify-center shrink-0 shadow-sm"
+                  style={{ color: meta.brandColor }}
+                >
+                  <meta.Logo className="w-6 h-6 sm:w-[26px] sm:h-[26px]" />
                   {b.status === "ok" && (
                     <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-card ${
                       isAware ? "bg-score-excellent" : "bg-score-poor"
@@ -393,8 +411,11 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                 const meta = BRAND_META[b.brand];
                 return (
                   <div key={b.brand} className="inline-flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-card border border-border/60">
-                    <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${meta.gradient} opacity-60 flex items-center justify-center`}>
-                      <span className="text-[8px] font-extrabold text-white">{meta.short}</span>
+                    <div
+                      className="w-5 h-5 rounded-full bg-card border border-border/60 flex items-center justify-center opacity-70"
+                      style={{ color: meta.brandColor }}
+                    >
+                      <meta.Logo className="w-3 h-3" />
                     </div>
                     <span className="text-[11px] font-semibold text-muted-foreground">{meta.name}</span>
                     <Lock className="w-2.5 h-2.5 text-muted-foreground/60" />
