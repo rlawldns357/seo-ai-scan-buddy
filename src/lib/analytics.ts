@@ -15,6 +15,7 @@ type EventName =
   | "report_email_sent"
   | "share_click"
   | "naver_store_teaser_click"
+  | "ask_ai_teaser_click"
   | "copy_prompt"
   | "ai_perception_shown"
   | "ai_perception_brand_clicked"
