@@ -2,12 +2,6 @@ import { ArrowUpRight } from "lucide-react";
 import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
 
-/**
- * Premium minimal horizontal teaser — Ask AI 진단.
- * 클릭 시: Ask AI 토글 ON + URL 입력으로 스크롤/포커스.
- * 라인 컬러: askai (Violet #7C3AED). 하트비트 펄스로 라이브 신호.
- */
-
 interface Props {
   active?: boolean;
   onActivate?: () => void;
@@ -48,61 +42,42 @@ export default function AskAITeaser({ active, onActivate }: Props) {
         onClick={handleClick}
         aria-pressed={active}
         className={`group relative block w-full text-left rounded-2xl border bg-card hover:shadow-elevated transition-all duration-300 ${
-          active ? "border-askai/60 shadow-elevated animate-askai-heartbeat" : "border-askai/30 hover:border-askai/60"
+          active ? "border-askai/60 shadow-elevated" : "border-askai/30 hover:border-askai/60"
         }`}
       >
-        {/* Launch ribbon */}
-        <span className="absolute -top-2 left-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-askai text-askai-foreground text-[9px] font-bold tracking-[0.14em] uppercase shadow-sm">
-          <span className="w-1 h-1 rounded-full bg-askai-foreground" />
-          New · 2026 출시
+        <span className="absolute -top-2 left-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-askai text-askai-foreground text-[10px] font-semibold tracking-wide shadow-sm">
+          NEW · 2026
         </span>
 
-        <div className="px-5 sm:px-6 pt-5 pb-4 flex items-center gap-4 sm:gap-5">
-          {/* meta label */}
-          <div className="flex flex-col items-start shrink-0 border-r border-border pr-4 sm:pr-5">
-            <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.18em] uppercase text-askai leading-none">
-              <span className="relative flex w-1.5 h-1.5 items-center justify-center">
-                <span className="absolute inline-flex w-full h-full rounded-full bg-askai animate-live-ping" />
-                <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-askai animate-live-pulse" />
-              </span>
-              Ask AI
-            </span>
-            <span className="mt-1.5 text-[10px] font-medium tracking-wider uppercase text-muted-foreground/80 leading-none">
-              신기능 안내
-            </span>
+        <div className="px-5 sm:px-6 py-4 flex items-center gap-4">
+          <div className="flex items-center -space-x-1.5 shrink-0">
+            {BRAND_LOGOS.map(({ name, Logo, color }) => {
+              const isNaver = name === "Naver";
+              return (
+                <span
+                  key={name}
+                  title={name}
+                  style={{ color }}
+                  className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white dark:bg-card border border-border shadow-sm"
+                >
+                  <Logo className={isNaver ? "w-3 h-3" : "w-4 h-4"} />
+                </span>
+              );
+            })}
           </div>
 
-          {/* headline */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2 flex-wrap" aria-label="ChatGPT, Claude, Gemini, Perplexity, Naver">
-              <div className="flex items-center gap-1.5">
-                {BRAND_LOGOS.map(({ name, Logo, color }) => {
-                  const isNaver = name === "Naver";
-                  return (
-                    <span
-                      key={name}
-                      title={name}
-                      style={{ color }}
-                      className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-card border border-border shadow-sm"
-                    >
-                      <Logo className={isNaver ? "w-3 h-3 sm:w-3.5 sm:h-3.5" : "w-4 h-4 sm:w-[18px] sm:h-[18px]"} />
-                    </span>
-                  );
-                })}
-              </div>
-              <h3 className="text-sm sm:text-base font-extrabold tracking-tight text-foreground leading-tight">
-                <span className="text-muted-foreground font-semibold">— </span>
-                AI에게 직접 물어보기
-              </h3>
-            </div>
+            <h3 className="text-sm sm:text-[15px] font-bold tracking-tight text-foreground leading-tight">
+              AI에게 직접 물어보기
+            </h3>
+            <p className="mt-0.5 text-xs text-muted-foreground leading-tight">
+              ChatGPT·Claude·Gemini·Perplexity 동시 질의
+            </p>
           </div>
 
-          {/* subtle convenience hint — primary identity is announcement banner */}
-          <div className="shrink-0 hidden sm:flex flex-col items-end gap-0.5 text-right">
-            <span className={`text-[10px] font-medium ${active ? "text-askai" : "text-muted-foreground/70"}`}>
-              {active ? "위 입력창에 적용됨" : "탭하면 위 입력창에 적용"}
-            </span>
-            <ArrowUpRight className={`w-3.5 h-3.5 ${active ? "text-askai" : "text-muted-foreground/60"}`} />
+          <div className={`shrink-0 inline-flex items-center gap-1 text-xs font-medium ${active ? "text-askai" : "text-muted-foreground"}`}>
+            <span className="hidden sm:inline">{active ? "켜짐" : "켜기"}</span>
+            <ArrowUpRight className="w-4 h-4" />
           </div>
         </div>
       </button>
