@@ -63,6 +63,26 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
   const brand = BRAND_STYLES[key];
   const isLg = size === "lg";
 
+  // ─── SearchTune OS 신기능 출시 (Ask AI 론칭 글) ───
+  if (slug.includes("ask-ai-models-comparison") || slug.includes("ask-ai-launch")) {
+    return (
+      <div className="flex flex-col items-center gap-2 px-4 text-center">
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground font-extrabold tracking-widest uppercase shadow-sm ${isLg ? "text-[11px]" : "text-[9px]"}`}>
+          🚀 SearchTune OS · NEW
+        </span>
+        <span
+          className={`${isLg ? "text-4xl" : "text-2xl"} font-black tracking-tight bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent`}
+          style={{ letterSpacing: "-0.04em", lineHeight: 1.1 }}
+        >
+          AI에게 직접 물어보기
+        </span>
+        <span className={`${isLg ? "text-[11px]" : "text-[9px]"} font-medium tracking-wider uppercase text-muted-foreground/70`}>
+          ChatGPT · Claude · Gemini · Perplexity · CLOVA X
+        </span>
+      </div>
+    );
+  }
+
   // ─── 개념 카드 (AEO/GEO/SEO) — 글자별 그라데이션, 톤다운 ───
   if (key === "aeo" || key === "geo" || key === "seo") {
     const stops: Record<"aeo" | "geo" | "seo", [string, string, string]> = {
