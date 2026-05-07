@@ -292,7 +292,12 @@ Deno.serve(async (req) => {
     // 4) 최종 폴백
     if (!pick) pick = primaryShuffled[0] || fallbackShuffled[0] || allThemes[0];
 
-    const { category, theme } = pick;
+    let { category, theme } = pick;
+    if (customTheme) {
+      theme = customTheme;
+      category = customCategory || category;
+      console.log(`[OVERRIDE] Custom theme injected: [${category}] ${theme}`);
+    }
 
     console.log(`Generating blog post: [${category}] ${theme} by ${author.name} (brand=${pick.isBrand}, prefer=${preferBrand})`);
 
