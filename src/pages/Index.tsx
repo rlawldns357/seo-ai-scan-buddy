@@ -607,7 +607,7 @@ const Index = () => {
                   }}
                 />
               )}
-              <AskAITeaser onActivate={() => setAskAIEnabled(true)} />
+              <AskAITeaser active={askAIEnabled} onActivate={() => setAskAIEnabled((v) => !v)} />
               <NaverStoreTeaser
                 active={naverMode}
                 onActivate={() => setNaverMode((v) => !v)}
