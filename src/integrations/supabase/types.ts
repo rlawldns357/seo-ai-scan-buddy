@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_perception_cache: {
+        Row: {
+          brand: string | null
+          category: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          results: Json
+          url: string
+        }
+        Insert: {
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          results?: Json
+          url: string
+        }
+        Update: {
+          brand?: string | null
+          category?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          results?: Json
+          url?: string
+        }
+        Relationships: []
+      }
       analysis_history: {
         Row: {
           aeo_score: number

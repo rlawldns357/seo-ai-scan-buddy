@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
+import AIPerceptionCard from "@/components/AIPerceptionCard";
 import LighthouseScores from "@/components/LighthouseScores";
 import ResultHeader from "@/components/ResultHeader";
 import VerificationLinks from "@/components/VerificationLinks";
@@ -30,6 +31,7 @@ const DesignTest = () => (
       <div className="max-w-4xl mx-auto space-y-5">
         <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
+        <AIPerceptionCard url={DEMO_URL} />
         <ScoreDashboard result={demoResult} url={DEMO_URL} />
         <VerificationLinks url={DEMO_URL} />
         

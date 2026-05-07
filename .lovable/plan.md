@@ -1,115 +1,117 @@
-# AutoBlog v2 — 신규 프로젝트 구축 플랜
 
-> **중요**: 이 플랜은 SearchTune OS(현재 프로젝트)에는 코드를 추가하지 않습니다. 별도 신규 Lovable 프로젝트를 만든 뒤 거기에서 진행합니다. 본 프로젝트의 검증된 자산만 cross_project로 가져갑니다.
+# AI 인식 미리보기 (AI Perception Preview)
 
----
+GEO 점수의 "증거화" — 진짜 AI가 당신 브랜드를 어떻게 답하는지를 결과 화면 **최상단에 펼쳐서** 노출. 기존 "원인 분석"은 접힘 기본.
 
-## 1. 프로젝트 포지셔닝
-
-- **이름(가칭)**: AutoBlog v2 (별도 도메인 권장: `autoblog.searchtuneos.com` 또는 신규)
-- **한 줄**: "내 사이트 SEO/AEO/GEO 엔진 룰을 직접 튜닝하면서, 매일 자동으로 블로그가 쌓이는 SaaS"
-- **차별점**: 단순 AI 생성기가 아니라 **유저가 엔진 자체를 진화시키는 도구** (룰북·프롬프트·키워드 직접 편집)
-- **BM**: 메모리의 5-tier 그대로 (Free / Beta / Lite ₩4,900 / Pro ₩49,000 / Studio ₩199,000)
-
----
-
-## 2. 핵심 기능 (풀 패키지)
-
-| 영역 | 기능 |
-|---|---|
-| 사이트 관리 | 1유저 N사이트, 사이트별 도메인/카테고리/톤앤매너 |
-| 엔진 편집 | 사이트별 SEO/AEO/GEO 프롬프트, 키워드 풀, FAQ 스타일, 금지어, 카테고리 룰 직접 수정 |
-| 콘텐츠 큐 | Kanban 4칸 (idea / draft / scheduled / published) + 추천 재고 |
-| 자동 발행 | 사이트별 ON/OFF + 요일·시간(KST) + 일일 캡 + 큐 자동 보충 |
-| 채점 | 발행 전후 SEO/AEO/GEO 자동 채점, 약점 축 자동 보강 글 생성 |
-| 자가 진화 | pg_cron 월 2회: Perplexity 트렌드 → 엔진 룰 자동 업데이트 (보존 가드) |
-| 발행 채널 | (a) 호스팅 `/sites/{slug}/blog/{post}` (b) Webhook → 유저 CMS push |
-| OG/썸네일 | 룰북 SVG → PNG 래스터, 한글/serif 안전 (이미 검증됨) |
-| 분석 | 사이트별 view/click, 인덱싱 상태, 점수 변화 추이 |
-
----
-
-## 3. 가져올 자산 (cross_project copy)
-
-본 프로젝트(SearchTune OS)에서 그대로 검증된 것들:
+## 0. 결과 화면 레이아웃 변경
 
 ```text
-supabase/functions/
-  _shared/
-    og-design-rulebook.ts        OG 디자인 룰북
-    og-png-renderer.ts           SVG→PNG (Pretendard+Lora)
-    brand-matching.ts            브랜드 자동 감지
-    naver-rulebook.ts            네이버 6대 룰북
-  generate-og-image/             OG 생성 엔드포인트
-  og-svg/                        영구 폴백
-  rss/, sitemap/                 배포 인프라
+[기존]
+┌ 점수 게이지 ──────────────┐
+├ 원인 분석 (펼침 기본) ────┤  ← 닫힘 기본으로 변경
+└ 개선 액션 ────────────────┘
+
+[변경 후]
+┌ 점수 게이지 ──────────────┐
+├ 🤖 AI 인식 미리보기 ──────┤  ← 신규, 펼침 기본
+│   (6대 브랜드 매트릭스)    │
+├ 원인 분석 (닫힘 기본) ────┤  ← 클릭 시 펼침
+└ 개선 액션 ────────────────┘
 ```
 
-코드 패턴(참고만, 멀티사이트로 재작성):
-- `generate-blog-post`, `generate-content-draft` (생성 파이프라인)
-- `topup-idea-queue` (큐 자동 보충)
-- `update-analysis-engine` (자가 진화 cron)
-- Kanban UI (`/dashboard#workflow`, dnd-kit)
-- Autopublish 팝오버
+- AI 인식 카드가 점수 바로 아래 = "AI가 당신 모름" → 점수 정당화 즉시 체감
+- 원인 분석은 "더 알아보기" 식으로 접근 (한 번 클릭해야 펼침)
+- 모바일도 동일 순서, Internal Expansion 패턴 유지
 
----
+## 1. 브랜드 매트릭스 (6대)
 
-## 4. 데이터 모델 (신규 프로젝트 DB)
+| 브랜드 | 측정 방식 | 무료 노출 | 비용/콜 | 비고 |
+|---|---|---|---|---|
+| **ChatGPT** | OpenAI gpt-5-mini + web_search 툴 | ✅ | ~$0.04 | 진짜 ChatGPT 경험 |
+| **Claude** | Anthropic claude-sonnet | ✅ | ~$0.015 | 학습컷오프 기반 |
+| **Gemini** | Lovable AI Gateway | ✅ | 무료 | grounding 옵션 |
+| **Perplexity** | sonar-pro (보유) | ✅ | ~$0.01 | citations로 추천 노출 입증 |
+| **Bing/Copilot** | ⚠️ 공식 API 없음 | "🔒 곧 지원" 배지 | - | 자리는 표시, 진정성 ↑ |
+| **Naver Cue:** | ⚠️ 공식 API 없음 | "🔒 곧 지원" 배지 | - | 한국 사이트한정 후크 |
+
+→ 측정 가능한 4개는 진짜 답변, 안되는 2개는 솔직하게 lock 표시. 가짜 시뮬레이션 절대 ❌.
+
+## 2. 질의 세트 (브랜드당 2콜)
+
+1. **인지도**: `"{도메인} / {브랜드명}이 뭐 하는 곳이야? 모르면 모른다고 답해."`
+2. **추천 노출**: `"{카테고리}에서 추천할 만한 곳 3~5개 알려줘"` → 답변에 내 도메인/브랜드명 포함 여부 체크
+
+→ 4모델 × 2콜 = **8콜, 약 ₩90~120/분석**, 24h 캐시 적용 시 1/5
+
+## 3. UI (결과 화면 점수 바로 아래, 풀폭)
 
 ```text
-profiles                 user_id, email, display_name
-user_roles               user_id, role(free/lite/pro/studio/admin)
-subscriptions            Paddle 연동
-sites                    user_id, slug, domain, title, lang, category, brand_voice
-site_engine_config       site_id, key, value(JSONB) — 룰북·프롬프트·키워드 (버전 관리)
-site_engine_log          site_id, version, changes_summary
-posts                    site_id, slug, title, content, status, axis_target, scores
-post_views               post_id, session_id, referrer
-autopublish_settings     site_id, enabled, weekdays, hours_kst, daily_limit, min_queue
-webhooks                 site_id, target_url, secret, events
-webhook_deliveries       webhook_id, post_id, status, attempts
-keyword_pool             site_id, keyword, weight, used_count
+┌─ 🤖 지금 AI는 당신을 이렇게 봅니다 ───────────┐
+│  ChatGPT     ✅ 인지   △ 추천 0/5            │
+│  Claude      ❌ 모름                          │
+│  Gemini      ✅ 인지   ✅ 추천 2/5            │
+│  Perplexity  ❌ 인용 0/8                     │
+│  Bing        🔒 곧 지원                       │
+│  Naver Cue:  🔒 곧 지원                       │
+│                                               │
+│  → 4개 AI 중 1곳에서만 추천됨                │
+│  [전체 답변 펼쳐 보기] (이메일 잠금 — Phase 2)│
+└───────────────────────────────────────────────┘
 ```
 
-RLS: 메모리의 패턴대로 — 사용자는 본인 sites/posts만, 발행된 posts는 public read.
+- 펼침 기본 (collapsed=false)
+- 각 행 클릭 → 실제 AI 답변 전문 펼침
+- 측정 불가 행: lock 아이콘 + 회색
+- 모바일: 6 카드 세로 (Internal Expansion)
 
----
+## 4. 단계적 출시 (퍼널 + 유료화 레버)
 
-## 5. 단계별 로드맵 (마일스톤)
+| Phase | 노출 | 게이트 | 목적 |
+|---|---|---|---|
+| **1 (지금)** | 4브랜드 풀공개, 답변 전문도 무료 | 없음 | 바이럴/스크린샷 공유 유도 |
+| **2 (1~2주 후)** | 요약 ✅❌만 무료, 답변 전문은 이메일 잠금 | 이메일 | 리드 수집 |
+| **3 (트래픽 검증 후)** | 재측정/심층 = 유료 (Lite ₩4,900~) | 결제 | 전환 |
+
+## 5. 비용 방어
+
+- **24h 도메인 캐싱**: `ai_perception_cache(url, results jsonb, expires_at)`
+- **IP 레이트리밋**: 기존 3회/일 라인 통합
+- **타임아웃 8s/모델, 병렬 호출**, 한 모델 실패해도 나머지 표시
+- **실패 = "측정 실패" 배지** (가짜 답변 ❌)
+
+## 6. 구현 단계
 
 ```text
-M1  프로젝트 생성 + 인증(이메일+Google) + sites CRUD
-M2  엔진 에디터 UI (프롬프트/키워드/룰북 편집 + 버전 히스토리)
-M3  콘텐츠 생성 파이프라인 (idea → draft → scheduled)
-M4  Kanban + Autopublish + 큐 자동 보충
-M5  발행 호스팅(/sites/{slug}/blog/{post}) + OG/썸네일
-M6  채점 시스템 + 약점 보강 자동 글
-M7  Webhook 발행 채널 + 재시도/서명
-M8  자가 진화 cron + admin 패널
-M9  Paddle 결제(5-tier) + 사용량 미터링
+M1  DB: ai_perception_cache 테이블
+M2  API 키 추가: OPENAI_API_KEY, ANTHROPIC_API_KEY
+M3  Edge Function: probe-ai-perception
+    - 캐시 hit 즉시 반환 / 미스 시 4모델 병렬
+    - Promise.allSettled, 8s 타임아웃
+    - 도메인/브랜드명 정규식 매칭으로 인지/추천 판정
+    - 결과 캐시 + 반환
+M4  프론트: AIPerceptionCard (점수 바로 아래 풀폭)
+    - 데스크톱 6행 표, 모바일 카드
+    - 펼침 기본
+M5  결과 화면 통합
+    - AIPerceptionCard 삽입
+    - 기존 원인 분석 섹션 = collapsed 기본 (defaultOpen=false)
+M6  분석 트래킹: ai_perception_shown / brand_clicked / cause_analysis_opened
 ```
 
----
+## 7. 기술 메모
 
-## 6. 본 프로젝트(SearchTune OS) 영향
+- ChatGPT 진짜 경험 = `gpt-5-mini` + Responses API `tools: [{type: "web_search_preview"}]`
+- Claude `web_search` 툴 베타 — 일단 학습컷오프 기반
+- 도메인 매칭: `www.` strip, query/hash 무시, 호스트 normalize
+- Naver/Bing 자리는 lock 배지로 채워서 매트릭스 완성도 ↑
 
-- **변경 없음**. 이 채팅에서 생성/수정 안 합니다.
-- 메모리에 "AutoBlog v2 별도 프로젝트로 분리됨" 한 줄만 추후 업데이트.
+## 8. 메모리 영향
 
----
+- `geo-scoring-strategy`, `aeo-geo-concepts` 보강
+- 신규 메모: `ai-perception-preview` (브랜드 매트릭스, 캐시 정책, Phase, **결과화면 노출 순서: 점수 → AI 인식(펼침) → 원인 분석(닫힘) → 개선**)
 
-## 7. 다음 액션 (승인 시)
+## 9. 비반영
 
-1. 새 Lovable 프로젝트 만들기 (사용자가 워크스페이스에서 "+ New Project" 클릭, 이름 예: `autoblog-v2`)
-2. 새 프로젝트 채팅에서 "이 플랜 그대로 M1부터 시작해줘" + 본 프로젝트(`searchtune-os` 또는 현재 ID) 멘션
-3. M1 구현(인증 + sites CRUD)부터 순차 진행
-
----
-
-## 기술 노트
-
-- Lovable Cloud (Supabase) + Cloudflare 동일 스택
-- 멀티사이트 라우팅: `/sites/:slug/*` (Subdomain 라우팅은 Custom Domain 추가 후 Phase 2)
-- 엔진 설정 JSONB는 버전 컬럼 + log 테이블로 롤백 가능
-- Webhook: HMAC-SHA256 서명, 지수 백오프 재시도(최대 5회)
-- AI: Lovable AI Gateway (Gemini 2.5 Flash 기본, Pro tier는 Pro 모델), Perplexity sonar-pro 월 2회
+- Naver/Bing 시뮬레이션 ❌
+- GEO 점수 산정 로직 변경 ❌ (점수는 그대로, 증거만 추가)
+- 호출당 결제 ❌ (Phase 3 전까지 무료)

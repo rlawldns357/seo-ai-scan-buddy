@@ -24,6 +24,7 @@ import type { IndexingResult } from "@/lib/checkIndexing";
 
 // Lazy-load heavy components only needed for loading/result screens
 const ScoreDashboard = lazy(() => import("@/components/ScoreDashboard"));
+const AIPerceptionCard = lazy(() => import("@/components/AIPerceptionCard"));
 const LoadingScreen = lazy(() => import("@/components/LoadingScreen"));
 const LighthouseScores = lazy(() => import("@/components/LighthouseScores"));
 const ResultHeader = lazy(() => import("@/components/ResultHeader"));
@@ -635,6 +636,10 @@ const Index = () => {
               {/* 스토어 전용 인사이트: 권위 누수 도넛 + 외부 채널 점유율 + 하드 블로커 */}
               {result?.storeContext && (
                 <NaverStoreInsights context={result.storeContext} />
+              )}
+
+              {result && !result.storeContext && (
+                <AIPerceptionCard url={normalizedUrl} />
               )}
 
               {result && (
