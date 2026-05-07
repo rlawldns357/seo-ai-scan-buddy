@@ -220,17 +220,17 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
   const tone =
     recommended === 0 ? "poor" : recommended < measurable ? "warning" : "excellent";
 
-  // 한 줄 임팩트 메시지
+  // 한 줄 임팩트 메시지 + 톤 아이콘
   const heroMessage =
     measurable === 0
-      ? { emoji: "🤔", title: "아직 측정할 수 없어요", sub: "AI에서 인식되려면 기본 SEO부터 정비가 필요해요" }
+      ? { Icon: HelpCircle, title: "아직 측정할 수 없어요", sub: "AI에서 인식되려면 기본 SEO부터 정비가 필요해요" }
       : recommended === 0 && aware === 0
-      ? { emoji: "🚨", title: "AI가 아직 당신을 모릅니다", sub: `측정한 ${measurable}개 AI 모두 인지조차 못 하고 있어요` }
+      ? { Icon: AlertTriangle, title: "AI가 아직 당신을 모릅니다", sub: `측정한 ${measurable}개 AI 모두 인지조차 못 하고 있어요` }
       : recommended === 0 && aware > 0
-      ? { emoji: "😐", title: "알긴 아는데, 추천은 안 해요", sub: `${aware}개 AI가 인지하지만 추천 답변엔 등장하지 않아요` }
+      ? { Icon: MehIcon, title: "알긴 아는데, 추천은 안 해요", sub: `${aware}개 AI가 인지하지만 추천 답변엔 등장하지 않아요` }
       : recommended < measurable
-      ? { emoji: "⚡", title: `AI ${recommended}곳에서 추천되고 있어요`, sub: `남은 ${measurable - recommended}곳도 잡으면 노출이 크게 늘어요` }
-      : { emoji: "🎉", title: "모든 AI가 추천하고 있어요!", sub: "잘하고 있어요 — 이 상태를 유지·확장하세요" };
+      ? { Icon: Zap, title: `AI ${recommended}곳에서 추천되고 있어요`, sub: `남은 ${measurable - recommended}곳도 잡으면 노출이 크게 늘어요` }
+      : { Icon: Trophy, title: "모든 AI가 추천하고 있어요!", sub: "잘하고 있어요 — 이 상태를 유지·확장하세요" };
 
   const toneClasses = {
     poor:      { text: "text-score-poor",      bg: "bg-score-poor/10",      border: "border-score-poor/20",      glow: "from-score-poor/10" },
