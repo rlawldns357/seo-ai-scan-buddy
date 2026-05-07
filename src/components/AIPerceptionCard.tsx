@@ -228,9 +228,9 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
   return (
     <div className="rounded-3xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
       {/* Hero header */}
-      <div className={`relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-gradient-to-br ${toneClasses.glow} via-transparent to-transparent overflow-hidden`}>
-        {/* decorative glow */}
-        <div className={`pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-40 ${toneClasses.bg}`} />
+      <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-muted/30 overflow-hidden">
+        {/* subtle accent bar */}
+        <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
         {/* Eyebrow row */}
         <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
