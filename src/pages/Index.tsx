@@ -108,6 +108,19 @@ const Index = () => {
   const [askAIEnabled, setAskAIEnabled] = useState(true);
   // Naver Store mode (teaser 클릭으로 활성화 — 검색창 초록 띠)
   const [naverMode, setNaverMode] = useState(false);
+  // 네이버 티저 클릭 → 입력창 강조. 다른 곳 클릭 시 원복.
+  useEffect(() => {
+    if (!naverMode) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      if (t.closest('[data-naver-teaser]')) return;
+      if (t.closest('input[type="url"]')) return;
+      setNaverMode(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [naverMode]);
   const [psiLazyLoading, setPsiLazyLoading] = useState(false);
   const [psiRetryError, setPsiRetryError] = useState<string | null>(null);
   const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
