@@ -93,10 +93,11 @@ function RecBadge({ b }: { b: BrandResult }) {
 
 const LOADING_STEPS = [
   { label: "AI들을 불러모으는 중", emoji: "📡" },
-  { label: "ChatGPT에 질문하는 중", emoji: "💬" },
-  { label: "Claude에 질문하는 중", emoji: "🧠" },
-  { label: "Gemini에 질문하는 중", emoji: "✨" },
-  { label: "Perplexity에 질문하는 중", emoji: "🔎" },
+  { label: "ChatGPT에 직접 물어보는 중", emoji: "💬" },
+  { label: "Claude에 직접 물어보는 중", emoji: "🧠" },
+  { label: "Gemini에 직접 물어보는 중", emoji: "✨" },
+  { label: "Perplexity에 직접 물어보는 중", emoji: "🔎" },
+  { label: "네이버 HyperCLOVA X에 직접 물어보는 중", emoji: "🟢" },
   { label: "응답을 분석하는 중", emoji: "🧩" },
 ];
 
