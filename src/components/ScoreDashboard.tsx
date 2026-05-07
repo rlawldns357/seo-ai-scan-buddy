@@ -849,51 +849,8 @@ export default function ScoreDashboard({ result, url, disabledMode, disabledReas
 
       {/* One-line verdict — disabled 모드일 땐 숨김 */}
       {!disabledMode && (
-        <div className="rounded-xl bg-card shadow-card px-5 py-4 animate-fade-up text-center space-y-2" style={{ animationDelay: "0.1s" }}>
+        <div className="rounded-xl bg-card shadow-card px-5 py-4 animate-fade-up text-center" style={{ animationDelay: "0.1s" }}>
           <p className="text-base sm:text-lg font-bold text-foreground">{verdict}</p>
-          {(critical > 0 || recommended > 0) && (
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              {critical > 0 && (
-                <button
-                  onClick={() => {
-                    const criticalAxis = axes.find(a => a.score < 40);
-                    if (criticalAxis) {
-                      setSelected(criticalAxis.key);
-                      setTimeout(() => document.getElementById(`detail-${criticalAxis.key}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
-                    }
-                  }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-score-poor/10 text-score-poor border border-score-poor/20 hover:bg-score-poor/20 transition-colors cursor-pointer"
-                >
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  긴급 수정 {critical}개
-                </button>
-              )}
-              {recommended > 0 && (
-                <button
-                  onClick={() => {
-                    const recAxis = axes.find(a => a.score >= 40 && a.score < 75);
-                    if (recAxis) {
-                      setSelected(recAxis.key);
-                      setTimeout(() => document.getElementById(`detail-${recAxis.key}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 100);
-                    }
-                  }}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20 hover:bg-score-warning/20 transition-colors cursor-pointer"
-                >
-                  <AlertTriangle className="w-3.5 h-3.5" />
-                  권장 개선 {recommended}개
-                </button>
-              )}
-              <button
-                onClick={() => {
-                  document.getElementById("inline-cta-section")?.scrollIntoView({ behavior: "smooth", block: "center" });
-                }}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20 hover:bg-primary/20 transition-colors"
-              >
-                <Search className="w-3.5 h-3.5" />
-                개선하기
-              </button>
-            </div>
-          )}
         </div>
       )}
 
