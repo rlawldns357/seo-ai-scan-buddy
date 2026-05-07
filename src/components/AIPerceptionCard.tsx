@@ -63,7 +63,7 @@ function AwarenessBadge({ b }: { b: BrandResult }) {
   if (b.status === "unsupported") {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
-        <Lock className="w-2.5 h-2.5" /> 곧 지원
+        <Lock className="w-2.5 h-2.5" /> 준비 중
       </span>
     );
   }
