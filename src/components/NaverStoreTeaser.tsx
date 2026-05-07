@@ -50,7 +50,7 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
               Naver Store
             </span>
             <span className="mt-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/70 leading-none">
-              {active ? "ON" : "OFF"}
+              {active ? "활성화됨" : "눌러서 켜기"}
             </span>
           </div>
 
@@ -71,18 +71,16 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
             </div>
           </div>
 
-          {/* toggle switch */}
+          {/* arrow indicator — points up to the activated mode above */}
           <div
             aria-hidden
-            className={`shrink-0 relative w-11 h-6 rounded-full border transition-colors ${
-              active ? "bg-naver border-naver" : "bg-muted border-border"
+            className={`shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full border transition-all ${
+              active
+                ? "bg-naver/10 border-naver text-naver"
+                : "bg-transparent border-border text-muted-foreground group-hover:border-naver/60 group-hover:text-naver"
             }`}
           >
-            <span
-              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
-                active ? "translate-x-[20px]" : "translate-x-0"
-              }`}
-            />
+            <ArrowUpRight className="w-4 h-4" />
           </div>
         </div>
       </button>
