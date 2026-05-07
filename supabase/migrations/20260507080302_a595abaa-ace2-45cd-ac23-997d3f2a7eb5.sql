@@ -1,0 +1,1 @@
+UPDATE public.blog_posts SET thumbnail='https://dmnrbmarbvirtymhszww.supabase.co/storage/v1/object/public/og-images/launch-ask-ai-searchtune-brand-v3.png', og_image='https://dmnrbmarbvirtymhszww.supabase.co/storage/v1/object/public/og-images/launch-ask-ai-searchtune-brand-v3.png' WHERE slug='2026-aeo-ask-ai-models-comparison-strategy-20260507';
