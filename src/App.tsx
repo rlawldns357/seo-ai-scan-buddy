@@ -19,7 +19,7 @@ const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
 const Terms = lazy(() => import("./pages/Terms.tsx"));
-const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
+
 
 const queryClient = new QueryClient();
 
