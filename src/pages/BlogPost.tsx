@@ -866,9 +866,44 @@ export default function BlogPost() {
           </div>
 
           {/* Thumbnail */}
-          <div className="mt-8 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center aspect-[2/1] md:aspect-[3/1]">
-            {getBrandThumbnail(post.slug, post.category, true)}
-          </div>
+          {(post.slug.includes("ask-ai-models-comparison") || post.slug.includes("ask-ai-launch")) ? (
+            <div className="mt-8 relative overflow-hidden rounded-2xl aspect-[2/1] md:aspect-[2.4/1]"
+                 style={{ background: "radial-gradient(120% 120% at 0% 0%, #1a1f3a 0%, #0b1024 50%, #050816 100%)" }}>
+              {/* subtle grid */}
+              <div className="absolute inset-0 opacity-[0.07]"
+                   style={{ backgroundImage: "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
+              {/* coral glow */}
+              <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-30 blur-3xl" style={{ background: "#FF6B6B" }} />
+              <div className="absolute -bottom-32 -left-20 w-80 h-80 rounded-full opacity-25 blur-3xl" style={{ background: "#7C5CFF" }} />
+
+              <div className="relative h-full w-full flex flex-col justify-center px-8 md:px-14 py-8">
+                {/* eyebrow */}
+                <div className="flex items-center gap-3 text-white/70">
+                  <span className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase">SearchTune&nbsp;OS</span>
+                  <span className="h-px w-8 bg-white/30" />
+                  <span className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase" style={{ color: "#FF8A7A" }}>New&nbsp;Launch&nbsp;·&nbsp;2026</span>
+                </div>
+                {/* headline */}
+                <h2 className="mt-3 md:mt-4 text-white font-black leading-[1.05] tracking-tight text-3xl md:text-5xl lg:text-6xl"
+                    style={{ letterSpacing: "-0.045em" }}>
+                  AI에게<br className="md:hidden" /> <span className="md:inline">직접 물어보기</span><span style={{ color: "#FF6B6B" }}>.</span>
+                </h2>
+                {/* sub */}
+                <p className="mt-4 text-white/55 text-[11px] md:text-sm font-medium tracking-wide">
+                  ChatGPT&nbsp;·&nbsp;Claude&nbsp;·&nbsp;Gemini&nbsp;·&nbsp;Perplexity&nbsp;·&nbsp;CLOVA&nbsp;X
+                </p>
+                {/* footer */}
+                <div className="mt-5 md:mt-6 flex items-center gap-2 text-white/40 text-[10px] md:text-xs font-mono">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#FF6B6B" }} />
+                  searchtuneos.com
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8 rounded-2xl bg-gradient-to-br from-primary/15 via-accent/10 to-primary/5 flex items-center justify-center aspect-[2/1] md:aspect-[3/1]">
+              {getBrandThumbnail(post.slug, post.category, true)}
+            </div>
+          )}
 
           {/* Top CTA — 글 들어가자마자 바로 써볼 수 있도록 */}
           <aside className="mt-6 relative overflow-hidden rounded-2xl border-2 border-askai/40 bg-gradient-to-br from-askai/10 via-primary/5 to-accent/10 p-5 md:p-6 shadow-md">

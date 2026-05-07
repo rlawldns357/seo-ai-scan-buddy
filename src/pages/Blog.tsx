@@ -66,18 +66,22 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
   // ─── SearchTune OS 신기능 출시 (Ask AI 론칭 글) ───
   if (slug.includes("ask-ai-models-comparison") || slug.includes("ask-ai-launch")) {
     return (
-      <div className="flex flex-col items-center gap-2 px-4 text-center">
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground font-extrabold tracking-widest uppercase shadow-sm ${isLg ? "text-[11px]" : "text-[9px]"}`}>
-          🚀 SearchTune OS · NEW
-        </span>
+      <div className="flex flex-col items-center gap-2.5 px-3 text-center">
+        <div className="flex items-center gap-2 text-foreground/60">
+          <span className={`${isLg ? "text-[10px]" : "text-[9px]"} font-bold tracking-[0.25em] uppercase`}>SearchTune&nbsp;OS</span>
+          <span className="h-px w-5 bg-foreground/20" />
+          <span className={`${isLg ? "text-[10px]" : "text-[9px]"} font-bold tracking-[0.25em] uppercase`} style={{ color: "#E8533F" }}>
+            New&nbsp;Launch
+          </span>
+        </div>
         <span
-          className={`${isLg ? "text-4xl" : "text-2xl"} font-black tracking-tight bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent`}
-          style={{ letterSpacing: "-0.04em", lineHeight: 1.1 }}
+          className={`${isLg ? "text-4xl md:text-5xl" : "text-2xl"} font-black text-foreground leading-[1.05]`}
+          style={{ letterSpacing: "-0.045em" }}
         >
-          AI에게 직접 물어보기
+          AI에게 직접 물어보기<span style={{ color: "#E8533F" }}>.</span>
         </span>
-        <span className={`${isLg ? "text-[11px]" : "text-[9px]"} font-medium tracking-wider uppercase text-muted-foreground/70`}>
-          ChatGPT · Claude · Gemini · Perplexity · CLOVA X
+        <span className={`${isLg ? "text-[10px] md:text-xs" : "text-[9px]"} font-medium tracking-wide text-muted-foreground/70`}>
+          ChatGPT · Claude · Gemini · Perplexity · CLOVA&nbsp;X
         </span>
       </div>
     );
