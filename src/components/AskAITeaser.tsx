@@ -1,4 +1,4 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Sparkles } from "lucide-react";
 import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
 
@@ -35,21 +35,31 @@ export default function AskAITeaser({ active, onActivate }: Props) {
   };
 
   return (
-    <section className="mt-3 max-w-2xl mx-auto">
+    <section className="mt-3 max-w-2xl mx-auto relative">
+      {/* Soft glow halo — JUST LAUNCHED 강조 */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -inset-2 rounded-[1.5rem] opacity-70 blur-xl animate-pulse"
+        style={{
+          background:
+            "radial-gradient(60% 80% at 50% 50%, hsl(var(--askai) / 0.25), hsl(var(--askai) / 0) 70%)",
+        }}
+      />
       <button
         type="button"
         onClick={handleClick}
         aria-pressed={active}
         aria-disabled={active}
         tabIndex={active ? -1 : 0}
-        className={`group relative block w-full text-left rounded-2xl border bg-card transition-all duration-300 ${
+        className={`group relative block w-full text-left rounded-2xl border-2 bg-card transition-all duration-300 ${
           active
-            ? "border-askai/60 shadow-elevated cursor-default"
-            : "border-askai/30 hover:border-askai/60 hover:shadow-elevated"
+            ? "border-askai/70 shadow-elevated cursor-default"
+            : "border-askai/40 hover:border-askai/80 hover:shadow-elevated"
         }`}
       >
-        <span className="absolute -top-2 left-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-askai text-askai-foreground text-[10px] font-semibold tracking-wide shadow-sm">
-          NEW · 2026
+        <span className="absolute -top-2.5 left-4 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-askai text-askai-foreground text-[10px] font-bold tracking-wide shadow-md">
+          <Sparkles className="w-2.5 h-2.5" />
+          JUST LAUNCHED · 2026
         </span>
 
         <div className="px-5 sm:px-6 py-4 flex items-center gap-4">
@@ -78,10 +88,7 @@ export default function AskAITeaser({ active, onActivate }: Props) {
             </p>
           </div>
 
-          <div className={`shrink-0 inline-flex items-center gap-1 text-xs font-medium ${active ? "text-askai" : "text-muted-foreground"}`}>
-            <span className="hidden sm:inline">{active ? "켜짐" : "켜기"}</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </div>
+          <ArrowUpRight className={`shrink-0 w-4 h-4 ${active ? "text-askai" : "text-muted-foreground"}`} />
         </div>
       </button>
     </section>
