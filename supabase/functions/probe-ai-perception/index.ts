@@ -143,7 +143,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
           messages: [
             { role: "system", content: self
               ? `You answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-              : "You answer factually. If you do not have reliable information about a website or brand, explicitly say you do not know. Never fabricate." },
+              : "You answer factually. CRITICAL: Do NOT guess a brand identity from URL slugs, domain abbreviations, or partial keyword matches. If you do not have direct, verified knowledge of the exact brand/site, you MUST reply with only \"모릅니다.\" (nothing else). Do not fabricate, do not extrapolate." },
             { role: "user", content: prompt },
           ],
         }),
@@ -189,7 +189,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
           messages: [
             { role: "system", content: self
               ? `Be precise. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-              : "Be precise. If you have no reliable information, say so." },
+              : "Be precise. Do NOT guess from URL slugs or partial matches. If you have no verified knowledge of the exact brand, reply only with \"모릅니다.\"" },
             { role: "user", content: prompt },
           ],
         }),
@@ -248,7 +248,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
           messages: [
             { role: "system", content: self
               ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-              : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so." },
+              : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"" },
             { role: "user", content: prompt },
           ],
           temperature: 0,
@@ -302,7 +302,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
           messages: [{ role: "user", content: prompt }],
           system: self
             ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-            : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so.",
+            : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"",
         }),
       }));
       if (!r.ok) throw new Error(`anthropic ${r.status}`);
