@@ -47,6 +47,26 @@ function isImwebPost(slug: string) {
 function getBrandThumbnail(slug: string, category: string, large = false) {
   const size = large ? "text-4xl md:text-5xl" : "text-3xl";
 
+  // 0) SearchTune OS 신기능 출시 전용 썸네일 (Ask AI 론칭 글)
+  if (slug.includes("ask-ai-models-comparison") || slug.includes("ask-ai-launch")) {
+    return (
+      <div className="flex flex-col items-center gap-3 px-6 text-center">
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-primary to-accent text-primary-foreground text-[11px] font-extrabold tracking-widest uppercase shadow-md">
+          🚀 SearchTune OS · NEW LAUNCH
+        </span>
+        <span
+          className={`${size} font-black tracking-tight bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent`}
+          style={{ letterSpacing: "-0.04em" }}
+        >
+          AI에게 직접 물어보기
+        </span>
+        <span className="text-xs md:text-sm font-semibold text-muted-foreground">
+          ChatGPT · Claude · Gemini · Perplexity · CLOVA X
+        </span>
+      </div>
+    );
+  }
+
   // 1) 기존 강제 매칭 (네이버/카페24/아임웹) — 메모리·SEO 호환성 유지
   if (isNaverPost(slug)) {
     return (
