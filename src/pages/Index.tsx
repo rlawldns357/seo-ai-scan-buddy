@@ -109,6 +109,8 @@ const Index = () => {
   const [skipLighthouse, setSkipLighthouse] = useState(false);
   // Ask AI toggle (default ON — premium signature feature)
   const [askAIEnabled, setAskAIEnabled] = useState(true);
+  // Naver Store mode (teaser 클릭으로 활성화 — 검색창 초록 띠)
+  const [naverMode, setNaverMode] = useState(false);
   const [psiLazyLoading, setPsiLazyLoading] = useState(false);
   const [psiRetryError, setPsiRetryError] = useState<string | null>(null);
   const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
