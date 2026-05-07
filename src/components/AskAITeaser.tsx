@@ -65,12 +65,10 @@ export default function AskAITeaser() {
                 <span
                   key={name}
                   title={name}
+                  style={{ color }}
                   className="inline-flex items-center justify-center w-5 h-5 sm:w-[22px] sm:h-[22px] rounded-full bg-white dark:bg-card border border-border/70 shadow-sm"
                 >
-                  <Logo
-                    className="w-3 h-3 sm:w-[13px] sm:h-[13px]"
-                    style={{ color }}
-                  />
+                  <Logo className="w-3 h-3 sm:w-[13px] sm:h-[13px]" />
                 </span>
               ))}
               <span className="ml-1 text-[10px] font-semibold tracking-wider uppercase text-muted-foreground hidden sm:inline">
