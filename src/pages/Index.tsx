@@ -436,8 +436,16 @@ const Index = () => {
 
               <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-3 my-2 sm:my-0">
                 <div className="relative w-full sm:flex-1">
+                  {/* Naver mode 활성화 시: 입력창 둘레 그라데이션 초록 띠 */}
+                  {naverMode && (
+                    <div
+                      aria-hidden
+                      className="pointer-events-none absolute -inset-[2px] rounded-2xl bg-[linear-gradient(135deg,hsl(var(--naver))_0%,hsl(var(--naver-deep))_55%,hsl(var(--naver))_100%)] opacity-90 animate-naver-shimmer"
+                      style={{ backgroundSize: "200% 200%" }}
+                    />
+                  )}
                   <Search
-                    className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60 pointer-events-none transition-colors group-focus-within:text-primary"
+                    className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60 pointer-events-none transition-colors group-focus-within:text-primary z-10"
                     strokeWidth={2.5}
                   />
                   <input
@@ -445,8 +453,12 @@ const Index = () => {
                     value={url}
                     onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-                    placeholder={url ? "" : rotatingPlaceholder}
-                    className="w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border border-input bg-card/80 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary text-base sm:text-lg shadow-sm focus:shadow-lg transition-all"
+                    placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
+                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/80 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
+                      naverMode
+                        ? "border-transparent focus:ring-0"
+                        : "border-input focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                    }`}
                     style={{ paddingLeft: "3rem" }}
                   />
                 </div>
