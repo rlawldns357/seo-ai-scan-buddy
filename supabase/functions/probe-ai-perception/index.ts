@@ -439,24 +439,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4모델 병렬 호출 (allSettled)
+    // 5모델 병렬 호출 (allSettled) — Naver(HyperCLOVA X) 추가
     const settled = await Promise.allSettled([
       probeChatGPT(url, host, brand, category),
       probeClaude(url, host, brand, category),
       probeGemini(url, host, brand, category),
       probePerplexity(url, host, brand, category),
+      probeNaver(url, host, brand, category),
     ]);
 
     const measured: BrandResult[] = settled.map((s, i) => {
       if (s.status === "fulfilled") return s.value;
-      const keys: BrandKey[] = ["chatgpt", "claude", "gemini", "perplexity"];
+      const keys: BrandKey[] = ["chatgpt", "claude", "gemini", "perplexity", "naver"];
       return { brand: keys[i], status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(s.reason) };
     });
 
     const all: BrandResult[] = [
       ...measured,
       unsupportedBrand("bing"),
-      unsupportedBrand("naver"),
     ];
 
     const measurable = all.filter((b) => b.status === "ok").length;
