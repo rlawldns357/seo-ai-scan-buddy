@@ -238,15 +238,18 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
     excellent: { text: "text-score-excellent", bg: "bg-score-excellent/10", border: "border-score-excellent/20", glow: "from-score-excellent/10" },
   }[tone];
 
+  const ratioPct = measurable > 0 ? Math.round((recommended / measurable) * 100) : 0;
+  const missing = Math.max(0, measurable - recommended);
+
   return (
     <div className="rounded-3xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
       {/* Hero header */}
-      <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-muted/30 overflow-hidden">
-        {/* subtle accent bar */}
-        <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
+      <div className={`relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border overflow-hidden bg-gradient-to-br ${toneClasses.glow} via-card to-card`}>
+        <div className={`absolute top-0 left-0 right-0 h-1 ${toneClasses.text.replace("text-", "bg-")}`} />
+        <div className={`pointer-events-none absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-40 ${toneClasses.bg}`} />
 
-        {/* Eyebrow row */}
-        <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
+        {/* Eyebrow */}
+        <div className="relative flex items-center justify-between gap-3 mb-5 sm:mb-6">
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
@@ -272,35 +275,48 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           </div>
         </div>
 
-        {/* Hero headline — 한 줄 임팩트 메시지 */}
-        <div className="relative">
-          <div className="flex items-start gap-4 sm:gap-5">
-            <div className={`shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${toneClasses.bg} ${toneClasses.border} border flex items-center justify-center shadow-sm`}>
-              <heroMessage.Icon className={`w-7 h-7 sm:w-8 sm:h-8 ${toneClasses.text}`} strokeWidth={2.25} />
+        {/* Hero — 거대한 숫자 + 메시지 + 비율바 */}
+        <div className="relative grid grid-cols-[auto_1fr] gap-4 sm:gap-7 items-center">
+          <div className={`relative shrink-0 w-[108px] h-[108px] sm:w-[148px] sm:h-[148px] rounded-3xl ${toneClasses.bg} ${toneClasses.border} border-2 flex flex-col items-center justify-center shadow-lg`}>
+            <heroMessage.Icon className={`absolute top-2 right-2 w-4 h-4 ${toneClasses.text} opacity-70`} strokeWidth={2.5} />
+            <div className={`text-[48px] sm:text-[68px] leading-none font-black tabular-nums ${toneClasses.text}`}>
+              {recommended}<span className="text-[18px] sm:text-[24px] font-bold opacity-50 ml-0.5">/{measurable}</span>
             </div>
-            <div className="min-w-0 flex-1 pt-0.5">
-              <h3 className={`text-[20px] sm:text-[28px] leading-[1.2] font-extrabold tracking-tight ${toneClasses.text}`}>
-                {heroMessage.title}
-              </h3>
-              <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug">
-                {heroMessage.sub}
-              </p>
-            </div>
+            <div className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">AI 추천</div>
           </div>
 
-          {/* 작은 컨텍스트 요약 (한 줄) */}
-          <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap text-[11px] sm:text-xs">
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-card/70 border border-border/60 text-muted-foreground">
-              측정 <span className="font-bold text-foreground tabular-nums">{measurable}</span>
-            </span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-card/70 border border-border/60 text-muted-foreground">
-              인지 <span className={`font-bold tabular-nums ${aware > 0 ? "text-score-excellent" : "text-foreground"}`}>{aware}</span>
-            </span>
-            <span className="text-muted-foreground/40">·</span>
-            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-card/70 border border-border/60 text-muted-foreground">
-              추천 <span className={`font-bold tabular-nums ${recommended > 0 ? toneClasses.text : "text-score-poor"}`}>{recommended}</span>
-            </span>
+          <div className="min-w-0 flex-1 space-y-3">
+            <h3 className={`text-[22px] sm:text-[30px] leading-[1.15] font-black tracking-tight ${toneClasses.text}`}>
+              {heroMessage.title}
+            </h3>
+            <p className="text-[13px] sm:text-[15px] text-muted-foreground leading-snug">
+              {heroMessage.sub}
+            </p>
+
+            {measurable > 0 && (
+              <div className="pt-1">
+                <div className="flex items-center justify-between mb-1.5 text-[11px] font-semibold">
+                  <span className="text-muted-foreground">추천 노출률</span>
+                  <span className={`tabular-nums font-black text-[13px] ${toneClasses.text}`}>{ratioPct}%</span>
+                </div>
+                <div className="h-2.5 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all ${toneClasses.text.replace("text-", "bg-")}`}
+                    style={{ width: `${Math.max(ratioPct, 3)}%` }}
+                  />
+                </div>
+                <div className="mt-2.5 flex items-center gap-2 flex-wrap text-[11px] sm:text-xs">
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-card/80 border border-border/60 text-muted-foreground">
+                    인지 <span className={`font-bold tabular-nums ${aware > 0 ? "text-score-excellent" : "text-foreground"}`}>{aware}</span>
+                  </span>
+                  {missing > 0 && (
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md ${toneClasses.bg} ${toneClasses.border} border ${toneClasses.text} font-bold`}>
+                      놓치는 AI <span className="tabular-nums">{missing}</span>
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
