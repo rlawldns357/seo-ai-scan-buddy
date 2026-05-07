@@ -63,16 +63,19 @@ export default function AskAITeaser() {
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 flex-wrap" aria-label="ChatGPT, Claude, Gemini, Perplexity, Naver">
               <div className="flex items-center gap-1.5">
-                {BRAND_LOGOS.map(({ name, Logo, color }) => (
-                  <span
-                    key={name}
-                    title={name}
-                    style={{ color }}
-                    className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-card border border-border shadow-sm"
-                  >
-                    <Logo className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-                  </span>
-                ))}
+                {BRAND_LOGOS.map(({ name, Logo, color }) => {
+                  const isNaver = name === "Naver";
+                  return (
+                    <span
+                      key={name}
+                      title={name}
+                      style={{ color }}
+                      className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-card border border-border shadow-sm"
+                    >
+                      <Logo className={isNaver ? "w-3 h-3 sm:w-3.5 sm:h-3.5" : "w-4 h-4 sm:w-[18px] sm:h-[18px]"} />
+                    </span>
+                  );
+                })}
               </div>
               <h3 className="text-sm sm:text-base font-extrabold tracking-tight text-foreground leading-tight">
                 <span className="text-muted-foreground font-semibold">— </span>
