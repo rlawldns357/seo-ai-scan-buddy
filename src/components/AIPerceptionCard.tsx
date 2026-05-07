@@ -330,9 +330,12 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                 }}
                 className={`w-full px-4 sm:px-6 py-4 flex items-center gap-3.5 text-left ${canExpand ? "hover:bg-muted/30 cursor-pointer" : "cursor-default"} transition-colors`}
               >
-                {/* Avatar */}
-                <div className={`relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center shrink-0 shadow-md`}>
-                  <span className="text-[12px] sm:text-[13px] font-extrabold text-white tracking-tight">{meta.short}</span>
+                {/* Official brand logo */}
+                <div
+                  className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-card border border-border flex items-center justify-center shrink-0 shadow-sm"
+                  style={{ color: meta.brandColor }}
+                >
+                  <meta.Logo className="w-6 h-6 sm:w-[26px] sm:h-[26px]" />
                   {b.status === "ok" && (
                     <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-card ${
                       isAware ? "bg-score-excellent" : "bg-score-poor"
