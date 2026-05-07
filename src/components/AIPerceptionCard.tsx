@@ -411,8 +411,11 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                 const meta = BRAND_META[b.brand];
                 return (
                   <div key={b.brand} className="inline-flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-card border border-border/60">
-                    <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${meta.gradient} opacity-60 flex items-center justify-center`}>
-                      <span className="text-[8px] font-extrabold text-white">{meta.short}</span>
+                    <div
+                      className="w-5 h-5 rounded-full bg-card border border-border/60 flex items-center justify-center opacity-70"
+                      style={{ color: meta.brandColor }}
+                    >
+                      <meta.Logo className="w-3 h-3" />
                     </div>
                     <span className="text-[11px] font-semibold text-muted-foreground">{meta.name}</span>
                     <Lock className="w-2.5 h-2.5 text-muted-foreground/60" />
