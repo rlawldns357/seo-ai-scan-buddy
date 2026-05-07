@@ -246,24 +246,11 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
       <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-muted/30 overflow-hidden">
         <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
-        <div className="relative flex items-start justify-between gap-3 mb-5 sm:mb-6">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-foreground flex items-center justify-center shrink-0 shadow-sm">
-              <Sparkles className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-background" />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span className="text-[15px] sm:text-base font-black tracking-tight text-foreground leading-none">
-                  AskAI
-                </span>
-                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-score-excellent px-1.5 py-0.5 rounded bg-score-excellent/10 leading-none">
-                  LIVE
-                </span>
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground mt-1 leading-none">
-                5명의 AI에게 직접 물어봤습니다
-              </span>
-            </div>
+        <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-foreground text-background text-[10px] sm:text-[11px] font-bold tracking-tight">
+            <Sparkles className="w-3 h-3" />
+            AI {measurable}곳에 직접 물어봤어요
+            <span className="ml-0.5 text-[8px] font-black uppercase tracking-[0.18em] text-score-excellent bg-background/10 px-1 py-px rounded">LIVE</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {data.cached && (
@@ -282,64 +269,25 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           </div>
         </div>
 
-        {/* Hero — 세로 정렬: 숫자 → 메시지 → AI 로고 */}
-        <div className="relative space-y-4 sm:space-y-5">
-          <div>
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
-                {recommended}
-              </span>
-              <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground/60 tabular-nums">
-                / {measurable}
-              </span>
-              <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                AI에서 추천
-              </span>
-            </div>
-            <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
-              {heroMessage.title}
-            </h3>
-            <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug max-w-md">
-              {heroMessage.sub}
-            </p>
+        {/* Hero — 숫자 + 메시지만 */}
+        <div className="relative">
+          <div className="flex items-baseline gap-2 mb-2">
+            <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
+              {recommended}
+            </span>
+            <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground/60 tabular-nums">
+              / {measurable}
+            </span>
+            <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              AI가 추천
+            </span>
           </div>
-
-          {/* AI 로고 — 한 줄로 */}
-          {measurable > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-1">
-              {sortedBrands.map((b) => {
-                const meta = BRAND_META[b.brand];
-                const isRec = b.status === "ok" && b.recommendation?.mentioned;
-                const isAwareDot = b.status === "ok" && b.awareness === "yes";
-                const isLocked = b.status === "unsupported";
-                const state = isRec ? "rec" : isAwareDot ? "aware" : isLocked ? "lock" : "miss";
-                const styleMap = {
-                  rec:   `${toneClasses.bg} ${toneClasses.border} border-2 ${toneClasses.text} shadow-sm`,
-                  aware: "bg-card border border-border text-foreground/70",
-                  miss:  "bg-muted/40 border border-border/60 text-muted-foreground/40",
-                  lock:  "bg-muted/30 border border-dashed border-border/60 text-muted-foreground/40",
-                }[state];
-                return (
-                  <div
-                    key={b.brand}
-                    className={`group relative flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl ${styleMap} transition-transform hover:scale-110`}
-                    style={isRec ? { color: meta.brandColor } : undefined}
-                    title={`${meta.name} · ${isRec ? "추천 노출" : isAwareDot ? "인지함" : isLocked ? "준비 중" : "미노출"}`}
-                  >
-                    <meta.Logo className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
-                    {isRec && (
-                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-card flex items-center justify-center text-[7px] font-black ${toneClasses.text.replace("text-", "bg-")} text-white`}>
-                        ✓
-                      </span>
-                    )}
-                    {isLocked && (
-                      <Lock className="absolute -bottom-1 -right-1 w-2.5 h-2.5 text-muted-foreground/60 bg-card rounded-full p-0.5" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
+            {heroMessage.title}
+          </h3>
+          <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug max-w-md">
+            {heroMessage.sub}
+          </p>
         </div>
       </div>
 
