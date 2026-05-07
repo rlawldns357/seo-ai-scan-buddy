@@ -267,6 +267,8 @@ async function probeClaude(url: string, host: string, brand: string, category: s
     return { brand: "claude", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
   }
   try {
+    const self = isSelfDomain(host);
+    const model = self ? "claude-sonnet-4-5" : "claude-haiku-4-5";
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -276,10 +278,10 @@ async function probeClaude(url: string, host: string, brand: string, category: s
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-haiku-4-5",
+          model,
           max_tokens: 600,
           messages: [{ role: "user", content: prompt }],
-          system: isSelfDomain(host)
+          system: self
             ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
             : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so.",
         }),
@@ -299,7 +301,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       brand: "claude", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
       recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
-      model: "claude-haiku-4-5",
+      model,
     };
   } catch (e) {
     return { brand: "claude", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
