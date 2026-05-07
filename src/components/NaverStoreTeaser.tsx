@@ -29,11 +29,17 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
         type="button"
         onClick={handleClick}
         aria-pressed={active}
-        className={`group block w-full text-left rounded-2xl border bg-card hover:shadow-elevated transition-all duration-300 ${
-          active ? "border-naver/60 shadow-elevated" : "border-border hover:border-naver/40"
+        className={`group relative block w-full text-left rounded-2xl border bg-card hover:shadow-elevated transition-all duration-300 ${
+          active ? "border-naver/60 shadow-elevated" : "border-naver/30 hover:border-naver/60"
         }`}
       >
-        <div className="px-5 sm:px-6 py-4 flex items-center gap-4 sm:gap-5">
+        {/* Launch ribbon */}
+        <span className="absolute -top-2 left-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-naver text-naver-foreground text-[9px] font-bold tracking-[0.14em] uppercase shadow-sm">
+          <span className="w-1 h-1 rounded-full bg-naver-foreground" />
+          New · 2026 출시
+        </span>
+
+        <div className="px-5 sm:px-6 pt-5 pb-4 flex items-center gap-4 sm:gap-5">
           {/* meta label */}
           <div className="flex flex-col items-start shrink-0 border-r border-border pr-4 sm:pr-5">
             <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.18em] uppercase text-naver leading-none">
@@ -41,10 +47,10 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
                 <span className="absolute inline-flex w-full h-full rounded-full bg-naver animate-live-ping" />
                 <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-naver animate-live-pulse" />
               </span>
-              {active ? "On" : "New"}
+              Naver Store
             </span>
             <span className="mt-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/70 leading-none">
-              Naver Store
+              {active ? "ON" : "OFF"}
             </span>
           </div>
 
@@ -60,20 +66,23 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
               </span>
               <h3 className="text-sm sm:text-base font-extrabold tracking-tight text-foreground leading-tight">
                 <span className="text-muted-foreground font-semibold">— </span>
-                {active ? "네이버 스토어 모드 ON" : "네이버 스토어 전용으로 진단하기"}
+                네이버 스토어 전용으로 진단하기
               </h3>
             </div>
           </div>
 
-          {/* arrow */}
+          {/* toggle switch */}
           <div
-            className={`shrink-0 w-9 h-9 rounded-full border flex items-center justify-center transition-colors ${
-              active
-                ? "bg-naver border-naver text-naver-foreground"
-                : "border-naver/40 bg-naver/5 text-naver group-hover:bg-naver group-hover:border-naver group-hover:text-naver-foreground"
+            aria-hidden
+            className={`shrink-0 relative w-11 h-6 rounded-full border transition-colors ${
+              active ? "bg-naver border-naver" : "bg-muted border-border"
             }`}
           >
-            <ArrowUpRight className="w-4 h-4" />
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                active ? "translate-x-[20px]" : "translate-x-0"
+              }`}
+            />
           </div>
         </div>
       </button>
