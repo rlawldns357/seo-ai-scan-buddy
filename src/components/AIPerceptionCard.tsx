@@ -206,32 +206,40 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
   const { summary, brands } = data;
   const sortedBrands = ORDER.map((k) => brands.find((b) => b.brand === k)!).filter(Boolean);
 
-  // 헤드라인 메시지
+  // 헤드라인 메시지 — 인지(aware)를 메인 점수로, 추천(recommended)은 +α 보너스
   const measurable = summary.measurable || 0;
   const recommended = summary.recommended || 0;
-  const headline = recommended === 0
-    ? `측정된 ${measurable}개 AI 중 어디에서도 추천되지 않고 있어요`
-    : `측정된 ${measurable}개 AI 중 ${recommended}곳에서만 추천돼요`;
+  const aware = summary.aware || 0;
+  const headline = aware === 0
+    ? `측정된 ${measurable}개 AI 중 어디에서도 인지되지 않고 있어요`
+    : aware < measurable
+    ? `측정된 ${measurable}개 AI 중 ${aware}곳이 우리 사이트를 알고 있어요`
+    : `측정된 ${measurable}개 AI 모두가 우리 사이트를 인지하고 있어요`;
 
   // 측정 가능 / 미지원 분리
   const supportedBrands = sortedBrands.filter((b) => b.status !== "unsupported");
   const unsupportedBrands = sortedBrands.filter((b) => b.status === "unsupported");
-  const aware = summary.aware || 0;
 
+  // 톤은 인지율 기준으로 결정 (추천은 보너스)
   const tone =
-    recommended === 0 ? "poor" : recommended < measurable ? "warning" : "excellent";
+    measurable === 0 ? "poor"
+    : aware === 0 ? "poor"
+    : aware < measurable ? "warning"
+    : "excellent";
 
-  // 한 줄 임팩트 메시지 + 톤 아이콘
+  // 한 줄 임팩트 메시지 + 톤 아이콘 — 인지 우선, 추천은 +α
   const heroMessage =
     measurable === 0
       ? { Icon: HelpCircle, title: "아직 측정할 수 없어요", sub: "AI에서 인식되려면 기본 SEO부터 정비가 필요해요" }
-      : recommended === 0 && aware === 0
+      : aware === 0
       ? { Icon: AlertTriangle, title: "AI가 아직 당신을 모릅니다", sub: `측정한 ${measurable}개 AI 모두 인지조차 못 하고 있어요` }
-      : recommended === 0 && aware > 0
-      ? { Icon: MehIcon, title: "알긴 아는데, 추천은 안 해요", sub: `${aware}개 AI가 인지하지만 추천 답변엔 등장하지 않아요` }
+      : aware < measurable && recommended === 0
+      ? { Icon: MehIcon, title: `${aware}개 AI는 알고 있어요`, sub: `남은 ${measurable - aware}곳도 알리면 추천 노출 기반이 생겨요` }
+      : aware === measurable && recommended === 0
+      ? { Icon: Zap, title: "모든 AI가 인지하고 있어요", sub: `이제 추천 노출(+α)을 노릴 차례예요 — 현재 추천 0/${measurable}` }
       : recommended < measurable
-      ? { Icon: Zap, title: `AI ${recommended}곳에서 추천되고 있어요`, sub: `남은 ${measurable - recommended}곳도 잡으면 노출이 크게 늘어요` }
-      : { Icon: Trophy, title: "모든 AI가 추천하고 있어요!", sub: "잘하고 있어요 — 이 상태를 유지·확장하세요" };
+      ? { Icon: Zap, title: `인지 ${aware}/${measurable} · 추천 +${recommended}`, sub: `${recommended}곳에서 이미 추천돼요. 남은 ${measurable - recommended}곳도 잡으면 노출이 크게 늘어요` }
+      : { Icon: Trophy, title: "모든 AI가 추천까지 하고 있어요!", sub: "잘하고 있어요 — 이 상태를 유지·확장하세요" };
 
   const toneClasses = {
     poor:      { text: "text-score-poor",      bg: "bg-score-poor/10",      border: "border-score-poor/20",      glow: "from-score-poor/10" },
@@ -239,7 +247,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
     excellent: { text: "text-score-excellent", bg: "bg-score-excellent/10", border: "border-score-excellent/20", glow: "from-score-excellent/10" },
   }[tone];
 
-  const ratioPct = measurable > 0 ? Math.round((recommended / measurable) * 100) : 0;
+  const ratioPct = measurable > 0 ? Math.round((aware / measurable) * 100) : 0;
 
   return (
     <div className="rounded-3xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
