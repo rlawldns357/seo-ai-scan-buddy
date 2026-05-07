@@ -220,11 +220,15 @@ Deno.serve(async (req) => {
     const currentYear = new Date().getFullYear();
     const MAX_POSTS_PER_DAY = 2;
 
-    // Optional bypass for admin/manual triggers
+    // Optional bypass for admin/manual triggers + custom topic override
     let forceBypass = false;
+    let customTheme: string | undefined;
+    let customCategory: string | undefined;
     try {
       const body = await req.clone().json();
       forceBypass = body?.force === true;
+      if (typeof body?.theme === "string" && body.theme.trim()) customTheme = body.theme.trim();
+      if (typeof body?.category === "string" && body.category.trim()) customCategory = body.category.trim();
     } catch (_) { /* no body */ }
 
     // Check daily limit
