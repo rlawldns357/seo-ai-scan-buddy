@@ -633,7 +633,25 @@ const Index = () => {
                 </div>
               )}
 
-              {/* 스토어 전용 인사이트: 권위 누수 도넛 + 외부 채널 점유율 + 하드 블로커 */}
+              {/* 스토어: 3축 채점이 무의미하니, AI가 이 브랜드를 어떻게 인식하는지를 핵심 가치로 먼저 보여줌 */}
+              {result?.storeContext && (
+                <>
+                  <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
+                    <p className="text-xs sm:text-sm text-foreground leading-relaxed">
+                      <span className="font-bold text-primary">대신 더 중요한 걸 측정했어요.</span>{" "}
+                      네이버 스토어는 SEO/AEO/GEO 점수가 한계가 있어요. 그래서{" "}
+                      <span className="font-semibold">"<span className="font-mono">{result.storeContext.slug}</span>" 브랜드명을
+                      ChatGPT·Claude·Gemini·Perplexity가 어떻게 인식하는지</span>를 직접 물어봤어요.
+                    </p>
+                  </div>
+                  <AIPerceptionCard
+                    url={normalizedUrl}
+                    brand={result.storeContext.slug}
+                  />
+                </>
+              )}
+
+              {/* 스토어 전용 인사이트: 권위 누수 + 외부 채널 (AI 인지도 다음 보조 진단) */}
               {result?.storeContext && (
                 <NaverStoreInsights context={result.storeContext} />
               )}
