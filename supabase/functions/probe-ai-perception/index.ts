@@ -274,7 +274,9 @@ async function probeClaude(url: string, host: string, brand: string, category: s
           model: "claude-haiku-4-5",
           max_tokens: 600,
           messages: [{ role: "user", content: prompt }],
-          system: "Answer factually. If you don't have reliable info about a brand/site, explicitly say so.",
+          system: isSelfDomain(host)
+            ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
+            : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so.",
         }),
       }));
       if (!r.ok) throw new Error(`anthropic ${r.status}`);
