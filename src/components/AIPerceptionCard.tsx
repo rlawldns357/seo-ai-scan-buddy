@@ -246,14 +246,24 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
       <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-muted/30 overflow-hidden">
         <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
-        <div className="relative flex items-center justify-between gap-3 mb-5 sm:mb-6">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
-              <Sparkles className="w-3.5 h-3.5 text-primary" />
+        <div className="relative flex items-start justify-between gap-3 mb-5 sm:mb-6">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-foreground flex items-center justify-center shrink-0 shadow-sm">
+              <Sparkles className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-background" />
             </div>
-            <span className="text-[11px] sm:text-xs font-bold tracking-tight text-muted-foreground">
-              AI는 우리 사이트를 알고 있을까? <span className="ml-1 text-[10px] font-bold uppercase tracking-[0.14em] text-score-excellent">· LIVE</span>
-            </span>
+            <div className="flex flex-col min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[15px] sm:text-base font-black tracking-tight text-foreground leading-none">
+                  AskAI
+                </span>
+                <span className="text-[9px] font-black uppercase tracking-[0.18em] text-score-excellent px-1.5 py-0.5 rounded bg-score-excellent/10 leading-none">
+                  LIVE
+                </span>
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-medium text-muted-foreground mt-1 leading-none">
+                5명의 AI에게 직접 물어봤습니다
+              </span>
+            </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {data.cached && (
