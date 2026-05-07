@@ -638,7 +638,12 @@ const Index = () => {
                 <NaverStoreInsights context={result.storeContext} />
               )}
 
-              {result && !result.storeContext && (
+              {result && !result.storeContext && (() => {
+                try {
+                  const h = new URL(normalizedUrl).hostname.toLowerCase().replace(/^www\./, "");
+                  return h === "searchtuneos.com";
+                } catch { return false; }
+              })() && (
                 <AIPerceptionCard url={normalizedUrl} />
               )}
 
