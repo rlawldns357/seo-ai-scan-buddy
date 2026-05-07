@@ -256,7 +256,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
               <span className="text-[10px] font-bold uppercase tracking-wider text-score-excellent">LIVE</span>
             </span>
             <span className="text-[13px] sm:text-sm font-semibold tracking-tight text-foreground">
-              AI <span className="font-black text-score-excellent">{measurable}곳</span>에 실시간 질문한 결과
+              <span className="font-black bg-gradient-to-br from-score-excellent to-emerald-600 bg-clip-text text-transparent">AI</span>에게 직접 질문했어요 · <span className="font-black text-score-excellent">{measurable}곳</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
