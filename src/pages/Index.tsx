@@ -642,7 +642,7 @@ const Index = () => {
       <Suspense fallback={null}>
         {screen === "loading" && (
           <>
-            <LoadingScreen completedPhases={completedPhases} skipLighthouse={lighthouseSkipped} />
+            <LoadingScreen completedPhases={completedPhases} skipLighthouse={lighthouseSkipped} askAIEnabled={askAIEnabled} />
             <StickyBottomCTA />
           </>
         )}
