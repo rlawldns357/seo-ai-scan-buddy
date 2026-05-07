@@ -358,8 +358,15 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // 어드민 캐시 강제 삭제 (admin password 필요)
+    const adminPw = String(body?.adminPassword ?? "");
+    const purge = Boolean(body?.purge) && adminPw.length > 0 && adminPw === Deno.env.get("ADMIN_PASSWORD");
+    if (purge) {
+      await sb.from("ai_perception_cache").delete().eq("url", url);
+    }
+
     // 캐시 hit
-    const { data: cached } = await sb
+    const { data: cached } = purge ? { data: null as any } : await sb
       .from("ai_perception_cache")
       .select("results, expires_at, created_at")
       .eq("url", url)

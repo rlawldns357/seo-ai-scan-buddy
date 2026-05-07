@@ -91,6 +91,8 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [expandedBrand, setExpandedBrand] = useState<BrandKey | null>(null);
   const [stepIdx, setStepIdx] = useState(0);
+  const [reloadKey, setReloadKey] = useState(0);
+  const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
 
   useEffect(() => {
     if (!url) return;
@@ -101,8 +103,10 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
 
     (async () => {
       try {
+        const adminPw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("admin_pw") : null;
+        const purge = reloadKey > 0 && !!adminPw;
         const { data: resp, error: invErr } = await supabase.functions.invoke("probe-ai-perception", {
-          body: { url, brand, category },
+          body: { url, brand, category, ...(purge ? { purge: true, adminPassword: adminPw } : {}) },
         });
         if (cancelled) return;
         if (invErr) throw invErr;
@@ -122,7 +126,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
     })();
 
     return () => { cancelled = true; };
-  }, [url, brand, category]);
+  }, [url, brand, category, reloadKey]);
 
   // Loading step ticker (advance every ~2.2s, hold on last)
   useEffect(() => {
@@ -206,6 +210,16 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           </div>
           {data.cached && (
             <span className="text-[10px] text-muted-foreground/60">24h 캐시</span>
+          )}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setReloadKey((k) => k + 1)}
+              className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-score-excellent/10 text-score-excellent border border-score-excellent/20 hover:bg-score-excellent/20 transition-colors"
+              title="캐시 비우고 재측정 (Admin)"
+            >
+              ↻ 캐시 비우기
+            </button>
           )}
         </div>
         <p className={`mt-1 text-[12px] sm:text-[13px] font-semibold ${
