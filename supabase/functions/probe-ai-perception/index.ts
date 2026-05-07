@@ -73,8 +73,11 @@ function detectAwareness(text: string, host: string, brand: string): {
 } {
   if (!text) return { awareness: "no" };
   const lower = text.toLowerCase();
-  const hostMatch = lower.includes(host.toLowerCase());
-  const brandMatch = brand.length >= 3 && lower.includes(brand.toLowerCase());
+  // 네이버 스토어처럼 host가 naver.com인 경우 'naver'만 언급돼도 yes로 판정되는
+  // false-positive를 막기 위해 host 매칭을 비활성화하고 brand(=슬러그/브랜드명)만 본다.
+  const isNaverHost = /(^|\.)naver\.com$/i.test(host);
+  const hostMatch = !isNaverHost && lower.includes(host.toLowerCase());
+  const brandMatch = brand.length >= 2 && lower.includes(brand.toLowerCase());
   // "모름/모릅니다/I don't know/no information" 류 부정 패턴
   const denyPatterns = [
     /모릅니다/i, /모르겠/i, /알지\s*못/i, /정보가?\s*없/i, /확인이?\s*어려/i,
