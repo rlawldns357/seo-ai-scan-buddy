@@ -637,6 +637,10 @@ const Index = () => {
                 <NaverStoreInsights context={result.storeContext} />
               )}
 
+              {result && !result.storeContext && (
+                <AIPerceptionCard url={normalizedUrl} />
+              )}
+
               {result && (
                 <ScoreDashboard
                   result={result}
