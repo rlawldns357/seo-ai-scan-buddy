@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import { SiClaude, SiGooglegemini, SiPerplexity } from "@icons-pack/react-simple-icons";
+import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
 
 /**
@@ -20,6 +20,7 @@ const BRAND_LOGOS: { name: string; Logo: React.ComponentType<{ className?: strin
   { name: "Claude",     Logo: SiClaude,       color: "#D97757" },
   { name: "Gemini",     Logo: SiGooglegemini, color: "#1C69FF" },
   { name: "Perplexity", Logo: SiPerplexity,   color: "#20808D" },
+  { name: "Naver",      Logo: SiNaver,        color: "#03C75A" },
 ];
 
 export default function AskAITeaser() {
@@ -60,25 +61,24 @@ export default function AskAITeaser() {
 
           {/* headline */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-1.5 mb-1.5" aria-label="ChatGPT, Claude, Gemini, Perplexity">
-              {BRAND_LOGOS.map(({ name, Logo, color }) => (
-                <span
-                  key={name}
-                  title={name}
-                  style={{ color }}
-                  className="inline-flex items-center justify-center w-5 h-5 sm:w-[22px] sm:h-[22px] rounded-full bg-white dark:bg-card border border-border/70 shadow-sm"
-                >
-                  <Logo className="w-3 h-3 sm:w-[13px] sm:h-[13px]" />
-                </span>
-              ))}
-              <span className="ml-1 text-[10px] font-semibold tracking-wider uppercase text-muted-foreground hidden sm:inline">
-                에게 직접
-              </span>
+            <div className="flex items-center gap-2 flex-wrap" aria-label="ChatGPT, Claude, Gemini, Perplexity, Naver">
+              <div className="flex items-center gap-1.5">
+                {BRAND_LOGOS.map(({ name, Logo, color }) => (
+                  <span
+                    key={name}
+                    title={name}
+                    style={{ color }}
+                    className="inline-flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white dark:bg-card border border-border shadow-sm"
+                  >
+                    <Logo className="w-4 h-4 sm:w-[18px] sm:h-[18px]" />
+                  </span>
+                ))}
+              </div>
+              <h3 className="text-sm sm:text-base font-extrabold tracking-tight text-foreground leading-tight">
+                <span className="text-muted-foreground font-semibold">— </span>
+                AI에게 직접 물어보기
+              </h3>
             </div>
-            <h3 className="text-base sm:text-lg font-extrabold tracking-tight text-foreground leading-tight truncate">
-              <span className="bg-gradient-to-br from-askai to-askai-deep bg-clip-text text-transparent">Ask AI</span>
-              <span className="text-muted-foreground font-medium"> — AI에게 직접 물어본 결과 보기</span>
-            </h3>
           </div>
 
           {/* arrow */}
