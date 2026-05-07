@@ -159,7 +159,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
 
     const [aw, rec] = await Promise.all([ask(awarenessPrompt), ask(recPrompt)]);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand);
+    const r = detectRecommendation(rec, host, brand, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
@@ -209,7 +209,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
 
     const [aw, rec] = await Promise.all([ask(awP), ask(recP)]);
     const { awareness } = detectAwareness(aw.text, host, brand);
-    const r = detectRecommendation(rec.text, host, brand);
+    const r = detectRecommendation(rec.text, host, brand, awareness);
     const citationHit = (rec.citations || []).some((c) => c?.toLowerCase().includes(host.toLowerCase()));
     return {
       brand: "perplexity",
@@ -267,7 +267,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
       : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand);
+    const r = detectRecommendation(rec, host, brand, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
@@ -315,7 +315,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
       : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand);
+    const r = detectRecommendation(rec, host, brand, awareness);
     return {
       brand: "claude", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
