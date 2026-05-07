@@ -9,6 +9,7 @@ import { trackEvent } from "@/lib/analytics";
  */
 
 interface Props {
+  active?: boolean;
   onActivate?: () => void;
 }
 
@@ -26,26 +27,37 @@ const BRAND_LOGOS: { name: string; Logo: React.ComponentType<{ className?: strin
   { name: "Naver",      Logo: SiNaver,        color: "#03C75A" },
 ];
 
-export default function AskAITeaser({ onActivate }: Props) {
-  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+export default function AskAITeaser({ active, onActivate }: Props) {
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    trackEvent("ask_ai_teaser_click", { source: "home_teaser" });
+    trackEvent("ask_ai_teaser_click", { source: "home_teaser", active: !active });
     onActivate?.();
-    const input = document.querySelector<HTMLInputElement>('input[type="url"], input[name="url"]');
-    if (input) {
-      input.scrollIntoView({ behavior: "smooth", block: "center" });
-      input.focus({ preventScroll: true });
+    if (!active) {
+      const input = document.querySelector<HTMLInputElement>('input[type="url"], input[name="url"]');
+      if (input) {
+        input.scrollIntoView({ behavior: "smooth", block: "center" });
+        input.focus({ preventScroll: true });
+      }
     }
   };
 
   return (
     <section className="mt-3 max-w-2xl mx-auto">
-      <a
-        href="#ask-ai"
+      <button
+        type="button"
         onClick={handleClick}
-        className="group block w-full text-left rounded-2xl border border-askai/30 bg-card hover:border-askai/60 hover:shadow-elevated transition-all duration-300 animate-askai-heartbeat"
+        aria-pressed={active}
+        className={`group relative block w-full text-left rounded-2xl border bg-card hover:shadow-elevated transition-all duration-300 ${
+          active ? "border-askai/60 shadow-elevated animate-askai-heartbeat" : "border-askai/30 hover:border-askai/60"
+        }`}
       >
-        <div className="px-5 sm:px-6 py-4 flex items-center gap-4 sm:gap-5">
+        {/* Launch ribbon */}
+        <span className="absolute -top-2 left-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-askai text-askai-foreground text-[9px] font-bold tracking-[0.14em] uppercase shadow-sm">
+          <span className="w-1 h-1 rounded-full bg-askai-foreground" />
+          New · 2026 출시
+        </span>
+
+        <div className="px-5 sm:px-6 pt-5 pb-4 flex items-center gap-4 sm:gap-5">
           {/* meta label */}
           <div className="flex flex-col items-start shrink-0 border-r border-border pr-4 sm:pr-5">
             <span className="inline-flex items-center gap-1 text-[9px] font-bold tracking-[0.18em] uppercase text-askai leading-none">
@@ -53,10 +65,10 @@ export default function AskAITeaser({ onActivate }: Props) {
                 <span className="absolute inline-flex w-full h-full rounded-full bg-askai animate-live-ping" />
                 <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-askai animate-live-pulse" />
               </span>
-              Live
+              Ask AI
             </span>
             <span className="mt-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/70 leading-none">
-              Ask AI
+              {active ? "ON" : "OFF"}
             </span>
           </div>
 
@@ -85,12 +97,21 @@ export default function AskAITeaser({ onActivate }: Props) {
             </div>
           </div>
 
-          {/* arrow */}
-          <div className="shrink-0 w-9 h-9 rounded-full border border-askai/40 bg-askai/5 flex items-center justify-center group-hover:bg-askai group-hover:border-askai transition-colors">
-            <ArrowUpRight className="w-4 h-4 text-askai group-hover:text-askai-foreground transition-colors" />
+          {/* toggle switch */}
+          <div
+            aria-hidden
+            className={`shrink-0 relative w-11 h-6 rounded-full border transition-colors ${
+              active ? "bg-askai border-askai" : "bg-muted border-border"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow-sm transition-transform ${
+                active ? "translate-x-[20px]" : "translate-x-0"
+              }`}
+            />
           </div>
         </div>
-      </a>
+      </button>
     </section>
   );
 }
