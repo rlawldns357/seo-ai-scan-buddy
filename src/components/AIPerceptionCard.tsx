@@ -251,8 +251,8 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
               <Sparkles className="w-3.5 h-3.5 text-primary" />
             </div>
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-              AI 인식 진단 · LIVE
+            <span className="text-[11px] sm:text-xs font-bold tracking-tight text-muted-foreground">
+              AI는 우리 사이트를 알고 있을까? <span className="ml-1 text-[10px] font-bold uppercase tracking-[0.14em] text-score-excellent">· LIVE</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
