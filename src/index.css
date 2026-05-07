@@ -154,3 +154,15 @@
   .animate-askai-heartbeat { animation: none; }
 }
 
+
+/* Naver Store mode — 검색창 둘레 그라데이션 초록 띠 */
+@keyframes naver-shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50%      { background-position: 100% 50%; }
+}
+.animate-naver-shimmer {
+  animation: naver-shimmer 3.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-naver-shimmer { animation: none; }
+}
