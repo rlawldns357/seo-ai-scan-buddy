@@ -107,6 +107,8 @@ const Index = () => {
 
   // Skip Lighthouse toggle
   const [skipLighthouse, setSkipLighthouse] = useState(false);
+  // Ask AI toggle (default ON — premium signature feature)
+  const [askAIEnabled, setAskAIEnabled] = useState(true);
   const [psiLazyLoading, setPsiLazyLoading] = useState(false);
   const [psiRetryError, setPsiRetryError] = useState<string | null>(null);
   const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
