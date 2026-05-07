@@ -49,8 +49,8 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
               </span>
               Naver Store
             </span>
-            <span className="mt-1.5 text-[10px] font-semibold tracking-wider uppercase text-foreground/70 leading-none">
-              {active ? "활성화됨" : "눌러서 켜기"}
+            <span className="mt-1.5 text-[10px] font-medium tracking-wider uppercase text-muted-foreground/80 leading-none">
+              신기능 안내
             </span>
           </div>
 
@@ -71,16 +71,12 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
             </div>
           </div>
 
-          {/* arrow indicator — points up to the activated mode above */}
-          <div
-            aria-hidden
-            className={`shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-full border transition-all ${
-              active
-                ? "bg-naver/10 border-naver text-naver"
-                : "bg-transparent border-border text-muted-foreground group-hover:border-naver/60 group-hover:text-naver"
-            }`}
-          >
-            <ArrowUpRight className="w-4 h-4" />
+          {/* subtle convenience hint — primary identity is announcement banner */}
+          <div className="shrink-0 hidden sm:flex flex-col items-end gap-0.5 text-right">
+            <span className={`text-[10px] font-medium ${active ? "text-naver" : "text-muted-foreground/70"}`}>
+              {active ? "위 입력창에 적용됨" : "탭하면 위 입력창에 적용"}
+            </span>
+            <ArrowUpRight className={`w-3.5 h-3.5 ${active ? "text-naver" : "text-muted-foreground/60"}`} />
           </div>
         </div>
       </button>
