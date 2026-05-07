@@ -222,7 +222,9 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
         body: JSON.stringify({
           model: "gpt-4o-mini",
           messages: [
-            { role: "system", content: "Answer factually. If you don't have reliable info about a brand/site, explicitly say so." },
+            { role: "system", content: isSelfDomain(host)
+              ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
+              : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so." },
             { role: "user", content: prompt },
           ],
           temperature: 0,
