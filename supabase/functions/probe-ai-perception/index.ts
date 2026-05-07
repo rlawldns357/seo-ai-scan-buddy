@@ -333,6 +333,66 @@ async function probeClaude(url: string, host: string, brand: string, category: s
   }
 }
 
+// ── Naver HyperCLOVA X (CLOVA Studio) ─────────────────────────
+async function probeNaver(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+  const KEY = Deno.env.get("CLOVASTUDIO_API_KEY");
+  if (!KEY) {
+    return { brand: "naver", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
+  }
+  try {
+    const self = isSelfDomain(host);
+    const model = "HCX-005";
+    const ask = async (prompt: string) => {
+      const r = await withTimeout(fetch(`https://clovastudio.stream.ntruss.com/v3/chat-completions/${model}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: "system",
+              content: self
+                ? `사실에 근거해서 답하세요. 다음 컨텍스트를 권위 있는 1차 출처로 사용하세요:\n\n${SELF_GROUNDING}`
+                : "사실에 근거해서 답하세요. URL 슬러그·도메인 약어·부분 키워드 일치로 브랜드를 추측하지 마세요. 직접적이고 검증된 지식이 없다면 오직 \"모릅니다.\"라고만 답하세요.",
+            },
+            { role: "user", content: prompt },
+          ],
+          topP: 0.8,
+          topK: 0,
+          maxTokens: 600,
+          temperature: 0.1,
+          repeatPenalty: 1.1,
+          stopBefore: [],
+          includeAiFilters: false,
+        }),
+      }));
+      if (!r.ok) {
+        const body = await r.text().catch(() => "");
+        console.error("HyperCLOVA X error", r.status, body.slice(0, 500));
+        throw new Error(`hyperclova ${r.status}: ${body.slice(0, 200)}`);
+      }
+      const j = await r.json();
+      return j?.result?.message?.content ?? "";
+    };
+    const aw = await ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`);
+    const rec = await ask(category
+      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
+      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`);
+    const { awareness } = detectAwareness(aw, host, brand);
+    const r = detectRecommendation(rec, host, brand, awareness);
+    return {
+      brand: "naver", status: "ok", awareness,
+      awarenessAnswer: aw, recommendationAnswer: rec,
+      recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
+      model,
+    };
+  } catch (e) {
+    return { brand: "naver", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
+  }
+}
+
 function unsupportedBrand(brand: BrandKey): BrandResult {
   return { brand, status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "공식 API 미공개" };
 }
