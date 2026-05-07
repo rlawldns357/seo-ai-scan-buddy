@@ -24,13 +24,13 @@ const BRAND_LOGOS: { name: string; Logo: React.ComponentType<{ className?: strin
 export default function AskAITeaser({ active, onActivate }: Props) {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    if (active) return;
-    trackEvent("ask_ai_teaser_click", { source: "home_teaser", active: true });
-    onActivate?.();
+    trackEvent("ask_ai_teaser_click", { source: "home_teaser", active: !active });
+    if (!active) onActivate?.();
     const input = document.querySelector<HTMLInputElement>('input[type="url"], input[name="url"]');
     if (input) {
       input.scrollIntoView({ behavior: "smooth", block: "center" });
-      input.focus({ preventScroll: true });
+      // 스크롤 끝나고 포커스 (모바일 키보드 안정성)
+      setTimeout(() => input.focus({ preventScroll: true }), 250);
     }
   };
 
