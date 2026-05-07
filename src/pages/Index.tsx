@@ -10,6 +10,7 @@ import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
 
 import NaverStoreTeaser from "@/components/NaverStoreTeaser";
+import AskAITeaser from "@/components/AskAITeaser";
 
 
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
@@ -552,6 +553,7 @@ const Index = () => {
                   }}
                 />
               )}
+              <AskAITeaser />
               <NaverStoreTeaser />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
@@ -647,10 +649,12 @@ const Index = () => {
                       </span>
                     </p>
                   </div>
-                  <AIPerceptionCard
-                    url={normalizedUrl}
-                    brand={result.storeContext.slug}
-                  />
+                  <div id="ai-perception" className="scroll-mt-20">
+                    <AIPerceptionCard
+                      url={normalizedUrl}
+                      brand={result.storeContext.slug}
+                    />
+                  </div>
                 </>
               )}
 
@@ -660,7 +664,9 @@ const Index = () => {
               )}
 
               {result && !result.storeContext && (
-                <AIPerceptionCard url={normalizedUrl} />
+                <div id="ai-perception" className="scroll-mt-20">
+                  <AIPerceptionCard url={normalizedUrl} />
+                </div>
               )}
 
               {result && (
