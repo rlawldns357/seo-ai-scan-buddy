@@ -272,53 +272,35 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           </div>
         </div>
 
-        {/* Hero headline */}
+        {/* Hero headline — 한 줄 임팩트 메시지 */}
         <div className="relative">
-          <h3 className="text-[22px] sm:text-[32px] leading-[1.15] font-extrabold text-foreground tracking-tight">
-            지금 AI는 당신을<br className="sm:hidden" />
-            <span className="sm:ml-2">이렇게 봅니다</span>
-          </h3>
-
-          {/* Big scoreboard */}
-          <div className="mt-5 sm:mt-6 flex items-end gap-3 sm:gap-5 flex-wrap">
-            <div className="flex items-baseline gap-1.5">
-              <span className={`text-[56px] sm:text-[88px] leading-none font-black tabular-nums ${toneClasses.text} drop-shadow-sm`}>
-                {recommended}
-              </span>
-              <span className="text-2xl sm:text-4xl font-bold text-muted-foreground/60 tabular-nums">
-                /{measurable || 4}
-              </span>
-            </div>
-            <div className="pb-1 sm:pb-2 min-w-0 flex-1">
-              <p className={`text-[13px] sm:text-base font-bold ${toneClasses.text} leading-snug`}>
-                {recommended === 0 ? "AI 추천 0건" : `AI ${recommended}곳에서 추천`}
-              </p>
-              <p className="text-[11px] sm:text-[13px] text-muted-foreground mt-0.5 leading-snug">
-                실제 AI {measurable || 4}종에 동일 질문을 보낸 결과예요
+          <div className="flex items-start gap-3 sm:gap-4">
+            <span className="text-4xl sm:text-5xl leading-none shrink-0" aria-hidden="true">
+              {heroMessage.emoji}
+            </span>
+            <div className="min-w-0 flex-1">
+              <h3 className={`text-[20px] sm:text-[28px] leading-[1.2] font-extrabold tracking-tight ${toneClasses.text}`}>
+                {heroMessage.title}
+              </h3>
+              <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug">
+                {heroMessage.sub}
               </p>
             </div>
           </div>
 
-          {/* Mini KPI strip */}
-          <div className="mt-5 sm:mt-6 grid grid-cols-3 gap-1.5 sm:gap-2">
-            <div className="rounded-xl bg-card/70 backdrop-blur border border-border/60 px-3 py-2.5">
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">측정 가능</p>
-              <p className="text-lg sm:text-xl font-extrabold text-foreground tabular-nums mt-0.5">
-                {measurable}<span className="text-xs font-semibold text-muted-foreground/70">/4</span>
-              </p>
-            </div>
-            <div className={`rounded-xl bg-card/70 backdrop-blur border px-3 py-2.5 ${aware > 0 ? "border-score-excellent/30" : "border-border/60"}`}>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">브랜드 인지</p>
-              <p className={`text-lg sm:text-xl font-extrabold tabular-nums mt-0.5 ${aware > 0 ? "text-score-excellent" : "text-muted-foreground"}`}>
-                {aware}<span className="text-xs font-semibold text-muted-foreground/70">/{measurable || 4}</span>
-              </p>
-            </div>
-            <div className={`rounded-xl bg-card/70 backdrop-blur border px-3 py-2.5 ${recommended > 0 ? toneClasses.border : "border-score-poor/30"}`}>
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">추천 노출</p>
-              <p className={`text-lg sm:text-xl font-extrabold tabular-nums mt-0.5 ${recommended > 0 ? toneClasses.text : "text-score-poor"}`}>
-                {recommended}<span className="text-xs font-semibold text-muted-foreground/70">/{measurable || 4}</span>
-              </p>
-            </div>
+          {/* 작은 컨텍스트 요약 (한 줄) */}
+          <div className="mt-4 sm:mt-5 flex items-center gap-2 flex-wrap text-[11px] sm:text-xs">
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-card/70 border border-border/60 text-muted-foreground">
+              측정 <span className="font-bold text-foreground tabular-nums">{measurable}</span>
+            </span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-card/70 border border-border/60 text-muted-foreground">
+              인지 <span className={`font-bold tabular-nums ${aware > 0 ? "text-score-excellent" : "text-foreground"}`}>{aware}</span>
+            </span>
+            <span className="text-muted-foreground/40">·</span>
+            <span className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-card/70 border border-border/60 text-muted-foreground">
+              추천 <span className={`font-bold tabular-nums ${recommended > 0 ? toneClasses.text : "text-score-poor"}`}>{recommended}</span>
+            </span>
           </div>
         </div>
       </div>
