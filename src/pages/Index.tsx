@@ -8,9 +8,8 @@ import NaverStoreDetectedBanner from "@/components/NaverStoreDetectedBanner";
 import RateLimitBanner from "@/components/RateLimitBanner";
 import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
-
-
-
+import NaverStoreTeaser from "@/components/NaverStoreTeaser";
+import AskAITeaser from "@/components/AskAITeaser";
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
 import { type DemoResult } from "@/data/demoResults";
 import type { ExtendedDemoResult } from "@/lib/analyze";
@@ -600,6 +599,11 @@ const Index = () => {
                   }}
                 />
               )}
+              <AskAITeaser active={askAIEnabled} onActivate={() => setAskAIEnabled((v) => !v)} />
+              <NaverStoreTeaser
+                active={naverMode}
+                onActivate={() => setNaverMode((v) => !v)}
+              />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
