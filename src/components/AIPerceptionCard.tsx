@@ -274,11 +274,11 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
 
         {/* Hero headline — 한 줄 임팩트 메시지 */}
         <div className="relative">
-          <div className="flex items-start gap-3 sm:gap-4">
-            <span className="text-4xl sm:text-5xl leading-none shrink-0" aria-hidden="true">
-              {heroMessage.emoji}
-            </span>
-            <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className={`shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${toneClasses.bg} ${toneClasses.border} border flex items-center justify-center shadow-sm`}>
+              <heroMessage.Icon className={`w-7 h-7 sm:w-8 sm:h-8 ${toneClasses.text}`} strokeWidth={2.25} />
+            </div>
+            <div className="min-w-0 flex-1 pt-0.5">
               <h3 className={`text-[20px] sm:text-[28px] leading-[1.2] font-extrabold tracking-tight ${toneClasses.text}`}>
                 {heroMessage.title}
               </h3>
