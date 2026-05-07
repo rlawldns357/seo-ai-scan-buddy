@@ -113,14 +113,16 @@ async function probeGemini(url: string, host: string, brand: string, category: s
     return { brand: "gemini", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "LOVABLE_API_KEY missing" };
   }
   try {
+    const self = isSelfDomain(host);
+    const model = self ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview";
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "google/gemini-3-flash-preview",
+          model,
           messages: [
-            { role: "system", content: isSelfDomain(host)
+            { role: "system", content: self
               ? `You answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
               : "You answer factually. If you do not have reliable information about a website or brand, explicitly say you do not know. Never fabricate." },
             { role: "user", content: prompt },
@@ -143,7 +145,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
       brand: "gemini", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
       recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
-      model: "google/gemini-3-flash-preview",
+      model,
     };
   } catch (e) {
     return { brand: "gemini", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
@@ -157,14 +159,16 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "PERPLEXITY_API_KEY missing" };
   }
   try {
+    const self = isSelfDomain(host);
+    const model = self ? "sonar-pro" : "sonar";
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://api.perplexity.ai/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "sonar",
+          model,
           messages: [
-            { role: "system", content: isSelfDomain(host)
+            { role: "system", content: self
               ? `Be precise. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
               : "Be precise. If you have no reliable information, say so." },
             { role: "user", content: prompt },
@@ -187,7 +191,6 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     const [aw, rec] = await Promise.all([ask(awP), ask(recP)]);
     const { awareness } = detectAwareness(aw.text, host, brand);
     const r = detectRecommendation(rec.text, host, brand);
-    // citations에 내 도메인 포함 여부도 체크
     const citationHit = (rec.citations || []).some((c) => c?.toLowerCase().includes(host.toLowerCase()));
     return {
       brand: "perplexity",
@@ -201,7 +204,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
         competitors: r.competitors,
       },
       citations: rec.citations,
-      model: "sonar",
+      model,
     };
   } catch (e) {
     return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
@@ -215,14 +218,16 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
     return { brand: "chatgpt", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
   }
   try {
+    const self = isSelfDomain(host);
+    const model = self ? "gpt-4o" : "gpt-4o-mini";
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model,
           messages: [
-            { role: "system", content: isSelfDomain(host)
+            { role: "system", content: self
               ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
               : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so." },
             { role: "user", content: prompt },
@@ -248,7 +253,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
       recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
-      model: "gpt-4o-mini",
+      model,
     };
   } catch (e) {
     return { brand: "chatgpt", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
@@ -262,6 +267,8 @@ async function probeClaude(url: string, host: string, brand: string, category: s
     return { brand: "claude", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
   }
   try {
+    const self = isSelfDomain(host);
+    const model = self ? "claude-sonnet-4-5" : "claude-haiku-4-5";
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
         method: "POST",
@@ -271,10 +278,10 @@ async function probeClaude(url: string, host: string, brand: string, category: s
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "claude-haiku-4-5",
+          model,
           max_tokens: 600,
           messages: [{ role: "user", content: prompt }],
-          system: isSelfDomain(host)
+          system: self
             ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
             : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so.",
         }),
@@ -294,7 +301,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       brand: "claude", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
       recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
-      model: "claude-haiku-4-5",
+      model,
     };
   } catch (e) {
     return { brand: "claude", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
