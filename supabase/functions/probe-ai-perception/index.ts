@@ -164,7 +164,9 @@ async function probePerplexity(url: string, host: string, brand: string, categor
         body: JSON.stringify({
           model: "sonar",
           messages: [
-            { role: "system", content: "Be precise. If you have no reliable information, say so." },
+            { role: "system", content: isSelfDomain(host)
+              ? `Be precise. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
+              : "Be precise. If you have no reliable information, say so." },
             { role: "user", content: prompt },
           ],
         }),
