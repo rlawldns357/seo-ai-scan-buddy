@@ -49,7 +49,7 @@ interface Props {
 }
 
 const BRAND_META: Record<BrandKey, { name: string; Logo: React.ComponentType<{ className?: string }>; brandColor: string }> = {
-  chatgpt:    { name: "ChatGPT",        Logo: OpenAIMark,    brandColor: "#10A37F" },
+  chatgpt:    { name: "ChatGPT",        Logo: OpenAIMark,    brandColor: "#000000" },
   claude:     { name: "Claude",         Logo: SiClaude,      brandColor: "#D97757" },
   gemini:     { name: "Gemini",         Logo: SiGooglegemini, brandColor: "#1C69FF" },
   perplexity: { name: "Perplexity",     Logo: SiPerplexity,  brandColor: "#20808D" },
