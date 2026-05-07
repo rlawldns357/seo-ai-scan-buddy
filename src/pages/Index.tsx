@@ -76,7 +76,7 @@ const EXAMPLE_URLS: { label: string; url: string }[] = [
 const PLACEHOLDER_ROTATION = [
   "https://your-brand.com",
   "musinsa.com",
-  "brand.naver.com/lge",
+  "brand.naver.com/innisfree",
   "https://oliveyoung.co.kr",
 ];
 
