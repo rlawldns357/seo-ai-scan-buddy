@@ -108,6 +108,19 @@ const Index = () => {
   const [askAIEnabled, setAskAIEnabled] = useState(true);
   // Naver Store mode (teaser 클릭으로 활성화 — 검색창 초록 띠)
   const [naverMode, setNaverMode] = useState(false);
+  // 네이버 티저 클릭 → 입력창 강조. 다른 곳 클릭 시 원복.
+  useEffect(() => {
+    if (!naverMode) return;
+    const onDown = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      if (t.closest('[data-naver-teaser]')) return;
+      if (t.closest('input[type="url"]')) return;
+      setNaverMode(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [naverMode]);
   const [psiLazyLoading, setPsiLazyLoading] = useState(false);
   const [psiRetryError, setPsiRetryError] = useState<string | null>(null);
   const [lighthouseSkipped, setLighthouseSkipped] = useState(false);
@@ -611,10 +624,7 @@ const Index = () => {
                 />
               )}
               <AskAITeaser active={askAIEnabled} onActivate={() => setAskAIEnabled((v) => !v)} />
-              <NaverStoreTeaser
-                active={naverMode}
-                onActivate={() => setNaverMode((v) => !v)}
-              />
+              <NaverStoreTeaser onActivate={() => setNaverMode(true)} />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">

@@ -3,11 +3,10 @@ import { SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
 
 interface Props {
-  active?: boolean;
   onActivate?: () => void;
 }
 
-export default function NaverStoreTeaser({ active, onActivate }: Props) {
+export default function NaverStoreTeaser({ onActivate }: Props) {
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     trackEvent("naver_store_teaser_click", { source: "home_teaser" });
@@ -20,14 +19,11 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
   };
 
   return (
-    <section className="mt-3 max-w-2xl mx-auto">
+    <section className="mt-3 max-w-2xl mx-auto" data-naver-teaser>
       <button
         type="button"
         onClick={handleClick}
-        aria-pressed={active}
-        className={`group relative block w-full text-left rounded-2xl border bg-card hover:shadow-elevated transition-all duration-300 ${
-          active ? "border-naver/60 shadow-elevated" : "border-naver/30 hover:border-naver/60"
-        }`}
+        className="group relative block w-full text-left rounded-2xl border border-naver/30 bg-card hover:border-naver/60 hover:shadow-elevated transition-all duration-300"
       >
         <span className="absolute -top-2 left-4 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-naver text-naver-foreground text-[10px] font-semibold tracking-wide shadow-sm">
           NEW · 2026
@@ -53,8 +49,8 @@ export default function NaverStoreTeaser({ active, onActivate }: Props) {
             </p>
           </div>
 
-          <div className={`shrink-0 inline-flex items-center gap-1 text-xs font-medium ${active ? "text-naver" : "text-muted-foreground"}`}>
-            <span className="hidden sm:inline">{active ? "켜짐" : "자동"}</span>
+          <div className="shrink-0 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+            <span className="hidden sm:inline">자동</span>
             <ArrowUpRight className="w-4 h-4" />
           </div>
         </div>
