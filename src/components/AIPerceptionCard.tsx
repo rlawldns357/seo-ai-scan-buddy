@@ -63,7 +63,7 @@ function AwarenessBadge({ b }: { b: BrandResult }) {
   if (b.status === "unsupported") {
     return (
       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted text-muted-foreground border border-border">
-        <Lock className="w-2.5 h-2.5" /> 곧 지원
+        <Lock className="w-2.5 h-2.5" /> 준비 중
       </span>
     );
   }
@@ -316,7 +316,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                       key={b.brand}
                       className={`group relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-xl ${styleMap} transition-transform hover:scale-110`}
                       style={isRec ? { color: meta.brandColor } : undefined}
-                      title={`${meta.name} · ${isRec ? "추천 노출" : isAwareDot ? "인지함" : isLocked ? "곧 지원" : "미노출"}`}
+                      title={`${meta.name} · ${isRec ? "추천 노출" : isAwareDot ? "인지함" : isLocked ? "준비 중" : "미노출"}`}
                     >
                       <meta.Logo className="w-4 h-4 sm:w-5 sm:h-5" />
                       {isRec && (
