@@ -68,7 +68,7 @@ const formatAnalyzeError = (err: unknown): string => {
 const EXAMPLE_URLS: { label: string; url: string }[] = [
   { label: "토스", url: "toss.im" },
   { label: "무신사", url: "musinsa.com" },
-  { label: "네이버 스토어", url: "brand.naver.com/lge" },
+  { label: "네이버 스토어", url: "brand.naver.com/innisfree" },
   { label: "올리브영", url: "oliveyoung.co.kr" },
 ];
 
@@ -76,7 +76,7 @@ const EXAMPLE_URLS: { label: string; url: string }[] = [
 const PLACEHOLDER_ROTATION = [
   "https://your-brand.com",
   "musinsa.com",
-  "brand.naver.com/lge",
+  "brand.naver.com/innisfree",
   "https://oliveyoung.co.kr",
 ];
 
