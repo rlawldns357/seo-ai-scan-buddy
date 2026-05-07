@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
-import { Zap, Loader2, Search } from "lucide-react";
+import { Zap, Loader2, Search, Sparkles } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
@@ -9,8 +9,6 @@ import RateLimitBanner from "@/components/RateLimitBanner";
 import { parseNaverStoreUrl } from "@/lib/naverStore";
 import FaqSection, { faqs } from "@/components/FaqSection";
 
-import NaverStoreTeaser from "@/components/NaverStoreTeaser";
-import AskAITeaser from "@/components/AskAITeaser";
 
 
 import { WebSiteJsonLd, FAQPageJsonLd } from "@/components/JsonLd";
@@ -545,13 +543,8 @@ const Index = () => {
                           : "border-border bg-card text-muted-foreground hover:border-askai/40 hover:text-foreground"
                       }`}
                     >
-                      <span className="relative flex w-2 h-2 items-center justify-center">
-                        {askAIEnabled && (
-                          <span className="absolute inline-flex w-full h-full rounded-full bg-askai/60 animate-live-ping" />
-                        )}
-                        <span className={`relative inline-flex w-2 h-2 rounded-full ${askAIEnabled ? "bg-askai" : "bg-muted-foreground/40"}`} />
-                      </span>
-                      <span className="leading-none">AI에게 물어보기</span>
+                      <Sparkles className={`w-3.5 h-3.5 ${askAIEnabled ? "text-askai" : ""}`} />
+                      <span className="leading-none">AI에게 직접 물어보기</span>
                       <span
                         className={`ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border text-[9px] font-black ${
                           askAIEnabled ? "bg-askai border-askai text-askai-foreground" : "border-muted-foreground/30 text-transparent"
@@ -607,11 +600,6 @@ const Index = () => {
                   }}
                 />
               )}
-              <AskAITeaser active={askAIEnabled} onActivate={() => setAskAIEnabled((v) => !v)} />
-              <NaverStoreTeaser
-                active={naverMode}
-                onActivate={() => setNaverMode((v) => !v)}
-              />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
