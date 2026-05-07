@@ -152,6 +152,41 @@ export default function LoadingScreen({ completedPhases = new Set(), skipLightho
           </div>
         </div>
 
+        {/* AI 불러모으기 — Ask AI 모드 활성화 시 */}
+        {askAIEnabled && (
+          <div className="rounded-2xl border-2 border-askai/40 bg-askai/5 px-4 py-4 animate-fade-in">
+            <div className="flex items-center justify-center gap-1.5 mb-3">
+              <Sparkles className="w-3.5 h-3.5 text-askai animate-pulse" />
+              <span className="text-[11px] font-bold tracking-wide text-askai uppercase">
+                AI 친구들 불러모으는 중
+              </span>
+              <Sparkles className="w-3.5 h-3.5 text-askai animate-pulse" />
+            </div>
+            <div className="flex items-center justify-center gap-2">
+              {ASK_AI_BRANDS.map(({ name, Logo, color }, i) => {
+                const isNaver = name === "Naver";
+                return (
+                  <span
+                    key={name}
+                    title={name}
+                    style={{
+                      color,
+                      animationDelay: `${i * 200}ms`,
+                      animationDuration: "1.6s",
+                    }}
+                    className="inline-flex items-center justify-center w-9 h-9 rounded-full bg-white dark:bg-card border border-border shadow-sm animate-bounce"
+                  >
+                    <Logo className={isNaver ? "w-4 h-4" : "w-5 h-5"} />
+                  </span>
+                );
+              })}
+            </div>
+            <p className="mt-3 text-[11px] text-center text-muted-foreground">
+              ChatGPT·Claude·Gemini·Perplexity·CLOVA에게 직접 물어보고 있어요
+            </p>
+          </div>
+        )}
+
         {/* Info card */}
         <div
           className={`bg-card rounded-xl border border-border p-5 text-left transition-all duration-300 ${
