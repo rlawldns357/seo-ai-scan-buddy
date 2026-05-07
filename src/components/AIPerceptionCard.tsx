@@ -211,24 +211,25 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
   }[tone];
 
   return (
-    <div className="rounded-2xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
-      {/* Header */}
-      <div className={`relative px-5 sm:px-6 py-5 border-b border-border bg-gradient-to-br ${toneClasses.glow} via-transparent to-transparent`}>
-        <div className="flex items-start justify-between gap-3">
+    <div className="rounded-3xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
+      {/* Hero header */}
+      <div className={`relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-gradient-to-br ${toneClasses.glow} via-transparent to-transparent overflow-hidden`}>
+        {/* decorative glow */}
+        <div className={`pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl opacity-40 ${toneClasses.bg}`} />
+
+        {/* Eyebrow row */}
+        <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
-              <Sparkles className="w-4 h-4 text-primary" />
+            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center shrink-0 ring-1 ring-primary/20">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
             </div>
-            <div className="min-w-0">
-              <h3 className="text-sm sm:text-base font-bold text-foreground leading-tight">
-                지금 AI는 당신을 이렇게 봅니다
-              </h3>
-              <p className="text-[10px] text-muted-foreground/70 mt-0.5">실제 AI 4종에 동일 질문을 보낸 결과</p>
-            </div>
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+              AI 인식 진단 · LIVE
+            </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {data.cached && (
-              <span className="text-[10px] text-muted-foreground/60 px-1.5 py-0.5 rounded-md bg-muted/40">24h 캐시</span>
+              <span className="text-[10px] text-muted-foreground/70 px-1.5 py-0.5 rounded-md bg-muted/40">24h 캐시</span>
             )}
             {isAdmin && (
               <button
@@ -243,26 +244,55 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           </div>
         </div>
 
-        {/* KPI chips */}
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          <div className="rounded-xl bg-card/60 backdrop-blur border border-border/60 px-3 py-2">
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">측정</p>
-            <p className="text-base sm:text-lg font-extrabold text-foreground tabular-nums">{measurable}<span className="text-[11px] font-medium text-muted-foreground">/4</span></p>
+        {/* Hero headline */}
+        <div className="relative">
+          <h3 className="text-[22px] sm:text-[32px] leading-[1.15] font-extrabold text-foreground tracking-tight">
+            지금 AI는 당신을<br className="sm:hidden" />
+            <span className="sm:ml-2">이렇게 봅니다</span>
+          </h3>
+
+          {/* Big scoreboard */}
+          <div className="mt-5 sm:mt-6 flex items-end gap-3 sm:gap-5 flex-wrap">
+            <div className="flex items-baseline gap-1.5">
+              <span className={`text-[56px] sm:text-[88px] leading-none font-black tabular-nums ${toneClasses.text} drop-shadow-sm`}>
+                {recommended}
+              </span>
+              <span className="text-2xl sm:text-4xl font-bold text-muted-foreground/60 tabular-nums">
+                /{measurable || 4}
+              </span>
+            </div>
+            <div className="pb-1 sm:pb-2 min-w-0 flex-1">
+              <p className={`text-[13px] sm:text-base font-bold ${toneClasses.text} leading-snug`}>
+                {recommended === 0 ? "AI 추천 0건" : `AI ${recommended}곳에서 추천`}
+              </p>
+              <p className="text-[11px] sm:text-[13px] text-muted-foreground mt-0.5 leading-snug">
+                실제 AI {measurable || 4}종에 동일 질문을 보낸 결과예요
+              </p>
+            </div>
           </div>
-          <div className={`rounded-xl bg-card/60 backdrop-blur border ${aware > 0 ? "border-score-excellent/30" : "border-border/60"} px-3 py-2`}>
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">인지</p>
-            <p className={`text-base sm:text-lg font-extrabold tabular-nums ${aware > 0 ? "text-score-excellent" : "text-muted-foreground"}`}>{aware}<span className="text-[11px] font-medium text-muted-foreground">/{measurable || 4}</span></p>
-          </div>
-          <div className={`rounded-xl bg-card/60 backdrop-blur border ${recommended > 0 ? toneClasses.border : "border-score-poor/20"} px-3 py-2`}>
-            <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">추천</p>
-            <p className={`text-base sm:text-lg font-extrabold tabular-nums ${recommended > 0 ? toneClasses.text : "text-score-poor"}`}>{recommended}<span className="text-[11px] font-medium text-muted-foreground">/{measurable || 4}</span></p>
+
+          {/* Mini KPI strip */}
+          <div className="mt-5 sm:mt-6 grid grid-cols-3 gap-1.5 sm:gap-2">
+            <div className="rounded-xl bg-card/70 backdrop-blur border border-border/60 px-3 py-2.5">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">측정 가능</p>
+              <p className="text-lg sm:text-xl font-extrabold text-foreground tabular-nums mt-0.5">
+                {measurable}<span className="text-xs font-semibold text-muted-foreground/70">/4</span>
+              </p>
+            </div>
+            <div className={`rounded-xl bg-card/70 backdrop-blur border px-3 py-2.5 ${aware > 0 ? "border-score-excellent/30" : "border-border/60"}`}>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">브랜드 인지</p>
+              <p className={`text-lg sm:text-xl font-extrabold tabular-nums mt-0.5 ${aware > 0 ? "text-score-excellent" : "text-muted-foreground"}`}>
+                {aware}<span className="text-xs font-semibold text-muted-foreground/70">/{measurable || 4}</span>
+              </p>
+            </div>
+            <div className={`rounded-xl bg-card/70 backdrop-blur border px-3 py-2.5 ${recommended > 0 ? toneClasses.border : "border-score-poor/30"}`}>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">추천 노출</p>
+              <p className={`text-lg sm:text-xl font-extrabold tabular-nums mt-0.5 ${recommended > 0 ? toneClasses.text : "text-score-poor"}`}>
+                {recommended}<span className="text-xs font-semibold text-muted-foreground/70">/{measurable || 4}</span>
+              </p>
+            </div>
           </div>
         </div>
-
-        <p className={`mt-3 text-[12px] sm:text-[13px] font-semibold ${toneClasses.text} flex items-center gap-1.5`}>
-          <span className={`inline-block w-1.5 h-1.5 rounded-full ${toneClasses.text.replace("text-", "bg-")}`} />
-          {headline}
-        </p>
       </div>
 
       {/* Brand rows */}
