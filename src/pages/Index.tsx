@@ -638,10 +638,13 @@ const Index = () => {
                 <>
                   <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
                     <p className="text-xs sm:text-sm text-foreground leading-relaxed">
-                      <span className="font-bold text-primary">대신 더 중요한 걸 측정했어요.</span>{" "}
-                      네이버 스토어는 SEO/AEO/GEO 점수가 한계가 있어요. 그래서{" "}
-                      <span className="font-semibold">"<span className="font-mono">{result.storeContext.slug}</span>" 브랜드명을
-                      ChatGPT·Claude·Gemini·Perplexity가 어떻게 인식하는지</span>를 직접 물어봤어요.
+                      <span className="font-bold text-primary">대신 더 중요한 걸 살펴봤어요.</span>{" "}
+                      네이버 스토어는 SEO/AEO/GEO 점수 적용에 한계가 있어요. 그래서 스토어 URL에서 추출한 키워드{" "}
+                      <span className="font-mono font-semibold">"{result.storeContext.slug}"</span>
+                      {"\u00A0"}기준으로, ChatGPT·Claude·Gemini·Perplexity가 이 브랜드를 어떻게 인식하고 있을지 한번 물어봤어요.
+                      <span className="block mt-1.5 text-[11px] text-muted-foreground">
+                        ※ URL 슬러그라 실제 브랜드명과 다를 수 있어요. 결과는 참고용으로 봐주세요.
+                      </span>
                     </p>
                   </div>
                   <AIPerceptionCard
