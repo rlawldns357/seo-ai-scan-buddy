@@ -306,7 +306,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                     {ratioPct}%
                   </span>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2">
                   {sortedBrands.map((b) => {
                     const meta = BRAND_META[b.brand];
                     const isRec = b.status === "ok" && b.recommendation?.mentioned;
@@ -322,24 +322,24 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                     return (
                       <div
                         key={b.brand}
-                        className={`group relative flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-xl ${styleMap} transition-transform hover:scale-110`}
+                        className={`group relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 rounded-xl ${styleMap} transition-transform hover:scale-110`}
                         style={isRec ? { color: meta.brandColor } : undefined}
                         title={`${meta.name} · ${isRec ? "추천 노출" : isAwareDot ? "인지함" : isLocked ? "곧 지원" : "미노출"}`}
                       >
-                        <meta.Logo className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <meta.Logo className="w-4 h-4 sm:w-5 sm:h-5" />
                         {isRec && (
-                          <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-card flex items-center justify-center text-[8px] font-black ${toneClasses.text.replace("text-", "bg-")} text-white`}>
+                          <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-card flex items-center justify-center text-[7px] font-black ${toneClasses.text.replace("text-", "bg-")} text-white`}>
                             ✓
                           </span>
                         )}
                         {isLocked && (
-                          <Lock className="absolute -bottom-1 -right-1 w-3 h-3 text-muted-foreground/60 bg-card rounded-full p-0.5" />
+                          <Lock className="absolute -bottom-1 -right-1 w-2.5 h-2.5 text-muted-foreground/60 bg-card rounded-full p-0.5" />
                         )}
                       </div>
                     );
                   })}
                 </div>
-                <div className="mt-2.5 flex items-center gap-3 text-[10px] text-muted-foreground/80">
+                <div className="mt-2.5 flex items-center gap-2 sm:gap-3 text-[10px] text-muted-foreground/80">
                   <span className="inline-flex items-center gap-1"><span className={`w-2 h-2 rounded-full ${toneClasses.text.replace("text-", "bg-")}`} />추천</span>
                   <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-foreground/40" />인지만</span>
                   <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-muted-foreground/30" />미노출</span>
