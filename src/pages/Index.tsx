@@ -436,16 +436,21 @@ const Index = () => {
 
               <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-3 my-2 sm:my-0">
                 <div className="relative w-full sm:flex-1">
-                  {/* Naver mode 활성화 시: 입력창 둘레 그라데이션 초록 띠 */}
+                  {/* Naver mode 활성화 시: 부드러운 초록 글로우 헤일로 */}
                   {naverMode && (
                     <div
                       aria-hidden
-                      className="pointer-events-none absolute -inset-[2px] rounded-2xl bg-[linear-gradient(135deg,hsl(var(--naver))_0%,hsl(var(--naver-deep))_55%,hsl(var(--naver))_100%)] opacity-90 animate-naver-shimmer"
-                      style={{ backgroundSize: "200% 200%" }}
+                      className="pointer-events-none absolute -inset-3 rounded-[1.75rem] animate-naver-glow"
+                      style={{
+                        background:
+                          "radial-gradient(60% 80% at 50% 50%, hsl(var(--naver) / 0.35), hsl(var(--naver) / 0) 70%)",
+                      }}
                     />
                   )}
                   <Search
-                    className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground/60 pointer-events-none transition-colors group-focus-within:text-primary z-10"
+                    className={`absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none transition-colors z-10 ${
+                      naverMode ? "text-naver" : "text-muted-foreground/60 group-focus-within:text-primary"
+                    }`}
                     strokeWidth={2.5}
                   />
                   <input
@@ -454,9 +459,9 @@ const Index = () => {
                     onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                     placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
-                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/80 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
+                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/90 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
                       naverMode
-                        ? "border-transparent focus:ring-0"
+                        ? "border-naver/50 focus:border-naver focus:ring-2 focus:ring-naver/30 shadow-[0_0_0_4px_hsl(var(--naver)/0.10)]"
                         : "border-input focus:ring-2 focus:ring-primary/40 focus:border-primary"
                     }`}
                     style={{ paddingLeft: "3rem" }}

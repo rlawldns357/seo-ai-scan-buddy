@@ -155,14 +155,15 @@
 }
 
 
-/* Naver Store mode — 검색창 둘레 그라데이션 초록 띠 */
-@keyframes naver-shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50%      { background-position: 100% 50%; }
+/* Naver Store mode — 입력창 주변 부드러운 초록 글로우 */
+@keyframes naver-glow {
+  0%, 100% { opacity: 0.55; transform: scale(0.985); }
+  50%      { opacity: 0.95; transform: scale(1.015); }
 }
-.animate-naver-shimmer {
-  animation: naver-shimmer 3.2s ease-in-out infinite;
+.animate-naver-glow {
+  animation: naver-glow 2.6s ease-in-out infinite;
+  filter: blur(6px);
 }
 @media (prefers-reduced-motion: reduce) {
-  .animate-naver-shimmer { animation: none; }
+  .animate-naver-glow { animation: none; filter: blur(4px); opacity: 0.7; }
 }
