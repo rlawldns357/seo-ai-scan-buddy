@@ -120,7 +120,9 @@ async function probeGemini(url: string, host: string, brand: string, category: s
         body: JSON.stringify({
           model: "google/gemini-3-flash-preview",
           messages: [
-            { role: "system", content: "You answer factually. If you do not have reliable information about a website or brand, explicitly say you do not know. Never fabricate." },
+            { role: "system", content: isSelfDomain(host)
+              ? `You answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
+              : "You answer factually. If you do not have reliable information about a website or brand, explicitly say you do not know. Never fabricate." },
             { role: "user", content: prompt },
           ],
         }),
