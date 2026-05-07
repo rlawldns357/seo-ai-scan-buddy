@@ -20,6 +20,7 @@ const BRAND_LOGOS: { name: string; Logo: React.ComponentType<{ className?: strin
   { name: "Claude",     Logo: SiClaude,       color: "#D97757" },
   { name: "Gemini",     Logo: SiGooglegemini, color: "#1C69FF" },
   { name: "Perplexity", Logo: SiPerplexity,   color: "#20808D" },
+  { name: "Naver",      Logo: SiNaver,        color: "#03C75A" },
 ];
 
 export default function AskAITeaser() {
