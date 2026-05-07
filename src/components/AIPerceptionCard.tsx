@@ -211,6 +211,16 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           {data.cached && (
             <span className="text-[10px] text-muted-foreground/60">24h 캐시</span>
           )}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={() => setReloadKey((k) => k + 1)}
+              className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-score-excellent/10 text-score-excellent border border-score-excellent/20 hover:bg-score-excellent/20 transition-colors"
+              title="캐시 비우고 재측정 (Admin)"
+            >
+              ↻ 캐시 비우기
+            </button>
+          )}
         </div>
         <p className={`mt-1 text-[12px] sm:text-[13px] font-semibold ${
           recommended === 0 ? "text-score-poor" : recommended < measurable ? "text-score-warning" : "text-score-excellent"
