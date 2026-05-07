@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NEW · AI에게 직접 물어보기 — 5개 AI가 내 사이트를 어떻게 보는지 한번에 확인 | SearchTune OS</title>
+<meta name="description" content="ChatGPT · Claude · Gemini · Perplexity · 네이버 HyperCLOVA X 5개 모델에 동시 질의. 내 브랜드를 AI가 인지하는지·추천하는지 30초 안에 확인해 보세요." />
+<link rel="canonical" href="https://searchtuneos.com/launch-ask-ai.html" />
+
+<!-- Open Graph (카카오톡/페이스북) -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="SearchTune OS" />
+<meta property="og:title" content="NEW · AI에게 직접 물어보기 — 5개 AI 동시 수집" />
+<meta property="og:description" content="ChatGPT · Claude · Gemini · Perplexity · 네이버까지. 5개 AI에 동시에 물어보고, 내 사이트를 AI가 어떻게 보는지 한 번에 확인하세요." />
+<meta property="og:url" content="https://searchtuneos.com/launch-ask-ai.html" />
+<meta property="og:image" content="https://dmnrbmarbvirtymhszww.supabase.co/functions/v1/og-svg?title=AI%EC%97%90%EA%B2%8C%20%EC%A7%81%EC%A0%91%20%EB%AC%BC%EC%96%B4%EB%B3%B4%EA%B8%B0%20%C2%B7%205%EA%B0%9C%20AI%20%EB%8F%99%EC%8B%9C%20%EC%88%98%EC%A7%91&category=NEW" />
+<meta property="og:image:secure_url" content="https://dmnrbmarbvirtymhszww.supabase.co/functions/v1/og-svg?title=AI%EC%97%90%EA%B2%8C%20%EC%A7%81%EC%A0%91%20%EB%AC%BC%EC%96%B4%EB%B3%B4%EA%B8%B0%20%C2%B7%205%EA%B0%9C%20AI%20%EB%8F%99%EC%8B%9C%20%EC%88%98%EC%A7%91&category=NEW" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="SearchTune OS — AI에게 직접 물어보기 출시" />
+<meta property="og:locale" content="ko_KR" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="NEW · AI에게 직접 물어보기 — 5개 AI 동시 수집" />
+<meta name="twitter:description" content="ChatGPT · Claude · Gemini · Perplexity · 네이버까지. 5개 AI에 동시에 물어보고 결과를 한 번에 확인하세요." />
+<meta name="twitter:image" content="https://dmnrbmarbvirtymhszww.supabase.co/functions/v1/og-svg?title=AI%EC%97%90%EA%B2%8C%20%EC%A7%81%EC%A0%91%20%EB%AC%BC%EC%96%B4%EB%B3%B4%EA%B8%B0%20%C2%B7%205%EA%B0%9C%20AI%20%EB%8F%99%EC%8B%9C%20%EC%88%98%EC%A7%91&category=NEW" />
+
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: linear-gradient(135deg, #faf7ff 0%, #ffffff 55%, #f3f0ff 100%);
+    color: #1a1a2e;
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 56px 20px 80px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 12px; border-radius: 999px;
+    background: #7c3aed; color: #fff;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+    box-shadow: 0 6px 24px -8px rgba(124,58,237,0.5);
+  }
+  h1 {
+    margin: 18px 0 14px;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 800; line-height: 1.2; letter-spacing: -0.02em;
+  }
+  .sub { color: #5b5b75; font-size: 16px; line-height: 1.65; margin: 0 0 28px; }
+  .card {
+    border: 1px solid #ece8f7; background: #fff; border-radius: 20px;
+    padding: 22px; margin: 18px 0;
+    box-shadow: 0 8px 30px -16px rgba(124,58,237,0.18);
+  }
+  .logos { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .logos span {
+    display: inline-flex; align-items: center; padding: 6px 12px;
+    border-radius: 999px; background: #f6f3ff; color: #4c1d95;
+    font-size: 13px; font-weight: 700;
+  }
+  .cta {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; padding: 18px 24px; margin-top: 8px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: #fff; font-weight: 800; font-size: 17px;
+    border-radius: 16px; text-decoration: none;
+    box-shadow: 0 12px 30px -10px rgba(99,102,241,0.55);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .cta:hover { transform: translateY(-1px); box-shadow: 0 16px 36px -10px rgba(99,102,241,0.65); }
+  ul.feat { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.feat li { padding: 8px 0; border-top: 1px dashed #ece8f7; font-size: 14px; color: #2a2a3a; }
+  ul.feat li:first-child { border-top: 0; }
+  ul.feat strong { color: #6d28d9; }
+  .foot { margin-top: 28px; font-size: 12px; color: #8a8aa0; text-align: center; }
+  .foot a { color: #6d28d9; text-decoration: none; }
+</style>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "AI에게 직접 물어보기 출시",
+  "url": "https://searchtuneos.com/launch-ask-ai.html",
+  "description": "ChatGPT · Claude · Gemini · Perplexity · 네이버 HyperCLOVA X에 동시 질의해 내 사이트가 AI에게 어떻게 인식되는지 확인하는 SearchTune OS 신규 기능."
+}
+</script>
+</head>
+<body>
+<main class="wrap">
+  <span class="badge">🚀 JUST LAUNCHED · 2026</span>
+
+  <h1>이제 5개 AI가 내 사이트를<br/>어떻게 보는지 <span style="background:linear-gradient(135deg,#6366f1,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent">한 번에</span> 확인</h1>
+
+  <p class="sub">
+    URL만 넣으면 <strong>ChatGPT · Claude · Gemini · Perplexity · 네이버 HyperCLOVA X</strong>에
+    동시에 질문해 결과를 모아드려요. 내 브랜드를 인지하는지, 추천 답변에 등장하는지 30초 안에 확인하세요.
+  </p>
+
+  <div class="card">
+    <div class="logos">
+      <span>ChatGPT</span><span>Claude</span><span>Gemini</span><span>Perplexity</span><span>네이버 CLOVA X</span>
+    </div>
+    <ul class="feat">
+      <li><strong>인지 여부</strong> — AI가 내 브랜드/사이트를 알고 있는지</li>
+      <li><strong>추천 노출</strong> — 카테고리 질문에 내가 답변에 포함되는지</li>
+      <li><strong>실제 답변 미리보기</strong> — AI가 어떤 문장으로 설명하는지 그대로 확인</li>
+      <li><strong>SEO · AEO · GEO 진단과 함께</strong> — 무엇을 고치면 추천이 늘어나는지까지</li>
+    </ul>
+  </div>
+
+  <a class="cta" href="https://searchtuneos.com/?utm_source=launch&amp;utm_medium=share&amp;utm_campaign=ask-ai">
+    무료로 내 사이트 확인하기 →
+  </a>
+
+  <p class="foot">
+    <a href="https://searchtuneos.com">searchtuneos.com</a> · SearchTune OS
+  </p>
+</main>
+</body>
+</html>
