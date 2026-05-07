@@ -313,13 +313,13 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                   setExpandedBrand(isExpanded ? null : b.brand);
                   if (!isExpanded) trackEvent("ai_perception_brand_clicked", { brand: b.brand });
                 }}
-                className={`w-full px-4 sm:px-6 py-3.5 flex items-center gap-3 text-left ${canExpand ? "hover:bg-muted/30 cursor-pointer" : "cursor-default"} transition-colors`}
+                className={`w-full px-4 sm:px-6 py-4 flex items-center gap-3.5 text-left ${canExpand ? "hover:bg-muted/30 cursor-pointer" : "cursor-default"} transition-colors`}
               >
                 {/* Avatar */}
-                <div className={`relative w-10 h-10 rounded-xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center shrink-0 shadow-sm`}>
-                  <span className="text-[11px] font-extrabold text-white tracking-tight">{meta.short}</span>
+                <div className={`relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br ${meta.gradient} flex items-center justify-center shrink-0 shadow-md`}>
+                  <span className="text-[12px] sm:text-[13px] font-extrabold text-white tracking-tight">{meta.short}</span>
                   {b.status === "ok" && (
-                    <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full ring-2 ring-card ${
+                    <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-card ${
                       isAware ? "bg-score-excellent" : "bg-score-poor"
                     }`} />
                   )}
@@ -327,20 +327,20 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[13px] sm:text-sm font-bold text-foreground">{meta.name}</span>
+                    <span className="text-sm sm:text-[15px] font-bold text-foreground">{meta.name}</span>
                     <AwarenessBadge b={b} />
                     {isRecommended ? (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
+                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
                         ✓ 추천
                       </span>
                     ) : b.status === "ok" ? (
-                      <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-medium bg-muted/40 text-muted-foreground border border-border">
+                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-muted/40 text-muted-foreground border border-border">
                         추천 미노출
                       </span>
                     ) : null}
                   </div>
                   {b.status === "ok" && b.awarenessAnswer && (
-                    <p className="mt-1 text-[11px] sm:text-[12px] text-muted-foreground line-clamp-1 italic">
+                    <p className="mt-1 text-[12px] sm:text-[13px] text-muted-foreground line-clamp-1 italic">
                       “{b.awarenessAnswer.replace(/\s+/g, " ").trim()}”
                     </p>
                   )}
