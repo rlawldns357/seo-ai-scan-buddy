@@ -603,7 +603,10 @@ const Index = () => {
                 />
               )}
               <AskAITeaser onActivate={() => setAskAIEnabled(true)} />
-              <NaverStoreTeaser />
+              <NaverStoreTeaser
+                active={naverMode}
+                onActivate={() => setNaverMode((v) => !v)}
+              />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
               <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
