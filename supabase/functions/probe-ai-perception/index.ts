@@ -218,14 +218,16 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
     return { brand: "chatgpt", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
   }
   try {
+    const self = isSelfDomain(host);
+    const model = self ? "gpt-4o" : "gpt-4o-mini";
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://api.openai.com/v1/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
+          model,
           messages: [
-            { role: "system", content: isSelfDomain(host)
+            { role: "system", content: self
               ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
               : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so." },
             { role: "user", content: prompt },
@@ -251,7 +253,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
       recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
-      model: "gpt-4o-mini",
+      model,
     };
   } catch (e) {
     return { brand: "chatgpt", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
