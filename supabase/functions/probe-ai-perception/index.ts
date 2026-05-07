@@ -68,37 +68,52 @@ function withTimeout<T>(p: Promise<T>, ms = TIMEOUT_MS): Promise<T> {
   ]);
 }
 
+/** 응답이 "모름" 단답인지 판정 — 짧고 부정 패턴만 있으면 true */
+function isDenialOnly(text: string): boolean {
+  const t = (text || "").trim();
+  if (!t) return true;
+  // 30자 이내 짧은 답변에서 부정 패턴이 있으면 단답 모름으로 본다
+  const denyPatterns = [
+    /^모릅니다[.\s]*$/i, /^모르겠[^\n]{0,20}$/i,
+    /알지\s*못/i, /정보가?\s*없/i, /확인이?\s*어려/i,
+    /^i\s*do(n['’]?t|\s*not)\s*(know|have)/i, /^no\s+information/i,
+    /^unable to find/i, /^not\s+aware/i, /^cannot\s+verify/i,
+  ];
+  if (t.length <= 30 && denyPatterns.some((re) => re.test(t))) return true;
+  // 긴 응답이라도 시작이 명백히 부정이면 모름
+  if (/^\s*(모릅니다|모르겠|알지\s*못)/i.test(t)) return true;
+  return false;
+}
+
 function detectAwareness(text: string, host: string, brand: string): {
   awareness: "yes" | "partial" | "no";
 } {
   if (!text) return { awareness: "no" };
+  if (isDenialOnly(text)) return { awareness: "no" };
   const lower = text.toLowerCase();
   // 네이버 스토어처럼 host가 naver.com인 경우 'naver'만 언급돼도 yes로 판정되는
   // false-positive를 막기 위해 host 매칭을 비활성화하고 brand(=슬러그/브랜드명)만 본다.
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
   const hostMatch = !isNaverHost && lower.includes(host.toLowerCase());
-  const brandMatch = brand.length >= 2 && lower.includes(brand.toLowerCase());
-  // "모름/모릅니다/I don't know/no information" 류 부정 패턴
-  const denyPatterns = [
-    /모릅니다/i, /모르겠/i, /알지\s*못/i, /정보가?\s*없/i, /확인이?\s*어려/i,
-    /i\s*do(n['’]?t|\s*not)\s*(know|have)/i, /no\s+information/i, /unable to find/i,
-    /not\s+aware/i, /cannot\s+verify/i,
-  ];
-  const denied = denyPatterns.some((re) => re.test(text));
-  if (denied && !hostMatch) return { awareness: "no" };
+  // 짧은 brand 토큰(lge 등)은 "LG전자"의 LG와 부분일치할 수 있음 → 단어 경계 강제
+  const b = brand.toLowerCase();
+  const brandMatch = b.length >= 2 && new RegExp(`(?:^|[^a-z0-9])${b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9])`, "i").test(lower);
   if (hostMatch) return { awareness: "yes" };
   if (brandMatch) return { awareness: "partial" };
   return { awareness: "no" };
 }
 
-function detectRecommendation(text: string, host: string, brand: string): {
+function detectRecommendation(text: string, host: string, brand: string, awarenessHint?: "yes" | "partial" | "no"): {
   mentioned: boolean; rank?: number; total?: number; competitors: string[];
 } {
   if (!text) return { mentioned: false, competitors: [] };
   const lower = text.toLowerCase();
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
-  const mentioned = (!isNaverHost && lower.includes(host.toLowerCase())) ||
-    (brand.length >= 2 && lower.includes(brand.toLowerCase()));
+  const b = brand.toLowerCase();
+  const brandMatchStrict = b.length >= 2 && new RegExp(`(?:^|[^a-z0-9])${b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9])`, "i").test(lower);
+  // 모델이 awareness에서 "모릅니다"라고 답했으면 추천 매칭은 노이즈로 간주 → false 강제
+  const denyForce = awarenessHint === "no";
+  const mentioned = !denyForce && ((!isNaverHost && lower.includes(host.toLowerCase())) || brandMatchStrict);
   // 매우 단순한 경쟁사 추출: 1. ~ , 2. ~ 패턴
   const competitors: string[] = [];
   const lines = text.split(/\r?\n/);
@@ -128,7 +143,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
           messages: [
             { role: "system", content: self
               ? `You answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-              : "You answer factually. If you do not have reliable information about a website or brand, explicitly say you do not know. Never fabricate." },
+              : "You answer factually. CRITICAL: Do NOT guess a brand identity from URL slugs, domain abbreviations, or partial keyword matches. If you do not have direct, verified knowledge of the exact brand/site, you MUST reply with only \"모릅니다.\" (nothing else). Do not fabricate, do not extrapolate." },
             { role: "user", content: prompt },
           ],
         }),
@@ -144,7 +159,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
 
     const [aw, rec] = await Promise.all([ask(awarenessPrompt), ask(recPrompt)]);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand);
+    const r = detectRecommendation(rec, host, brand, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
@@ -174,7 +189,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
           messages: [
             { role: "system", content: self
               ? `Be precise. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-              : "Be precise. If you have no reliable information, say so." },
+              : "Be precise. Do NOT guess from URL slugs or partial matches. If you have no verified knowledge of the exact brand, reply only with \"모릅니다.\"" },
             { role: "user", content: prompt },
           ],
         }),
@@ -194,8 +209,11 @@ async function probePerplexity(url: string, host: string, brand: string, categor
 
     const [aw, rec] = await Promise.all([ask(awP), ask(recP)]);
     const { awareness } = detectAwareness(aw.text, host, brand);
-    const r = detectRecommendation(rec.text, host, brand);
-    const citationHit = (rec.citations || []).some((c) => c?.toLowerCase().includes(host.toLowerCase()));
+    const r = detectRecommendation(rec.text, host, brand, awareness);
+    // 호스트가 naver.com이면 citation 매칭은 의미 없음. awareness=no면 추천 매칭도 무효화.
+    const isNaverHost = /(^|\.)naver\.com$/i.test(host);
+    const citationHit = !isNaverHost && awareness !== "no" &&
+      (rec.citations || []).some((c) => c?.toLowerCase().includes(host.toLowerCase()));
     return {
       brand: "perplexity",
       status: "ok",
@@ -233,7 +251,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
           messages: [
             { role: "system", content: self
               ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-              : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so." },
+              : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"" },
             { role: "user", content: prompt },
           ],
           temperature: 0,
@@ -252,7 +270,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
       : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand);
+    const r = detectRecommendation(rec, host, brand, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
@@ -287,7 +305,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
           messages: [{ role: "user", content: prompt }],
           system: self
             ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-            : "Answer factually. If you don't have reliable info about a brand/site, explicitly say so.",
+            : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"",
         }),
       }));
       if (!r.ok) throw new Error(`anthropic ${r.status}`);
@@ -300,7 +318,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
       : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand);
+    const r = detectRecommendation(rec, host, brand, awareness);
     return {
       brand: "claude", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: rec,
