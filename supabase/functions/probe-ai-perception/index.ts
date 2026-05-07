@@ -68,37 +68,52 @@ function withTimeout<T>(p: Promise<T>, ms = TIMEOUT_MS): Promise<T> {
   ]);
 }
 
+/** 응답이 "모름" 단답인지 판정 — 짧고 부정 패턴만 있으면 true */
+function isDenialOnly(text: string): boolean {
+  const t = (text || "").trim();
+  if (!t) return true;
+  // 30자 이내 짧은 답변에서 부정 패턴이 있으면 단답 모름으로 본다
+  const denyPatterns = [
+    /^모릅니다[.\s]*$/i, /^모르겠[^\n]{0,20}$/i,
+    /알지\s*못/i, /정보가?\s*없/i, /확인이?\s*어려/i,
+    /^i\s*do(n['’]?t|\s*not)\s*(know|have)/i, /^no\s+information/i,
+    /^unable to find/i, /^not\s+aware/i, /^cannot\s+verify/i,
+  ];
+  if (t.length <= 30 && denyPatterns.some((re) => re.test(t))) return true;
+  // 긴 응답이라도 시작이 명백히 부정이면 모름
+  if (/^\s*(모릅니다|모르겠|알지\s*못)/i.test(t)) return true;
+  return false;
+}
+
 function detectAwareness(text: string, host: string, brand: string): {
   awareness: "yes" | "partial" | "no";
 } {
   if (!text) return { awareness: "no" };
+  if (isDenialOnly(text)) return { awareness: "no" };
   const lower = text.toLowerCase();
   // 네이버 스토어처럼 host가 naver.com인 경우 'naver'만 언급돼도 yes로 판정되는
   // false-positive를 막기 위해 host 매칭을 비활성화하고 brand(=슬러그/브랜드명)만 본다.
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
   const hostMatch = !isNaverHost && lower.includes(host.toLowerCase());
-  const brandMatch = brand.length >= 2 && lower.includes(brand.toLowerCase());
-  // "모름/모릅니다/I don't know/no information" 류 부정 패턴
-  const denyPatterns = [
-    /모릅니다/i, /모르겠/i, /알지\s*못/i, /정보가?\s*없/i, /확인이?\s*어려/i,
-    /i\s*do(n['’]?t|\s*not)\s*(know|have)/i, /no\s+information/i, /unable to find/i,
-    /not\s+aware/i, /cannot\s+verify/i,
-  ];
-  const denied = denyPatterns.some((re) => re.test(text));
-  if (denied && !hostMatch) return { awareness: "no" };
+  // 짧은 brand 토큰(lge 등)은 "LG전자"의 LG와 부분일치할 수 있음 → 단어 경계 강제
+  const b = brand.toLowerCase();
+  const brandMatch = b.length >= 2 && new RegExp(`(?:^|[^a-z0-9])${b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9])`, "i").test(lower);
   if (hostMatch) return { awareness: "yes" };
   if (brandMatch) return { awareness: "partial" };
   return { awareness: "no" };
 }
 
-function detectRecommendation(text: string, host: string, brand: string): {
+function detectRecommendation(text: string, host: string, brand: string, awarenessHint?: "yes" | "partial" | "no"): {
   mentioned: boolean; rank?: number; total?: number; competitors: string[];
 } {
   if (!text) return { mentioned: false, competitors: [] };
   const lower = text.toLowerCase();
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
-  const mentioned = (!isNaverHost && lower.includes(host.toLowerCase())) ||
-    (brand.length >= 2 && lower.includes(brand.toLowerCase()));
+  const b = brand.toLowerCase();
+  const brandMatchStrict = b.length >= 2 && new RegExp(`(?:^|[^a-z0-9])${b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9])`, "i").test(lower);
+  // 모델이 awareness에서 "모릅니다"라고 답했으면 추천 매칭은 노이즈로 간주 → false 강제
+  const denyForce = awarenessHint === "no";
+  const mentioned = !denyForce && ((!isNaverHost && lower.includes(host.toLowerCase())) || brandMatchStrict);
   // 매우 단순한 경쟁사 추출: 1. ~ , 2. ~ 패턴
   const competitors: string[] = [];
   const lines = text.split(/\r?\n/);
