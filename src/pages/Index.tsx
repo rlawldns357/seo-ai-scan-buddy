@@ -24,6 +24,7 @@ import type { IndexingResult } from "@/lib/checkIndexing";
 
 // Lazy-load heavy components only needed for loading/result screens
 const ScoreDashboard = lazy(() => import("@/components/ScoreDashboard"));
+const AIPerceptionCard = lazy(() => import("@/components/AIPerceptionCard"));
 const LoadingScreen = lazy(() => import("@/components/LoadingScreen"));
 const LighthouseScores = lazy(() => import("@/components/LighthouseScores"));
 const ResultHeader = lazy(() => import("@/components/ResultHeader"));
