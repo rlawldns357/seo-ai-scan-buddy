@@ -831,11 +831,7 @@ export default function ScoreDashboard({ result, url, disabledMode, disabledReas
   // Default to the worst-scoring axis
   const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
   const isMobile = useIsMobile();
-  const [selected, setSelected] = useState<AxisLabel | null>(() => {
-    // SSR-safe: check window width immediately to avoid flash
-    if (typeof window !== "undefined" && window.innerWidth < 768) return null;
-    return disabledMode ? null : worstKey;
-  });
+  const [selected, setSelected] = useState<AxisLabel | null>(null);
 
   const selectedEntry = axes.find((a) => a.key === selected);
   const verdict = getVerdict(result.seoScore, result.aeoScore, result.geoScore);
