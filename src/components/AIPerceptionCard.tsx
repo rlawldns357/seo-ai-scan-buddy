@@ -296,9 +296,9 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
               </p>
             </div>
 
-            {/* Right: AI 로고 도트 — 3x2 그리드 */}
+            {/* Right: AI 로고 도트 — 모바일 3x2, 데스크탑 6x1 */}
             {measurable > 0 && (
-              <div className="shrink-0 grid grid-cols-3 gap-1.5 sm:gap-2">
+              <div className="shrink-0 grid grid-cols-3 sm:grid-cols-6 gap-1.5 sm:gap-2">
                 {sortedBrands.map((b) => {
                   const meta = BRAND_META[b.brand];
                   const isRec = b.status === "ok" && b.recommendation?.mentioned;
