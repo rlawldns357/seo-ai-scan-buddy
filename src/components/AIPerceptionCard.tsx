@@ -76,17 +76,28 @@ function RecBadge({ b }: { b: BrandResult }) {
   return <span className="text-[11px] font-medium text-score-poor">❌ 추천 미노출</span>;
 }
 
+const LOADING_STEPS = [
+  { label: "AI들을 불러모으는 중", emoji: "📡" },
+  { label: "ChatGPT에 질문하는 중", emoji: "💬" },
+  { label: "Claude에 질문하는 중", emoji: "🧠" },
+  { label: "Gemini에 질문하는 중", emoji: "✨" },
+  { label: "Perplexity에 질문하는 중", emoji: "🔎" },
+  { label: "응답을 분석하는 중", emoji: "🧩" },
+];
+
 export default function AIPerceptionCard({ url, brand, category }: Props) {
   const [data, setData] = useState<ProbeResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedBrand, setExpandedBrand] = useState<BrandKey | null>(null);
+  const [stepIdx, setStepIdx] = useState(0);
 
   useEffect(() => {
     if (!url) return;
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setStepIdx(0);
 
     (async () => {
       try {
@@ -113,6 +124,15 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
     return () => { cancelled = true; };
   }, [url, brand, category]);
 
+  // Loading step ticker (advance every ~2.2s, hold on last)
+  useEffect(() => {
+    if (!loading) return;
+    const id = setInterval(() => {
+      setStepIdx((i) => Math.min(i + 1, LOADING_STEPS.length - 1));
+    }, 2200);
+    return () => clearInterval(id);
+  }, [loading]);
+
   // ── Loading state
   if (loading) {
     return (
@@ -121,10 +141,32 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           <Sparkles className="w-4 h-4 text-primary" />
           <h3 className="text-sm sm:text-base font-bold text-foreground">🤖 지금 AI는 당신을 이렇게 봅니다</h3>
         </div>
-        <div className="flex items-center justify-center gap-2 py-8 text-muted-foreground text-sm">
-          <Loader2 className="w-4 h-4 animate-spin" />
-          ChatGPT · Claude · Gemini · Perplexity에 직접 물어보는 중…
-        </div>
+        <ul className="space-y-2 py-2">
+          {LOADING_STEPS.map((s, i) => {
+            const state = i < stepIdx ? "done" : i === stepIdx ? "active" : "pending";
+            return (
+              <li
+                key={s.label}
+                className={`flex items-center gap-3 text-sm transition-all ${
+                  state === "done" ? "text-muted-foreground" :
+                  state === "active" ? "text-foreground font-medium" :
+                  "text-muted-foreground/50"
+                }`}
+              >
+                <span className="w-5 flex items-center justify-center">
+                  {state === "done" ? (
+                    <span className="text-score-good">✓</span>
+                  ) : state === "active" ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                  ) : (
+                    <span className="text-base opacity-60">{s.emoji}</span>
+                  )}
+                </span>
+                <span>{s.label}{state === "active" ? "…" : ""}</span>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     );
   }
