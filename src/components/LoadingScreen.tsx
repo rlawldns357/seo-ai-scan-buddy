@@ -82,7 +82,7 @@ const steps: Step[] = [
   { phase: "psi-measuring", label: "Lighthouse 측정 중…" },
 ];
 
-export default function LoadingScreen({ completedPhases = new Set(), skipLighthouse = false }: LoadingScreenProps) {
+export default function LoadingScreen({ completedPhases = new Set(), skipLighthouse = false, askAIEnabled = false }: LoadingScreenProps) {
   const [cardIndex, setCardIndex] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
 
