@@ -553,6 +553,7 @@ const Index = () => {
                   }}
                 />
               )}
+              <AskAITeaser />
               <NaverStoreTeaser />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
