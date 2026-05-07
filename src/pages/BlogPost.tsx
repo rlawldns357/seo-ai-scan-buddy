@@ -868,33 +868,40 @@ export default function BlogPost() {
           {/* Thumbnail */}
           {(post.slug.includes("ask-ai-models-comparison") || post.slug.includes("ask-ai-launch")) ? (
             <div className="mt-8 relative overflow-hidden rounded-2xl aspect-[2/1] md:aspect-[2.4/1]"
-                 style={{ background: "radial-gradient(120% 120% at 0% 0%, #1a1f3a 0%, #0b1024 50%, #050816 100%)" }}>
-              {/* subtle grid */}
-              <div className="absolute inset-0 opacity-[0.07]"
-                   style={{ backgroundImage: "linear-gradient(white 1px, transparent 1px), linear-gradient(90deg, white 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
-              {/* coral glow */}
-              <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-30 blur-3xl" style={{ background: "#FF6B6B" }} />
-              <div className="absolute -bottom-32 -left-20 w-80 h-80 rounded-full opacity-25 blur-3xl" style={{ background: "#7C5CFF" }} />
+                 style={{ background: "linear-gradient(135deg, hsl(var(--primary) / 0.18) 0%, hsl(var(--accent) / 0.14) 50%, hsl(var(--primary) / 0.08) 100%)" }}>
+              {/* soft brand glows */}
+              <div className="absolute -top-24 -right-20 w-72 h-72 rounded-full opacity-40 blur-3xl" style={{ background: "hsl(var(--accent))" }} />
+              <div className="absolute -bottom-28 -left-16 w-80 h-80 rounded-full opacity-35 blur-3xl" style={{ background: "hsl(var(--primary))" }} />
+              {/* subtle dot grid */}
+              <div className="absolute inset-0 opacity-[0.06]"
+                   style={{ backgroundImage: "radial-gradient(currentColor 1px, transparent 1px)", backgroundSize: "22px 22px", color: "hsl(var(--foreground))" }} />
 
               <div className="relative h-full w-full flex flex-col justify-center px-8 md:px-14 py-8">
                 {/* eyebrow */}
-                <div className="flex items-center gap-3 text-white/70">
-                  <span className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase">SearchTune&nbsp;OS</span>
-                  <span className="h-px w-8 bg-white/30" />
-                  <span className="text-[10px] md:text-xs font-bold tracking-[0.25em] uppercase" style={{ color: "#FF8A7A" }}>New&nbsp;Launch&nbsp;·&nbsp;2026</span>
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-extrabold tracking-widest uppercase text-primary-foreground shadow-sm"
+                        style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }}>
+                    NEW · 2026
+                  </span>
+                  <span className="text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase text-foreground/60">
+                    SearchTune&nbsp;OS
+                  </span>
                 </div>
                 {/* headline */}
-                <h2 className="mt-3 md:mt-4 text-white font-black leading-[1.05] tracking-tight text-3xl md:text-5xl lg:text-6xl"
+                <h2 className="mt-3 md:mt-4 font-black leading-[1.05] tracking-tight text-3xl md:text-5xl lg:text-6xl text-foreground"
                     style={{ letterSpacing: "-0.045em" }}>
-                  AI에게<br className="md:hidden" /> <span className="md:inline">직접 물어보기</span><span style={{ color: "#FF6B6B" }}>.</span>
+                  AI에게{" "}
+                  <span className="bg-clip-text text-transparent" style={{ backgroundImage: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }}>
+                    직접 물어보기
+                  </span>
                 </h2>
                 {/* sub */}
-                <p className="mt-4 text-white/55 text-[11px] md:text-sm font-medium tracking-wide">
+                <p className="mt-4 text-foreground/60 text-[11px] md:text-sm font-medium tracking-wide">
                   ChatGPT&nbsp;·&nbsp;Claude&nbsp;·&nbsp;Gemini&nbsp;·&nbsp;Perplexity&nbsp;·&nbsp;CLOVA&nbsp;X
                 </p>
                 {/* footer */}
-                <div className="mt-5 md:mt-6 flex items-center gap-2 text-white/40 text-[10px] md:text-xs font-mono">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "#FF6B6B" }} />
+                <div className="mt-5 md:mt-6 flex items-center gap-2 text-foreground/45 text-[10px] md:text-xs font-mono">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }} />
                   searchtuneos.com
                 </div>
               </div>
