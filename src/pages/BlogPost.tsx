@@ -850,6 +850,35 @@ export default function BlogPost() {
             {getBrandThumbnail(post.slug, post.category, true)}
           </div>
 
+          {/* Top CTA — 글 들어가자마자 바로 써볼 수 있도록 */}
+          <aside className="mt-6 relative overflow-hidden rounded-2xl border-2 border-askai/40 bg-gradient-to-br from-askai/10 via-primary/5 to-accent/10 p-5 md:p-6 shadow-md">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-12 -right-12 w-44 h-44 rounded-full bg-askai/20 blur-3xl"
+            />
+            <div className="relative flex flex-col md:flex-row md:items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-askai text-askai-foreground text-[10px] font-bold tracking-wide shadow-sm">
+                  🚀 SearchTune OS · NEW LAUNCH
+                </div>
+                <h2 className="mt-2 text-base md:text-lg font-extrabold text-foreground leading-tight">
+                  글 읽기 전에 — 내 사이트, AI는 뭐라고 답할까?
+                </h2>
+                <p className="mt-1 text-xs md:text-sm text-muted-foreground leading-snug">
+                  ChatGPT · Claude · Gemini · Perplexity · CLOVA X에 동시 질문 · <span className="font-semibold text-foreground">30초, 무료</span>
+                </p>
+              </div>
+              <Link
+                to="/?askai=1"
+                className="shrink-0 inline-flex items-center justify-center gap-1.5 px-5 py-3 rounded-full gradient-primary text-primary-foreground font-bold text-sm md:text-base shadow-lg shadow-primary/30 hover:shadow-xl hover:brightness-105 active:scale-[0.97] transition-all whitespace-nowrap"
+              >
+                지금 바로 무료로 써보기
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </aside>
+
+
           {post.content ? (
             <div
               className="mt-8 text-base leading-[1.8] text-foreground/90 [&>*:first-child]:mt-0 [&_p]:!text-foreground/85 [&_li]:!text-foreground/85"
