@@ -1,5 +1,5 @@
 import { ArrowUpRight } from "lucide-react";
-import { SiClaude, SiGooglegemini, SiPerplexity } from "@icons-pack/react-simple-icons";
+import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
 
 /**
