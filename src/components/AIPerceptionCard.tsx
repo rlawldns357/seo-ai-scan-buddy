@@ -247,10 +247,15 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
         <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
         <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-foreground text-background text-[10px] sm:text-[11px] font-bold tracking-tight">
-            <Sparkles className="w-3 h-3" />
-            AI {measurable}곳에 직접 물어봤어요
-            <span className="ml-0.5 text-[8px] font-black uppercase tracking-[0.18em] text-score-excellent bg-background/10 px-1 py-px rounded">LIVE</span>
+          <div className="inline-flex items-center gap-2 pl-2 pr-3 py-1 rounded-full bg-card border border-border/80 shadow-sm">
+            <span className="relative flex w-1.5 h-1.5">
+              <span className="absolute inline-flex w-full h-full rounded-full bg-score-excellent opacity-60 animate-ping" />
+              <span className="relative inline-flex w-1.5 h-1.5 rounded-full bg-score-excellent" />
+            </span>
+            <span className="text-[10px] sm:text-[11px] font-semibold tracking-tight text-foreground/80">
+              AI <span className="font-black text-foreground">{measurable}곳</span>에 직접 물어본 결과
+            </span>
+            <span className="text-[8px] font-black uppercase tracking-[0.18em] text-muted-foreground/60 border-l border-border pl-2">LIVE</span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {data.cached && (
