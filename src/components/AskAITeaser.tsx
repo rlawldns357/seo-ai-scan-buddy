@@ -49,11 +49,9 @@ export default function AskAITeaser({ active, onActivate }: Props) {
         type="button"
         onClick={handleClick}
         aria-pressed={active}
-        aria-disabled={active}
-        tabIndex={active ? -1 : 0}
-        className={`group relative block w-full text-left rounded-2xl border-2 bg-card transition-all duration-300 ${
+        className={`group relative block w-full text-left rounded-2xl border-2 bg-card transition-all duration-300 cursor-pointer ${
           active
-            ? "border-askai/70 shadow-elevated cursor-default"
+            ? "border-askai/70 shadow-elevated hover:border-askai hover:shadow-xl"
             : "border-askai/40 hover:border-askai/80 hover:shadow-elevated"
         }`}
       >
