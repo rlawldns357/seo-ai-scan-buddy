@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronDown, Lock, Loader2, AlertCircle, Sparkles } from "lucide-react";
+import { ChevronDown, Lock, Loader2, AlertCircle, Sparkles, Zap, AlertTriangle, MehIcon, HelpCircle, Trophy } from "lucide-react";
 import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
 
@@ -220,17 +220,17 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
   const tone =
     recommended === 0 ? "poor" : recommended < measurable ? "warning" : "excellent";
 
-  // 한 줄 임팩트 메시지
+  // 한 줄 임팩트 메시지 + 톤 아이콘
   const heroMessage =
     measurable === 0
-      ? { emoji: "🤔", title: "아직 측정할 수 없어요", sub: "AI에서 인식되려면 기본 SEO부터 정비가 필요해요" }
+      ? { Icon: HelpCircle, title: "아직 측정할 수 없어요", sub: "AI에서 인식되려면 기본 SEO부터 정비가 필요해요" }
       : recommended === 0 && aware === 0
-      ? { emoji: "🚨", title: "AI가 아직 당신을 모릅니다", sub: `측정한 ${measurable}개 AI 모두 인지조차 못 하고 있어요` }
+      ? { Icon: AlertTriangle, title: "AI가 아직 당신을 모릅니다", sub: `측정한 ${measurable}개 AI 모두 인지조차 못 하고 있어요` }
       : recommended === 0 && aware > 0
-      ? { emoji: "😐", title: "알긴 아는데, 추천은 안 해요", sub: `${aware}개 AI가 인지하지만 추천 답변엔 등장하지 않아요` }
+      ? { Icon: MehIcon, title: "알긴 아는데, 추천은 안 해요", sub: `${aware}개 AI가 인지하지만 추천 답변엔 등장하지 않아요` }
       : recommended < measurable
-      ? { emoji: "⚡", title: `AI ${recommended}곳에서 추천되고 있어요`, sub: `남은 ${measurable - recommended}곳도 잡으면 노출이 크게 늘어요` }
-      : { emoji: "🎉", title: "모든 AI가 추천하고 있어요!", sub: "잘하고 있어요 — 이 상태를 유지·확장하세요" };
+      ? { Icon: Zap, title: `AI ${recommended}곳에서 추천되고 있어요`, sub: `남은 ${measurable - recommended}곳도 잡으면 노출이 크게 늘어요` }
+      : { Icon: Trophy, title: "모든 AI가 추천하고 있어요!", sub: "잘하고 있어요 — 이 상태를 유지·확장하세요" };
 
   const toneClasses = {
     poor:      { text: "text-score-poor",      bg: "bg-score-poor/10",      border: "border-score-poor/20",      glow: "from-score-poor/10" },
@@ -274,11 +274,11 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
 
         {/* Hero headline — 한 줄 임팩트 메시지 */}
         <div className="relative">
-          <div className="flex items-start gap-3 sm:gap-4">
-            <span className="text-4xl sm:text-5xl leading-none shrink-0" aria-hidden="true">
-              {heroMessage.emoji}
-            </span>
-            <div className="min-w-0 flex-1">
+          <div className="flex items-start gap-4 sm:gap-5">
+            <div className={`shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl ${toneClasses.bg} ${toneClasses.border} border flex items-center justify-center shadow-sm`}>
+              <heroMessage.Icon className={`w-7 h-7 sm:w-8 sm:h-8 ${toneClasses.text}`} strokeWidth={2.25} />
+            </div>
+            <div className="min-w-0 flex-1 pt-0.5">
               <h3 className={`text-[20px] sm:text-[28px] leading-[1.2] font-extrabold tracking-tight ${toneClasses.text}`}>
                 {heroMessage.title}
               </h3>
