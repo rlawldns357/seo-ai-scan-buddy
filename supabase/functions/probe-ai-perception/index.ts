@@ -210,7 +210,10 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     const [aw, rec] = await Promise.all([ask(awP), ask(recP)]);
     const { awareness } = detectAwareness(aw.text, host, brand);
     const r = detectRecommendation(rec.text, host, brand, awareness);
-    const citationHit = (rec.citations || []).some((c) => c?.toLowerCase().includes(host.toLowerCase()));
+    // 호스트가 naver.com이면 citation 매칭은 의미 없음. awareness=no면 추천 매칭도 무효화.
+    const isNaverHost = /(^|\.)naver\.com$/i.test(host);
+    const citationHit = !isNaverHost && awareness !== "no" &&
+      (rec.citations || []).some((c) => c?.toLowerCase().includes(host.toLowerCase()));
     return {
       brand: "perplexity",
       status: "ok",
