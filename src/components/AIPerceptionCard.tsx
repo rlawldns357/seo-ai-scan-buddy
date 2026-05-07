@@ -298,16 +298,21 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
 
         {/* Hero — 숫자 + 메시지만 */}
         <div className="relative">
-          <div className="flex items-baseline gap-2 mb-2">
+          <div className="flex items-baseline gap-2 mb-2 flex-wrap">
             <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
-              {recommended}
+              {aware}
             </span>
             <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground/60 tabular-nums">
               / {measurable}
             </span>
             <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-              AI가 추천
+              AI가 인지
             </span>
+            {recommended > 0 && (
+              <span className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-score-excellent/10 text-score-excellent border border-score-excellent/20 text-[10px] sm:text-[11px] font-bold tabular-nums">
+                +{recommended} 추천
+              </span>
+            )}
           </div>
           <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
             {heroMessage.title}
