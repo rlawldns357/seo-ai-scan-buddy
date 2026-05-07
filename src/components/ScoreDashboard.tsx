@@ -828,8 +828,6 @@ export default function ScoreDashboard({ result, url, disabledMode, disabledReas
     { axis: result.geoAxis, score: result.geoScore, key: "GEO" },
   ];
 
-  // Default to the worst-scoring axis
-  const worstKey = axes.reduce((prev, curr) => curr.score < prev.score ? curr : prev).key;
   const isMobile = useIsMobile();
   const [selected, setSelected] = useState<AxisLabel | null>(null);
 
