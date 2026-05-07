@@ -480,21 +480,37 @@ const Index = () => {
                   )}
                 </button>
               </div>
-              {!url && (
-                <div className="relative flex flex-wrap items-center justify-center gap-1.5 mt-3.5 animate-fade-in">
-                  <span className="text-[11px] text-muted-foreground/70 mr-0.5">예시</span>
-                  {EXAMPLE_URLS.map((ex) => (
-                    <button
-                      key={ex.url}
-                      type="button"
-                      onClick={() => { setUrl(ex.url); setUrlError(""); }}
-                      className="text-[11px] px-2.5 py-1 rounded-full border border-border/70 bg-card hover:bg-muted hover:border-primary/40 text-muted-foreground hover:text-foreground transition-colors"
-                    >
-                      {ex.label}
-                    </button>
-                  ))}
-                </div>
-              )}
+              {(() => {
+                const trimmed = url.trim();
+                const storeInfo = trimmed
+                  ? parseNaverStoreUrl(/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`)
+                  : null;
+                if (storeInfo && !urlError) {
+                  return (
+                    <div className="flex justify-center mt-3">
+                      <NaverStoreDetectedBanner info={storeInfo} />
+                    </div>
+                  );
+                }
+                if (!url) {
+                  return (
+                    <div className="relative flex flex-wrap items-center justify-center gap-1.5 mt-3.5 animate-fade-in">
+                      <span className="text-[11px] text-muted-foreground/70 mr-0.5">예시</span>
+                      {EXAMPLE_URLS.map((ex) => (
+                        <button
+                          key={ex.url}
+                          type="button"
+                          onClick={() => { setUrl(ex.url); setUrlError(""); }}
+                          className="text-[11px] px-2.5 py-1 rounded-full border border-border/70 bg-card hover:bg-muted hover:border-primary/40 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          {ex.label}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                }
+                return null;
+              })()}
             </div>
             {(() => {
               const trimmed = url.trim();
