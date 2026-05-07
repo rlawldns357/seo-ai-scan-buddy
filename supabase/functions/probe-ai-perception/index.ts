@@ -100,6 +100,9 @@ function detectAwareness(text: string, host: string, brand: string): {
   const brandMatch = b.length >= 2 && new RegExp(`(?:^|[^a-z0-9])${b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9])`, "i").test(lower);
   if (hostMatch) return { awareness: "yes" };
   if (brandMatch) return { awareness: "partial" };
+  // 슬러그/호스트와 토큰 일치는 없지만 부정 단답도 아니고 실질 답변(20자+)이면
+  // 모델이 무언가는 알고 있다고 보고 partial로 둔다 (slug != 실제 브랜드명 케이스 대응)
+  if (text.trim().length >= 20) return { awareness: "partial" };
   return { awareness: "no" };
 }
 
