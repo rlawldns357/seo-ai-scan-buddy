@@ -211,7 +211,11 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
           temperature: 0,
         }),
       }));
-      if (!r.ok) throw new Error(`openai ${r.status}`);
+      if (!r.ok) {
+        const body = await r.text().catch(() => "");
+        console.error("OpenAI error", r.status, body.slice(0, 500));
+        throw new Error(`openai ${r.status}: ${body.slice(0, 200)}`);
+      }
       const j = await r.json();
       return j?.choices?.[0]?.message?.content ?? "";
     };
