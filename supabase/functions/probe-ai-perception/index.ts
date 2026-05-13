@@ -140,7 +140,11 @@ async function probeGemini(url: string, host: string, brand: string, category: s
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
-        headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
+        headers: {
+          "Lovable-API-Key": KEY,
+          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           model,
           messages: [
@@ -151,7 +155,11 @@ async function probeGemini(url: string, host: string, brand: string, category: s
           ],
         }),
       }));
-      if (!r.ok) throw new Error(`gemini ${r.status}`);
+      if (!r.ok) {
+        const body = await r.text().catch(() => "");
+        console.error("Lovable AI Gemini error", r.status, body.slice(0, 500));
+        throw new Error(`gemini ${r.status}: ${body.slice(0, 200)}`);
+      }
       const j = await r.json();
       return j?.choices?.[0]?.message?.content ?? "";
     };
