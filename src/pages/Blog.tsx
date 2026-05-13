@@ -372,7 +372,7 @@ export default function Blog() {
   const hero = sorted[0];
   const rest = sorted.slice(1);
 
-  const blogTitle = "블로그 – 서치튠OS | SEO·AEO·GEO 실전 가이드";
+  const blogTitle = "서치튠OS 블로그 – SEO·AEO·GEO 실전 가이드";
   const blogDesc = "SEO·AEO·GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
   const blogUrl = "https://searchtuneos.com/blog";
 
@@ -409,7 +409,7 @@ export default function Blog() {
       <Navbar />
       <main className="container pt-14 pb-28 md:pt-20 md:pb-32">
         <div className="mb-10">
-          <h1 className="text-3xl md:text-4xl font-extrabold text-foreground">블로그</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-foreground">서치튠OS 블로그</h1>
           <p className="mt-2 text-muted-foreground">
             SEO · AEO · GEO에 대해 알아야 할 모든 것. 실전 가이드와 인사이트를 공유합니다.
           </p>

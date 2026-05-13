@@ -6,8 +6,8 @@ import FunnelCTAs from "@/components/FunnelCTAs";
 import { Search, BarChart3, Shield, Zap, ArrowRight, Store, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const ABOUT_TITLE = "서치튠OS 소개 – AI 검색 시대의 SEO·AEO·GEO 진단 도구";
-const ABOUT_DESC = "서치튠OS(SearchTune OS)는 URL만 입력하면 SEO·AEO·GEO 3개 축과 Google Lighthouse 실측을 한 번에 제공하는 한국어 AI 검색 진단 도구입니다.";
+const ABOUT_TITLE = "서치튠OS 소개 – AI 검색 최적화 진단 도구";
+const ABOUT_DESC = "서치튠OS는 SEO, AEO, GEO 관점에서 웹사이트의 AI 검색 준비도를 진단하고 개선 방향을 제안하는 검색 최적화 도구입니다.";
 const ABOUT_URL = "https://searchtuneos.com/about";
 
 const analyticFeatures = [
@@ -53,8 +53,9 @@ export default function About() {
       <main className="flex-1 px-4 pt-20 pb-40 sm:pt-24 sm:pb-44">
         <div className="container max-w-3xl mx-auto">
           <h1 className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight text-center mb-4">
-            SearchTune <span className="font-extrabold">OS</span>
+            서치튠OS 소개
           </h1>
+          <p className="text-center text-xs text-muted-foreground mb-6">SearchTune OS</p>
           <p className="text-center text-foreground text-base sm:text-lg mb-3 leading-relaxed font-medium">
             서치튠OS(SearchTune OS)는 2026년 출시된 한국어 기반 AI 검색 진단 도구로,<br className="hidden sm:block" />
             URL만 입력하면 SEO·AEO·GEO 3개 축의 점수를 즉시 분석합니다.
