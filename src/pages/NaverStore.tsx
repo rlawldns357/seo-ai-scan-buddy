@@ -108,10 +108,11 @@ export default function NaverStore() {
                 네이버 스토어 전용 진단
               </div>
               <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground leading-tight tracking-tight mb-5">
-                <span className="block text-muted-foreground text-lg sm:text-2xl font-light mb-3">
+                <span className="block">네이버 스마트스토어 SEO 진단</span>
+                <span className="block text-muted-foreground text-lg sm:text-2xl font-light mt-3">
                   내 스토어가 검색에서 얼마나 보이는지,
                 </span>
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mt-1">
                   10초 만에 알려드려요
                 </span>
               </h1>

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import { Helmet } from "react-helmet-async";
 import { Zap, Loader2, Search, Sparkles } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
@@ -406,6 +407,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
+      <Helmet>
+        <title>서치튠OS(SearchTuneOS) – SEO·AEO·GEO AI 검색 진단 도구</title>
+        <link rel="canonical" href="https://searchtuneos.com/" />
+        <meta property="og:url" content="https://searchtuneos.com/" />
+        <meta property="og:title" content="서치튠OS(SearchTuneOS) – SEO·AEO·GEO AI 검색 진단 도구" />
+      </Helmet>
       <WebSiteJsonLd />
       <FAQPageJsonLd faqs={faqs} />
       <Navbar />
