@@ -408,10 +408,19 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col bg-background overflow-x-hidden">
       <Helmet>
-        <title>서치튠OS(SearchTuneOS) – SEO·AEO·GEO AI 검색 진단 도구</title>
+        <title>서치튠OS(SearchTune OS) – SEO·AEO·GEO AI 검색 진단 도구</title>
+        <meta
+          name="description"
+          content="서치튠OS(SearchTune OS)는 URL만 입력하면 SEO·AEO·GEO 점수와 AI 검색 준비도를 무료로 진단하는 도구입니다. 구글·네이버·ChatGPT 검색 노출을 점검하세요."
+        />
         <link rel="canonical" href="https://searchtuneos.com/" />
         <meta property="og:url" content="https://searchtuneos.com/" />
-        <meta property="og:title" content="서치튠OS(SearchTuneOS) – SEO·AEO·GEO AI 검색 진단 도구" />
+        <meta property="og:title" content="서치튠OS(SearchTune OS) – SEO·AEO·GEO AI 검색 진단 도구" />
+        <meta
+          property="og:description"
+          content="서치튠OS(SearchTune OS)는 URL만 입력하면 SEO·AEO·GEO 점수와 AI 검색 준비도를 무료로 진단하는 도구입니다."
+        />
+        <meta property="og:site_name" content="SearchTune OS" />
       </Helmet>
       <WebSiteJsonLd />
       <FAQPageJsonLd faqs={faqs} />
