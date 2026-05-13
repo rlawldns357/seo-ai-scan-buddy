@@ -1,9 +1,14 @@
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import { SoftwareApplicationJsonLd } from "@/components/JsonLd";
 import FunnelCTAs from "@/components/FunnelCTAs";
 import { Search, BarChart3, Shield, Zap, ArrowRight, Store, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+
+const ABOUT_TITLE = "서치튠OS 소개 – AI 검색 시대의 SEO·AEO·GEO 진단 도구";
+const ABOUT_DESC = "서치튠OS(SearchTune OS)는 URL만 입력하면 SEO·AEO·GEO 3개 축과 Google Lighthouse 실측을 한 번에 제공하는 한국어 AI 검색 진단 도구입니다.";
+const ABOUT_URL = "https://searchtuneos.com/about";
 
 const analyticFeatures = [
   {
