@@ -76,9 +76,17 @@ Deno.serve(async (req) => {
         );
         const text = await res.text();
         if (!res.ok) {
+          // Soft-fail (esp. 429 daily limit) so admin UI keeps rendering.
           return new Response(
-            JSON.stringify({ error: `Clarity API ${res.status}`, detail: text.slice(0, 500) }),
-            { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+            JSON.stringify({
+              summary: {},
+              raw: [],
+              numOfDays,
+              fetchedAt: new Date().toISOString(),
+              warning: `Clarity API ${res.status}`,
+              detail: text.slice(0, 500),
+            }),
+            { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
           );
         }
         let data: any;
