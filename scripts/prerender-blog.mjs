@@ -322,6 +322,13 @@ async function main() {
   fs.writeFileSync(path.join(aboutDir, "index.html"), aboutHtml, "utf-8");
   console.log("[prerender] /about/index.html generated");
 
+  // Generate static /naver-store/index.html so crawlers see page-specific meta
+  const naverHtml = generateNaverStoreHtml(assets);
+  const naverDir = path.join(DIST, "naver-store");
+  fs.mkdirSync(naverDir, { recursive: true });
+  fs.writeFileSync(path.join(naverDir, "index.html"), naverHtml, "utf-8");
+  console.log("[prerender] /naver-store/index.html generated");
+
   // Inject internal "최신 블로그" links into root index.html noscript area for crawlers
   injectHomeLinks(allPosts.slice(0, 8));
 
