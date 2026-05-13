@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { FileText, MessageSquare, Bell, CheckCircle, X } from "lucide-react";
 import ConsultationModal from "@/components/ConsultationModal";
-import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { enrollSoapFunnel } from "@/lib/soapFunnel";
 import { type DemoResult } from "@/data/demoResults";
 
 interface FunnelCTAsProps {
@@ -35,30 +35,21 @@ export default function FunnelCTAs({ result, url }: FunnelCTAsProps) {
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("email_leads").insert({
-        email: trimmed,
-        source: "funnel_step1",
+      const r = await enrollSoapFunnel(trimmed, "funnel_step1", {
+        url,
+        seo: result?.seoScore,
+        aeo: result?.aeoScore,
+        geo: result?.geoScore,
       });
-
-      if (error) {
-        if (error.code === "23505") {
-          setEmailStatus("duplicate");
-          trackEvent("email_submit_duplicate", { email: trimmed });
-          // Even if duplicate, proceed to step 2
-          setTimeout(() => setStep("email-done"), 1500);
-        } else {
-          setEmailStatus("error");
-          trackEvent("email_submit_fail", { email: trimmed, reason: error.message });
-        }
+      if (r.error) {
+        setEmailStatus("error");
+        trackEvent("email_submit_fail", { email: trimmed, reason: r.error });
+      } else if (r.duplicate) {
+        setEmailStatus("duplicate");
+        trackEvent("email_submit_duplicate", { email: trimmed });
+        setTimeout(() => setStep("email-done"), 1500);
       } else {
         trackEvent("email_submit_success", { email: trimmed, source: "funnel_step1" });
-        supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "lead-confirmation",
-            recipientEmail: trimmed,
-            idempotencyKey: `lead-confirm-${trimmed}`,
-          },
-        });
         setStep("email-done");
       }
     } catch {
