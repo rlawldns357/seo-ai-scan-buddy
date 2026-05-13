@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { unlockWithEmail } from "@/lib/rateLimit";
+import { enrollSoapFunnel } from "@/lib/soapFunnel";
 
 interface RateLimitBannerProps {
   remaining: number;
@@ -30,8 +30,8 @@ const RateLimitBanner = ({ remaining, emailUnlocked, onUnlocked }: RateLimitBann
     setError("");
 
     try {
-      // Save email as lead
-      await supabase.from("email_leads").insert({ email, source: "rate_limit_unlock" });
+      // Save lead + start Soap Opera funnel
+      await enrollSoapFunnel(email, "rate_limit_unlock");
 
       // Unlock bonus
       const result = await unlockWithEmail(email);

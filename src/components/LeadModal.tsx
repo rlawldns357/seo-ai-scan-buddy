@@ -2,6 +2,7 @@ import { useState } from "react";
 import { CheckCircle, X, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { enrollSoapFunnel } from "@/lib/soapFunnel";
 
 import { type DemoResult } from "@/data/demoResults";
 
@@ -38,22 +39,24 @@ export default function LeadModal({ open, onClose, title = "맞춤 개선 리포
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("email_leads").insert({
-        email: trimmed,
-        source: "cta_modal",
+      const enroll = await enrollSoapFunnel(trimmed, "cta_modal", {
+        url,
+        seo: result?.seoScore,
+        aeo: result?.aeoScore,
+        geo: result?.geoScore,
       });
 
-      if (error) {
-        if (error.code === "23505") {
+      if (enroll.error) {
+        setStatus("error");
+        trackEvent("email_submit_fail", { email: trimmed, reason: enroll.error });
+      } else {
+        if (enroll.duplicate) {
           setStatus("duplicate");
           trackEvent("email_submit_duplicate", { email: trimmed });
         } else {
-          setStatus("error");
-          trackEvent("email_submit_fail", { email: trimmed, reason: error.message });
+          setStatus("success");
+          trackEvent("email_submit_success", { email: trimmed, source: "cta_modal" });
         }
-      } else {
-        setStatus("success");
-        trackEvent("email_submit_success", { email: trimmed, source: "cta_modal" });
 
         // Generate PDF, upload, and send email with download link
         if (result && url) {
@@ -94,33 +97,10 @@ export default function LeadModal({ open, onClose, title = "맞춤 개선 리포
               trackEvent("report_email_sent", { email: trimmed, url });
             } else {
               console.warn("PDF upload failed:", uploadError);
-              // Fallback: send confirmation without PDF
-              supabase.functions.invoke("send-transactional-email", {
-                body: {
-                  templateName: "lead-confirmation",
-                  recipientEmail: trimmed,
-                  idempotencyKey: `lead-confirm-${trimmed}`,
-                },
-              });
             }
           } catch (pdfErr) {
             console.warn("PDF generation failed:", pdfErr);
-            supabase.functions.invoke("send-transactional-email", {
-              body: {
-                templateName: "lead-confirmation",
-                recipientEmail: trimmed,
-                idempotencyKey: `lead-confirm-${trimmed}`,
-              },
-            });
           }
-        } else {
-          supabase.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "lead-confirmation",
-              recipientEmail: trimmed,
-              idempotencyKey: `lead-confirm-${trimmed}`,
-            },
-          });
         }
       }
     } catch {

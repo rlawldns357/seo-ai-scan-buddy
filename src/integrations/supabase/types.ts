@@ -393,21 +393,42 @@ export type Database = {
       }
       email_leads: {
         Row: {
+          aeo_score: number | null
+          analyzed_url: string | null
           created_at: string
           email: string
+          funnel_day_sent: number
+          funnel_paused_at: string | null
+          funnel_started_at: string
+          geo_score: number | null
           id: string
+          seo_score: number | null
           source: string
         }
         Insert: {
+          aeo_score?: number | null
+          analyzed_url?: string | null
           created_at?: string
           email: string
+          funnel_day_sent?: number
+          funnel_paused_at?: string | null
+          funnel_started_at?: string
+          geo_score?: number | null
           id?: string
+          seo_score?: number | null
           source?: string
         }
         Update: {
+          aeo_score?: number | null
+          analyzed_url?: string | null
           created_at?: string
           email?: string
+          funnel_day_sent?: number
+          funnel_paused_at?: string | null
+          funnel_started_at?: string
+          geo_score?: number | null
           id?: string
+          seo_score?: number | null
           source?: string
         }
         Relationships: []

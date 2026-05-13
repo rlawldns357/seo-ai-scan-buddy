@@ -1,13 +1,16 @@
 import { useRef, useState } from "react";
 import { CheckCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/lib/analytics";
+import { enrollSoapFunnel } from "@/lib/soapFunnel";
+import type { DemoResult } from "@/data/demoResults";
 
 interface EmailFormProps {
   onSubmitted: () => void;
+  result?: DemoResult | null;
+  url?: string;
 }
 
-export default function EmailForm({ onSubmitted }: EmailFormProps) {
+export default function EmailForm({ onSubmitted, result, url }: EmailFormProps) {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [agreed, setAgreed] = useState(false);
@@ -32,30 +35,22 @@ export default function EmailForm({ onSubmitted }: EmailFormProps) {
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("email_leads").insert({
-        email: trimmed,
-        source: "result_form",
+      const r = await enrollSoapFunnel(trimmed, "result_form", {
+        url,
+        seo: result?.seoScore,
+        aeo: result?.aeoScore,
+        geo: result?.geoScore,
       });
-
-      if (error) {
-        if (error.code === "23505") {
-          setEmailStatus("duplicate");
-          trackEvent("email_submit_duplicate", { email: trimmed });
-        } else {
-          setEmailStatus("error");
-          trackEvent("email_submit_fail", { email: trimmed, reason: error.message });
-        }
+      if (r.error) {
+        setEmailStatus("error");
+        trackEvent("email_submit_fail", { email: trimmed, reason: r.error });
+      } else if (r.duplicate) {
+        setEmailStatus("duplicate");
+        trackEvent("email_submit_duplicate", { email: trimmed });
+        onSubmitted();
       } else {
         setEmailStatus("success");
         trackEvent("email_submit_success", { email: trimmed });
-        // Send confirmation email (fire-and-forget)
-        supabase.functions.invoke("send-transactional-email", {
-          body: {
-            templateName: "lead-confirmation",
-            recipientEmail: trimmed,
-            idempotencyKey: `lead-confirm-${trimmed}`,
-          },
-        });
         onSubmitted();
       }
     } catch {
