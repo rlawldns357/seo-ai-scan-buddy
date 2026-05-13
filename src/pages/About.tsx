@@ -1,9 +1,14 @@
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
 import { SoftwareApplicationJsonLd } from "@/components/JsonLd";
 import FunnelCTAs from "@/components/FunnelCTAs";
 import { Search, BarChart3, Shield, Zap, ArrowRight, Store, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+
+const ABOUT_TITLE = "서치튠OS 소개 – AI 검색 시대의 SEO·AEO·GEO 진단 도구";
+const ABOUT_DESC = "서치튠OS(SearchTune OS)는 URL만 입력하면 SEO·AEO·GEO 3개 축과 Google Lighthouse 실측을 한 번에 제공하는 한국어 AI 검색 진단 도구입니다.";
+const ABOUT_URL = "https://searchtuneos.com/about";
 
 const analyticFeatures = [
   {
@@ -32,6 +37,17 @@ const analyticFeatures = [
 export default function About() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <Helmet>
+        <title>{ABOUT_TITLE}</title>
+        <meta name="description" content={ABOUT_DESC} />
+        <link rel="canonical" href={ABOUT_URL} />
+        <meta property="og:title" content={ABOUT_TITLE} />
+        <meta property="og:description" content={ABOUT_DESC} />
+        <meta property="og:url" content={ABOUT_URL} />
+        <meta property="og:type" content="website" />
+        <meta name="twitter:title" content={ABOUT_TITLE} />
+        <meta name="twitter:description" content={ABOUT_DESC} />
+      </Helmet>
       <SoftwareApplicationJsonLd />
       <Navbar />
       <main className="flex-1 px-4 pt-20 pb-40 sm:pt-24 sm:pb-44">

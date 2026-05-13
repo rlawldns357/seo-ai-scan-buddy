@@ -1,21 +1,20 @@
 /**
- * Post-build script: regenerates dist/sitemap.xml (and public/sitemap.xml as
- * the source of truth) from the live database so that `lastmod` is always
- * fresh. Replaces the legacy static file that had a frozen 2026-04-15 date
- * across every entry.
+ * Post-build script: regenerates sitemap files from the live database so that
+ * `lastmod` is always fresh. Produces a sitemap index + split children:
+ *   - /sitemap.xml         → sitemap index
+ *   - /sitemap-pages.xml   → static pages
+ *   - /sitemap-posts.xml   → blog posts
  *
- * Runs after `vite build` (and after prerender-blog) so that dist/ contains
- * the latest sitemap that is shipped to the CDN.
+ * Writes to public/ (source of truth) and dist/ (shipped to CDN).
  */
 
 import fs from "fs";
 import path from "path";
 
 const SITE = "https://searchtuneos.com";
-const PUBLIC_PATH = path.resolve("public/sitemap.xml");
-const DIST_PATH = path.resolve("dist/sitemap.xml");
+const PUBLIC_DIR = path.resolve("public");
+const DIST_DIR = path.resolve("dist");
 
-// Static blog slugs hard-coded in src/data/blogPosts.ts (ASCII-only).
 const STATIC_SLUGS = [
   "what-is-aeo",
   "naver-search-advisor-guide",
@@ -71,13 +70,12 @@ function ymd(value) {
   return d.toISOString().split("T")[0];
 }
 
-function buildXml(entries) {
-  const today = new Date().toISOString().split("T")[0];
+function buildUrlset(entries) {
   const rows = entries
     .map(
       (e) => `  <url>
     <loc>${e.loc}</loc>
-    <lastmod>${e.lastmod || today}</lastmod>
+    <lastmod>${e.lastmod}</lastmod>
     <changefreq>${e.changefreq}</changefreq>
     <priority>${e.priority}</priority>
   </url>`,
@@ -90,32 +88,58 @@ ${rows}
 `;
 }
 
+function buildIndex(children) {
+  const rows = children
+    .map(
+      (c) => `  <sitemap>
+    <loc>${c.loc}</loc>
+    <lastmod>${c.lastmod}</lastmod>
+  </sitemap>`,
+    )
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${rows}
+</sitemapindex>
+`;
+}
+
+function writeBoth(filename, content) {
+  fs.writeFileSync(path.join(PUBLIC_DIR, filename), content, "utf-8");
+  console.log(`[sitemap] wrote public/${filename}`);
+  if (fs.existsSync(DIST_DIR)) {
+    fs.writeFileSync(path.join(DIST_DIR, filename), content, "utf-8");
+    console.log(`[sitemap] wrote dist/${filename}`);
+  }
+}
+
 async function main() {
   const today = new Date().toISOString().split("T")[0];
   const posts = await fetchPosts();
-  const seen = new Set();
-  const entries = [
+
+  const pages = [
     { loc: `${SITE}/`, lastmod: today, changefreq: "weekly", priority: "1.0" },
     { loc: `${SITE}/about`, lastmod: today, changefreq: "monthly", priority: "0.8" },
     { loc: `${SITE}/blog`, lastmod: today, changefreq: "daily", priority: "0.9" },
     { loc: `${SITE}/naver-store`, lastmod: today, changefreq: "weekly", priority: "0.8" },
   ];
 
+  const seen = new Set();
+  const postEntries = [];
   for (const p of posts) {
     if (!p?.slug || seen.has(p.slug)) continue;
     seen.add(p.slug);
-    entries.push({
+    postEntries.push({
       loc: `${SITE}/blog/${encodeURI(p.slug)}.html`,
       lastmod: ymd(p.updated_at || p.date),
       changefreq: "monthly",
       priority: "0.7",
     });
   }
-
   for (const slug of STATIC_SLUGS) {
     if (seen.has(slug)) continue;
     seen.add(slug);
-    entries.push({
+    postEntries.push({
       loc: `${SITE}/blog/${slug}.html`,
       lastmod: today,
       changefreq: "monthly",
@@ -123,18 +147,18 @@ async function main() {
     });
   }
 
-  const xml = buildXml(entries);
-
-  fs.writeFileSync(PUBLIC_PATH, xml, "utf-8");
-  console.log(`[sitemap] wrote ${PUBLIC_PATH} (${entries.length} urls)`);
-
-  if (fs.existsSync(path.resolve("dist"))) {
-    fs.writeFileSync(DIST_PATH, xml, "utf-8");
-    console.log(`[sitemap] wrote ${DIST_PATH}`);
-  }
+  writeBoth("sitemap-pages.xml", buildUrlset(pages));
+  writeBoth("sitemap-posts.xml", buildUrlset(postEntries));
+  writeBoth(
+    "sitemap.xml",
+    buildIndex([
+      { loc: `${SITE}/sitemap-pages.xml`, lastmod: today },
+      { loc: `${SITE}/sitemap-posts.xml`, lastmod: today },
+    ]),
+  );
 }
 
 main().catch((e) => {
   console.error("[sitemap] fatal:", e);
-  process.exit(0); // never break the build
+  process.exit(0);
 });
