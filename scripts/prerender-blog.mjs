@@ -501,3 +501,65 @@ function injectHomeLinks(latestPosts) {
   fs.writeFileSync(indexPath, html, "utf-8");
   console.log("[prerender] Injected home internal links for crawlers");
 }
+
+// ── 11. Naver Store landing generator ─────────────────────────────
+function generateNaverStoreHtml(assets) {
+  const title = "네이버 스마트스토어 SEO 진단 – 서치튠OS";
+  const desc = "네이버 스마트스토어의 검색 노출 상태를 SEO, AEO, GEO 관점에서 점검하고 개선 방향을 확인하세요.";
+  const url = `${SITE}/naver-store`;
+  const pageJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: title,
+    description: desc,
+    url,
+    inLanguage: "ko",
+    isPartOf: { "@type": "WebSite", name: "서치튠OS", url: SITE },
+  });
+  return `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${esc(title)}</title>
+  <meta name="description" content="${esc(desc)}" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <link rel="canonical" href="${url}" />
+  <meta property="og:title" content="${esc(title)}" />
+  <meta property="og:description" content="${esc(desc)}" />
+  <meta property="og:url" content="${url}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="서치튠OS" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${esc(title)}" />
+  <meta name="twitter:description" content="${esc(desc)}" />
+  <meta name="google-site-verification" content="MEMyH-PWuk7VIwn_C-PigFKHJRuwjuq65k6HYnDOehs" />
+  <meta name="naver-site-verification" content="d6a9e174a1839bf56c1ab85d7ba0c3241c0eda31" />
+  <script type="application/ld+json">${pageJsonLd}</script>
+  ${assets.cssLinks.join("\n  ")}
+  ${assets.preloads.join("\n  ")}
+</head>
+<body>
+  <div id="root">
+    <div style="max-width:720px;margin:2rem auto;padding:1rem;font-family:sans-serif;color:#222">
+      <nav style="margin-bottom:1.5rem"><a href="/" style="color:#666;text-decoration:none">← 홈</a></nav>
+      <h1 style="font-size:1.8rem;font-weight:800;margin-bottom:0.5rem">네이버 스마트스토어 SEO 진단</h1>
+      <p style="color:#444;line-height:1.7">네이버 스마트스토어의 검색 노출 상태를 SEO, AEO, GEO 관점에서 점검하고 개선 방향을 확인하세요. 브랜드 스토어·스마트스토어의 검색 권위 누수율, AI 답변 인용 가능성, 외부 콘텐츠 점유율을 무료로 진단합니다.</p>
+      <h2 style="font-size:1.2rem;margin-top:2rem">3가지 진단 항목</h2>
+      <ul style="line-height:1.8">
+        <li><strong>권위 누수율</strong> – 검색 권위 중 naver.com에 적립돼 회수 불가능한 비율</li>
+        <li><strong>AI 인용 가능성</strong> – ChatGPT·Perplexity가 내 브랜드를 답변에 인용할 준비도</li>
+        <li><strong>외부 채널 점유율</strong> – 블로그·카페·웹문서 등 외부 채널의 브랜드 언급 분포</li>
+      </ul>
+      <footer style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.85rem;color:#888">
+        <a href="/" style="color:#666;margin-right:1rem">홈</a>
+        <a href="/about" style="color:#666;margin-right:1rem">서치튠OS 소개</a>
+        <a href="/blog" style="color:#666">블로그</a>
+      </footer>
+    </div>
+  </div>
+  ${assets.moduleScripts.join("\n  ")}
+</body>
+</html>`;
+}
