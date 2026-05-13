@@ -136,11 +136,15 @@ async function probeGemini(url: string, host: string, brand: string, category: s
   }
   try {
     const self = isSelfDomain(host);
-    const model = self ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview";
+    const model = "google/gemini-3-flash-preview";
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
-        headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
+        headers: {
+          "Lovable-API-Key": KEY,
+          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           model,
           messages: [
@@ -151,7 +155,11 @@ async function probeGemini(url: string, host: string, brand: string, category: s
           ],
         }),
       }));
-      if (!r.ok) throw new Error(`gemini ${r.status}`);
+      if (!r.ok) {
+        const body = await r.text().catch(() => "");
+        console.error("Lovable AI Gemini error", r.status, body.slice(0, 500));
+        throw new Error(`gemini ${r.status}: ${body.slice(0, 200)}`);
+      }
       const j = await r.json();
       return j?.choices?.[0]?.message?.content ?? "";
     };
@@ -236,19 +244,23 @@ async function probePerplexity(url: string, host: string, brand: string, categor
   }
 }
 
-// ── ChatGPT (OpenAI) — 키 있을 때만 ────────────────────────────
+// ── ChatGPT / OpenAI model (Lovable AI Gateway) ───────────────
 async function probeChatGPT(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
-  const KEY = Deno.env.get("OPENAI_API_KEY");
+  const KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!KEY) {
-    return { brand: "chatgpt", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
+    return { brand: "chatgpt", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "LOVABLE_API_KEY missing" };
   }
   try {
     const self = isSelfDomain(host);
-    const model = self ? "gpt-4o" : "gpt-4o-mini";
+    const model = "openai/gpt-5-nano";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://api.openai.com/v1/chat/completions", {
+      const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
-        headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
+        headers: {
+          "Lovable-API-Key": KEY,
+          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({
           model,
           messages: [
@@ -257,21 +269,22 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
               : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"" },
             { role: "user", content: prompt },
           ],
-          temperature: 0,
         }),
       }));
       if (!r.ok) {
         const body = await r.text().catch(() => "");
-        console.error("OpenAI error", r.status, body.slice(0, 500));
-        throw new Error(`openai ${r.status}: ${body.slice(0, 200)}`);
+        console.error("Lovable AI OpenAI-model error", r.status, body.slice(0, 500));
+        throw new Error(`openai-model ${r.status}: ${body.slice(0, 200)}`);
       }
       const j = await r.json();
       return j?.choices?.[0]?.message?.content ?? "";
     };
-    const aw = await ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`);
-    const rec = await ask(category
+    const [aw, rec] = await Promise.all([
+      ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
+      ask(category
       ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`);
+      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`),
+    ]);
     const { awareness } = detectAwareness(aw, host, brand);
     const r = detectRecommendation(rec, host, brand, awareness);
     return {
