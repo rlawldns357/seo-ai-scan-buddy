@@ -81,13 +81,19 @@ export default function NaverStore() {
   return (
     <>
       <Helmet>
-        <title>네이버 스토어 SEO/AEO/GEO 진단 | SearchTune OS</title>
+        <title>네이버 스마트스토어 SEO 진단 – 서치튠OS</title>
         <meta
           name="description"
-          content="브랜드 스토어·스마트스토어의 검색 권위 누수율, AI 답변 인용 가능성, 외부 콘텐츠 점유율을 무료로 진단해 보세요."
+          content="네이버 스마트스토어의 검색 노출 상태를 SEO, AEO, GEO 관점에서 점검하고 개선 방향을 확인하세요."
         />
         <meta name="robots" content="index, follow" />
         <link rel="canonical" href="https://searchtuneos.com/naver-store" />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="네이버 스마트스토어 SEO 진단 – 서치튠OS" />
+        <meta property="og:description" content="네이버 스마트스토어의 검색 노출 상태를 SEO, AEO, GEO 관점에서 점검하고 개선 방향을 확인하세요." />
+        <meta property="og:url" content="https://searchtuneos.com/naver-store" />
+        <meta name="twitter:title" content="네이버 스마트스토어 SEO 진단 – 서치튠OS" />
+        <meta name="twitter:description" content="네이버 스마트스토어의 검색 노출 상태를 SEO, AEO, GEO 관점에서 점검하고 개선 방향을 확인하세요." />
       </Helmet>
 
       <div className="min-h-screen flex flex-col bg-background">
@@ -102,10 +108,11 @@ export default function NaverStore() {
                 네이버 스토어 전용 진단
               </div>
               <h1 className="text-3xl sm:text-5xl font-extrabold text-foreground leading-tight tracking-tight mb-5">
-                <span className="block text-muted-foreground text-lg sm:text-2xl font-light mb-3">
+                <span className="block">네이버 스마트스토어 SEO 진단</span>
+                <span className="block text-muted-foreground text-lg sm:text-2xl font-light mt-3">
                   내 스토어가 검색에서 얼마나 보이는지,
                 </span>
-                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                <span className="block bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mt-1">
                   10초 만에 알려드려요
                 </span>
               </h1>

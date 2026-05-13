@@ -14,6 +14,7 @@ const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 const DesignTest = lazy(() => import("./pages/DesignTest.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
+const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
@@ -37,8 +38,8 @@ const App = () => (
             {/* ───── 공개 라우트 (Public) ─────────────────────────────── */}
             {/* /         → 진단 소개 + 무료 사이트 진단 (공개 메인, 고정) */}
             <Route path="/" element={<Index />} />
-            {/* /naver-store → 메인으로 통합됨 (티저 클릭 시 검색창 그라데이션 모드) */}
-            <Route path="/naver-store" element={<Index />} />
+            {/* /naver-store → 전용 랜딩 (자체 SEO 메타 + h1, 자동 분기 폼은 메인으로 redirect) */}
+            <Route path="/naver-store" element={<NaverStore />} />
             {/* 기타 공개 페이지 */}
             <Route path="/about" element={<About />} />
             <Route path="/blog" element={<Blog />} />
