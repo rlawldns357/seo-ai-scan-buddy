@@ -334,8 +334,8 @@ async function main() {
 }
 
 function generateBlogListHtml(posts, assets) {
-  const title = "블로그 – 서치튠OS | SEO·AEO·GEO 실전 가이드";
-  const desc = "SEO·AEO·GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
+  const title = "서치튠OS 블로그 – SEO·AEO·GEO 실전 가이드";
+  const desc = "SEO, AEO, GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
 
   const listItems = posts
     .map(p => `<li><a href="${blogHtmlPath(p.slug)}">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
@@ -353,6 +353,9 @@ function generateBlogListHtml(posts, assets) {
   <meta property="og:description" content="${esc(desc)}" />
   <meta property="og:url" content="${SITE}/blog" />
   <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${esc(title)}" />
+  <meta name="twitter:description" content="${esc(desc)}" />
   <meta name="google-site-verification" content="MEMyH-PWuk7VIwn_C-PigFKHJRuwjuq65k6HYnDOehs" />
   <meta name="naver-site-verification" content="d6a9e174a1839bf56c1ab85d7ba0c3241c0eda31" />
   <link rel="preload" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'" />
@@ -362,8 +365,8 @@ function generateBlogListHtml(posts, assets) {
 <body>
   <div id="root">
     <div style="max-width:720px;margin:2rem auto;padding:1rem;font-family:sans-serif;color:#222">
-      <h1 style="font-size:1.8rem;font-weight:800">블로그</h1>
-      <p style="color:#666;margin-bottom:1.5rem">SEO · AEO · GEO에 대해 알아야 할 모든 것.</p>
+      <h1 style="font-size:1.8rem;font-weight:800">서치튠OS 블로그</h1>
+      <p style="color:#666;margin-bottom:1.5rem">SEO · AEO · GEO에 대해 알아야 할 모든 것. 실전 가이드와 인사이트를 공유합니다.</p>
       <ul style="list-style:none;padding:0">
       ${listItems}
       </ul>
@@ -408,8 +411,8 @@ ${items}
 
 // ── 9. About page generator ───────────────────────────────────────
 function generateAboutHtml(latestPosts, assets) {
-  const title = "서치튠OS 소개 – SEO·AEO·GEO AI 검색 진단 도구";
-  const desc = "서치튠OS(SearchTune OS)는 2025년 출시된 한국어 기반 AI 검색 진단 도구입니다. URL만 입력하면 SEO·AEO·GEO 점수를 즉시 확인할 수 있습니다.";
+  const title = "서치튠OS 소개 – AI 검색 최적화 진단 도구";
+  const desc = "서치튠OS는 SEO, AEO, GEO 관점에서 웹사이트의 AI 검색 준비도를 진단하고 개선 방향을 제안하는 검색 최적화 도구입니다.";
   const orgJsonLd = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "AboutPage",
