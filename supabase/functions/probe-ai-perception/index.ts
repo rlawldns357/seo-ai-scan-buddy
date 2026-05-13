@@ -269,7 +269,6 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
               : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"" },
             { role: "user", content: prompt },
           ],
-          temperature: 0,
         }),
       }));
       if (!r.ok) {
