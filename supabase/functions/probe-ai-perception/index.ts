@@ -136,7 +136,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
   }
   try {
     const self = isSelfDomain(host);
-    const model = self ? "google/gemini-2.5-pro" : "google/gemini-3-flash-preview";
+    const model = "google/gemini-3-flash-preview";
     const ask = async (prompt: string) => {
       const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
