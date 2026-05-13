@@ -97,33 +97,10 @@ export default function LeadModal({ open, onClose, title = "맞춤 개선 리포
               trackEvent("report_email_sent", { email: trimmed, url });
             } else {
               console.warn("PDF upload failed:", uploadError);
-              // Fallback: send confirmation without PDF
-              supabase.functions.invoke("send-transactional-email", {
-                body: {
-                  templateName: "lead-confirmation",
-                  recipientEmail: trimmed,
-                  idempotencyKey: `lead-confirm-${trimmed}`,
-                },
-              });
             }
           } catch (pdfErr) {
             console.warn("PDF generation failed:", pdfErr);
-            supabase.functions.invoke("send-transactional-email", {
-              body: {
-                templateName: "lead-confirmation",
-                recipientEmail: trimmed,
-                idempotencyKey: `lead-confirm-${trimmed}`,
-              },
-            });
           }
-        } else {
-          supabase.functions.invoke("send-transactional-email", {
-            body: {
-              templateName: "lead-confirmation",
-              recipientEmail: trimmed,
-              idempotencyKey: `lead-confirm-${trimmed}`,
-            },
-          });
         }
       }
     } catch {
