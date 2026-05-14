@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink } from "lucide-react";
+import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink, Search, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +64,10 @@ export default function Admin() {
   const [clarityErr, setClarityErr] = useState<string>("");
   const [clarityLoading, setClarityLoading] = useState(false);
   const [clarityDays, setClarityDays] = useState(1);
+  const [serpKeywords, setSerpKeywords] = useState<{ id: string; keyword: string; category: string; target_url: string | null; priority: number; active: boolean }[]>([]);
+  const [serpLatest, setSerpLatest] = useState<{ keyword: string; engine: string; our_exposed: boolean; our_rank: number | null; our_url: string | null; top_domains: string[]; checked_at: string; error: string | null }[]>([]);
+  const [serpTriggering, setSerpTriggering] = useState(false);
+  const [serpEngine, setSerpEngine] = useState<"all" | "naver" | "google">("all");
 
   const handleLogin = async () => {
     setLoading(true);
@@ -192,6 +196,24 @@ export default function Admin() {
     setClarityLoading(false);
   };
 
+  const fetchSerpTracking = async () => {
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "serpTracking" },
+    });
+    if (res?.keywords) setSerpKeywords(res.keywords);
+    if (res?.latest) setSerpLatest(res.latest);
+  };
+
+  const triggerSerpTracking = async () => {
+    setSerpTriggering(true);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "triggerSerpTracking" },
+    });
+    setTimeout(() => { fetchSerpTracking(); setSerpTriggering(false); }, 3000);
+  };
+
   useEffect(() => {
     if (authed) {
       fetchInsights(days);
@@ -199,6 +221,7 @@ export default function Admin() {
       fetchEngineStatus();
       fetchFailedPosts();
       fetchClarity(1);
+      fetchSerpTracking();
     }
   }, [authed, days]);
 
@@ -719,6 +742,95 @@ export default function Admin() {
                       </div>
                     ))
                   )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* SERP 추적 */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Search className="w-4 h-4" /> 🔎 SERP 추적 (Top 20 + 역키워드)
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {(["all", "naver", "google"] as const).map((e) => (
+                      <Button key={e} size="sm" variant={serpEngine === e ? "default" : "outline"} onClick={() => setSerpEngine(e)}>
+                        {e === "all" ? "전체" : e === "naver" ? "네이버" : "구글"}
+                      </Button>
+                    ))}
+                    <Button size="sm" variant="outline" onClick={fetchSerpTracking}>
+                      <RefreshCw className="w-3.5 h-3.5 mr-1" /> 새로고침
+                    </Button>
+                    <Button size="sm" onClick={triggerSerpTracking} disabled={serpTriggering}>
+                      <Zap className="w-3.5 h-3.5 mr-1" /> {serpTriggering ? "실행 중..." : "지금 추적"}
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  매일 06:00 KST 자동 실행 · 등록 키워드 {serpKeywords.length}개 · 노출 {serpLatest.filter(r => r.our_exposed).length}/{serpLatest.length}건
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground border-b">
+                      <tr className="text-left">
+                        <th className="py-2 pr-3">키워드</th>
+                        <th className="py-2 pr-3">엔진</th>
+                        <th className="py-2 pr-3">우리 순위</th>
+                        <th className="py-2 pr-3">매칭 URL</th>
+                        <th className="py-2 pr-3">Top 도메인</th>
+                        <th className="py-2 pr-3">시각</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {serpLatest
+                        .filter(r => serpEngine === "all" || r.engine === serpEngine)
+                        .sort((a, b) => Number(a.our_exposed) - Number(b.our_exposed) || (a.our_rank ?? 999) - (b.our_rank ?? 999))
+                        .map((r, i) => (
+                          <tr key={i} className="border-b last:border-b-0">
+                            <td className="py-2 pr-3 font-medium">{r.keyword}</td>
+                            <td className="py-2 pr-3">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] ${r.engine === "naver" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
+                                {r.engine === "naver" ? "Naver" : "Google"}
+                              </span>
+                            </td>
+                            <td className="py-2 pr-3">
+                              {r.error ? (
+                                <span className="text-destructive" title={r.error}>오류</span>
+                              ) : r.our_exposed ? (
+                                <span className="font-bold text-primary">#{r.our_rank}</span>
+                              ) : (
+                                <span className="text-muted-foreground">미노출</span>
+                              )}
+                            </td>
+                            <td className="py-2 pr-3">
+                              {r.our_url ? (
+                                <a href={r.our_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate inline-block max-w-[220px] align-middle">
+                                  {r.our_url.replace(/^https?:\/\//, "")}
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                            <td className="py-2 pr-3 max-w-[280px]">
+                              <div className="flex flex-wrap gap-1">
+                                {(r.top_domains || []).slice(0, 5).map((d, j) => (
+                                  <span key={j} className="text-[10px] bg-muted px-1.5 py-0.5 rounded">{d}</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="py-2 pr-3 text-muted-foreground whitespace-nowrap">
+                              {new Date(r.checked_at).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                            </td>
+                          </tr>
+                        ))}
+                      {serpLatest.length === 0 && (
+                        <tr><td colSpan={6} className="py-6 text-center text-muted-foreground">아직 추적 데이터가 없습니다. "지금 추적"을 눌러주세요.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </CardContent>
             </Card>

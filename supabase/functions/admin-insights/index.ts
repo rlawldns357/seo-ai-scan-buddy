@@ -219,7 +219,58 @@ Deno.serve(async (req) => {
       );
     }
 
-    const since = new Date();
+    // SERP tracking — latest snapshot per (keyword, engine)
+    if (action === "serpTracking") {
+      const { data: keywords } = await supabase
+        .from("serp_keywords")
+        .select("id, keyword, category, target_url, priority, active")
+        .order("priority", { ascending: false })
+        .order("keyword", { ascending: true });
+
+      // Latest 7 days of results, grouped client-side
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 7);
+      const { data: results } = await supabase
+        .from("serp_tracking_results")
+        .select("keyword, engine, our_exposed, our_rank, our_url, our_title, top_domains, total_results, error, checked_at")
+        .gte("checked_at", cutoff.toISOString())
+        .order("checked_at", { ascending: false })
+        .limit(2000);
+
+      // Pick latest result per (keyword, engine)
+      const latest = new Map<string, any>();
+      for (const r of results || []) {
+        const k = `${r.keyword}::${r.engine}`;
+        if (!latest.has(k)) latest.set(k, r);
+      }
+
+      return new Response(
+        JSON.stringify({
+          keywords: keywords || [],
+          latest: Array.from(latest.values()),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "triggerSerpTracking") {
+      const adminPw = Deno.env.get("ADMIN_PASSWORD");
+      const url = `${Deno.env.get("SUPABASE_URL")}/functions/v1/track-serp-keywords`;
+      // Fire and forget — full run takes ~2 min for 30 keywords
+      fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+        },
+        body: JSON.stringify({ password: adminPw, force: true }),
+      }).catch((e) => console.warn("serp trigger failed:", e));
+      return new Response(
+        JSON.stringify({ success: true, message: "SERP 추적을 백그라운드에서 시작했습니다 (약 2~3분 소요)" }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     since.setDate(since.getDate() - days);
     const sinceStr = since.toISOString();
 
