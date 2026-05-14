@@ -524,21 +524,39 @@ const Index = () => {
                     style={{ paddingLeft: "3rem" }}
                   />
                 </div>
-                <button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  aria-busy={isAnalyzing}
-                  className="h-14 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none disabled:opacity-95 disabled:cursor-wait inline-flex items-center justify-center gap-2"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>분석 시작 중…</span>
-                    </>
-                  ) : (
-                    "무료로 분석하기"
+                <div className="relative">
+                  {/* 이스터에그 말풍선: 화이트리스트 IP일 때만, 버튼 텍스트 변경을 슬쩍 알려줌 */}
+                  {rateLimit?.whitelisted && (
+                    <div
+                      className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap z-10 transition-all duration-500 ease-out ${
+                        vipBubble ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <div className="relative px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold shadow-lg">
+                        무제한으로 바뀌었어요 ✨
+                        <span className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-emerald-600" />
+                      </div>
+                    </div>
                   )}
-                </button>
+                  <button
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing}
+                    aria-busy={isAnalyzing}
+                    className="h-14 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none disabled:opacity-95 disabled:cursor-wait inline-flex items-center justify-center gap-2"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>분석 시작 중…</span>
+                      </>
+                    ) : rateLimit?.whitelisted ? (
+                      "무제한 분석하기"
+                    ) : (
+                      "무료로 분석하기"
+                    )}
+                  </button>
+                </div>
               </div>
               {(() => {
                 const trimmed = url.trim();
