@@ -57,6 +57,13 @@ const App = () => (
 
             {/* ───── 관리자 ───────────────────────────────────────────── */}
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/insights" element={<Admin />} />
+            <Route path="/admin/blog" element={<Admin />} />
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/seo-monitor" element={<SeoMonitor />} />
+              <Route path="/admin/indexing-queue" element={<IndexingQueue />} />
+              <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
+            </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
