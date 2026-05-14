@@ -11,6 +11,7 @@ import GAListener from "@/components/GAListener";
 import Index from "./pages/Index.tsx";
 
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const VipTest = lazy(() => import("./pages/VipTest.tsx"));
 const DesignTest = lazy(() => import("./pages/DesignTest.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/design-test" element={<DesignTest />} />
+            <Route path="/vip-test" element={<VipTest />} />
 
             {/* ───── 관리자 ───────────────────────────────────────────── */}
             <Route path="/admin" element={<Admin />} />

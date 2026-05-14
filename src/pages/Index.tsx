@@ -477,16 +477,21 @@ const Index = () => {
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                 무료 베타 서비스
               </div>
-              {effectiveBrand && (
-                <div className="inline-flex items-center gap-2 px-2 py-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold leading-none">
-                  <span className="relative inline-flex items-center justify-center w-2 h-2">
-                    {/* 닷 크기는 그대로, 펄스 halo만 더 크게 퍼지도록 */}
-                    <span className="absolute w-4 h-4 rounded-full bg-emerald-500 opacity-50 animate-ping" />
-                    <span className="relative inline-block w-2 h-2 rounded-full bg-emerald-500" />
-                  </span>
-                  {BRAND_LABEL[effectiveBrand]} 전용 · 무제한 활성화 🔓 접속
-                </div>
-              )}
+              {effectiveBrand && (() => {
+                const isPm = effectiveBrand === "progressmedia";
+                const text = isPm ? "text-blue-600 dark:text-blue-400" : "text-emerald-600 dark:text-emerald-400";
+                const dot = isPm ? "bg-blue-500" : "bg-emerald-500";
+                return (
+                  <div className={`inline-flex items-center gap-2 px-2 py-2 ${text} text-sm font-semibold leading-none`}>
+                    <span className="relative inline-flex items-center justify-center w-2 h-2">
+                      {/* 닷 크기는 그대로, 펄스 halo만 더 크게 퍼지도록 */}
+                      <span className={`absolute w-4 h-4 rounded-full ${dot} opacity-50 animate-ping`} />
+                      <span className={`relative inline-block w-2 h-2 rounded-full ${dot}`} />
+                    </span>
+                    {BRAND_LABEL[effectiveBrand]} 전용 · 무제한 활성화 🔓 접속
+                  </div>
+                );
+              })()}
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl text-foreground leading-[1.15] sm:leading-[1.1] mb-6 tracking-tight">
               <span className="block font-light text-muted-foreground text-2xl sm:text-3xl md:text-4xl mb-3">
