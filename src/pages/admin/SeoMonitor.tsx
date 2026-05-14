@@ -7,8 +7,17 @@ import { adminInvoke, copyToClipboard } from "./_lib";
 import { toast } from "@/components/ui/sonner";
 
 type Engine = "all" | "naver" | "google";
-type Status = "all" | "exposed" | "missing" | "rising" | "falling" | "monitoring";
-type Group = "all" | "brand" | "core" | "platform" | "competitor" | "reverse" | "needs";
+type Status = "all" | "exposed" | "missing" | "rising" | "falling" | "monitoring" | "indexing_pending" | "needs_fix";
+type Group = "all" | "brand" | "core" | "platform" | "competitor" | "reverse" | "problem";
+
+const SITE_ORIGIN = "https://searchtuneos.com";
+function toAbsoluteUrl(target: string | null | undefined): string {
+  if (!target) return SITE_ORIGIN + "/";
+  const t = target.trim();
+  if (/^https?:\/\//i.test(t)) return t;
+  if (t.startsWith("/")) return SITE_ORIGIN + t;
+  return `${SITE_ORIGIN}/${t}`;
+}
 
 interface Row {
   keyword_id: string;
@@ -25,6 +34,7 @@ interface Row {
   checked_at: string | null;
   last_action_at: string | null;
   next_action: string;
+  is_seed?: boolean;
 }
 
 interface Summary {
@@ -34,6 +44,7 @@ interface Summary {
   rising: number;
   falling: number;
   indexing_pending: number;
+  needs_fix: number;
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
@@ -41,7 +52,18 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   rising: { label: "상승", cls: "bg-primary/15 text-primary" },
   falling: { label: "하락", cls: "bg-destructive/15 text-destructive" },
   missing: { label: "미노출", cls: "bg-destructive/10 text-destructive" },
-  monitoring: { label: "모니터링", cls: "bg-muted text-muted-foreground" },
+  indexing_pending: { label: "색인 대기", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
+  needs_fix: { label: "수정 필요", cls: "bg-orange-500/15 text-orange-700 dark:text-orange-400" },
+  monitoring: { label: "확인 필요", cls: "bg-muted text-muted-foreground" },
+};
+
+const GROUP_LABEL: Record<string, string> = {
+  brand: "브랜드",
+  core: "핵심",
+  problem: "문제·니즈",
+  platform: "플랫폼",
+  competitor: "경쟁",
+  reverse: "역키워드",
 };
 
 export default function SeoMonitor() {
