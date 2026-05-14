@@ -6,6 +6,7 @@ type Task = {
   priority: "high" | "medium" | "low";
   title: string;
   url?: string;
+  canonical_url?: string;
   reason: string;
   recommended_action: string;
 };
@@ -19,16 +20,24 @@ type OpsData = {
   todayTasks: Task[];
   seoMonitor: {
     total_keywords: number;
-    exposed: number; missing: number; rising: number; falling: number;
+    exposed_keywords: number; missing_keywords: number;
+    partial_keywords: number; untracked_keywords: number;
     needs_fix: number; indexing_pending: number;
+    total_engine_results: number;
+    exposed_results: number; missing_results: number;
+    rising_results: number; falling_results: number;
     last_serp_run: { checked_at: string; ok: boolean } | null;
   };
   indexingQueue: {
     total: number;
     counts: Record<string, number>;
+    stale_pending: number;
+    stale_requested: number;
     recent: Array<{
-      url: string; status: string; engine: string; priority: number;
+      url_path: string; canonical_url: string | null;
+      status: string; engine: string; priority: number;
       target_keyword: string | null; created_at: string; updated_at: string;
+      requested_at: string | null;
     }>;
   };
   aiGrowthLoop: {
