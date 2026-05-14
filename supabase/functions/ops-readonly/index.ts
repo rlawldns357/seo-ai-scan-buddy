@@ -216,13 +216,4 @@ Deno.serve(async (req) => {
     return json(500, { error: (e as Error)?.message || "server error" });
   }
 });
-      generated_at: new Date().toISOString(),
-      mode: "read-only",
-      seoMonitor,
-      indexingQueue,
-      aiGrowthLoop,
-    });
-  } catch (e) {
-    return json(500, { error: (e as Error)?.message || "server error" });
-  }
-});
+
