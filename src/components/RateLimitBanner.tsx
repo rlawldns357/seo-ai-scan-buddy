@@ -31,6 +31,9 @@ const RateLimitBanner = ({ remaining, emailUnlocked, onUnlocked }: RateLimitBann
     setError("");
 
     try {
+      // 도메인 기반 VIP 브랜드 마킹 (예: @my-progress.co.kr → ProgressMedia)
+      maybeMarkBrandFromEmail(email);
+
       // Save lead + start Soap Opera funnel
       await enrollSoapFunnel(email, "rate_limit_unlock");
 
