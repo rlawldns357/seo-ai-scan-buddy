@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { unlockWithEmail } from "@/lib/rateLimit";
 import { enrollSoapFunnel } from "@/lib/soapFunnel";
+import { maybeMarkBrandFromEmail } from "@/lib/vipBrand";
 
 interface RateLimitBannerProps {
   remaining: number;
