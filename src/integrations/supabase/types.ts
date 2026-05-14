@@ -658,18 +658,21 @@ export type Database = {
           free_limit: number
           id: number
           updated_at: string
+          whitelisted_ips: string[]
         }
         Insert: {
           email_bonus?: number
           free_limit?: number
           id?: number
           updated_at?: string
+          whitelisted_ips?: string[]
         }
         Update: {
           email_bonus?: number
           free_limit?: number
           id?: number
           updated_at?: string
+          whitelisted_ips?: string[]
         }
         Relationships: []
       }
