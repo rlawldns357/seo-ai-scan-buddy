@@ -146,11 +146,12 @@ export default function SeoMonitor() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
         <Kpi label="추적 (현 필터)" value={summary?.total ?? 0} />
         <Kpi label="노출 중" value={summary?.exposed ?? 0} tone="good" />
         <Kpi label="미노출" value={summary?.missing ?? 0} tone="bad" />
         <Kpi label="색인 대기" value={summary?.indexing_pending ?? 0} tone="warn" />
+        <Kpi label="수정 필요" value={summary?.needs_fix ?? 0} tone="warn" />
         <Kpi label="상승" value={summary?.rising ?? 0} icon={<TrendingUp className="w-3 h-3" />} tone="good" />
         <Kpi label="하락" value={summary?.falling ?? 0} icon={<TrendingDown className="w-3 h-3" />} tone="bad" />
       </div>
@@ -161,9 +162,9 @@ export default function SeoMonitor() {
           <FilterGroup label="엔진" value={engine} onChange={(v) => setEngine(v as Engine)}
             options={[["all", "전체"], ["google", "Google"], ["naver", "Naver"]]} />
           <FilterGroup label="상태" value={status} onChange={(v) => setStatus(v as Status)}
-            options={[["all", "전체"], ["exposed", "노출중"], ["missing", "미노출"], ["rising", "상승"], ["falling", "하락"], ["monitoring", "모니터링"]]} />
+            options={[["all", "전체"], ["exposed", "노출중"], ["missing", "미노출"], ["indexing_pending", "색인 대기"], ["needs_fix", "수정 필요"], ["rising", "상승"], ["falling", "하락"], ["monitoring", "확인 필요"]]} />
           <FilterGroup label="그룹" value={group} onChange={(v) => setGroup(v as Group)}
-            options={[["all", "전체"], ["brand", "브랜드"], ["core", "핵심"], ["needs", "문제·니즈"], ["platform", "플랫폼"], ["competitor", "경쟁"], ["reverse", "역키워드"]]} />
+            options={[["all", "전체"], ["brand", "브랜드"], ["core", "핵심"], ["problem", "문제·니즈"], ["platform", "플랫폼"], ["competitor", "경쟁"], ["reverse", "역키워드"]]} />
           <FilterGroup label="기간" value={String(days)} onChange={(v) => setDays(Number(v))}
             options={[["1", "1일"], ["7", "7일"], ["14", "14일"], ["30", "30일"]]} />
         </CardContent>
