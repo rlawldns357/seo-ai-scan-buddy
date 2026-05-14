@@ -108,25 +108,49 @@ Deno.serve(async (req) => {
       byKey.set(k, arr);
     }
 
-    let exposed = 0, missing = 0, rising = 0, falling = 0;
-    let needsFix = 0, indexingPending = 0;
+    const SITE_ORIGIN = (Deno.env.get("OPS_SITE_ORIGIN") || "https://searchtuneos.com").replace(/\/+$/, "");
+    const toCanonical = (u?: string | null): string | null => {
+      if (!u) return null;
+      const s = String(u).trim();
+      if (!s) return null;
+      if (/^https?:\/\//i.test(s)) return s;
+      if (s.startsWith("//")) return `https:${s}`;
+      return `${SITE_ORIGIN}${s.startsWith("/") ? "" : "/"}${s}`;
+    };
+
+    // Per-keyword (unique) and per-engine (row) counters
+    let exposed = 0, missing = 0, rising = 0, falling = 0;             // engine-row level
+    let needsFix = 0, indexingPending = 0;                              // keyword level
+    let kwExposed = 0, kwMissing = 0, kwPartial = 0, kwUntracked = 0;   // keyword level
+    let engineRows = 0;
+
     for (const kw of keywords || []) {
+      if (kw.status === "needs_fix") needsFix++;
+      if (kw.status === "indexing_pending") indexingPending++;
+
+      let kwExposedAny = false, kwMissingAny = false, kwTrackedAny = false;
       for (const eng of ["google", "naver"]) {
         const arr = byKey.get(`${kw.keyword}::${eng}`) || [];
         const cur = arr[0], prev = arr[1];
-        if (kw.status === "needs_fix") needsFix++;
-        if (kw.status === "indexing_pending") indexingPending++;
         if (!cur) continue;
+        engineRows++;
+        kwTrackedAny = true;
         if (cur.our_exposed) {
+          kwExposedAny = true;
           const delta = cur.our_rank != null && prev?.our_rank != null
             ? prev.our_rank - cur.our_rank : null;
           if (delta != null && delta > 0) rising++;
           else if (delta != null && delta < 0) falling++;
           else exposed++;
         } else {
+          kwMissingAny = true;
           missing++;
         }
       }
+      if (!kwTrackedAny) kwUntracked++;
+      else if (kwExposedAny && kwMissingAny) kwPartial++;
+      else if (kwExposedAny) kwExposed++;
+      else kwMissing++;
     }
 
     const lastSerp = (serpResults || [])[0];
@@ -135,13 +159,20 @@ Deno.serve(async (req) => {
       : null;
 
     const seoMonitor = {
+      // keyword-level (unique)
       total_keywords: (keywords || []).length,
-      exposed,
-      missing,
-      rising,
-      falling,
+      exposed_keywords: kwExposed,
+      missing_keywords: kwMissing,
+      partial_keywords: kwPartial,
+      untracked_keywords: kwUntracked,
       needs_fix: needsFix,
       indexing_pending: indexingPending,
+      // engine-row level (one per keyword × engine)
+      total_engine_results: engineRows,
+      exposed_results: exposed,
+      missing_results: missing,
+      rising_results: rising,
+      falling_results: falling,
       last_serp_run: lastSerpRun,
     };
 
@@ -160,17 +191,37 @@ Deno.serve(async (req) => {
     for (const it of items) {
       counts[it.status] = (counts[it.status] ?? 0) + 1;
     }
+
+    // Stale detection (used for both summary + scoring)
+    const now = Date.now();
+    const STALE_PENDING_HOURS = 48;
+    const STALE_REQUESTED_HOURS = 168; // 7d without verification
+    const ageHours = (s?: string | null) =>
+      s ? (now - new Date(s).getTime()) / 3.6e6 : Infinity;
+
+    let stalePending = 0, staleRequested = 0;
+    for (const it of items) {
+      if ((it.status === "pending" || it.status === "re_request") &&
+          ageHours(it.created_at) > STALE_PENDING_HOURS) stalePending++;
+      if (it.status === "requested" &&
+          ageHours(it.requested_at || it.updated_at) > STALE_REQUESTED_HOURS) staleRequested++;
+    }
+
     const indexingQueue = {
       total: items.length,
       counts,
+      stale_pending: stalePending,
+      stale_requested: staleRequested,
       recent: items.slice(0, 10).map((i) => ({
-        url: i.url,
+        url_path: i.url,
+        canonical_url: toCanonical(i.url),
         status: i.status,
         engine: i.engine,
         priority: i.priority,
         target_keyword: i.target_keyword,
         created_at: i.created_at,
         updated_at: i.updated_at,
+        requested_at: i.requested_at,
       })),
     };
 
