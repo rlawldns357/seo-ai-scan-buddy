@@ -205,14 +205,6 @@ const Index = () => {
       cancelled = true;
     };
   }, []);
-      } catch {
-        /* fail silently — 환영 배너는 부가 기능 */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
 
   const runAnalysis = async (finalUrl: string) => {
     // Synchronous guard — blocks duplicate entry in the same tick.
