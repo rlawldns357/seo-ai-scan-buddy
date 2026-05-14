@@ -196,15 +196,15 @@ const Index = () => {
         const status = await checkRateLimit();
         if (!cancelled) {
           setRateLimit((prev) => prev ?? status);
-          // 이스터에그: 화이트리스트 IP면 버튼 위로 말풍선 2단계로 노출
-          // 1단계: "Hello 👋 GrowthBridge" → 2단계: "무제한으로 바뀌었어요 ✨" → 사라짐
-          if (status.whitelisted) {
-            setTimeout(() => setVipBubble(1), 500);
-            setTimeout(() => setVipBubble(0), 2700);
-            setTimeout(() => setVipBubble(2), 3100);
-            setTimeout(() => setVipBubble(0), 6100);
-          }
         }
+      } catch {
+        /* fail silently — 환영 배너는 부가 기능 */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
       } catch {
         /* fail silently — 환영 배너는 부가 기능 */
       }
