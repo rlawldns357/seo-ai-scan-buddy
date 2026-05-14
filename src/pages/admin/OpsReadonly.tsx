@@ -114,6 +114,28 @@ export default function OpsReadonly() {
             generated_at: {fmtTime(data.generated_at)}
           </p>
 
+          <Section title={`Ops Score · overall ${data.opsScore.overall}/100`}>
+            <KV k="SEO Monitor" v={`${data.opsScore.seoMonitor}/100`} />
+            <KV k="Indexing Queue" v={`${data.opsScore.indexingQueue}/100`} />
+            <KV k="AI Growth Loop" v={`${data.opsScore.aiGrowthLoop}/100`} />
+            <KV k="Risks" v={data.opsScore.risks.length ? data.opsScore.risks.join(" · ") : "없음"} />
+          </Section>
+
+          <Section title={`Today Tasks (${data.todayTasks.length})`}>
+            <div className="col-span-full">
+              {data.todayTasks.length === 0 ? (
+                <p className="text-xs text-muted-foreground">오늘 처리할 태스크가 없습니다.</p>
+              ) : (
+                <Table
+                  headers={["우선순위", "유형", "제목", "URL", "사유", "권장 액션"]}
+                  rows={data.todayTasks.map(t => [
+                    t.priority, t.type, t.title, t.url ?? "—", t.reason, t.recommended_action,
+                  ])}
+                />
+              )}
+            </div>
+          </Section>
+
           <Section title="SEO Monitor">
             <KV k="총 키워드" v={seo!.total_keywords} />
             <KV k="노출중" v={seo!.exposed} />
