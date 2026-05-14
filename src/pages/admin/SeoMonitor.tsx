@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+
 import { Copy, ExternalLink, Inbox, Wrench, Check, RefreshCw, TrendingUp, TrendingDown, Search } from "lucide-react";
 import { adminInvoke, copyToClipboard } from "./_lib";
 import { toast } from "@/components/ui/sonner";
