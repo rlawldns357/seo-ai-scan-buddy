@@ -1,8 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+type Task = {
+  type: "naver_submit" | "google_check" | "content_fix" | "monitor" | "deploy_issue";
+  priority: "high" | "medium" | "low";
+  title: string;
+  url?: string;
+  reason: string;
+  recommended_action: string;
+};
+
 type OpsData = {
   generated_at: string;
+  opsScore: {
+    overall: number; seoMonitor: number; indexingQueue: number; aiGrowthLoop: number;
+    risks: string[];
+  };
+  todayTasks: Task[];
   seoMonitor: {
     total_keywords: number;
     exposed: number; missing: number; rising: number; falling: number;
@@ -99,6 +113,28 @@ export default function OpsReadonly() {
           <p className="text-xs text-muted-foreground mb-6">
             generated_at: {fmtTime(data.generated_at)}
           </p>
+
+          <Section title={`Ops Score · overall ${data.opsScore.overall}/100`}>
+            <KV k="SEO Monitor" v={`${data.opsScore.seoMonitor}/100`} />
+            <KV k="Indexing Queue" v={`${data.opsScore.indexingQueue}/100`} />
+            <KV k="AI Growth Loop" v={`${data.opsScore.aiGrowthLoop}/100`} />
+            <KV k="Risks" v={data.opsScore.risks.length ? data.opsScore.risks.join(" · ") : "없음"} />
+          </Section>
+
+          <Section title={`Today Tasks (${data.todayTasks.length})`}>
+            <div className="col-span-full">
+              {data.todayTasks.length === 0 ? (
+                <p className="text-xs text-muted-foreground">오늘 처리할 태스크가 없습니다.</p>
+              ) : (
+                <Table
+                  headers={["우선순위", "유형", "제목", "URL", "사유", "권장 액션"]}
+                  rows={data.todayTasks.map(t => [
+                    t.priority, t.type, t.title, t.url ?? "—", t.reason, t.recommended_action,
+                  ])}
+                />
+              )}
+            </div>
+          </Section>
 
           <Section title="SEO Monitor">
             <KV k="총 키워드" v={seo!.total_keywords} />
