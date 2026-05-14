@@ -203,7 +203,19 @@ Deno.serve(async (req) => {
       })),
     };
 
+    audit(200, "ok");
     return json(200, {
+      generated_at: new Date().toISOString(),
+      mode: "read-only",
+      seoMonitor,
+      indexingQueue,
+      aiGrowthLoop,
+    });
+  } catch (e) {
+    audit(500, "server_error");
+    return json(500, { error: (e as Error)?.message || "server error" });
+  }
+});
       generated_at: new Date().toISOString(),
       mode: "read-only",
       seoMonitor,
