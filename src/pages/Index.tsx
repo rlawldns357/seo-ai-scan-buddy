@@ -549,8 +549,8 @@ const Index = () => {
                   />
                 </div>
                 <div className="relative">
-                  {/* 이스터에그 말풍선: 화이트리스트 IP에서만 첫 진입 시 2단계로 살짝 노출 */}
-                  {rateLimit?.whitelisted && (
+                  {/* 이스터에그 말풍선: VIP 브랜드(GrowthBridge/ProgressMedia) 첫 진입 시 2단계 노출 */}
+                  {effectiveBrand && (
                     <div
                       className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap z-10 transition-all duration-500 ease-out ${
                         vipBubble !== 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
@@ -558,7 +558,9 @@ const Index = () => {
                       aria-hidden="true"
                     >
                       <div className="relative px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold shadow-lg">
-                        {vipBubble === 1 ? "Hello 👋 GrowthBridge" : "무제한으로 바뀌었어요 ✨"}
+                        {vipBubble === 1
+                          ? `Hello 👋 ${BRAND_LABEL[effectiveBrand]}`
+                          : "무제한으로 바뀌었어요 ✨"}
                         <span className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-emerald-600" />
                       </div>
                     </div>
@@ -574,7 +576,7 @@ const Index = () => {
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span>분석 시작 중…</span>
                       </>
-                    ) : rateLimit?.whitelisted ? (
+                    ) : effectiveBrand ? (
                       "무제한 분석하기"
                     ) : (
                       "무료로 분석하기"
