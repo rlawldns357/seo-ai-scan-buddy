@@ -138,7 +138,7 @@ export default function OpsReadonly() {
                 <Table
                   headers={["우선순위", "유형", "제목", "URL", "사유", "권장 액션"]}
                   rows={data.todayTasks.map(t => [
-                    t.priority, t.type, t.title, t.url ?? "—", t.reason, t.recommended_action,
+                    t.priority, t.type, t.title, t.canonical_url ?? t.url ?? "—", t.reason, t.recommended_action,
                   ])}
                 />
               )}
