@@ -448,8 +448,13 @@ Deno.serve(async (req) => {
     }
 
     if (action === "addIndexingItem") {
+      // Normalize relative paths to absolute searchtuneos.com URLs
+      let rawUrl = String(body.url || "").trim();
+      if (rawUrl.startsWith("/")) rawUrl = `https://searchtuneos.com${rawUrl}`;
+      else if (!/^https?:\/\//i.test(rawUrl)) rawUrl = `https://searchtuneos.com/${rawUrl}`;
+
       const payload = {
-        url: String(body.url || "").trim(),
+        url: rawUrl,
         target_keyword: body.target_keyword ?? null,
         engine: body.engine || "both",
         reason: body.reason ?? null,
