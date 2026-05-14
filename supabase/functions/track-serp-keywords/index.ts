@@ -119,6 +119,25 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
+  // Cooldown: skip if last run was within 6 hours unless admin force
+  if (!force) {
+    const { data: lastRun } = await supabase
+      .from("serp_tracking_results")
+      .select("checked_at")
+      .order("checked_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lastRun?.checked_at) {
+      const sinceMin = (Date.now() - new Date(lastRun.checked_at).getTime()) / 60000;
+      if (sinceMin < 360 && !isAdmin) {
+        return new Response(
+          JSON.stringify({ skipped: true, reason: "cooldown", last_run_min_ago: Math.round(sinceMin) }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+    }
+  }
+
   const { data: keywords, error: kwErr } = await supabase
     .from("serp_keywords")
     .select("id, keyword")
