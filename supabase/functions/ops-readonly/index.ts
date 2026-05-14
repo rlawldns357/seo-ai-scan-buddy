@@ -260,23 +260,28 @@ Deno.serve(async (req) => {
       priority: "high" | "medium" | "low";
       title: string;
       url?: string;
+      canonical_url?: string;
       reason: string;
       recommended_action: string;
     };
     const tasks: Task[] = [];
+    const pushTask = (t: Omit<Task, "canonical_url"> & { url?: string | null }) => {
+      const canonical = toCanonical(t.url ?? null) || undefined;
+      tasks.push({ ...t, url: t.url || undefined, canonical_url: canonical });
+    };
 
     // 1) deploy_issue — recent SERP run errored or no run in >24h
     const lastRunAt = lastSerp?.checked_at ? new Date(lastSerp.checked_at).getTime() : 0;
     const hoursSinceSerp = lastRunAt ? (Date.now() - lastRunAt) / 3.6e6 : Infinity;
     if (!lastSerp) {
-      tasks.push({
+      pushTask({
         type: "deploy_issue", priority: "high",
         title: "SERP 추적 기록 없음",
         reason: "최근 7일 내 SERP 추적 결과가 없습니다.",
         recommended_action: "track-serp Edge Function이 정상 동작하는지 점검하고 수동 트리거하세요.",
       });
     } else if (lastSerp.error || hoursSinceSerp > 36) {
-      tasks.push({
+      pushTask({
         type: "deploy_issue", priority: "high",
         title: lastSerp.error ? "최근 SERP 추적 실패" : "SERP 추적 지연",
         reason: lastSerp.error
@@ -292,7 +297,7 @@ Deno.serve(async (req) => {
       .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
     for (const it of pendingForSubmit.slice(0, 2)) {
       const isNaver = it.engine === "naver" || it.engine === "both";
-      tasks.push({
+      pushTask({
         type: isNaver ? "naver_submit" : "google_check",
         priority: (it.priority ?? 5) >= 7 ? "high" : "medium",
         title: isNaver ? "네이버 색인 요청 필요" : "구글 색인 확인 필요",
@@ -304,10 +309,28 @@ Deno.serve(async (req) => {
       });
     }
 
+    // 2b) stale requested items — long awaiting verification
+    const staleReq = items
+      .filter(it => it.status === "requested" &&
+        ageHours(it.requested_at || it.updated_at) > STALE_REQUESTED_HOURS)
+      .slice(0, 1);
+    for (const it of staleReq) {
+      if (tasks.length >= 5) break;
+      const isNaver = it.engine === "naver" || it.engine === "both";
+      pushTask({
+        type: isNaver ? "naver_submit" : "google_check",
+        priority: "medium",
+        title: "오래된 색인 요청 재확인",
+        url: it.url,
+        reason: `${Math.round(ageHours(it.requested_at || it.updated_at))}시간째 verified 미전환`,
+        recommended_action: "검색엔진에서 색인 상태를 다시 확인하고 필요 시 재요청하세요.",
+      });
+    }
+
     // 3) content_fix — keywords flagged as needs_fix
     const fixKeywords = (keywords || []).filter(k => k.status === "needs_fix").slice(0, 2);
     for (const kw of fixKeywords) {
-      tasks.push({
+      pushTask({
         type: "content_fix", priority: "high",
         title: `콘텐츠 수정: "${kw.keyword}"`,
         url: kw.target_url || undefined,
@@ -316,20 +339,20 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4) monitor — falling rank or many missing
+    // 4) monitor — falling rank or many missing (engine-row level)
     if (falling > 0 && tasks.length < 5) {
-      tasks.push({
+      pushTask({
         type: "monitor", priority: "medium",
-        title: `순위 하락 키워드 ${falling}개`,
-        reason: "최근 SERP 스냅샷에서 순위가 하락한 키워드가 감지되었습니다.",
+        title: `순위 하락 결과 ${falling}건`,
+        reason: "최근 SERP 스냅샷에서 순위가 하락한 (키워드×엔진) 결과가 감지되었습니다.",
         recommended_action: "/admin/seo-monitor에서 하락 키워드를 점검하세요.",
       });
     }
-    if (missing >= 3 && tasks.length < 5) {
-      tasks.push({
+    if (kwMissing >= 3 && tasks.length < 5) {
+      pushTask({
         type: "monitor", priority: "medium",
-        title: `미노출 키워드 ${missing}개`,
-        reason: "다수의 키워드가 SERP에 노출되지 않고 있습니다.",
+        title: `미노출 키워드 ${kwMissing}개`,
+        reason: "다수의 키워드가 모든 엔진에서 노출되지 않고 있습니다.",
         recommended_action: "노출 누락 키워드의 콘텐츠/색인 상태를 확인하세요.",
       });
     }
@@ -339,25 +362,30 @@ Deno.serve(async (req) => {
     // ── Ops Score ─────────────────────────────────────────────────────────
     const risks: string[] = [];
 
-    // seoMonitor score: penalize missing/needs_fix/falling vs total checks
-    const totalChecks = exposed + missing + rising + falling;
+    // seoMonitor score: based on engine-row results + needs_fix
     let seoMonitorScore = 100;
-    if (totalChecks > 0) {
-      const missRatio = missing / totalChecks;
-      const fallRatio = falling / totalChecks;
+    if (engineRows > 0) {
+      const missRatio = missing / engineRows;
+      const fallRatio = falling / engineRows;
       seoMonitorScore -= Math.round(missRatio * 50 + fallRatio * 25);
     }
     seoMonitorScore -= Math.min(20, needsFix * 5);
     seoMonitorScore = Math.max(0, Math.min(100, seoMonitorScore));
-    if (missing >= 3) risks.push(`미노출 키워드 ${missing}개`);
+    if (kwMissing >= 3) risks.push(`미노출 키워드 ${kwMissing}개`);
     if (needsFix > 0) risks.push(`수정 필요 키워드 ${needsFix}개`);
-    if (falling > 0) risks.push(`순위 하락 ${falling}개`);
+    if (falling > 0) risks.push(`순위 하락 결과 ${falling}건`);
 
-    // indexingQueue score: penalize pending + re_request load
+    // indexingQueue score: pending + re_request load + stale + failed
     const pendingTotal = (counts.pending ?? 0) + (counts.re_request ?? 0);
-    let indexingQueueScore = 100 - Math.min(60, pendingTotal * 6) - Math.min(20, (counts.failed ?? 0) * 10);
+    let indexingQueueScore = 100
+      - Math.min(40, pendingTotal * 4)
+      - Math.min(30, stalePending * 6)
+      - Math.min(20, staleRequested * 4)
+      - Math.min(20, (counts.failed ?? 0) * 10);
     indexingQueueScore = Math.max(0, Math.min(100, indexingQueueScore));
     if (pendingTotal >= 5) risks.push(`색인 대기/재요청 ${pendingTotal}건`);
+    if (stalePending > 0) risks.push(`오래된 pending ${stalePending}건 (${STALE_PENDING_HOURS}h↑)`);
+    if (staleRequested > 0) risks.push(`오래된 requested ${staleRequested}건 (${STALE_REQUESTED_HOURS}h↑)`);
     if ((counts.failed ?? 0) > 0) risks.push(`색인 실패 ${counts.failed}건`);
 
     // aiGrowthLoop score: penalize stale activity
