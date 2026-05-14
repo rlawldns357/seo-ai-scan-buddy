@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { CheckCircle } from "lucide-react";
 import { trackEvent } from "@/lib/analytics";
 import { enrollSoapFunnel } from "@/lib/soapFunnel";
+import { maybeMarkBrandFromEmail } from "@/lib/vipBrand";
 import type { DemoResult } from "@/data/demoResults";
 
 interface EmailFormProps {
