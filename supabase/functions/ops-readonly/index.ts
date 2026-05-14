@@ -17,12 +17,49 @@ const json = (status: number, body: unknown) =>
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
+// Hash the IP so we can detect repeat callers without storing raw IPs
+async function hashIp(ip: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(ip));
+  return Array.from(new Uint8Array(buf)).slice(0, 8)
+    .map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+
+  const startedAt = Date.now();
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+
+  // Audit-log helper — fire-and-forget; never block the response
+  const ipRaw =
+    req.headers.get("cf-connecting-ip") ||
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    "unknown";
+  const userAgent = (req.headers.get("user-agent") || "").slice(0, 200);
+  const ipHash = await hashIp(ipRaw).catch(() => "err");
+
+  const audit = (status: number, reason: string) => {
+    const success = status >= 200 && status < 300;
+    supabase.from("analytics_events").insert({
+      event_name: "ops_readonly_access",
+      event_data: {
+        success, status, reason,
+        ip_hash: ipHash,
+        user_agent: userAgent,
+        duration_ms: Date.now() - startedAt,
+      },
+    }).then(({ error }) => {
+      if (error) console.warn("ops-readonly audit insert failed:", error.message);
+    });
+  };
 
   // ---- Token validation ----------------------------------------------------
   const expected = Deno.env.get("OPS_READONLY_TOKEN");
   if (!expected) {
+    audit(503, "token_not_configured");
     return json(503, { error: "OPS_READONLY_TOKEN not configured on server" });
   }
 
@@ -36,15 +73,14 @@ Deno.serve(async (req) => {
       provided = body?.token || "";
     } catch { /* ignore */ }
   }
-  if (!provided || provided !== expected) {
+  if (!provided) {
+    audit(401, "missing_token");
     return json(401, { error: "Unauthorized" });
   }
-
-  // ---- Read-only client ----------------------------------------------------
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
+  if (provided !== expected) {
+    audit(401, "invalid_token");
+    return json(401, { error: "Unauthorized" });
+  }
 
   try {
     // ── SEO Monitor summary ────────────────────────────────────────────────
