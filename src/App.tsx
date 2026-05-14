@@ -56,6 +56,7 @@ const App = () => (
             <Route path="/terms" element={<Terms />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/design-test" element={<DesignTest />} />
+            <Route path="/vip-test" element={<VipTest />} />
 
             {/* ───── 관리자 ───────────────────────────────────────────── */}
             <Route path="/admin" element={<Admin />} />
