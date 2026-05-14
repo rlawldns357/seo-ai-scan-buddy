@@ -595,7 +595,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 onChange={(e) => handleSlider(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-border accent-primary"
               />
-              <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
+              <div className="flex justify-between text-[10px] text-muted-foreground/70 mt-1">
                 <span>100명</span>
                 <span className="text-muted-foreground font-medium">하루 방문자가 {dailyVisitors.toLocaleString()}명이라면?</span>
                 <span>100,000명</span>
@@ -603,7 +603,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </div>
           )}
           {isGoodScore && (
-            <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
+            <p className="text-xs text-muted-foreground/70">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
           )}
         </div>
         {/* 2-Step Funnel CTA */}
@@ -708,7 +708,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
         )}
 
         {!isGoodScore && ctaStep === "idle" && (
-          <p className="hidden sm:block text-[10px] text-muted-foreground/40">
+          <p className="hidden sm:block text-[10px] text-muted-foreground/70">
             {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
           </p>
         )}
@@ -718,7 +718,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
           {!mobileExpanded ? (
             <button
               onClick={() => setMobileExpanded(true)}
-              className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors py-1 mt-1"
+              className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground/70 hover:text-muted-foreground transition-colors py-1 mt-1"
             >
               상세 수치 보기
               <ChevronDown className="w-3 h-3" />
@@ -735,7 +735,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                     onChange={(e) => handleSlider(Number(e.target.value))}
                     className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-border accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
+                  <div className="flex justify-between text-[10px] text-muted-foreground/70 mt-1">
                     <span>100명</span>
                     <span className="text-muted-foreground font-medium">하루 방문자가 {dailyVisitors.toLocaleString()}명이라면?</span>
                     <span>100,000명</span>
@@ -743,14 +743,14 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 </div>
               )}
               {!isGoodScore && (
-                <p className="text-center text-[10px] text-muted-foreground/40 pt-1">
+                <p className="text-center text-[10px] text-muted-foreground/70 pt-1">
                   {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
                 </p>
               )}
               <div className="flex justify-center pt-1">
                 <button
                   onClick={() => setMobileExpanded(false)}
-                  className="flex items-center gap-0.5 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                  className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70 hover:text-muted-foreground transition-colors"
                 >
                   접기
                   <ChevronDown className="w-3.5 h-3.5 rotate-180" />

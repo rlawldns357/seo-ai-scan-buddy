@@ -1,0 +1,17 @@
+# SearchTune OS
+
+> 한국어 기반 AI 검색 최적화 진단 도구. URL만 입력하면 SEO·AEO·GEO 3축 점수를 즉시 분석합니다.
+
+SearchTune OS(서치튠OS)는 웹사이트와 네이버 스마트스토어가 Google·Naver·Bing 같은 전통 검색엔진뿐 아니라 ChatGPT·Perplexity·Claude·Google SGE·Naver Cue: 같은 생성형 AI 검색에서 얼마나 잘 인용·노출되는지 진단합니다. Google Lighthouse 실측 + AI 콘텐츠 분석을 결합한 하이브리드 채점이며, 분석 엔진은 격주로 자동 업데이트됩니다.
+
+## Pages
+
+- [홈 / 무료 진단](/): URL 입력 한 번으로 SEO·AEO·GEO 점수 진단
+- [서치튠OS 소개](/about): 서비스 개요, 채점 방식, AEO·GEO 개념 설명
+- [네이버 스마트스토어 진단](/naver-store): 스마트스토어 전용 SEO/AEO/GEO 진단
+- [블로그](/blog): SEO·AEO·GEO 실전 가이드와 AI 검색 최적화 케이스
+
+## Optional
+
+- [개인정보 처리방침](/privacy)
+- [이용약관](/terms)

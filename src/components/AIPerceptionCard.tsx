@@ -170,7 +170,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                 className={`flex items-center gap-3 text-sm transition-all ${
                   state === "done" ? "text-muted-foreground" :
                   state === "active" ? "text-foreground font-medium" :
-                  "text-muted-foreground/50"
+                  "text-muted-foreground/70"
                 }`}
               >
                 <span className="w-5 flex items-center justify-center">
