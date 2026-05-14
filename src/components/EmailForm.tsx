@@ -35,6 +35,8 @@ export default function EmailForm({ onSubmitted, result, url }: EmailFormProps) 
     }
 
     setLoading(true);
+    // 도메인 기반 VIP 브랜드 마킹 (예: @my-progress.co.kr → ProgressMedia)
+    maybeMarkBrandFromEmail(trimmed);
     try {
       const r = await enrollSoapFunnel(trimmed, "result_form", {
         url,
