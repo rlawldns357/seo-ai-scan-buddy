@@ -201,7 +201,7 @@ export default function SeoMonitor() {
                   return (
                     <tr key={i} className="border-b last:border-b-0 hover:bg-muted/30">
                       <td className="py-2 pr-2 font-medium">{r.keyword}</td>
-                      <td className="py-2 pr-2 text-muted-foreground">{r.group}</td>
+                      <td className="py-2 pr-2 text-muted-foreground">{GROUP_LABEL[r.group] ?? r.group}</td>
                       <td className="py-2 pr-2">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] ${r.engine === "naver" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
                           {r.engine === "naver" ? "Naver" : "Google"}
