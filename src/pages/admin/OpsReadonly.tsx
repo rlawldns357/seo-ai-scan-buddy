@@ -1,8 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+type Task = {
+  type: "naver_submit" | "google_check" | "content_fix" | "monitor" | "deploy_issue";
+  priority: "high" | "medium" | "low";
+  title: string;
+  url?: string;
+  reason: string;
+  recommended_action: string;
+};
+
 type OpsData = {
   generated_at: string;
+  opsScore: {
+    overall: number; seoMonitor: number; indexingQueue: number; aiGrowthLoop: number;
+    risks: string[];
+  };
+  todayTasks: Task[];
   seoMonitor: {
     total_keywords: number;
     exposed: number; missing: number; rising: number; falling: number;
