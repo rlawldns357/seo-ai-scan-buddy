@@ -203,10 +203,144 @@ Deno.serve(async (req) => {
       })),
     };
 
+    // ── Today's Tasks (max 5, prioritized) ────────────────────────────────
+    type Task = {
+      type: "naver_submit" | "google_check" | "content_fix" | "monitor" | "deploy_issue";
+      priority: "high" | "medium" | "low";
+      title: string;
+      url?: string;
+      reason: string;
+      recommended_action: string;
+    };
+    const tasks: Task[] = [];
+
+    // 1) deploy_issue — recent SERP run errored or no run in >24h
+    const lastRunAt = lastSerp?.checked_at ? new Date(lastSerp.checked_at).getTime() : 0;
+    const hoursSinceSerp = lastRunAt ? (Date.now() - lastRunAt) / 3.6e6 : Infinity;
+    if (!lastSerp) {
+      tasks.push({
+        type: "deploy_issue", priority: "high",
+        title: "SERP 추적 기록 없음",
+        reason: "최근 7일 내 SERP 추적 결과가 없습니다.",
+        recommended_action: "track-serp Edge Function이 정상 동작하는지 점검하고 수동 트리거하세요.",
+      });
+    } else if (lastSerp.error || hoursSinceSerp > 36) {
+      tasks.push({
+        type: "deploy_issue", priority: "high",
+        title: lastSerp.error ? "최근 SERP 추적 실패" : "SERP 추적 지연",
+        reason: lastSerp.error
+          ? `마지막 추적 오류: ${String(lastSerp.error).slice(0, 120)}`
+          : `마지막 추적이 ${Math.round(hoursSinceSerp)}시간 전입니다.`,
+        recommended_action: "track-serp 로그를 확인하고 재실행하세요.",
+      });
+    }
+
+    // 2) naver_submit / google_check — pending/re_request items in indexing queue
+    const pendingForSubmit = items
+      .filter(i => i.status === "pending" || i.status === "re_request")
+      .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+    for (const it of pendingForSubmit.slice(0, 2)) {
+      const isNaver = it.engine === "naver" || it.engine === "both";
+      tasks.push({
+        type: isNaver ? "naver_submit" : "google_check",
+        priority: (it.priority ?? 5) >= 7 ? "high" : "medium",
+        title: isNaver ? "네이버 색인 요청 필요" : "구글 색인 확인 필요",
+        url: it.url,
+        reason: `상태: ${it.status}${it.target_keyword ? ` · 키워드: ${it.target_keyword}` : ""}`,
+        recommended_action: isNaver
+          ? "네이버 서치어드바이저에서 URL을 제출하세요."
+          : "Google Search Console에서 URL 검사 → 색인 요청을 실행하세요.",
+      });
+    }
+
+    // 3) content_fix — keywords flagged as needs_fix
+    const fixKeywords = (keywords || []).filter(k => k.status === "needs_fix").slice(0, 2);
+    for (const kw of fixKeywords) {
+      tasks.push({
+        type: "content_fix", priority: "high",
+        title: `콘텐츠 수정: "${kw.keyword}"`,
+        url: kw.target_url || undefined,
+        reason: "키워드 상태가 needs_fix로 표시되어 있습니다.",
+        recommended_action: "타깃 페이지의 H1/메타/본문 키워드 매칭을 보강하세요.",
+      });
+    }
+
+    // 4) monitor — falling rank or many missing
+    if (falling > 0 && tasks.length < 5) {
+      tasks.push({
+        type: "monitor", priority: "medium",
+        title: `순위 하락 키워드 ${falling}개`,
+        reason: "최근 SERP 스냅샷에서 순위가 하락한 키워드가 감지되었습니다.",
+        recommended_action: "/admin/seo-monitor에서 하락 키워드를 점검하세요.",
+      });
+    }
+    if (missing >= 3 && tasks.length < 5) {
+      tasks.push({
+        type: "monitor", priority: "medium",
+        title: `미노출 키워드 ${missing}개`,
+        reason: "다수의 키워드가 SERP에 노출되지 않고 있습니다.",
+        recommended_action: "노출 누락 키워드의 콘텐츠/색인 상태를 확인하세요.",
+      });
+    }
+
+    const todayTasks = tasks.slice(0, 5);
+
+    // ── Ops Score ─────────────────────────────────────────────────────────
+    const risks: string[] = [];
+
+    // seoMonitor score: penalize missing/needs_fix/falling vs total checks
+    const totalChecks = exposed + missing + rising + falling;
+    let seoMonitorScore = 100;
+    if (totalChecks > 0) {
+      const missRatio = missing / totalChecks;
+      const fallRatio = falling / totalChecks;
+      seoMonitorScore -= Math.round(missRatio * 50 + fallRatio * 25);
+    }
+    seoMonitorScore -= Math.min(20, needsFix * 5);
+    seoMonitorScore = Math.max(0, Math.min(100, seoMonitorScore));
+    if (missing >= 3) risks.push(`미노출 키워드 ${missing}개`);
+    if (needsFix > 0) risks.push(`수정 필요 키워드 ${needsFix}개`);
+    if (falling > 0) risks.push(`순위 하락 ${falling}개`);
+
+    // indexingQueue score: penalize pending + re_request load
+    const pendingTotal = (counts.pending ?? 0) + (counts.re_request ?? 0);
+    let indexingQueueScore = 100 - Math.min(60, pendingTotal * 6) - Math.min(20, (counts.failed ?? 0) * 10);
+    indexingQueueScore = Math.max(0, Math.min(100, indexingQueueScore));
+    if (pendingTotal >= 5) risks.push(`색인 대기/재요청 ${pendingTotal}건`);
+    if ((counts.failed ?? 0) > 0) risks.push(`색인 실패 ${counts.failed}건`);
+
+    // aiGrowthLoop score: penalize stale activity
+    const lastActionAt = aitems[0]?.updated_at || aitems[0]?.created_at;
+    const hoursSinceAction = lastActionAt ? (Date.now() - new Date(lastActionAt).getTime()) / 3.6e6 : Infinity;
+    let aiGrowthLoopScore = 100;
+    if (!lastActionAt) { aiGrowthLoopScore = 30; risks.push("최근 AI 액션 기록 없음"); }
+    else if (hoursSinceAction > 72) { aiGrowthLoopScore = 50; risks.push(`마지막 액션 ${Math.round(hoursSinceAction)}시간 전`); }
+    else if (hoursSinceAction > 36) { aiGrowthLoopScore = 75; }
+    aiGrowthLoopScore -= Math.min(20, (aiGrowthLoop.counts.worse ?? 0) * 5);
+    aiGrowthLoopScore = Math.max(0, Math.min(100, aiGrowthLoopScore));
+
+    // overall: weighted avg, additionally penalize stale SERP
+    let overall = Math.round(seoMonitorScore * 0.4 + indexingQueueScore * 0.3 + aiGrowthLoopScore * 0.3);
+    if (hoursSinceSerp > 24) {
+      overall -= Math.min(20, Math.floor((hoursSinceSerp - 24) / 12) * 5);
+      if (hoursSinceSerp > 36) risks.push(`SERP 추적 지연 (${Math.round(hoursSinceSerp)}h)`);
+    }
+    overall = Math.max(0, Math.min(100, overall));
+
+    const opsScore = {
+      overall,
+      seoMonitor: seoMonitorScore,
+      indexingQueue: indexingQueueScore,
+      aiGrowthLoop: aiGrowthLoopScore,
+      risks,
+    };
+
     audit(200, "ok");
     return json(200, {
       generated_at: new Date().toISOString(),
       mode: "read-only",
+      opsScore,
+      todayTasks,
       seoMonitor,
       indexingQueue,
       aiGrowthLoop,
