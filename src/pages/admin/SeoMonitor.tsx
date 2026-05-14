@@ -93,15 +93,16 @@ export default function SeoMonitor() {
   };
 
   const addToIndexing = async (r: Row) => {
-    if (!r.target_url) { toast.error("매칭 URL이 비어있어 색인 큐에 추가할 수 없습니다."); return; }
+    const absUrl = toAbsoluteUrl(r.target_url);
+    if (!absUrl || absUrl.length < 10) { toast.error("매칭 URL이 비어있어 색인 큐에 추가할 수 없습니다."); return; }
     const res = await adminInvoke<{ success: boolean; error?: string }>("addIndexingItem", {
-      url: r.target_url,
+      url: absUrl,
       target_keyword: r.keyword,
       engine: r.engine,
       reason: `${r.status} (rank=${r.current_rank ?? "-"})`,
-      priority: r.status === "missing" ? 8 : 5,
+      priority: r.status === "missing" || r.status === "needs_fix" ? 8 : 5,
     });
-    if (res?.success) toast.success("색인 큐에 추가됨"); else toast.error(res?.error || "실패");
+    if (res?.success) toast.success(`색인 큐에 추가됨 — ${absUrl}`); else toast.error(res?.error || "실패");
   };
 
   const createAction = async (r: Row) => {
