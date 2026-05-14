@@ -136,6 +136,28 @@ const Index = () => {
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
   const [vipBubble, setVipBubble] = useState<0 | 1 | 2>(0);
+  const [storedBrand, setStoredBrand] = useState<VipBrand | null>(() => getStoredVipBrand());
+  // 우선순위: 화이트리스트 IP → GrowthBridge, 아니면 localStorage 브랜드(ProgressMedia 등)
+  const effectiveBrand: VipBrand | null = rateLimit?.whitelisted
+    ? "growthbridge"
+    : storedBrand;
+  const vipBubbleShownRef = useRef(false);
+
+  // localStorage 브랜드 변경 구독 (이메일 제출 직후 즉시 반영)
+  useEffect(() => {
+    return subscribeVipBrand(() => setStoredBrand(getStoredVipBrand()));
+  }, []);
+
+  // 브랜드가 잡히는 첫 시점에 말풍선 2단계로 한 번만 노출
+  useEffect(() => {
+    if (!effectiveBrand || vipBubbleShownRef.current) return;
+    vipBubbleShownRef.current = true;
+    const t1 = setTimeout(() => setVipBubble(1), 500);
+    const t2 = setTimeout(() => setVipBubble(0), 2700);
+    const t3 = setTimeout(() => setVipBubble(2), 3100);
+    const t4 = setTimeout(() => setVipBubble(0), 6100);
+    return () => { [t1, t2, t3, t4].forEach(clearTimeout); };
+  }, [effectiveBrand]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [indexingResult, setIndexingResult] = useState<IndexingResult | null>(null);
   const [indexingLoading, setIndexingLoading] = useState(false);
