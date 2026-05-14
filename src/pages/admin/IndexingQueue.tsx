@@ -241,6 +241,6 @@ function Kpi({ label, value, tone }: { label: string; value: number; tone?: "goo
   );
 }
 
-function IconBtn({ title, onClick, children }: { title: string; onClick: () => void; children: React.ReactNode }) {
-  return <button title={title} onClick={onClick} className="p-1.5 rounded hover:bg-muted text-xs">{children}</button>;
+function IconBtn({ title, onClick, children, ...rest }: { title: string; onClick: () => void; children: React.ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button title={title} onClick={onClick} {...rest} className="p-1.5 rounded hover:bg-muted text-xs">{children}</button>;
 }
