@@ -457,9 +457,17 @@ const Index = () => {
       {screen === "home" && (
         <main className="flex-1 flex items-center justify-center px-4 pt-14 sm:pt-20 pb-44 sm:pb-44">
           <div className="max-w-2xl w-full text-center animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold mb-8">
-              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              무료 베타 서비스
+            <div className="inline-flex flex-wrap items-center justify-center gap-2 mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold">
+                <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                무료 베타 서비스
+              </div>
+              {rateLimit?.whitelisted && (
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-sm font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  GrowthBridge 전용 · 무제한 활성화 🔓 접속
+                </div>
+              )}
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl text-foreground leading-[1.15] sm:leading-[1.1] mb-6 tracking-tight">
               <span className="block font-light text-muted-foreground text-2xl sm:text-3xl md:text-4xl mb-3">
