@@ -16,6 +16,10 @@ const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
 const Admin = lazy(() => import("./pages/Admin.tsx"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.tsx"));
+const SeoMonitor = lazy(() => import("./pages/admin/SeoMonitor.tsx"));
+const IndexingQueue = lazy(() => import("./pages/admin/IndexingQueue.tsx"));
+const AiGrowthLoop = lazy(() => import("./pages/admin/AiGrowthLoop.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
@@ -53,6 +57,13 @@ const App = () => (
 
             {/* ───── 관리자 ───────────────────────────────────────────── */}
             <Route path="/admin" element={<Admin />} />
+            <Route path="/admin/insights" element={<Admin />} />
+            <Route path="/admin/blog" element={<Admin />} />
+            <Route element={<AdminLayout />}>
+              <Route path="/admin/seo-monitor" element={<SeoMonitor />} />
+              <Route path="/admin/indexing-queue" element={<IndexingQueue />} />
+              <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
+            </Route>
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

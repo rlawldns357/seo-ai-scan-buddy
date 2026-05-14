@@ -271,6 +271,290 @@ Deno.serve(async (req) => {
       );
     }
 
+    // ─────────────── SEO Monitor / Indexing Queue / Growth Loop ───────────────
+
+    // SEO Monitor: keywords + latest 2 days of results to compute today vs yesterday
+    if (action === "seoMonitor") {
+      const engineFilter: string = body.engine || "all"; // all|google|naver
+      const statusFilter: string = body.status || "all";
+      const groupFilter: string = body.group || "all";
+      const days = Math.min(Math.max(Number(body.days ?? 7), 1), 30);
+
+      const { data: keywords } = await supabase
+        .from("serp_keywords")
+        .select("id, keyword, category, target_url, priority, active, status, last_action_at")
+        .order("priority", { ascending: false })
+        .order("keyword", { ascending: true });
+
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - days);
+      const { data: results } = await supabase
+        .from("serp_tracking_results")
+        .select("keyword, engine, our_exposed, our_rank, our_url, our_title, top_domains, total_results, error, checked_at")
+        .gte("checked_at", cutoff.toISOString())
+        .order("checked_at", { ascending: false })
+        .limit(5000);
+
+      // Group by (keyword, engine) → keep last 2 snapshots
+      const byKey = new Map<string, any[]>();
+      for (const r of results || []) {
+        const k = `${r.keyword}::${r.engine}`;
+        const arr = byKey.get(k) || [];
+        if (arr.length < 2) arr.push(r);
+        byKey.set(k, arr);
+      }
+
+      // Build rows
+      const rows: any[] = [];
+      for (const kw of keywords || []) {
+        for (const eng of ["google", "naver"]) {
+          if (engineFilter !== "all" && engineFilter !== eng) continue;
+          const arr = byKey.get(`${kw.keyword}::${eng}`) || [];
+          const cur = arr[0];
+          const prev = arr[1];
+          const rankDelta =
+            cur?.our_rank != null && prev?.our_rank != null
+              ? prev.our_rank - cur.our_rank // positive = improved (rank went up = lower number)
+              : null;
+          const status = !cur
+            ? "monitoring"
+            : cur.our_exposed
+              ? rankDelta != null && rankDelta > 0
+                ? "rising"
+                : rankDelta != null && rankDelta < 0
+                  ? "falling"
+                  : "exposed"
+              : "missing";
+          if (statusFilter !== "all" && status !== statusFilter) continue;
+          if (groupFilter !== "all" && kw.category !== groupFilter) continue;
+          // Recommended next action (rule-based)
+          let nextAction = "모니터링 유지";
+          if (status === "missing" && kw.target_url) nextAction = "title/H1/FAQ 보강 후 색인 요청";
+          else if (status === "missing" && !kw.target_url) nextAction = "신규 글 작성 필요";
+          else if (cur?.our_exposed && (cur.our_rank ?? 99) > 10) nextAction = "FAQ·내부링크 보강";
+          else if (status === "falling") nextAction = "최근 변경사항 점검";
+          rows.push({
+            keyword_id: kw.id,
+            keyword: kw.keyword,
+            group: kw.category,
+            engine: eng,
+            status,
+            current_rank: cur?.our_rank ?? null,
+            previous_rank: prev?.our_rank ?? null,
+            rank_delta: rankDelta,
+            target_url: kw.target_url,
+            actual_url: cur?.our_url ?? null,
+            top_domains: cur?.top_domains ?? [],
+            checked_at: cur?.checked_at ?? null,
+            last_action_at: kw.last_action_at,
+            next_action: nextAction,
+            stored_status: kw.status,
+          });
+        }
+      }
+
+      // Summary
+      const summary = {
+        total: rows.length,
+        exposed: rows.filter(r => r.status === "exposed" || r.status === "rising" || r.status === "falling").length,
+        missing: rows.filter(r => r.status === "missing").length,
+        rising: rows.filter(r => r.status === "rising").length,
+        falling: rows.filter(r => r.status === "falling").length,
+      };
+
+      // Pending indexing count
+      const { count: pendingCount } = await supabase
+        .from("indexing_queue")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      return new Response(
+        JSON.stringify({ rows, summary: { ...summary, indexing_pending: pendingCount ?? 0 } }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "updateKeywordStatus" && body.keywordId) {
+      const { error } = await supabase
+        .from("serp_keywords")
+        .update({ status: body.status, last_action_at: new Date().toISOString() })
+        .eq("id", body.keywordId);
+      return new Response(JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // ── Indexing Queue ──
+    if (action === "listIndexingQueue") {
+      const { data: items } = await supabase
+        .from("indexing_queue")
+        .select("*")
+        .order("priority", { ascending: false })
+        .order("created_at", { ascending: false })
+        .limit(500);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const summary = {
+        today_candidates: (items || []).filter(i => i.status === "pending" && new Date(i.created_at) >= today).length,
+        requested: (items || []).filter(i => i.status === "requested").length,
+        verified: (items || []).filter(i => i.status === "verified").length,
+        re_request: (items || []).filter(i => i.status === "re_request").length,
+        hold: (items || []).filter(i => i.status === "hold").length,
+      };
+      return new Response(JSON.stringify({ items: items || [], summary }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "addIndexingItem") {
+      const payload = {
+        url: String(body.url || "").trim(),
+        target_keyword: body.target_keyword ?? null,
+        engine: body.engine || "both",
+        reason: body.reason ?? null,
+        priority: Number(body.priority ?? 5),
+        note: body.note ?? null,
+      };
+      if (!payload.url || payload.url.length < 5) {
+        return new Response(JSON.stringify({ error: "URL이 필요합니다" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const { data, error } = await supabase.from("indexing_queue").insert(payload).select().single();
+      return new Response(JSON.stringify({ success: !error, item: data, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "updateIndexingStatus" && body.itemId) {
+      const patch: any = { status: body.status, updated_at: new Date().toISOString() };
+      if (body.status === "requested") patch.requested_at = new Date().toISOString();
+      if (body.status === "verified") patch.verified_at = new Date().toISOString();
+      if (body.result !== undefined) patch.result = body.result;
+      if (body.note !== undefined) patch.note = body.note;
+      const { error } = await supabase.from("indexing_queue").update(patch).eq("id", body.itemId);
+      return new Response(JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "deleteIndexingItem" && body.itemId) {
+      const { error } = await supabase.from("indexing_queue").delete().eq("id", body.itemId);
+      return new Response(JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // ── SEO Actions (Growth Loop) ──
+    if (action === "listSeoActions") {
+      const { data: actions } = await supabase
+        .from("seo_actions")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      const items = actions || [];
+      const improved = items.filter(a => a.result === "improved");
+      const avgDays = improved.length
+        ? Math.round(
+            improved.reduce((acc, a) => {
+              const ms = (new Date(a.updated_at).getTime() - new Date(a.created_at).getTime());
+              return acc + ms / 86400000;
+            }, 0) / improved.length * 10
+          ) / 10
+        : 0;
+      const summary = {
+        total: items.length,
+        improved: improved.length,
+        unverified: items.filter(a => a.result === "waiting" || a.result === "unclear").length,
+        needs_review: items.filter(a => a.result === "no_change" || a.result === "worse").length,
+        avg_days_to_improve: avgDays,
+      };
+      return new Response(JSON.stringify({ items, summary }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "createSeoAction") {
+      const payload = {
+        page_url: String(body.page_url || "").trim(),
+        target_keyword: body.target_keyword ?? null,
+        action_type: body.action_type || "title 수정",
+        before_state: body.before_state ?? {},
+        after_state: body.after_state ?? {},
+        next_action: body.next_action ?? null,
+        remeasure_at: body.remeasure_at ?? null,
+      };
+      if (!payload.page_url) {
+        return new Response(JSON.stringify({ error: "page_url 필요" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const { data, error } = await supabase.from("seo_actions").insert(payload).select().single();
+      return new Response(JSON.stringify({ success: !error, item: data, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "updateSeoAction" && body.actionId) {
+      const patch: any = { updated_at: new Date().toISOString() };
+      for (const k of ["result", "ai_judgement", "next_action", "remeasure_at", "after_state"]) {
+        if (body[k] !== undefined) patch[k] = body[k];
+      }
+      const { error } = await supabase.from("seo_actions").update(patch).eq("id", body.actionId);
+      return new Response(JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "deleteSeoAction" && body.actionId) {
+      const { error } = await supabase.from("seo_actions").delete().eq("id", body.actionId);
+      return new Response(JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // AI judge — use Lovable AI Gateway (Gemini) to write a 1-line judgement
+    if (action === "aiJudgeAction" && body.actionId) {
+      const { data: act } = await supabase.from("seo_actions").select("*").eq("id", body.actionId).single();
+      if (!act) return new Response(JSON.stringify({ error: "action not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+      // Pull recent SERP results for the action's keyword to give context
+      let serpContext: any[] = [];
+      if (act.target_keyword) {
+        const { data: rs } = await supabase
+          .from("serp_tracking_results")
+          .select("engine, our_exposed, our_rank, checked_at")
+          .eq("keyword", act.target_keyword)
+          .gte("checked_at", new Date(new Date(act.created_at).getTime() - 86400000).toISOString())
+          .order("checked_at", { ascending: true })
+          .limit(20);
+        serpContext = rs || [];
+      }
+
+      const apiKey = Deno.env.get("LOVABLE_API_KEY");
+      let judgement = "데이터 부족 — 모니터링 유지";
+      let result: string = act.result;
+      try {
+        const prompt = `다음 SEO 수정 액션의 효과를 1문장 한국어로 판단하라. 결과 단어 1개(improved|no_change|worse|waiting|unclear) + " | " + 1문장 코멘트 형식으로만 답하라.\n페이지: ${act.page_url}\n키워드: ${act.target_keyword || "없음"}\n수정 유형: ${act.action_type}\n수정일: ${act.created_at}\n수정 전: ${JSON.stringify(act.before_state)}\n수정 후: ${JSON.stringify(act.after_state)}\nSERP 추적 (시간순): ${JSON.stringify(serpContext)}`;
+        const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+          body: JSON.stringify({
+            model: "google/gemini-2.5-flash",
+            temperature: 0,
+            messages: [{ role: "user", content: prompt }],
+          }),
+        });
+        const aiJson = await aiRes.json();
+        const text: string = aiJson?.choices?.[0]?.message?.content?.trim() || "";
+        const [verdict, ...rest] = text.split("|");
+        const v = verdict.trim().toLowerCase();
+        if (["improved", "no_change", "worse", "waiting", "unclear"].includes(v)) result = v;
+        judgement = (rest.join("|") || text).trim().slice(0, 280);
+      } catch (e) {
+        judgement = `AI 호출 실패: ${(e as Error).message}`;
+      }
+
+      await supabase.from("seo_actions").update({
+        ai_judgement: judgement,
+        result,
+        updated_at: new Date().toISOString(),
+      }).eq("id", body.actionId);
+
+      return new Response(JSON.stringify({ success: true, ai_judgement: judgement, result }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+
+    const since = new Date();
     since.setDate(since.getDate() - days);
     const sinceStr = since.toISOString();
 
