@@ -271,6 +271,7 @@ Deno.serve(async (req) => {
       );
     }
 
+    const since = new Date();
     since.setDate(since.getDate() - days);
     const sinceStr = since.toISOString();
 
