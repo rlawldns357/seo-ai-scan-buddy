@@ -18,6 +18,7 @@ import { type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
 import { type RateLimitStatus } from "@/lib/rateLimit";
+import { BRAND_LABEL, getStoredVipBrand, subscribeVipBrand, type VipBrand } from "@/lib/vipBrand";
 import type { AnalysisPhase } from "@/components/LoadingScreen";
 import type { IndexingResult } from "@/lib/checkIndexing";
 
