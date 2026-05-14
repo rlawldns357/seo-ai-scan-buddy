@@ -6,6 +6,7 @@ type Task = {
   priority: "high" | "medium" | "low";
   title: string;
   url?: string;
+  canonical_url?: string;
   reason: string;
   recommended_action: string;
 };
@@ -19,16 +20,24 @@ type OpsData = {
   todayTasks: Task[];
   seoMonitor: {
     total_keywords: number;
-    exposed: number; missing: number; rising: number; falling: number;
+    exposed_keywords: number; missing_keywords: number;
+    partial_keywords: number; untracked_keywords: number;
     needs_fix: number; indexing_pending: number;
+    total_engine_results: number;
+    exposed_results: number; missing_results: number;
+    rising_results: number; falling_results: number;
     last_serp_run: { checked_at: string; ok: boolean } | null;
   };
   indexingQueue: {
     total: number;
     counts: Record<string, number>;
+    stale_pending: number;
+    stale_requested: number;
     recent: Array<{
-      url: string; status: string; engine: string; priority: number;
+      url_path: string; canonical_url: string | null;
+      status: string; engine: string; priority: number;
       target_keyword: string | null; created_at: string; updated_at: string;
+      requested_at: string | null;
     }>;
   };
   aiGrowthLoop: {
@@ -129,31 +138,38 @@ export default function OpsReadonly() {
                 <Table
                   headers={["우선순위", "유형", "제목", "URL", "사유", "권장 액션"]}
                   rows={data.todayTasks.map(t => [
-                    t.priority, t.type, t.title, t.url ?? "—", t.reason, t.recommended_action,
+                    t.priority, t.type, t.title, t.canonical_url ?? t.url ?? "—", t.reason, t.recommended_action,
                   ])}
                 />
               )}
             </div>
           </Section>
 
-          <Section title="SEO Monitor">
+          <Section title="SEO Monitor (키워드 단위)">
             <KV k="총 키워드" v={seo!.total_keywords} />
-            <KV k="노출중" v={seo!.exposed} />
-            <KV k="미노출" v={seo!.missing} />
-            <KV k="상승" v={seo!.rising} />
-            <KV k="하락" v={seo!.falling} />
+            <KV k="노출" v={seo!.exposed_keywords} />
+            <KV k="미노출" v={seo!.missing_keywords} />
+            <KV k="부분노출" v={seo!.partial_keywords} />
+            <KV k="추적없음" v={seo!.untracked_keywords} />
             <KV k="수정필요" v={seo!.needs_fix} />
             <KV k="색인대기" v={seo!.indexing_pending} />
             <KV k="마지막 SERP 실행" v={`${fmtTime(seo!.last_serp_run?.checked_at)} (${seo!.last_serp_run?.ok ? "OK" : "FAIL/없음"})`} />
           </Section>
 
-          <Section title={`Indexing Queue (총 ${queue!.total})`}>
+          <Section title={`SEO Monitor (엔진×키워드 결과 ${seo!.total_engine_results})`}>
+            <KV k="노출 결과" v={seo!.exposed_results} />
+            <KV k="미노출 결과" v={seo!.missing_results} />
+            <KV k="상승" v={seo!.rising_results} />
+            <KV k="하락" v={seo!.falling_results} />
+          </Section>
+
+          <Section title={`Indexing Queue (총 ${queue!.total} · 오래된 pending ${queue!.stale_pending} · 오래된 requested ${queue!.stale_requested})`}>
             {Object.entries(queue!.counts).map(([k, v]) => <KV key={k} k={k} v={v} />)}
             <div className="col-span-full mt-3">
               <Table
                 headers={["URL", "상태", "엔진", "우선순위", "키워드", "업데이트"]}
                 rows={queue!.recent.map(r => [
-                  r.url, r.status, r.engine, String(r.priority),
+                  r.canonical_url ?? r.url_path, r.status, r.engine, String(r.priority),
                   r.target_keyword ?? "—", fmtTime(r.updated_at),
                 ])}
               />
