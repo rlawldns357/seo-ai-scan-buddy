@@ -134,7 +134,7 @@ const Index = () => {
 
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
-  const [vipBubble, setVipBubble] = useState(false);
+  const [vipBubble, setVipBubble] = useState<0 | 1 | 2>(0);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [indexingResult, setIndexingResult] = useState<IndexingResult | null>(null);
   const [indexingLoading, setIndexingLoading] = useState(false);
@@ -173,10 +173,13 @@ const Index = () => {
         const status = await checkRateLimit();
         if (!cancelled) {
           setRateLimit((prev) => prev ?? status);
-          // 이스터에그: 화이트리스트 IP면 버튼 위로 말풍선 살짝 띄웠다 사라짐
+          // 이스터에그: 화이트리스트 IP면 버튼 위로 말풍선 2단계로 노출
+          // 1단계: "Hello 👋 GrowthBridge" → 2단계: "무제한으로 바뀌었어요 ✨" → 사라짐
           if (status.whitelisted) {
-            setTimeout(() => setVipBubble(true), 600);
-            setTimeout(() => setVipBubble(false), 4600);
+            setTimeout(() => setVipBubble(1), 500);
+            setTimeout(() => setVipBubble(0), 2700);
+            setTimeout(() => setVipBubble(2), 3100);
+            setTimeout(() => setVipBubble(0), 6100);
           }
         }
       } catch {
@@ -454,12 +457,6 @@ const Index = () => {
       {screen === "home" && (
         <main className="flex-1 flex items-center justify-center px-4 pt-14 sm:pt-20 pb-44 sm:pb-44">
           <div className="max-w-2xl w-full text-center animate-fade-up">
-            {rateLimit?.whitelisted && (
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold mb-3 border border-emerald-500/20">
-                <span className="text-sm">👋</span>
-                어서오세요, 그로스브릿지 담당자님
-              </div>
-            )}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold mb-8">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               무료 베타 서비스
@@ -525,16 +522,16 @@ const Index = () => {
                   />
                 </div>
                 <div className="relative">
-                  {/* 이스터에그 말풍선: 화이트리스트 IP일 때만, 버튼 텍스트 변경을 슬쩍 알려줌 */}
+                  {/* 이스터에그 말풍선: 화이트리스트 IP에서만 첫 진입 시 2단계로 살짝 노출 */}
                   {rateLimit?.whitelisted && (
                     <div
                       className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap z-10 transition-all duration-500 ease-out ${
-                        vipBubble ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                        vipBubble !== 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
                       }`}
                       aria-hidden="true"
                     >
                       <div className="relative px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold shadow-lg">
-                        무제한으로 바뀌었어요 ✨
+                        {vipBubble === 1 ? "Hello 👋 GrowthBridge" : "무제한으로 바뀌었어요 ✨"}
                         <span className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-emerald-600" />
                       </div>
                     </div>
