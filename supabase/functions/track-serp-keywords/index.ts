@@ -100,22 +100,28 @@ async function searchGoogle(keyword: string): Promise<{ items: SerpItem[]; error
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  // Auth: cron uses anon key (verify_jwt=false). Manual triggers from /admin pass admin password.
+  // Auth: allow if Authorization is service-role bearer (cron + admin proxy)
+  // OR body.password matches ADMIN_PASSWORD (manual curl)
   const url = new URL(req.url);
-  const isManual = req.method === "POST";
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const adminPassword = Deno.env.get("ADMIN_PASSWORD");
+  const authHeader = req.headers.get("Authorization") || "";
+  const hasServiceRole = authHeader === `Bearer ${serviceRoleKey}`;
+
   let providedPassword: string | null = null;
-  if (isManual) {
+  if (req.method === "POST") {
     try {
       const body = await req.json();
       providedPassword = body?.password ?? null;
     } catch {}
-    const adminPassword = Deno.env.get("ADMIN_PASSWORD");
-    if (adminPassword && providedPassword !== adminPassword) {
-      return new Response(JSON.stringify({ error: "unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+  }
+  const passwordOk = adminPassword && providedPassword === adminPassword;
+
+  if (!hasServiceRole && !passwordOk) {
+    return new Response(JSON.stringify({ error: "unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 
   const supabase = createClient(
