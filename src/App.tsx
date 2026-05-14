@@ -20,6 +20,7 @@ const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.tsx"));
 const SeoMonitor = lazy(() => import("./pages/admin/SeoMonitor.tsx"));
 const IndexingQueue = lazy(() => import("./pages/admin/IndexingQueue.tsx"));
 const AiGrowthLoop = lazy(() => import("./pages/admin/AiGrowthLoop.tsx"));
+const OpsReadonly = lazy(() => import("./pages/admin/OpsReadonly.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
@@ -64,6 +65,8 @@ const App = () => (
               <Route path="/admin/indexing-queue" element={<IndexingQueue />} />
               <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
             </Route>
+            {/* 읽기 전용 자동 점검(Hermes 등) — 토큰 기반, 관리자 비번 무관 */}
+            <Route path="/admin/ops-readonly" element={<OpsReadonly />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
