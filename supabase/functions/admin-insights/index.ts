@@ -263,7 +263,7 @@ Deno.serve(async (req) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
         },
-        body: JSON.stringify({ password: adminPw }),
+        body: JSON.stringify({ password: adminPw, force: true }),
       }).catch((e) => console.warn("serp trigger failed:", e));
       return new Response(
         JSON.stringify({ success: true, message: "SERP 추적을 백그라운드에서 시작했습니다 (약 2~3분 소요)" }),
