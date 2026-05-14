@@ -171,7 +171,14 @@ const Index = () => {
       try {
         const { checkRateLimit } = await import("@/lib/rateLimit");
         const status = await checkRateLimit();
-        if (!cancelled) setRateLimit((prev) => prev ?? status);
+        if (!cancelled) {
+          setRateLimit((prev) => prev ?? status);
+          // 이스터에그: 화이트리스트 IP면 버튼 위로 말풍선 살짝 띄웠다 사라짐
+          if (status.whitelisted) {
+            setTimeout(() => setVipBubble(true), 600);
+            setTimeout(() => setVipBubble(false), 4600);
+          }
+        }
       } catch {
         /* fail silently — 환영 배너는 부가 기능 */
       }
