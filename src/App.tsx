@@ -11,6 +11,7 @@ import GAListener from "@/components/GAListener";
 import Index from "./pages/Index.tsx";
 
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
+const VipTest = lazy(() => import("./pages/VipTest.tsx"));
 const DesignTest = lazy(() => import("./pages/DesignTest.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
