@@ -1,0 +1,1 @@
+DELETE FROM public.email_leads WHERE lower(email) LIKE '%@my-progress.co.kr';

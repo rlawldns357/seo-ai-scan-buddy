@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { unlockWithEmail } from "@/lib/rateLimit";
 import { enrollSoapFunnel } from "@/lib/soapFunnel";
+import { maybeMarkBrandFromEmail } from "@/lib/vipBrand";
 
 interface RateLimitBannerProps {
   remaining: number;
@@ -30,6 +31,9 @@ const RateLimitBanner = ({ remaining, emailUnlocked, onUnlocked }: RateLimitBann
     setError("");
 
     try {
+      // 도메인 기반 VIP 브랜드 마킹 (예: @my-progress.co.kr → ProgressMedia)
+      maybeMarkBrandFromEmail(email);
+
       // Save lead + start Soap Opera funnel
       await enrollSoapFunnel(email, "rate_limit_unlock");
 

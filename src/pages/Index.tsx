@@ -18,6 +18,7 @@ import { type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
 import { type RateLimitStatus } from "@/lib/rateLimit";
+import { BRAND_LABEL, getStoredVipBrand, subscribeVipBrand, type VipBrand } from "@/lib/vipBrand";
 import type { AnalysisPhase } from "@/components/LoadingScreen";
 import type { IndexingResult } from "@/lib/checkIndexing";
 
@@ -135,6 +136,28 @@ const Index = () => {
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
   const [vipBubble, setVipBubble] = useState<0 | 1 | 2>(0);
+  const [storedBrand, setStoredBrand] = useState<VipBrand | null>(() => getStoredVipBrand());
+  // 우선순위: 화이트리스트 IP → GrowthBridge, 아니면 localStorage 브랜드(ProgressMedia 등)
+  const effectiveBrand: VipBrand | null = rateLimit?.whitelisted
+    ? "growthbridge"
+    : storedBrand;
+  const vipBubbleShownRef = useRef(false);
+
+  // localStorage 브랜드 변경 구독 (이메일 제출 직후 즉시 반영)
+  useEffect(() => {
+    return subscribeVipBrand(() => setStoredBrand(getStoredVipBrand()));
+  }, []);
+
+  // 브랜드가 잡히는 첫 시점에 말풍선 2단계로 한 번만 노출
+  useEffect(() => {
+    if (!effectiveBrand || vipBubbleShownRef.current) return;
+    vipBubbleShownRef.current = true;
+    const t1 = setTimeout(() => setVipBubble(1), 500);
+    const t2 = setTimeout(() => setVipBubble(0), 2700);
+    const t3 = setTimeout(() => setVipBubble(2), 3100);
+    const t4 = setTimeout(() => setVipBubble(0), 6100);
+    return () => { [t1, t2, t3, t4].forEach(clearTimeout); };
+  }, [effectiveBrand]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [indexingResult, setIndexingResult] = useState<IndexingResult | null>(null);
   const [indexingLoading, setIndexingLoading] = useState(false);
@@ -173,14 +196,6 @@ const Index = () => {
         const status = await checkRateLimit();
         if (!cancelled) {
           setRateLimit((prev) => prev ?? status);
-          // 이스터에그: 화이트리스트 IP면 버튼 위로 말풍선 2단계로 노출
-          // 1단계: "Hello 👋 GrowthBridge" → 2단계: "무제한으로 바뀌었어요 ✨" → 사라짐
-          if (status.whitelisted) {
-            setTimeout(() => setVipBubble(1), 500);
-            setTimeout(() => setVipBubble(0), 2700);
-            setTimeout(() => setVipBubble(2), 3100);
-            setTimeout(() => setVipBubble(0), 6100);
-          }
         }
       } catch {
         /* fail silently — 환영 배너는 부가 기능 */
@@ -462,14 +477,14 @@ const Index = () => {
                 <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
                 무료 베타 서비스
               </div>
-              {rateLimit?.whitelisted && (
+              {effectiveBrand && (
                 <div className="inline-flex items-center gap-2 px-2 py-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold leading-none">
                   <span className="relative inline-flex items-center justify-center w-2 h-2">
                     {/* 닷 크기는 그대로, 펄스 halo만 더 크게 퍼지도록 */}
                     <span className="absolute w-4 h-4 rounded-full bg-emerald-500 opacity-50 animate-ping" />
                     <span className="relative inline-block w-2 h-2 rounded-full bg-emerald-500" />
                   </span>
-                  GrowthBridge 전용 · 무제한 활성화 🔓 접속
+                  {BRAND_LABEL[effectiveBrand]} 전용 · 무제한 활성화 🔓 접속
                 </div>
               )}
             </div>
@@ -534,8 +549,8 @@ const Index = () => {
                   />
                 </div>
                 <div className="relative">
-                  {/* 이스터에그 말풍선: 화이트리스트 IP에서만 첫 진입 시 2단계로 살짝 노출 */}
-                  {rateLimit?.whitelisted && (
+                  {/* 이스터에그 말풍선: VIP 브랜드(GrowthBridge/ProgressMedia) 첫 진입 시 2단계 노출 */}
+                  {effectiveBrand && (
                     <div
                       className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap z-10 transition-all duration-500 ease-out ${
                         vipBubble !== 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
@@ -543,7 +558,9 @@ const Index = () => {
                       aria-hidden="true"
                     >
                       <div className="relative px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold shadow-lg">
-                        {vipBubble === 1 ? "Hello 👋 GrowthBridge" : "무제한으로 바뀌었어요 ✨"}
+                        {vipBubble === 1
+                          ? `Hello 👋 ${BRAND_LABEL[effectiveBrand]}`
+                          : "무제한으로 바뀌었어요 ✨"}
                         <span className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-emerald-600" />
                       </div>
                     </div>
@@ -559,7 +576,7 @@ const Index = () => {
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span>분석 시작 중…</span>
                       </>
-                    ) : rateLimit?.whitelisted ? (
+                    ) : effectiveBrand ? (
                       "무제한 분석하기"
                     ) : (
                       "무료로 분석하기"
