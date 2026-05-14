@@ -23,12 +23,31 @@ interface Item {
 
 const STATUS: Record<string, { label: string; cls: string }> = {
   pending: { label: "대기", cls: "bg-muted text-muted-foreground" },
-  requested: { label: "요청완료", cls: "bg-primary/15 text-primary" },
-  verified: { label: "색인확인", cls: "bg-score-excellent/15 text-score-excellent" },
+  requested: { label: "요청 제출 완료", cls: "bg-blue-500/15 text-blue-700 dark:text-blue-400" },
+  verified: { label: "색인 확인 완료", cls: "bg-score-excellent/15 text-score-excellent" },
+  re_request: { label: "재요청 필요", cls: "bg-orange-500/15 text-orange-700 dark:text-orange-400" },
+  hold: { label: "보류", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
   failed: { label: "실패", cls: "bg-destructive/15 text-destructive" },
-  re_request: { label: "재요청", cls: "bg-accent/20 text-accent-foreground" },
-  hold: { label: "보류", cls: "bg-muted text-muted-foreground" },
 };
+
+const ENGINE_LABEL: Record<string, string> = {
+  both: "Naver + Google",
+  google: "Google",
+  naver: "Naver",
+};
+
+const SITE_ORIGIN = "https://searchtuneos.com";
+function toAbsoluteUrl(u: string): string {
+  if (!u) return "";
+  const t = u.trim();
+  if (/^https?:\/\//i.test(t)) return t;
+  if (t.startsWith("/")) return SITE_ORIGIN + t;
+  return `${SITE_ORIGIN}/${t}`;
+}
+function pathOf(u: string): string {
+  const abs = toAbsoluteUrl(u);
+  try { const url = new URL(abs); return url.pathname + url.search + url.hash || "/"; } catch { return abs; }
+}
 
 const NAVER_CONSOLE = "https://searchadvisor.naver.com/console/board/request";
 const GOOGLE_CONSOLE = "https://search.google.com/search-console";
@@ -96,23 +115,25 @@ export default function IndexingQueue() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
         <Kpi label="오늘 후보" value={summary.today_candidates ?? 0} />
-        <Kpi label="요청완료" value={summary.requested ?? 0} tone="good" />
-        <Kpi label="색인확인" value={summary.verified ?? 0} tone="good" />
+        <Kpi label="대기" value={items.filter(i => i.status === "pending").length} />
+        <Kpi label="요청 제출 완료" value={summary.requested ?? 0} tone="good" />
+        <Kpi label="색인 확인 완료" value={summary.verified ?? 0} tone="good" />
         <Kpi label="재요청 필요" value={summary.re_request ?? 0} tone="warn" />
-        <Kpi label="보류" value={summary.hold ?? 0} />
+        <Kpi label="보류" value={summary.hold ?? 0} tone="warn" />
+        <Kpi label="실패" value={items.filter(i => i.status === "failed").length} tone="bad" />
       </div>
 
       <Card>
         <CardHeader><CardTitle className="text-base">URL 직접 추가</CardTitle></CardHeader>
-        <CardContent className="grid md:grid-cols-[2fr_1fr_120px_1fr_auto] gap-2">
-          <Input placeholder="https://..." value={newUrl} onChange={(e) => setNewUrl(e.target.value)} />
+        <CardContent className="grid md:grid-cols-[2fr_1fr_140px_1fr_auto] gap-2">
+          <Input placeholder="https://searchtuneos.com/... (상대경로 입력 시 자동으로 절대 URL 변환)" value={newUrl} onChange={(e) => setNewUrl(e.target.value)} />
           <Input placeholder="타겟 키워드" value={newKeyword} onChange={(e) => setNewKeyword(e.target.value)} />
           <select className="border border-border rounded-md px-2 text-sm bg-background" value={newEngine} onChange={(e) => setNewEngine(e.target.value)}>
-            <option value="both">both</option>
-            <option value="naver">naver</option>
-            <option value="google">google</option>
+            <option value="both">{ENGINE_LABEL.both}</option>
+            <option value="naver">{ENGINE_LABEL.naver}</option>
+            <option value="google">{ENGINE_LABEL.google}</option>
           </select>
           <Input placeholder="요청 사유" value={newReason} onChange={(e) => setNewReason(e.target.value)} />
           <Button onClick={add}>추가</Button>
@@ -123,16 +144,19 @@ export default function IndexingQueue() {
         <CardHeader>
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <CardTitle className="text-base">큐 ({filtered.length}건)</CardTitle>
-            <div className="flex gap-1 text-xs">
-              {(["all", "pending", "requested", "verified", "re_request", "hold", "failed"] as const).map(s => (
-                <button key={s} onClick={() => setFilter(s)} className={`px-2 py-1 rounded ${filter === s ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"}`}>
-                  {s === "all" ? "전체" : STATUS[s]?.label ?? s}
-                </button>
-              ))}
+            <div className="flex gap-1 text-xs flex-wrap">
+              {(["all", "pending", "requested", "verified", "re_request", "hold", "failed"] as const).map(s => {
+                const cnt = s === "all" ? items.length : items.filter(i => i.status === s).length;
+                return (
+                  <button key={s} onClick={() => setFilter(s)} className={`px-2 py-1 rounded ${filter === s ? "bg-primary text-primary-foreground" : "bg-muted hover:bg-muted/80"}`}>
+                    {s === "all" ? "전체" : STATUS[s]?.label ?? s} <span className="opacity-70">{cnt}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-            <AlertCircle className="w-3 h-3" /> 네이버는 URL 한 개씩 수동 제출 — <strong>URL 복사</strong> 후 콘솔 새 창에 붙여넣기.
+            <AlertCircle className="w-3 h-3" /> 네이버는 URL 한 개씩 수동 제출 — <strong>전체 URL 복사</strong> 후 콘솔 새 창에 붙여넣기.
           </p>
         </CardHeader>
         <CardContent>
@@ -141,7 +165,7 @@ export default function IndexingQueue() {
               <thead className="text-muted-foreground border-b">
                 <tr className="text-left">
                   <th className="py-2 pr-2 text-center">우선</th>
-                  <th className="py-2 pr-2">URL</th>
+                  <th className="py-2 pr-2">경로 / URL</th>
                   <th className="py-2 pr-2">키워드</th>
                   <th className="py-2 pr-2">엔진</th>
                   <th className="py-2 pr-2">사유</th>
@@ -158,29 +182,41 @@ export default function IndexingQueue() {
                 )}
                 {filtered.map(it => {
                   const st = STATUS[it.status] ?? STATUS.pending;
+                  const fullUrl = toAbsoluteUrl(it.url);
+                  const path = pathOf(it.url);
                   return (
                     <tr key={it.id} className="border-b last:border-b-0 hover:bg-muted/30">
                       <td className="py-2 pr-2 text-center font-mono">{it.priority}</td>
                       <td className="py-2 pr-2 max-w-[260px]">
-                        <a href={it.url} target="_blank" rel="noreferrer" className="text-primary hover:underline truncate block">{it.url}</a>
+                        <a href={fullUrl} target="_blank" rel="noreferrer" title={fullUrl} className="text-primary hover:underline truncate block font-mono">{path}</a>
+                        <span className="text-[10px] text-muted-foreground truncate block" title={fullUrl}>{fullUrl}</span>
                       </td>
                       <td className="py-2 pr-2">{it.target_keyword || "—"}</td>
-                      <td className="py-2 pr-2">{it.engine}</td>
-                      <td className="py-2 pr-2 max-w-[160px] text-muted-foreground truncate">{it.reason || "—"}</td>
+                      <td className="py-2 pr-2 whitespace-nowrap">{ENGINE_LABEL[it.engine] ?? it.engine}</td>
+                      <td className="py-2 pr-2 max-w-[160px] text-muted-foreground truncate" title={it.reason || ""}>{it.reason || "—"}</td>
                       <td className="py-2 pr-2"><span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${st.cls}`}>{st.label}</span></td>
                       <td className="py-2 pr-2 text-muted-foreground whitespace-nowrap">{it.requested_at ? new Date(it.requested_at).toLocaleDateString("ko-KR") : "—"}</td>
                       <td className="py-2 pr-2 text-muted-foreground whitespace-nowrap">{it.verified_at ? new Date(it.verified_at).toLocaleDateString("ko-KR") : "—"}</td>
-                      <td className="py-2 pr-2 max-w-[140px] truncate text-muted-foreground">{it.note || "—"}</td>
+                      <td className="py-2 pr-2 max-w-[140px] truncate text-muted-foreground" title={it.note || ""}>{it.note || "—"}</td>
                       <td className="py-2 pr-2">
                         <div className="flex gap-1 justify-end items-center">
-                          <Button size="sm" variant="default" className="h-7 text-xs px-2" onClick={() => { copyToClipboard(it.url); toast.success("URL 복사됨"); }}>
-                            <Copy className="w-3 h-3 mr-1" /> URL 복사
+                          <Button
+                            size="sm"
+                            variant="default"
+                            className="h-7 text-xs px-2"
+                            title={`전체 URL 복사: ${fullUrl}`}
+                            aria-label="전체 URL 복사"
+                            onClick={() => { copyToClipboard(fullUrl); toast.success(`전체 URL 복사됨: ${fullUrl}`); }}
+                          >
+                            <Copy className="w-3 h-3 mr-1" /> 전체 URL 복사
                           </Button>
-                          <IconBtn title="요청 완료" onClick={() => update(it.id, "requested")}><Check className="w-3 h-3" /></IconBtn>
-                          <IconBtn title="색인 확인" onClick={() => update(it.id, "verified")}><Check className="w-3 h-3 text-score-excellent" /></IconBtn>
-                          <IconBtn title="재요청 표시" onClick={() => update(it.id, "re_request")}><RefreshCw className="w-3 h-3" /></IconBtn>
-                          <IconBtn title="보류" onClick={() => update(it.id, "hold")}>⏸</IconBtn>
-                          <IconBtn title="삭제" onClick={() => remove(it.id)}><Trash2 className="w-3 h-3 text-destructive" /></IconBtn>
+                          <IconBtn title="요청 제출 완료 처리" aria-label="요청 제출 완료 처리" onClick={() => update(it.id, "requested")}><Check className="w-3 h-3" /></IconBtn>
+                          <IconBtn title="색인 확인 완료 처리" aria-label="색인 확인 완료 처리" onClick={() => update(it.id, "verified")}><Check className="w-3 h-3 text-score-excellent" /></IconBtn>
+                          <IconBtn title="재요청 필요로 표시" aria-label="재요청 필요로 표시" onClick={() => update(it.id, "re_request")}><RefreshCw className="w-3 h-3" /></IconBtn>
+                          <IconBtn title="보류 처리" aria-label="보류 처리" onClick={() => update(it.id, "hold")}>
+                            <span className="text-[11px] leading-none">⏸ 보류</span>
+                          </IconBtn>
+                          <IconBtn title="삭제" aria-label="삭제" onClick={() => remove(it.id)}><Trash2 className="w-3 h-3 text-destructive" /></IconBtn>
                         </div>
                       </td>
                     </tr>
@@ -205,6 +241,6 @@ function Kpi({ label, value, tone }: { label: string; value: number; tone?: "goo
   );
 }
 
-function IconBtn({ title, onClick, children }: { title: string; onClick: () => void; children: React.ReactNode }) {
-  return <button title={title} onClick={onClick} className="p-1.5 rounded hover:bg-muted text-xs">{children}</button>;
+function IconBtn({ title, onClick, children, ...rest }: { title: string; onClick: () => void; children: React.ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  return <button title={title} onClick={onClick} {...rest} className="p-1.5 rounded hover:bg-muted text-xs">{children}</button>;
 }

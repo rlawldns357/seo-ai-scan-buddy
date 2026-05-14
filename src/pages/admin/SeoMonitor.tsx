@@ -7,8 +7,17 @@ import { adminInvoke, copyToClipboard } from "./_lib";
 import { toast } from "@/components/ui/sonner";
 
 type Engine = "all" | "naver" | "google";
-type Status = "all" | "exposed" | "missing" | "rising" | "falling" | "monitoring";
-type Group = "all" | "brand" | "core" | "platform" | "competitor" | "reverse" | "needs";
+type Status = "all" | "exposed" | "missing" | "rising" | "falling" | "monitoring" | "indexing_pending" | "needs_fix";
+type Group = "all" | "brand" | "core" | "platform" | "competitor" | "reverse" | "problem";
+
+const SITE_ORIGIN = "https://searchtuneos.com";
+function toAbsoluteUrl(target: string | null | undefined): string {
+  if (!target) return SITE_ORIGIN + "/";
+  const t = target.trim();
+  if (/^https?:\/\//i.test(t)) return t;
+  if (t.startsWith("/")) return SITE_ORIGIN + t;
+  return `${SITE_ORIGIN}/${t}`;
+}
 
 interface Row {
   keyword_id: string;
@@ -25,6 +34,7 @@ interface Row {
   checked_at: string | null;
   last_action_at: string | null;
   next_action: string;
+  is_seed?: boolean;
 }
 
 interface Summary {
@@ -34,6 +44,7 @@ interface Summary {
   rising: number;
   falling: number;
   indexing_pending: number;
+  needs_fix: number;
 }
 
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
@@ -41,7 +52,18 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   rising: { label: "상승", cls: "bg-primary/15 text-primary" },
   falling: { label: "하락", cls: "bg-destructive/15 text-destructive" },
   missing: { label: "미노출", cls: "bg-destructive/10 text-destructive" },
-  monitoring: { label: "모니터링", cls: "bg-muted text-muted-foreground" },
+  indexing_pending: { label: "색인 대기", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
+  needs_fix: { label: "수정 필요", cls: "bg-orange-500/15 text-orange-700 dark:text-orange-400" },
+  monitoring: { label: "확인 필요", cls: "bg-muted text-muted-foreground" },
+};
+
+const GROUP_LABEL: Record<string, string> = {
+  brand: "브랜드",
+  core: "핵심",
+  problem: "문제·니즈",
+  platform: "플랫폼",
+  competitor: "경쟁",
+  reverse: "역키워드",
 };
 
 export default function SeoMonitor() {
@@ -71,15 +93,16 @@ export default function SeoMonitor() {
   };
 
   const addToIndexing = async (r: Row) => {
-    if (!r.target_url) { toast.error("매칭 URL이 비어있어 색인 큐에 추가할 수 없습니다."); return; }
+    const absUrl = toAbsoluteUrl(r.target_url);
+    if (!absUrl || absUrl.length < 10) { toast.error("매칭 URL이 비어있어 색인 큐에 추가할 수 없습니다."); return; }
     const res = await adminInvoke<{ success: boolean; error?: string }>("addIndexingItem", {
-      url: r.target_url,
+      url: absUrl,
       target_keyword: r.keyword,
       engine: r.engine,
       reason: `${r.status} (rank=${r.current_rank ?? "-"})`,
-      priority: r.status === "missing" ? 8 : 5,
+      priority: r.status === "missing" || r.status === "needs_fix" ? 8 : 5,
     });
-    if (res?.success) toast.success("색인 큐에 추가됨"); else toast.error(res?.error || "실패");
+    if (res?.success) toast.success(`색인 큐에 추가됨 — ${absUrl}`); else toast.error(res?.error || "실패");
   };
 
   const createAction = async (r: Row) => {
@@ -123,11 +146,12 @@ export default function SeoMonitor() {
       </div>
 
       {/* KPI cards */}
-      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
         <Kpi label="추적 (현 필터)" value={summary?.total ?? 0} />
         <Kpi label="노출 중" value={summary?.exposed ?? 0} tone="good" />
         <Kpi label="미노출" value={summary?.missing ?? 0} tone="bad" />
         <Kpi label="색인 대기" value={summary?.indexing_pending ?? 0} tone="warn" />
+        <Kpi label="수정 필요" value={summary?.needs_fix ?? 0} tone="warn" />
         <Kpi label="상승" value={summary?.rising ?? 0} icon={<TrendingUp className="w-3 h-3" />} tone="good" />
         <Kpi label="하락" value={summary?.falling ?? 0} icon={<TrendingDown className="w-3 h-3" />} tone="bad" />
       </div>
@@ -138,9 +162,9 @@ export default function SeoMonitor() {
           <FilterGroup label="엔진" value={engine} onChange={(v) => setEngine(v as Engine)}
             options={[["all", "전체"], ["google", "Google"], ["naver", "Naver"]]} />
           <FilterGroup label="상태" value={status} onChange={(v) => setStatus(v as Status)}
-            options={[["all", "전체"], ["exposed", "노출중"], ["missing", "미노출"], ["rising", "상승"], ["falling", "하락"], ["monitoring", "모니터링"]]} />
+            options={[["all", "전체"], ["exposed", "노출중"], ["missing", "미노출"], ["indexing_pending", "색인 대기"], ["needs_fix", "수정 필요"], ["rising", "상승"], ["falling", "하락"], ["monitoring", "확인 필요"]]} />
           <FilterGroup label="그룹" value={group} onChange={(v) => setGroup(v as Group)}
-            options={[["all", "전체"], ["brand", "브랜드"], ["core", "핵심"], ["needs", "문제·니즈"], ["platform", "플랫폼"], ["competitor", "경쟁"], ["reverse", "역키워드"]]} />
+            options={[["all", "전체"], ["brand", "브랜드"], ["core", "핵심"], ["problem", "문제·니즈"], ["platform", "플랫폼"], ["competitor", "경쟁"], ["reverse", "역키워드"]]} />
           <FilterGroup label="기간" value={String(days)} onChange={(v) => setDays(Number(v))}
             options={[["1", "1일"], ["7", "7일"], ["14", "14일"], ["30", "30일"]]} />
         </CardContent>
@@ -177,7 +201,7 @@ export default function SeoMonitor() {
                   return (
                     <tr key={i} className="border-b last:border-b-0 hover:bg-muted/30">
                       <td className="py-2 pr-2 font-medium">{r.keyword}</td>
-                      <td className="py-2 pr-2 text-muted-foreground">{r.group}</td>
+                      <td className="py-2 pr-2 text-muted-foreground">{GROUP_LABEL[r.group] ?? r.group}</td>
                       <td className="py-2 pr-2">
                         <span className={`px-1.5 py-0.5 rounded text-[10px] ${r.engine === "naver" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
                           {r.engine === "naver" ? "Naver" : "Google"}
