@@ -268,7 +268,7 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
               AI는 제3자 정보로만 브랜드를 묘사합니다.
             </p>
             <InfoToggle title="채널별 의미 · 산출 기준 보기">
-              <ul className="space-y-1 list-disc list-inside marker:text-muted-foreground/40">
+              <ul className="space-y-1 list-disc list-inside marker:text-muted-foreground/70">
                 {surfaces.map((s) => (
                   <li key={s.key}>
                     <span className="font-semibold text-foreground">{s.label}</span> — {s.desc}

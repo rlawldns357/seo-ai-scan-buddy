@@ -1022,7 +1022,7 @@ export default function BlogPost() {
           </div>
 
           {/* Feedback links */}
-          <div className="mt-10 flex items-center justify-center gap-3 text-[11px] text-muted-foreground/50">
+          <div className="mt-10 flex items-center justify-center gap-3 text-[11px] text-muted-foreground/70">
             <a
               href={`mailto:contact@searchtuneos.com?subject=수정 요청: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A수정 내용:%0A`}
               className="underline underline-offset-2 hover:text-muted-foreground transition-colors"

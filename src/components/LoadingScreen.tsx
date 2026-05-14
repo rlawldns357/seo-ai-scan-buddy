@@ -119,7 +119,7 @@ export default function LoadingScreen({ completedPhases = new Set(), skipLightho
                       ? "text-primary"
                       : active
                         ? "text-foreground"
-                        : "text-muted-foreground/40"
+                        : "text-muted-foreground/70"
                   }`}
                 >
                   {done ? (

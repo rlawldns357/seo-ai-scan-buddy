@@ -169,7 +169,7 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
     return (
       <div className="flex items-center gap-3">
         <span className={isLg ? "text-3xl font-semibold" : "text-xl font-semibold"} style={{ fontFamily: BRAND_STYLES.chatgpt.fontFamily, color: BRAND_STYLES.chatgpt.color }}>ChatGPT</span>
-        <span className="text-xs font-bold text-muted-foreground/40">VS</span>
+        <span className="text-xs font-bold text-muted-foreground/70">VS</span>
         <span className={isLg ? "text-3xl font-semibold" : "text-xl font-semibold"} style={{ fontFamily: BRAND_STYLES.gemini.fontFamily, color: BRAND_STYLES.gemini.color }}>Gemini</span>
       </div>
     );
