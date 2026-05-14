@@ -580,6 +580,54 @@ export type Database = {
         }
         Relationships: []
       }
+      indexing_queue: {
+        Row: {
+          created_at: string
+          engine: string
+          id: string
+          note: string | null
+          priority: number
+          reason: string | null
+          requested_at: string | null
+          result: string | null
+          status: string
+          target_keyword: string | null
+          updated_at: string
+          url: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          engine?: string
+          id?: string
+          note?: string | null
+          priority?: number
+          reason?: string | null
+          requested_at?: string | null
+          result?: string | null
+          status?: string
+          target_keyword?: string | null
+          updated_at?: string
+          url: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          engine?: string
+          id?: string
+          note?: string | null
+          priority?: number
+          reason?: string | null
+          requested_at?: string | null
+          result?: string | null
+          status?: string
+          target_keyword?: string | null
+          updated_at?: string
+          url?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       naver_store_analysis_cache: {
         Row: {
           analyzed_at: string
@@ -696,6 +744,89 @@ export type Database = {
           },
         ]
       }
+      seo_action_metrics: {
+        Row: {
+          action_id: string | null
+          engine: string
+          id: string
+          keyword: string
+          measured_at: string
+          rank_after: number | null
+          rank_before: number | null
+        }
+        Insert: {
+          action_id?: string | null
+          engine: string
+          id?: string
+          keyword: string
+          measured_at?: string
+          rank_after?: number | null
+          rank_before?: number | null
+        }
+        Update: {
+          action_id?: string | null
+          engine?: string
+          id?: string
+          keyword?: string
+          measured_at?: string
+          rank_after?: number | null
+          rank_before?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_action_metrics_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "seo_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_actions: {
+        Row: {
+          action_type: string
+          after_state: Json | null
+          ai_judgement: string | null
+          before_state: Json | null
+          created_at: string
+          id: string
+          next_action: string | null
+          page_url: string
+          remeasure_at: string | null
+          result: string
+          target_keyword: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          after_state?: Json | null
+          ai_judgement?: string | null
+          before_state?: Json | null
+          created_at?: string
+          id?: string
+          next_action?: string | null
+          page_url: string
+          remeasure_at?: string | null
+          result?: string
+          target_keyword?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          after_state?: Json | null
+          ai_judgement?: string | null
+          before_state?: Json | null
+          created_at?: string
+          id?: string
+          next_action?: string | null
+          page_url?: string
+          remeasure_at?: string | null
+          result?: string
+          target_keyword?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       serp_keywords: {
         Row: {
           active: boolean
@@ -703,7 +834,9 @@ export type Database = {
           created_at: string
           id: string
           keyword: string
+          last_action_at: string | null
           priority: number
+          status: string
           target_url: string | null
         }
         Insert: {
@@ -712,7 +845,9 @@ export type Database = {
           created_at?: string
           id?: string
           keyword: string
+          last_action_at?: string | null
           priority?: number
+          status?: string
           target_url?: string | null
         }
         Update: {
@@ -721,7 +856,9 @@ export type Database = {
           created_at?: string
           id?: string
           keyword?: string
+          last_action_at?: string | null
           priority?: number
+          status?: string
           target_url?: string | null
         }
         Relationships: []
