@@ -449,7 +449,7 @@ const Index = () => {
             {rateLimit?.whitelisted && (
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-xs font-semibold mb-3 border border-emerald-500/20">
                 <span className="text-sm">👋</span>
-                담당자님, 어서오세요 · 사용량 무제한
+                어서오세요, 그로스브릿지 담당자님
               </div>
             )}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold mb-8">
