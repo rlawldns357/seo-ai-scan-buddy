@@ -463,10 +463,11 @@ const Index = () => {
                 무료 베타 서비스
               </div>
               {rateLimit?.whitelisted && (
-                <div className="inline-flex items-center gap-2 px-2 py-2 text-emerald-600 dark:text-emerald-400 text-base font-semibold leading-none">
-                  <span className="relative inline-flex w-2.5 h-2.5">
-                    <span className="absolute inset-0 rounded-full bg-emerald-500 opacity-60 animate-ping" />
-                    <span className="relative inline-block w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                <div className="inline-flex items-center gap-2 px-2 py-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold leading-none">
+                  <span className="relative inline-flex items-center justify-center w-2 h-2">
+                    {/* 닷 크기는 그대로, 펄스 halo만 더 크게 퍼지도록 */}
+                    <span className="absolute w-4 h-4 rounded-full bg-emerald-500 opacity-50 animate-ping" />
+                    <span className="relative inline-block w-2 h-2 rounded-full bg-emerald-500" />
                   </span>
                   GrowthBridge 전용 · 무제한 활성화 🔓 접속
                 </div>
