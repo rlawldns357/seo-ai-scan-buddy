@@ -522,16 +522,16 @@ const Index = () => {
                   />
                 </div>
                 <div className="relative">
-                  {/* 이스터에그 말풍선: 화이트리스트 IP일 때만, 버튼 텍스트 변경을 슬쩍 알려줌 */}
+                  {/* 이스터에그 말풍선: 화이트리스트 IP에서만 첫 진입 시 2단계로 살짝 노출 */}
                   {rateLimit?.whitelisted && (
                     <div
                       className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap z-10 transition-all duration-500 ease-out ${
-                        vipBubble ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                        vipBubble !== 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
                       }`}
                       aria-hidden="true"
                     >
                       <div className="relative px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold shadow-lg">
-                        무제한으로 바뀌었어요 ✨
+                        {vipBubble === 1 ? "Hello 👋 GrowthBridge" : "무제한으로 바뀌었어요 ✨"}
                         <span className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-emerald-600" />
                       </div>
                     </div>
