@@ -134,6 +134,7 @@ const Index = () => {
 
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
+  const [vipBubble, setVipBubble] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [indexingResult, setIndexingResult] = useState<IndexingResult | null>(null);
   const [indexingLoading, setIndexingLoading] = useState(false);
