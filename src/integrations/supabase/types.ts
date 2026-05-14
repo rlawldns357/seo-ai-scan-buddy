@@ -696,6 +696,95 @@ export type Database = {
           },
         ]
       }
+      serp_keywords: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          keyword: string
+          priority: number
+          target_url: string | null
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          keyword: string
+          priority?: number
+          target_url?: string | null
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          keyword?: string
+          priority?: number
+          target_url?: string | null
+        }
+        Relationships: []
+      }
+      serp_tracking_results: {
+        Row: {
+          checked_at: string
+          engine: string
+          error: string | null
+          id: string
+          keyword: string
+          keyword_id: string | null
+          our_exposed: boolean
+          our_rank: number | null
+          our_snippet: string | null
+          our_title: string | null
+          our_url: string | null
+          top_domains: string[]
+          top10: Json
+          total_results: number | null
+        }
+        Insert: {
+          checked_at?: string
+          engine: string
+          error?: string | null
+          id?: string
+          keyword: string
+          keyword_id?: string | null
+          our_exposed?: boolean
+          our_rank?: number | null
+          our_snippet?: string | null
+          our_title?: string | null
+          our_url?: string | null
+          top_domains?: string[]
+          top10?: Json
+          total_results?: number | null
+        }
+        Update: {
+          checked_at?: string
+          engine?: string
+          error?: string | null
+          id?: string
+          keyword?: string
+          keyword_id?: string | null
+          our_exposed?: boolean
+          our_rank?: number | null
+          our_snippet?: string | null
+          our_title?: string | null
+          our_url?: string | null
+          top_domains?: string[]
+          top10?: Json
+          total_results?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "serp_tracking_results_keyword_id_fkey"
+            columns: ["keyword_id"]
+            isOneToOne: false
+            referencedRelation: "serp_keywords"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_post_views: {
         Row: {
           created_at: string
