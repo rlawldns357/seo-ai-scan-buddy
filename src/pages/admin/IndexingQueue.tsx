@@ -23,12 +23,31 @@ interface Item {
 
 const STATUS: Record<string, { label: string; cls: string }> = {
   pending: { label: "대기", cls: "bg-muted text-muted-foreground" },
-  requested: { label: "요청완료", cls: "bg-primary/15 text-primary" },
-  verified: { label: "색인확인", cls: "bg-score-excellent/15 text-score-excellent" },
+  requested: { label: "요청 제출 완료", cls: "bg-blue-500/15 text-blue-700 dark:text-blue-400" },
+  verified: { label: "색인 확인 완료", cls: "bg-score-excellent/15 text-score-excellent" },
+  re_request: { label: "재요청 필요", cls: "bg-orange-500/15 text-orange-700 dark:text-orange-400" },
+  hold: { label: "보류", cls: "bg-amber-500/15 text-amber-700 dark:text-amber-400" },
   failed: { label: "실패", cls: "bg-destructive/15 text-destructive" },
-  re_request: { label: "재요청", cls: "bg-accent/20 text-accent-foreground" },
-  hold: { label: "보류", cls: "bg-muted text-muted-foreground" },
 };
+
+const ENGINE_LABEL: Record<string, string> = {
+  both: "Naver + Google",
+  google: "Google",
+  naver: "Naver",
+};
+
+const SITE_ORIGIN = "https://searchtuneos.com";
+function toAbsoluteUrl(u: string): string {
+  if (!u) return "";
+  const t = u.trim();
+  if (/^https?:\/\//i.test(t)) return t;
+  if (t.startsWith("/")) return SITE_ORIGIN + t;
+  return `${SITE_ORIGIN}/${t}`;
+}
+function pathOf(u: string): string {
+  const abs = toAbsoluteUrl(u);
+  try { const url = new URL(abs); return url.pathname + url.search + url.hash || "/"; } catch { return abs; }
+}
 
 const NAVER_CONSOLE = "https://searchadvisor.naver.com/console/board/request";
 const GOOGLE_CONSOLE = "https://search.google.com/search-console";
