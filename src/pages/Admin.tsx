@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink } from "lucide-react";
+import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink, Search, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +64,10 @@ export default function Admin() {
   const [clarityErr, setClarityErr] = useState<string>("");
   const [clarityLoading, setClarityLoading] = useState(false);
   const [clarityDays, setClarityDays] = useState(1);
+  const [serpKeywords, setSerpKeywords] = useState<{ id: string; keyword: string; category: string; target_url: string | null; priority: number; active: boolean }[]>([]);
+  const [serpLatest, setSerpLatest] = useState<{ keyword: string; engine: string; our_exposed: boolean; our_rank: number | null; our_url: string | null; top_domains: string[]; checked_at: string; error: string | null }[]>([]);
+  const [serpTriggering, setSerpTriggering] = useState(false);
+  const [serpEngine, setSerpEngine] = useState<"all" | "naver" | "google">("all");
 
   const handleLogin = async () => {
     setLoading(true);
@@ -192,6 +196,24 @@ export default function Admin() {
     setClarityLoading(false);
   };
 
+  const fetchSerpTracking = async () => {
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "serpTracking" },
+    });
+    if (res?.keywords) setSerpKeywords(res.keywords);
+    if (res?.latest) setSerpLatest(res.latest);
+  };
+
+  const triggerSerpTracking = async () => {
+    setSerpTriggering(true);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "triggerSerpTracking" },
+    });
+    setTimeout(() => { fetchSerpTracking(); setSerpTriggering(false); }, 3000);
+  };
+
   useEffect(() => {
     if (authed) {
       fetchInsights(days);
@@ -199,6 +221,7 @@ export default function Admin() {
       fetchEngineStatus();
       fetchFailedPosts();
       fetchClarity(1);
+      fetchSerpTracking();
     }
   }, [authed, days]);
 
