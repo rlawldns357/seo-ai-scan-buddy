@@ -163,6 +163,23 @@ const Index = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // 화이트리스트(팀/사무실) IP 인식 → 환영 배너 표시용으로 mount 시 1회 조회
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { checkRateLimit } = await import("@/lib/rateLimit");
+        const status = await checkRateLimit();
+        if (!cancelled) setRateLimit((prev) => prev ?? status);
+      } catch {
+        /* fail silently — 환영 배너는 부가 기능 */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const runAnalysis = async (finalUrl: string) => {
     // Synchronous guard — blocks duplicate entry in the same tick.
     if (analyzingRef.current) return;
