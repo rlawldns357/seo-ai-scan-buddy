@@ -145,24 +145,31 @@ export default function OpsReadonly() {
             </div>
           </Section>
 
-          <Section title="SEO Monitor">
+          <Section title="SEO Monitor (키워드 단위)">
             <KV k="총 키워드" v={seo!.total_keywords} />
-            <KV k="노출중" v={seo!.exposed} />
-            <KV k="미노출" v={seo!.missing} />
-            <KV k="상승" v={seo!.rising} />
-            <KV k="하락" v={seo!.falling} />
+            <KV k="노출" v={seo!.exposed_keywords} />
+            <KV k="미노출" v={seo!.missing_keywords} />
+            <KV k="부분노출" v={seo!.partial_keywords} />
+            <KV k="추적없음" v={seo!.untracked_keywords} />
             <KV k="수정필요" v={seo!.needs_fix} />
             <KV k="색인대기" v={seo!.indexing_pending} />
             <KV k="마지막 SERP 실행" v={`${fmtTime(seo!.last_serp_run?.checked_at)} (${seo!.last_serp_run?.ok ? "OK" : "FAIL/없음"})`} />
           </Section>
 
-          <Section title={`Indexing Queue (총 ${queue!.total})`}>
+          <Section title={`SEO Monitor (엔진×키워드 결과 ${seo!.total_engine_results})`}>
+            <KV k="노출 결과" v={seo!.exposed_results} />
+            <KV k="미노출 결과" v={seo!.missing_results} />
+            <KV k="상승" v={seo!.rising_results} />
+            <KV k="하락" v={seo!.falling_results} />
+          </Section>
+
+          <Section title={`Indexing Queue (총 ${queue!.total} · 오래된 pending ${queue!.stale_pending} · 오래된 requested ${queue!.stale_requested})`}>
             {Object.entries(queue!.counts).map(([k, v]) => <KV key={k} k={k} v={v} />)}
             <div className="col-span-full mt-3">
               <Table
                 headers={["URL", "상태", "엔진", "우선순위", "키워드", "업데이트"]}
                 rows={queue!.recent.map(r => [
-                  r.url, r.status, r.engine, String(r.priority),
+                  r.canonical_url ?? r.url_path, r.status, r.engine, String(r.priority),
                   r.target_keyword ?? "—", fmtTime(r.updated_at),
                 ])}
               />
