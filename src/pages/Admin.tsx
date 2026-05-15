@@ -12,6 +12,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
+import CostDashboard from "@/components/admin/CostDashboard";
 
 interface Summary {
   totalSessions: number;
@@ -325,6 +326,9 @@ export default function Admin() {
             </div>
           </CardContent>
         </Card>
+
+        {/* API 비용 / 크레딧 정밀 추적 */}
+        <CostDashboard />
 
         {loading && !data ? (
           <div className="text-center py-20 text-muted-foreground">로딩 중...</div>

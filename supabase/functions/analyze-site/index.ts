@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 import { loadNaverRulebook, isKoreanSite } from "../_shared/naver-rulebook.ts";
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -191,6 +192,10 @@ serve(async (req) => {
 
     const [mainRes, aboutRes] = await Promise.all([scrapeMain, scrapeAbout]);
 
+    // Log Firecrawl costs (1 main scrape + 0/1 about scrape)
+    logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "main", url: formattedUrl } });
+    if (aboutRes) logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "about" } });
+
     const scrapeData = await mainRes.json();
 
     if (!mainRes.ok || !scrapeData.success) {
@@ -306,6 +311,13 @@ ${links.slice(0, 20).join("\n")}
 
     const aiData = await aiRes.json();
     const content = aiData.choices?.[0]?.message?.content || "";
+
+    // Log Gemini cost
+    {
+      const u = extractUsage(aiData);
+      logApiCost({ function_name: "analyze-site", model: "google/gemini-3-flash-preview", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { url: formattedUrl } });
+    }
+
 
     // Extract JSON from response
     let analysis;

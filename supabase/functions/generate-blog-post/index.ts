@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 import { loadNaverRulebook } from "../_shared/naver-rulebook.ts";
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -335,6 +336,8 @@ Deno.serve(async (req) => {
             const pplxData = await pplxRes.json();
             const content = pplxData.choices?.[0]?.message?.content as string | undefined;
             const citations: string[] = Array.isArray(pplxData.citations) ? pplxData.citations.slice(0, 5) : [];
+            const u = extractUsage(pplxData);
+            logApiCost({ function_name: "generate-blog-post", model: "sonar", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { theme } });
             if (content && content.trim().length > 50) {
               freshContext =
                 `[Perplexity 실시간 리서치]\n${content.trim()}` +
@@ -369,6 +372,7 @@ Deno.serve(async (req) => {
             if (fcRes.ok) {
               const fcData = await fcRes.json();
               const results = (fcData?.data || fcData?.web?.results || []).slice(0, 2);
+              logApiCost({ function_name: "generate-blog-post", model: "firecrawl/search", requests: 1, metadata: { query: theme } });
               if (Array.isArray(results) && results.length > 0) {
                 freshContext = results
                   .map((r: any, i: number) => `[참고 ${i + 1}] ${r.title || ""}\n출처: ${r.url || ""}\n요약: ${(r.description || r.snippet || "").slice(0, 220)}`)
@@ -606,6 +610,8 @@ ${naverRulebook}
         throw new Error(`AI gateway returned ${r.status}`);
       }
       const data = await r.json();
+      const u = extractUsage(data);
+      logApiCost({ function_name: "generate-blog-post", model: "google/gemini-2.5-pro", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "draft" } });
       const tc = data.choices?.[0]?.message?.tool_calls?.[0];
       if (!tc) throw new Error("No tool call in AI response");
       return JSON.parse(tc.function.arguments);
@@ -664,6 +670,8 @@ ${naverRulebook}
           return null;
         }
         const d = await r.json();
+        const u = extractUsage(d);
+        logApiCost({ function_name: "generate-blog-post", model: "google/gemini-3-flash-preview", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "self-score" } });
         const args = JSON.parse(d.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments || "{}");
         const seo = Number(args.seo) || 0;
         const aeo = Number(args.aeo) || 0;
