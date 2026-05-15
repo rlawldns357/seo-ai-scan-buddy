@@ -15,14 +15,21 @@ const SITE = "https://searchtuneos.com";
 const PUBLIC_DIR = path.resolve("public");
 const DIST_DIR = path.resolve("dist");
 
-const STATIC_SLUGS = [
-  "what-is-aeo",
-  "naver-search-advisor-guide",
-  "naver-seo-optimization-tips",
-  "naver-cue-geo-strategy",
-  "cafe24-seo-optimization-guide",
-  "imweb-seo-guide",
-];
+// Auto-parsed from src/data/blogPosts.ts so all client-side legacy slugs
+// also appear in the sitemap with /blog/{slug}.html canonical URLs.
+function loadStaticSlugs() {
+  try {
+    const src = fs.readFileSync(path.resolve("src/data/blogPosts.ts"), "utf-8");
+    const slugs = [];
+    const re = /slug:\s*"([^"]+)"/g;
+    let m;
+    while ((m = re.exec(src))) slugs.push(m[1]);
+    return [...new Set(slugs)];
+  } catch {
+    return ["what-is-aeo"];
+  }
+}
+const STATIC_SLUGS = loadStaticSlugs();
 
 function loadEnv() {
   try {
