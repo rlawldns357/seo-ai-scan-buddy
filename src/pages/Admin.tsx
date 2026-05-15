@@ -69,6 +69,25 @@ export default function Admin() {
   const [serpLatest, setSerpLatest] = useState<{ keyword: string; engine: string; our_exposed: boolean; our_rank: number | null; our_url: string | null; top_domains: string[]; checked_at: string; error: string | null }[]>([]);
   const [serpTriggering, setSerpTriggering] = useState(false);
   const [serpEngine, setSerpEngine] = useState<"all" | "naver" | "google">("all");
+  const [usageStats, setUsageStats] = useState<{
+    config: { free_limit: number; email_bonus: number; whitelisted_count: number; updated_at: string };
+    today: { date: string; ipCount: number; emailUnlockedCount: number; totalAnalyses: number; atLimitCount: number };
+    daily: { date: string; ips: number; analyses: number; unlocked: number }[];
+    topIps: { ip: string; usage: number; cap: number; email_unlocked: boolean; updated_at: string }[];
+  } | null>(null);
+  const [usageLoading, setUsageLoading] = useState(false);
+
+  const fetchUsageStats = async () => {
+    setUsageLoading(true);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    try {
+      const { data: res } = await supabase.functions.invoke("admin-insights", {
+        body: { password: pw, action: "usageStats" },
+      });
+      if (res && !res.error) setUsageStats(res);
+    } catch {}
+    setUsageLoading(false);
+  };
 
   const handleLogin = async () => {
     setLoading(true);
