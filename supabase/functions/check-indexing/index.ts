@@ -1,3 +1,5 @@
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
