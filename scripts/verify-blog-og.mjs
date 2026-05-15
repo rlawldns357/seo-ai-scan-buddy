@@ -75,7 +75,7 @@ function collectBlogFiles() {
     if (entry.isDirectory()) {
       const idx = path.join(BLOG_DIR, entry.name, "index.html");
       if (fs.existsSync(idx)) {
-        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx });
+        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx, isStub: true });
       }
       continue;
     }
