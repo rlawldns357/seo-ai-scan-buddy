@@ -155,8 +155,7 @@ const Index = () => {
     const t1 = setTimeout(() => setVipBubble(1), 500);
     const t2 = setTimeout(() => setVipBubble(0), 2700);
     const t3 = setTimeout(() => setVipBubble(2), 3100);
-    const t4 = setTimeout(() => setVipBubble(0), 6100);
-    return () => { [t1, t2, t3, t4].forEach(clearTimeout); };
+    return () => { [t1, t2, t3].forEach(clearTimeout); };
   }, [effectiveBrand]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [indexingResult, setIndexingResult] = useState<IndexingResult | null>(null);
