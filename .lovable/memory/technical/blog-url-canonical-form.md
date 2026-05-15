@@ -1,41 +1,40 @@
 ---
 name: Blog URL Canonical Form
-description: 블로그 canonical=`/blog/{slug}.html` (전체 본문). `/blog/{slug}/index.html`은 redirect stub만
+description: Canonical=`/blog/{slug}.html`. Lovable hosting SPA fallback이 디렉토리 index.html보다 우선 → stub 서빙 불가 (확정)
 type: constraint
 ---
 
-# 블로그 URL 정규형 (확정 v2)
+# 블로그 URL 정규형 (확정 v3 — 검증 완료)
 
 ## 핵심 규칙
-- **Canonical (전체 본문)**: `https://searchtuneos.com/blog/{slug}.html`
-- **`/blog/{slug}/index.html`**: redirect stub (메타 + canonical + http-equiv refresh + JS replace). 본문 중복 금지.
-- **`/blog/{slug}` (확장자 없음)**: 파일시스템 충돌로 별도 stub 작성 불가. 호스팅이 디렉토리 index.html 또는 SPA fallback로 라우팅 → 둘 다 결국 `.html`로 수렴.
+- **Canonical (전체 본문)**: `https://searchtuneos.com/blog/{slug}.html` ✅ 정상 작동
+- **`/blog/{slug}/`, `/blog/{slug}`**: ❌ **Lovable 호스팅에서 stub 서빙 불가능 (확정)**
 
-## 왜 stub 분리?
-- `/blog/{slug}/index.html`이 전체 본문을 가지면 네이버/구글이 중복 콘텐츠로 색인 → canonical 신호 약화
-- stub만 두면 크롤러는 canonical → `.html`만 보고, 사용자는 즉시 redirect
+## 검증 결과 (2026-05-15)
+빌드 시 `dist/blog/{slug}/index.html` stub은 정상 생성·배포되지만, Lovable 호스팅은
+디렉토리 index.html보다 SPA fallback(루트 `index.html`)을 무조건 우선 서빙함.
 
-## 적용 위치
-1. `scripts/prerender-blog.mjs` — `generateRedirectStub()` (`/blog/{slug}/index.html` 작성)
-2. `src/pages/BlogPost.tsx` — `blogPostPath() = /blog/{slug}.html`, useEffect로 주소창 자동 normalize
-3. `src/pages/Blog.tsx` / `Admin.tsx` — 모든 카드/링크 `.html`
-4. sitemap (`generate-sitemap.mjs`, `supabase/functions/sitemap`) — `.html` only
-5. RSS — `.html` only
-6. `scripts/verify-blog-routing.mjs` — stub과 full 양쪽 canonical/og:url 일치 검증
+```
+curl https://searchtuneos.com/blog/what-is-aeo/    → 200, 메인페이지 title (SPA fallback)
+curl https://searchtuneos.com/blog/what-is-aeo     → 200, 메인페이지 title (SPA fallback)
+curl https://searchtuneos.com/blog/what-is-aeo.html → 200, 글 메타 정상
+```
+
+`_redirects`/`_headers`/`vercel.json`/`netlify.toml` 모두 무시 → 서버 레벨 redirect 불가.
+
+## 운영 정책
+1. **canonical은 반드시 `.html`** (모든 sitemap, RSS, 내부 링크, og:url, JSON-LD)
+2. **`BlogPost.tsx`의 useEffect로 클라이언트 normalize** — SPA로 진입한 사용자는 마운트 후 `.html`로 주소창 교체 (이미 구현됨)
+3. **`/blog/{slug}/` stub은 빌드 산출물에 남아있지만 호스팅이 무시함** — 제거하지는 않음 (다른 호스팅 이전 시 즉시 사용 가능)
+4. **404 방지**: `STATIC_POSTS`/DB/sitemap에 없는 레거시 slug(`src/data/blogPosts.ts` 전용)는 `.html` 파일이 생성 안 됨 → 노출 링크에서 제거하거나 STATIC_POSTS에 추가
+
+## 진정한 해결책 (필요 시)
+Cloudflare Pages 등 `_redirects` 지원 호스팅으로 이전 후:
+```
+/blog/:slug/   /blog/:slug.html  308
+/blog/:slug    /blog/:slug.html  308
+```
 
 ## 절대 금지
-- `/blog/{slug}/index.html`에 본문 전체 복사 (중복 색인 위험)
-- 확장자 없는 물리 파일 `dist/blog/{slug}` (디렉토리와 경로 충돌 + 일부 호스팅이 octet-stream으로 응답)
 - canonical을 `.html` 외 다른 형태로 쓰는 모든 코드
-
-## 배포 후 검증
-```bash
-curl -A "facebookexternalhit/1.1" -s https://searchtuneos.com/blog/what-is-aeo.html | grep -E "canonical|og:url"
-# → both .html
-
-curl -A "facebookexternalhit/1.1" -s https://searchtuneos.com/blog/what-is-aeo/ | grep -E "canonical|refresh"
-# → canonical .html + refresh 0; url=/blog/...html
-
-curl -A "facebookexternalhit/1.1" -s https://searchtuneos.com/blog/what-is-aeo | grep -E "canonical|refresh"
-# → 가능: stub. 불가능: SPA fallback (BlogPost.tsx가 클라에서 normalize)
-```
+- `/blog/{slug}/index.html`에 본문 전체 복사 (중복 색인)
