@@ -21,6 +21,7 @@ const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.tsx"));
 const SeoMonitor = lazy(() => import("./pages/admin/SeoMonitor.tsx"));
 const IndexingQueue = lazy(() => import("./pages/admin/IndexingQueue.tsx"));
 const AiGrowthLoop = lazy(() => import("./pages/admin/AiGrowthLoop.tsx"));
+const Credits = lazy(() => import("./pages/admin/Credits.tsx"));
 const OpsReadonly = lazy(() => import("./pages/admin/OpsReadonly.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
