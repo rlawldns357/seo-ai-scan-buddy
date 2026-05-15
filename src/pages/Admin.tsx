@@ -69,6 +69,25 @@ export default function Admin() {
   const [serpLatest, setSerpLatest] = useState<{ keyword: string; engine: string; our_exposed: boolean; our_rank: number | null; our_url: string | null; top_domains: string[]; checked_at: string; error: string | null }[]>([]);
   const [serpTriggering, setSerpTriggering] = useState(false);
   const [serpEngine, setSerpEngine] = useState<"all" | "naver" | "google">("all");
+  const [usageStats, setUsageStats] = useState<{
+    config: { free_limit: number; email_bonus: number; whitelisted_count: number; updated_at: string };
+    today: { date: string; ipCount: number; emailUnlockedCount: number; totalAnalyses: number; atLimitCount: number };
+    daily: { date: string; ips: number; analyses: number; unlocked: number }[];
+    topIps: { ip: string; usage: number; cap: number; email_unlocked: boolean; updated_at: string }[];
+  } | null>(null);
+  const [usageLoading, setUsageLoading] = useState(false);
+
+  const fetchUsageStats = async () => {
+    setUsageLoading(true);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    try {
+      const { data: res } = await supabase.functions.invoke("admin-insights", {
+        body: { password: pw, action: "usageStats" },
+      });
+      if (res && !res.error) setUsageStats(res);
+    } catch {}
+    setUsageLoading(false);
+  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -223,6 +242,7 @@ export default function Admin() {
       fetchFailedPosts();
       fetchClarity(1);
       fetchSerpTracking();
+      fetchUsageStats();
     }
   }, [authed, days]);
 
@@ -546,6 +566,95 @@ export default function Admin() {
                     ))
                   )}
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Credit / rate-limit usage — mid-hierarchy operational signal */}
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary" />
+                    크레딧 · 사용량 (오늘)
+                    {usageStats?.config && (
+                      <span className="text-[11px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
+                        무료 {usageStats.config.free_limit}회 + 이메일 +{usageStats.config.email_bonus} · 화이트리스트 {usageStats.config.whitelisted_count}
+                      </span>
+                    )}
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2.5 text-xs gap-1"
+                    onClick={fetchUsageStats}
+                    disabled={usageLoading}
+                  >
+                    <RefreshCw className={`w-3 h-3 ${usageLoading ? "animate-spin" : ""}`} />
+                    새로고침
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!usageStats ? (
+                  <p className="text-sm text-muted-foreground">불러오는 중...</p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { label: "총 분석", value: usageStats.today.totalAnalyses, accent: "text-primary" },
+                        { label: "사용 IP", value: usageStats.today.ipCount, accent: "text-foreground" },
+                        { label: "이메일 언락", value: usageStats.today.emailUnlockedCount, accent: "text-emerald-600" },
+                        { label: "한도 도달", value: usageStats.today.atLimitCount, accent: "text-destructive" },
+                      ].map((s) => (
+                        <div key={s.label} className="rounded-xl border bg-card/50 p-3">
+                          <div className="text-[11px] text-muted-foreground">{s.label}</div>
+                          <div className={`text-2xl font-bold ${s.accent}`}>{s.value.toLocaleString()}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {usageStats.daily.length > 0 && (
+                      <ChartContainer config={chartConfig} className="h-32 w-full">
+                        <BarChart data={usageStats.daily} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
+                          <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d) => d.slice(5)} />
+                          <YAxis tick={{ fontSize: 10 }} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Bar dataKey="analyses" fill="hsl(230 80% 56%)" radius={[4, 4, 0, 0]} name="분석 수" />
+                        </BarChart>
+                      </ChartContainer>
+                    )}
+
+                    {usageStats.topIps.length > 0 && (
+                      <div>
+                        <div className="text-xs font-semibold text-muted-foreground mb-2">상위 사용 IP (오늘)</div>
+                        <div className="space-y-1.5 max-h-64 overflow-auto">
+                          {usageStats.topIps.map((r) => {
+                            const pct = Math.min(100, Math.round((r.usage / r.cap) * 100));
+                            const atLimit = r.usage >= r.cap;
+                            return (
+                              <div key={r.ip + r.updated_at} className="flex items-center gap-3 text-xs">
+                                <span className="font-mono w-32 truncate">{r.ip}</span>
+                                <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                                  <div
+                                    className={`h-full ${atLimit ? "bg-destructive" : "bg-primary"}`}
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                                <span className={`font-mono tabular-nums w-16 text-right ${atLimit ? "text-destructive font-semibold" : ""}`}>
+                                  {r.usage}/{r.cap}
+                                </span>
+                                {r.email_unlocked && (
+                                  <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">📧</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
 
