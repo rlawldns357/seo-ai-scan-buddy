@@ -192,6 +192,10 @@ serve(async (req) => {
 
     const [mainRes, aboutRes] = await Promise.all([scrapeMain, scrapeAbout]);
 
+    // Log Firecrawl costs (1 main scrape + 0/1 about scrape)
+    logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "main", url: formattedUrl } });
+    if (aboutRes) logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "about" } });
+
     const scrapeData = await mainRes.json();
 
     if (!mainRes.ok || !scrapeData.success) {
