@@ -85,6 +85,152 @@
   }
 }
 
+/* ==========================================================
+   ADMIN BRUTALIST THEME — scoped to .admin-brutal wrapper
+   Pure mono · 2px black borders · hard offset shadows · lime accent
+   ========================================================== */
+.admin-brutal {
+  --br-ink: #0a0a0a;
+  --br-paper: #fafaf7;
+  --br-accent: #d4ff00;
+  --br-mute: #6b6b6b;
+  background: var(--br-paper);
+  color: var(--br-ink);
+  font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0;
+}
+.admin-brutal *::selection { background: var(--br-accent); color: var(--br-ink); }
+
+/* Background grid paper */
+.admin-brutal-paper {
+  background-color: var(--br-paper);
+  background-image:
+    linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Brutalist primitives */
+.br-card {
+  background: #ffffff;
+  border: 2px solid var(--br-ink);
+  border-radius: 0;
+  box-shadow: 5px 5px 0 0 var(--br-ink);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+.br-card-flat {
+  background: #ffffff;
+  border: 2px solid var(--br-ink);
+  border-radius: 0;
+}
+.br-card-ink {
+  background: var(--br-ink);
+  color: #fff;
+  border: 2px solid var(--br-ink);
+  border-radius: 0;
+  box-shadow: 5px 5px 0 0 var(--br-accent);
+}
+.br-card-accent {
+  background: var(--br-accent);
+  color: var(--br-ink);
+  border: 2px solid var(--br-ink);
+  border-radius: 0;
+  box-shadow: 5px 5px 0 0 var(--br-ink);
+}
+.br-hover-pop:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 0 var(--br-ink); }
+
+.br-btn {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: var(--br-ink); color: #fff;
+  border: 2px solid var(--br-ink); border-radius: 0;
+  padding: .55rem .9rem; font-size: 11px; line-height: 1;
+  text-transform: uppercase; letter-spacing: .12em; font-weight: 700;
+  box-shadow: 3px 3px 0 0 var(--br-ink);
+  transition: transform .1s ease, box-shadow .1s ease, background .1s ease;
+  font-family: inherit; cursor: pointer;
+}
+.br-btn:hover { background: var(--br-accent); color: var(--br-ink); transform: translate(-1px,-1px); box-shadow: 4px 4px 0 0 var(--br-ink); }
+.br-btn:active { transform: translate(2px,2px); box-shadow: 0 0 0 0 var(--br-ink); }
+
+.br-btn-ghost {
+  display: inline-flex; align-items: center; gap: .4rem;
+  background: transparent; color: var(--br-ink);
+  border: 2px solid var(--br-ink); border-radius: 0;
+  padding: .55rem .9rem; font-size: 11px; line-height: 1;
+  text-transform: uppercase; letter-spacing: .12em; font-weight: 700;
+  font-family: inherit; cursor: pointer;
+  transition: background .1s ease;
+}
+.br-btn-ghost:hover { background: var(--br-accent); }
+
+.br-label { font-family: inherit; font-size: 10px; text-transform: uppercase; letter-spacing: .18em; color: var(--br-mute); font-weight: 700; }
+.br-h1 { font-family: inherit; font-size: clamp(1.5rem, 2.4vw, 2.25rem); font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; text-transform: uppercase; }
+.br-num { font-family: inherit; font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -0.02em; }
+
+.br-divider { height: 2px; background: var(--br-ink); }
+.br-tag { display: inline-block; background: var(--br-ink); color: #fff; padding: 2px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+.br-tag-accent { background: var(--br-accent); color: var(--br-ink); border: 2px solid var(--br-ink); padding: 2px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700; }
+
+/* Sidebar nav inside admin shell */
+.admin-brutal .br-nav-item {
+  display: flex; align-items: center; gap: .6rem;
+  padding: .65rem .8rem;
+  border: 2px solid transparent;
+  font-size: 11px; text-transform: uppercase; letter-spacing: .12em; font-weight: 700;
+  color: var(--br-ink);
+  border-radius: 0;
+}
+.admin-brutal .br-nav-item:hover { background: #fff; border-color: var(--br-ink); }
+.admin-brutal .br-nav-item.active {
+  background: var(--br-ink); color: var(--br-accent);
+  border-color: var(--br-ink);
+  box-shadow: 3px 3px 0 0 var(--br-accent);
+}
+
+/* Scoped overrides — make existing shadcn Cards/Inputs/Buttons inherit brutalist look
+   inside .admin-brutal without rewriting every page */
+.admin-brutal .rounded-lg,
+.admin-brutal .rounded-xl,
+.admin-brutal .rounded-2xl,
+.admin-brutal .rounded-md { border-radius: 0 !important; }
+
+.admin-brutal [class*="bg-card"][class*="border"] {
+  border-width: 2px !important;
+  border-color: var(--br-ink) !important;
+  background: #ffffff !important;
+  box-shadow: 4px 4px 0 0 var(--br-ink) !important;
+}
+.admin-brutal h1, .admin-brutal h2, .admin-brutal h3 { letter-spacing: -0.01em; }
+.admin-brutal .text-primary { color: var(--br-ink) !important; }
+.admin-brutal .bg-primary\/10, .admin-brutal .bg-primary\/5 { background: var(--br-accent) !important; color: var(--br-ink) !important; }
+.admin-brutal .border-primary\/30, .admin-brutal .border-primary\/40 { border-color: var(--br-ink) !important; }
+
+/* shadcn buttons inside admin: sharper edges + thick border */
+.admin-brutal button[class*="bg-primary"]:not(.br-btn):not(.br-btn-ghost) {
+  background: var(--br-ink) !important;
+  color: #fff !important;
+  border: 2px solid var(--br-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 0 var(--br-ink) !important;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+.admin-brutal button[class*="border"]:not([class*="bg-primary"]):not(.br-btn):not(.br-btn-ghost):not([class*="bg-destructive"]) {
+  border: 2px solid var(--br-ink) !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+.admin-brutal input, .admin-brutal textarea, .admin-brutal select {
+  border: 2px solid var(--br-ink) !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+}
+.admin-brutal .shadow, .admin-brutal .shadow-sm, .admin-brutal .shadow-md, .admin-brutal .shadow-lg { box-shadow: 4px 4px 0 0 var(--br-ink) !important; }
+
 @layer utilities {
   .gradient-primary {
     background: var(--gradient-primary);
