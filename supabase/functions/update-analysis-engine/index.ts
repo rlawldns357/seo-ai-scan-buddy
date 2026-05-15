@@ -82,6 +82,8 @@ Deno.serve(async (req) => {
         if (pplxRes.ok) {
           const pplxData = await pplxRes.json();
           const content = pplxData.choices?.[0]?.message?.content;
+          const u = extractUsage(pplxData);
+          logApiCost({ function_name: "update-analysis-engine", model: "sonar-pro", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "trend-research" } });
           if (content) trendResults.push(`[Perplexity Research]\n${content}`);
           if (Array.isArray(pplxData.citations)) {
             trendCitations = pplxData.citations.slice(0, 15);
