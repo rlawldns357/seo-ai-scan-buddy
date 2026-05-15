@@ -296,19 +296,21 @@ async function main() {
   for (const post of allPosts) {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
+    const stub = generateRedirectStub(post);
 
-    // Canonical form is /blog/{slug}/index.html. Make sure no extensionless
-    // physical file (/blog/{slug}) exists, since older builds could be served as
-    // a downloadable object by some crawlers/hosting paths.
+    // CANONICAL: /blog/{slug}.html holds the full article content + canonical meta.
     const slugDir = path.join(blogDir, post.slug);
-    const extensionlessFile = path.join(blogDir, post.slug); // same path, but as a file
-    if (fs.existsSync(extensionlessFile) && fs.statSync(extensionlessFile).isFile()) {
-      fs.rmSync(extensionlessFile, { force: true });
-    }
-    fs.mkdirSync(slugDir, { recursive: true });
-    fs.writeFileSync(path.join(slugDir, "index.html"), html, "utf-8");
-    // Legacy compatibility: keep /blog/{slug}.html for any old links/RSS readers.
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
+
+    // STUB at /blog/{slug}/index.html — meta-only redirect to .html so crawlers
+    // see the canonical signal and users get bounced. NOT a duplicate of the body.
+    fs.mkdirSync(slugDir, { recursive: true });
+    fs.writeFileSync(path.join(slugDir, "index.html"), stub, "utf-8");
+
+    // Try extensionless /blog/{slug} stub too. Lovable hosting may or may not
+    // serve this before the SPA fallback — verified post-deploy via curl.
+    // If hosting serves it as octet-stream, we'll remove it; for now ship it.
+    fs.writeFileSync(path.join(blogDir, post.slug), stub, "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
