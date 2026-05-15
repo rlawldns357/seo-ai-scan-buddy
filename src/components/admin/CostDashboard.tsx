@@ -102,133 +102,126 @@ export default function CostDashboard() {
   };
 
   return (
-    <div className="space-y-5">
-      {/* Refresh bar */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Wallet className="w-4 h-4" />
-          <span className="br-label">API COST · PRECISE TRACKING</span>
-        </div>
-        <button className="br-btn-ghost" onClick={fetchCosts} disabled={loading}>
-          <RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </button>
-      </div>
-
-      {!data ? (
-        <div className="br-card-flat p-6 text-center">
-          <p className="br-label">{loading ? "// LOADING..." : "// NO DATA"}</p>
-        </div>
-      ) : (
-        <>
-          {/* Top KPI cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="br-card p-4">
-              <p className="br-label">Today</p>
-              <p className="br-num text-2xl mt-2">{won(data.today_krw)}</p>
-            </div>
-            <div className="br-card p-4">
-              <p className="br-label">Last 7 Days</p>
-              <p className="br-num text-2xl mt-2">{won(data.last7_krw)}</p>
-            </div>
-            <div className="br-card-accent p-4">
-              <p className="br-label">This Month</p>
-              <p className="br-num text-2xl mt-2">{won(data.month_krw)}</p>
-            </div>
-            <div className="br-card-ink p-4">
-              <p className="br-label" style={{ color: "#fff", opacity: 0.6 }}>USD</p>
-              <p className="br-num text-2xl mt-2">${data.month_usd.toFixed(2)}</p>
-            </div>
-          </div>
-
-          {/* Budgets */}
-          <div className="br-card-flat">
-            <div className="border-b-2 border-black px-4 py-2.5 flex items-center justify-between bg-black text-white">
-              <span className="br-label" style={{ color: "#fff" }}>// MONTHLY BUDGET</span>
-              <span className="br-tag-accent">REMAINING</span>
-            </div>
-            <div className="p-4 space-y-3">
-              {data.budgets.map((b) => (
-                <div key={b.provider} className={`border-2 border-black p-3 ${b.alert ? "bg-[#ffe600]" : "bg-white"}`}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-bold flex items-center gap-1.5 uppercase tracking-wider">
-                      {b.alert && <AlertTriangle className="w-3.5 h-3.5" />}
-                      {PROVIDER_LABEL[b.provider] || b.provider}
-                    </span>
-                    <span className="br-num text-xs">
-                      {won(b.spent_krw)} / {won(b.monthly_budget_krw)}{" "}
-                      <span className={b.alert ? "font-black" : ""}>({b.used_pct}%)</span>
-                    </span>
-                  </div>
-                  {b.monthly_budget_krw > 0 && (
-                    <div className="h-2 border-2 border-black bg-white relative overflow-hidden">
-                      <div className="h-full bg-black" style={{ width: `${Math.min(b.used_pct, 100)}%` }} />
-                    </div>
-                  )}
-                  <p className="br-label mt-2">
-                    REMAINING · {won(b.remaining_krw)}
-                    {b.notes && <span className="ml-2 normal-case tracking-normal">· {b.notes}</span>}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* By provider */}
-          <div className="br-card-flat">
-            <div className="border-b-2 border-black px-4 py-2.5 bg-black text-white">
-              <span className="br-label" style={{ color: "#fff" }}>// BY PROVIDER (THIS MONTH)</span>
-            </div>
-            <div className="text-xs">
-              <div className="grid grid-cols-12 gap-2 px-4 py-2 font-bold uppercase tracking-wider border-b-2 border-black bg-[#fafaf7]">
-                <div className="col-span-4">Provider</div>
-                <div className="col-span-3 text-right">Cost</div>
-                <div className="col-span-2 text-right">Reqs</div>
-                <div className="col-span-3 text-right">Tokens (in/out)</div>
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Wallet className="w-4 h-4 text-primary" />
+          API 비용 / 크레딧 (정밀 추적)
+        </CardTitle>
+        <Button size="sm" variant="outline" onClick={fetchCosts} disabled={loading}>
+          <RefreshCw className={`w-3 h-3 mr-1 ${loading ? "animate-spin" : ""}`} />
+          새로고침
+        </Button>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {!data ? (
+          <p className="text-sm text-muted-foreground">{loading ? "로딩 중..." : "데이터 없음"}</p>
+        ) : (
+          <>
+            {/* Top KPI cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              <div className="rounded-lg border bg-card p-3">
+                <p className="text-xs text-muted-foreground">오늘</p>
+                <p className="text-lg font-bold text-foreground">{won(data.today_krw)}</p>
               </div>
-              {data.by_provider.map((p, i) => (
-                <div key={p.provider} className={`grid grid-cols-12 gap-2 px-4 py-2.5 border-b-2 border-black last:border-b-0 ${i % 2 ? "bg-[#fafaf7]" : "bg-white"}`}>
-                  <div className="col-span-4 font-bold">{PROVIDER_LABEL[p.provider] || p.provider}</div>
-                  <div className="col-span-3 text-right br-num">{won(p.cost_krw)}</div>
-                  <div className="col-span-2 text-right br-num opacity-60">{p.requests.toLocaleString()}</div>
-                  <div className="col-span-3 text-right br-num opacity-60">
-                    {(p.tokens_in / 1000).toFixed(1)}k / {(p.tokens_out / 1000).toFixed(1)}k
+              <div className="rounded-lg border bg-card p-3">
+                <p className="text-xs text-muted-foreground">최근 7일</p>
+                <p className="text-lg font-bold text-foreground">{won(data.last7_krw)}</p>
+              </div>
+              <div className="rounded-lg border bg-primary/5 p-3">
+                <p className="text-xs text-muted-foreground">이번 달 누적</p>
+                <p className="text-lg font-bold text-primary">{won(data.month_krw)}</p>
+              </div>
+              <div className="rounded-lg border bg-card p-3">
+                <p className="text-xs text-muted-foreground">USD 환산</p>
+                <p className="text-lg font-bold text-foreground">${data.month_usd.toFixed(2)}</p>
+              </div>
+            </div>
+
+            {/* Budgets / remaining */}
+            <div>
+              <p className="text-sm font-semibold mb-2 text-foreground">남은 예산 (월)</p>
+              <div className="space-y-2">
+                {data.budgets.map((b) => (
+                  <div key={b.provider} className="rounded-lg border bg-card p-3">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium flex items-center gap-1.5 text-foreground">
+                        {b.alert && <AlertTriangle className="w-3.5 h-3.5 text-destructive" />}
+                        {PROVIDER_LABEL[b.provider] || b.provider}
+                      </span>
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {won(b.spent_krw)} / {won(b.monthly_budget_krw)}{" "}
+                        <span className={b.alert ? "text-destructive font-bold" : ""}>({b.used_pct}%)</span>
+                      </span>
+                    </div>
+                    {b.monthly_budget_krw > 0 && (
+                      <Progress value={Math.min(b.used_pct, 100)} className="h-1.5" />
+                    )}
+                    <p className="text-xs mt-1 text-muted-foreground">
+                      잔여 {won(b.remaining_krw)}
+                      {b.notes && <span className="ml-2">· {b.notes}</span>}
+                    </p>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* By function */}
-          <div className="br-card-flat">
-            <div className="border-b-2 border-black px-4 py-2.5 bg-black text-white">
-              <span className="br-label" style={{ color: "#fff" }}>// BY FUNCTION (THIS MONTH)</span>
-            </div>
-            <div className="text-xs">
-              {data.by_function.map((f, i) => (
-                <div key={f.function_name} className={`grid grid-cols-12 gap-2 px-4 py-2.5 border-b-2 border-black last:border-b-0 ${i % 2 ? "bg-[#fafaf7]" : "bg-white"}`}>
-                  <div className="col-span-7 font-mono font-bold truncate">{f.function_name}</div>
-                  <div className="col-span-3 text-right br-num">{won(f.cost_krw)}</div>
-                  <div className="col-span-2 text-right br-num opacity-60">{f.requests}x</div>
+            {/* By provider table */}
+            <div>
+              <p className="text-sm font-semibold mb-2 text-foreground">공급자별 (이번 달)</p>
+              <div className="text-xs">
+                <div className="grid grid-cols-12 gap-2 px-2 py-1.5 font-medium text-muted-foreground border-b">
+                  <div className="col-span-4">공급자</div>
+                  <div className="col-span-3 text-right">비용</div>
+                  <div className="col-span-2 text-right">요청수</div>
+                  <div className="col-span-3 text-right">토큰 (입/출)</div>
                 </div>
-              ))}
+                {data.by_provider.map((p) => (
+                  <div key={p.provider} className="grid grid-cols-12 gap-2 px-2 py-1.5 border-b last:border-b-0">
+                    <div className="col-span-4 text-foreground">{PROVIDER_LABEL[p.provider] || p.provider}</div>
+                    <div className="col-span-3 text-right tabular-nums text-foreground">{won(p.cost_krw)}</div>
+                    <div className="col-span-2 text-right tabular-nums text-muted-foreground">{p.requests.toLocaleString()}</div>
+                    <div className="col-span-3 text-right tabular-nums text-muted-foreground">
+                      {(p.tokens_in / 1000).toFixed(1)}k / {(p.tokens_out / 1000).toFixed(1)}k
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
 
-          {/* Kakao copy */}
-          <div className="br-card-accent p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="br-tag">// KAKAO REPORT</span>
-              <button className="br-btn" onClick={copyKakao}>
-                {copied ? (<><Check className="w-3 h-3" /> COPIED</>) : (<><Copy className="w-3 h-3" /> COPY</>)}
-              </button>
+            {/* By function */}
+            <div>
+              <p className="text-sm font-semibold mb-2 text-foreground">함수별 (이번 달)</p>
+              <div className="text-xs">
+                {data.by_function.map((f) => (
+                  <div key={f.function_name} className="grid grid-cols-12 gap-2 px-2 py-1.5 border-b last:border-b-0">
+                    <div className="col-span-7 text-foreground font-mono">{f.function_name}</div>
+                    <div className="col-span-3 text-right tabular-nums text-foreground">{won(f.cost_krw)}</div>
+                    <div className="col-span-2 text-right tabular-nums text-muted-foreground">{f.requests}회</div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <pre className="text-xs whitespace-pre-wrap font-mono bg-white border-2 border-black p-3 max-h-80 overflow-y-auto leading-relaxed">
+
+            {/* Kakao copy section */}
+            <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-sm font-semibold text-foreground">📋 카톡 복사용 요약</p>
+                <Button size="sm" onClick={copyKakao} variant={copied ? "default" : "outline"}>
+                  {copied ? (
+                    <><Check className="w-3 h-3 mr-1" /> 복사됨</>
+                  ) : (
+                    <><Copy className="w-3 h-3 mr-1" /> 복사하기</>
+                  )}
+                </Button>
+              </div>
+              <pre className="text-xs whitespace-pre-wrap font-mono bg-background rounded p-3 text-foreground max-h-80 overflow-y-auto leading-relaxed">
 {kakaoText}
-            </pre>
-          </div>
-        </>
-      )}
-    </div>
+              </pre>
+            </div>
+          </>
+        )}
+      </CardContent>
+    </Card>
   );
 }

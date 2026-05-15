@@ -2,16 +2,18 @@ import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, BarChart3, FileText, Search, Inbox, Sparkles, Wallet } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 const NAV = [
-  { to: "/admin/insights", label: "Insights", icon: BarChart3, code: "01" },
-  { to: "/admin/blog", label: "Blog", icon: FileText, code: "02" },
-  { to: "/admin/seo-monitor", label: "SEO Monitor", icon: Search, code: "03" },
-  { to: "/admin/indexing-queue", label: "Indexing", icon: Inbox, code: "04" },
-  { to: "/admin/ai-growth-loop", label: "Growth Loop", icon: Sparkles, code: "05" },
-  { to: "/admin/credits", label: "Credits", icon: Wallet, code: "06" },
+  { to: "/admin/insights", label: "인사이트", icon: BarChart3 },
+  { to: "/admin/blog", label: "블로그 관리", icon: FileText },
+  { to: "/admin/seo-monitor", label: "SEO 모니터", icon: Search },
+  { to: "/admin/indexing-queue", label: "색인 큐", icon: Inbox },
+  { to: "/admin/ai-growth-loop", label: "AI 성장 루프", icon: Sparkles },
+  { to: "/admin/credits", label: "크레딧 / 비용", icon: Wallet },
 ];
 
 export default function AdminLayout() {
@@ -42,82 +44,71 @@ export default function AdminLayout() {
 
   if (!authed) {
     return (
-      <div className="admin-brutal admin-brutal-paper min-h-screen flex items-center justify-center p-4">
-        <div className="br-card w-full max-w-sm p-6 space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="br-tag">// AUTH</span>
-            <span className="br-label">v0.12.0</span>
-          </div>
-          <div className="space-y-1">
-            <h1 className="br-h1 text-2xl">관리자 인증</h1>
-            <p className="br-label">PASSWORD REQUIRED</p>
-          </div>
-          <Input
-            type="password"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            className="rounded-none border-2 border-black h-12 font-mono bg-white focus-visible:ring-0 focus-visible:ring-offset-0"
-          />
-          {error && <p className="br-label" style={{ color: "#c1121f" }}>!! {error}</p>}
-          <button className="br-btn w-full justify-center" onClick={handleLogin} disabled={loading}>
-            {loading ? "확인 중..." : "→ 로그인"}
-          </button>
-        </div>
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-sm">
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center mb-3">
+              <Lock className="w-5 h-5 text-primary-foreground" />
+            </div>
+            <CardTitle className="text-lg">관리자 인증</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Input
+              type="password"
+              placeholder="비밀번호"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            />
+            {error && <p className="text-sm text-destructive">{error}</p>}
+            <Button className="w-full" onClick={handleLogin} disabled={loading}>
+              {loading ? "확인 중..." : "로그인"}
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="admin-brutal admin-brutal-paper min-h-screen flex">
-      {/* Sidebar */}
-      <aside className="w-60 shrink-0 border-r-2 border-black bg-white sticky top-0 h-screen flex flex-col">
-        <div className="px-4 py-5 border-b-2 border-black">
-          <div className="flex items-center justify-between">
-            <span className="br-tag">SearchTune OS</span>
-            <span className="br-label">v0.12</span>
-          </div>
-          <p className="br-h1 text-lg mt-2">ADMIN<br/>CONSOLE</p>
+    <div className="min-h-screen bg-background flex">
+      <aside className="w-56 shrink-0 border-r border-border bg-card sticky top-0 h-screen flex flex-col">
+        <div className="px-4 py-5 border-b border-border">
+          <p className="text-xs text-muted-foreground">SearchTune OS</p>
+          <p className="text-sm font-bold text-foreground">관리자 콘솔</p>
         </div>
-        <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
-          {NAV.map(({ to, label, icon: Icon, code }) => (
+        <nav className="flex-1 p-2 space-y-1">
+          {NAV.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
-              className={({ isActive }) => cn("br-nav-item", isActive && "active")}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors",
+                  isActive
+                    ? "bg-primary/10 text-primary font-semibold"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                )
+              }
             >
-              <span className="br-label" style={{ color: "inherit", opacity: 0.55 }}>{code}</span>
-              <Icon className="w-3.5 h-3.5" />
-              <span>{label}</span>
+              <Icon className="w-4 h-4" />
+              {label}
             </NavLink>
           ))}
         </nav>
-        <div className="p-3 border-t-2 border-black">
-          <button
-            className="br-btn-ghost w-full justify-center"
+        <div className="p-3 border-t border-border">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full text-xs text-muted-foreground"
             onClick={() => { sessionStorage.removeItem("admin_pw"); setAuthed(false); }}
           >
-            ⏏ Logout
-          </button>
+            로그아웃
+          </Button>
         </div>
       </aside>
-
-      {/* Main */}
       <main className="flex-1 min-w-0">
-        {/* Top status bar */}
-        <div className="border-b-2 border-black bg-white px-6 py-3 flex items-center justify-between sticky top-0 z-10">
-          <div className="flex items-center gap-3">
-            <span className="inline-block w-2 h-2 bg-[#22c55e] rounded-none animate-pulse" />
-            <span className="br-label">SYSTEM ONLINE</span>
-            <span className="br-label opacity-40">·</span>
-            <span className="br-label">{new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "2-digit" }).toUpperCase()}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="br-tag-accent">LIVE</span>
-          </div>
-        </div>
-        <div className="p-6 max-w-[1400px]">
+        <div className="container py-8 max-w-7xl">
           <Outlet />
         </div>
       </main>
