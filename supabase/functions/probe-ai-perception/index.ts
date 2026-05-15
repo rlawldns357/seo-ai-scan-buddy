@@ -400,6 +400,17 @@ async function probeNaver(url: string, host: string, brand: string, category: st
         throw new Error(`hyperclova ${r.status}: ${body.slice(0, 200)}`);
       }
       const j = await r.json();
+      // CLOVA usage: { result: { inputLength, outputLength } } — char counts, not tokens
+      const inLen = Number(j?.result?.inputLength ?? 0) || 0;
+      const outLen = Number(j?.result?.outputLength ?? 0) || 0;
+      // Approx 1.5 chars per token for KR; convert chars→tokens for pricing table
+      logApiCost({
+        function_name: "probe-ai-perception",
+        model,
+        tokens_in: Math.ceil(inLen / 1.5),
+        tokens_out: Math.ceil(outLen / 1.5),
+        metadata: { input_chars: inLen, output_chars: outLen },
+      });
       return j?.result?.message?.content ?? "";
     };
     const aw = await ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`);
