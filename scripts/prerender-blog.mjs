@@ -258,6 +258,43 @@ function generateHtml(post, assets, related = []) {
 </html>`;
 }
 
+// ── 6b. Redirect stub for /blog/{slug}/index.html ───────────────────
+// Goal: zero duplicate body. Crawlers see canonical → .html only.
+// Browsers get http-equiv refresh + JS replace fallback.
+function generateRedirectStub(post) {
+  const postUrl = blogHtmlUrl(post.slug);
+  const postPath = blogHtmlPath(post.slug);
+  const title = `${post.title} – 서치튠OS 블로그`;
+  const ogImage = resolveOgImage(post);
+  return `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${esc(title)}</title>
+  <meta name="description" content="${esc(post.excerpt)}" />
+  <link rel="canonical" href="${postUrl}" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <meta property="og:title" content="${esc(title)}" />
+  <meta property="og:description" content="${esc(post.excerpt)}" />
+  <meta property="og:url" content="${postUrl}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="${ogImage}" />
+  <meta property="og:site_name" content="서치튠OS" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${esc(title)}" />
+  <meta name="twitter:description" content="${esc(post.excerpt)}" />
+  <meta name="twitter:image" content="${ogImage}" />
+  <meta http-equiv="refresh" content="0; url=${postPath}" />
+  <script>location.replace(${JSON.stringify(postPath)});</script>
+</head>
+<body>
+  <a href="${postPath}">canonical article로 이동</a>
+</body>
+</html>`;
+}
+
 // ── 7. Main ─────────────────────────────────────────────────────────
 async function main() {
   if (!fs.existsSync(DIST)) {
