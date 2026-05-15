@@ -312,6 +312,13 @@ ${links.slice(0, 20).join("\n")}
     const aiData = await aiRes.json();
     const content = aiData.choices?.[0]?.message?.content || "";
 
+    // Log Gemini cost
+    {
+      const u = extractUsage(aiData);
+      logApiCost({ function_name: "analyze-site", model: "google/gemini-3-flash-preview", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { url: formattedUrl } });
+    }
+
+
     // Extract JSON from response
     let analysis;
     try {
