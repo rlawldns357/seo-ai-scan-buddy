@@ -336,6 +336,8 @@ Deno.serve(async (req) => {
             const pplxData = await pplxRes.json();
             const content = pplxData.choices?.[0]?.message?.content as string | undefined;
             const citations: string[] = Array.isArray(pplxData.citations) ? pplxData.citations.slice(0, 5) : [];
+            const u = extractUsage(pplxData);
+            logApiCost({ function_name: "generate-blog-post", model: "sonar", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { theme } });
             if (content && content.trim().length > 50) {
               freshContext =
                 `[Perplexity 실시간 리서치]\n${content.trim()}` +
