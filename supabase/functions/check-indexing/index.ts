@@ -64,6 +64,10 @@ async function checkGoogleViaPerplexity(
     }
 
     const data = await res.json();
+    try {
+      const u = extractUsage(data);
+      logApiCost({ function_name: "check-indexing", model: "sonar", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "google-index-check", domain } });
+    } catch (_) {}
     const content: string = data?.choices?.[0]?.message?.content ?? "";
     const citations: string[] = Array.isArray(data?.citations)
       ? data.citations
