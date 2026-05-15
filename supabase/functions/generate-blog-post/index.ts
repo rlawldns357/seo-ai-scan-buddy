@@ -670,6 +670,8 @@ ${naverRulebook}
           return null;
         }
         const d = await r.json();
+        const u = extractUsage(d);
+        logApiCost({ function_name: "generate-blog-post", model: "google/gemini-3-flash-preview", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "self-score" } });
         const args = JSON.parse(d.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments || "{}");
         const seo = Number(args.seo) || 0;
         const aeo = Number(args.aeo) || 0;
