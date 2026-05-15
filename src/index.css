@@ -187,6 +187,50 @@
   box-shadow: 3px 3px 0 0 var(--br-accent);
 }
 
+/* Scoped overrides — make existing shadcn Cards/Inputs/Buttons inherit brutalist look
+   inside .admin-brutal without rewriting every page */
+.admin-brutal .rounded-lg,
+.admin-brutal .rounded-xl,
+.admin-brutal .rounded-2xl,
+.admin-brutal .rounded-md { border-radius: 0 !important; }
+
+.admin-brutal [class*="bg-card"][class*="border"] {
+  border-width: 2px !important;
+  border-color: var(--br-ink) !important;
+  background: #ffffff !important;
+  box-shadow: 4px 4px 0 0 var(--br-ink) !important;
+}
+.admin-brutal h1, .admin-brutal h2, .admin-brutal h3 { letter-spacing: -0.01em; }
+.admin-brutal .text-primary { color: var(--br-ink) !important; }
+.admin-brutal .bg-primary\/10, .admin-brutal .bg-primary\/5 { background: var(--br-accent) !important; color: var(--br-ink) !important; }
+.admin-brutal .border-primary\/30, .admin-brutal .border-primary\/40 { border-color: var(--br-ink) !important; }
+
+/* shadcn buttons inside admin: sharper edges + thick border */
+.admin-brutal button[class*="bg-primary"]:not(.br-btn):not(.br-btn-ghost) {
+  background: var(--br-ink) !important;
+  color: #fff !important;
+  border: 2px solid var(--br-ink) !important;
+  border-radius: 0 !important;
+  box-shadow: 3px 3px 0 0 var(--br-ink) !important;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+.admin-brutal button[class*="border"]:not([class*="bg-primary"]):not(.br-btn):not(.br-btn-ghost):not([class*="bg-destructive"]) {
+  border: 2px solid var(--br-ink) !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 700;
+}
+.admin-brutal input, .admin-brutal textarea, .admin-brutal select {
+  border: 2px solid var(--br-ink) !important;
+  border-radius: 0 !important;
+  background: #fff !important;
+}
+.admin-brutal .shadow, .admin-brutal .shadow-sm, .admin-brutal .shadow-md, .admin-brutal .shadow-lg { box-shadow: 4px 4px 0 0 var(--br-ink) !important; }
+
 @layer utilities {
   .gradient-primary {
     background: var(--gradient-primary);
