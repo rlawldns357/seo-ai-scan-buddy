@@ -11,7 +11,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TIMEOUT_MS = 12000;
+const TIMEOUT_MS = 25000;
+const RETRY_DELAY_MS = 800;
+
+/** fetch with timeout + 1 retry on network/5xx errors. */
+async function fetchWithRetry(url: string, init: RequestInit, ms = TIMEOUT_MS): Promise<Response> {
+  const attempt = async () => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    try {
+      return await fetch(url, { ...init, signal: ctrl.signal });
+    } finally {
+      clearTimeout(t);
+    }
+  };
+  try {
+    const r = await attempt();
+    if (r.status >= 500 || r.status === 429) {
+      await new Promise((res) => setTimeout(res, RETRY_DELAY_MS));
+      return await attempt();
+    }
+    return r;
+  } catch (e) {
+    await new Promise((res) => setTimeout(res, RETRY_DELAY_MS));
+    return await attempt();
+  }
+}
 
 // 🎯 Self-grounding: 자체 도메인일 땐 최신 컨텍스트를 프롬프트에 주입
 // (학습 cutoff 이전 신생 도메인이라도 "알고 있는 것처럼" 답하게 함)
