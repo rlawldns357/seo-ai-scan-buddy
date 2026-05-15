@@ -891,7 +891,7 @@ export default function BlogPost() {
                 <p className="mt-4 text-muted-foreground text-[11px] md:text-sm font-medium tracking-wide">
                   ChatGPT&nbsp;·&nbsp;Claude&nbsp;·&nbsp;Gemini&nbsp;·&nbsp;Perplexity&nbsp;·&nbsp;CLOVA&nbsp;X
                 </p>
-                <div className="mt-5 md:mt-6 flex items-center gap-2 text-muted-foreground/70 text-[10px] md:text-xs font-mono">
+                <div className="mt-5 md:mt-6 flex items-center gap-2 text-muted-foreground text-[10px] md:text-xs font-mono">
                   <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }} />
                   searchtuneos.com
                 </div>
@@ -1023,7 +1023,7 @@ export default function BlogPost() {
           </div>
 
           {/* Feedback links */}
-          <div className="mt-10 flex items-center justify-center gap-3 text-[11px] text-muted-foreground/70">
+          <div className="mt-10 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
             <a
               href={`mailto:contact@searchtuneos.com?subject=수정 요청: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A수정 내용:%0A`}
               className="underline underline-offset-2 hover:text-muted-foreground transition-colors"

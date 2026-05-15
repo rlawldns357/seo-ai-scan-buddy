@@ -80,7 +80,7 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
           AI에게 직접 물어보기
         </span>
         <div className="h-1 w-12 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }} />
-        <span className={`${isLg ? "text-[10px] md:text-xs" : "text-[9px]"} font-medium tracking-wide text-muted-foreground/70`}>
+        <span className={`${isLg ? "text-[10px] md:text-xs" : "text-[9px]"} font-medium tracking-wide text-muted-foreground`}>
           ChatGPT · Claude · Gemini · Perplexity · CLOVA&nbsp;X
         </span>
       </div>
@@ -107,7 +107,7 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
             <span key={i} style={{ color: colors[i] ?? colors[colors.length - 1] }}>{ch}</span>
           ))}
         </span>
-        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground">
           {brand.subtitle}
         </span>
       </div>
@@ -128,7 +128,7 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
             <span key={i} style={{ color: colors[i] }}>{ch}</span>
           ))}
         </span>
-        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground">
           {brand.subtitle}
         </span>
       </div>
@@ -156,7 +156,7 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
         >
           {brand.wordmark}
         </span>
-        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
+        <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground">
           {brand.subtitle}
         </span>
       </div>
@@ -169,7 +169,7 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
     return (
       <div className="flex items-center gap-3">
         <span className={isLg ? "text-3xl font-semibold" : "text-xl font-semibold"} style={{ fontFamily: BRAND_STYLES.chatgpt.fontFamily, color: BRAND_STYLES.chatgpt.color }}>ChatGPT</span>
-        <span className="text-xs font-bold text-muted-foreground/70">VS</span>
+        <span className="text-xs font-bold text-muted-foreground">VS</span>
         <span className={isLg ? "text-3xl font-semibold" : "text-xl font-semibold"} style={{ fontFamily: BRAND_STYLES.gemini.fontFamily, color: BRAND_STYLES.gemini.color }}>Gemini</span>
       </div>
     );
@@ -193,7 +193,7 @@ function BrandWordmark({ slug, title, category, size = "md" }: { slug: string; t
       >
         {brand.wordmark}
       </span>
-      <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground/60">
+      <span className="text-[10px] font-medium tracking-wider uppercase text-muted-foreground">
         {brand.subtitle}
       </span>
     </div>
@@ -210,7 +210,7 @@ function SearchTuneBadge({ category, size = "md" }: { category: string; size?: "
       <span className={`${isLg ? "text-3xl" : "text-xl"} font-black bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent tracking-tight leading-none`}>
         SearchTune
       </span>
-      <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground/70">
+      <span className="text-[10px] font-bold tracking-widest uppercase text-muted-foreground">
         OS · {category}
       </span>
     </div>
