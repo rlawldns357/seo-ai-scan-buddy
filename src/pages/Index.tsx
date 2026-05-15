@@ -137,10 +137,10 @@ const Index = () => {
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
   const [vipBubble, setVipBubble] = useState<0 | 1 | 2>(0);
   const [storedBrand, setStoredBrand] = useState<VipBrand | null>(() => getStoredVipBrand());
-  // 우선순위: 화이트리스트 IP → GrowthBridge, 아니면 localStorage 브랜드(ProgressMedia 등)
-  const effectiveBrand: VipBrand | null = rateLimit?.whitelisted
-    ? "growthbridge"
-    : storedBrand;
+  // 우선순위: localStorage 브랜드(ProgressMedia 등) > 화이트리스트 IP(GrowthBridge)
+  // → ProgressMedia 이메일 제출자는 IP가 화이트리스트여도 ProgressMedia로 유지
+  const effectiveBrand: VipBrand | null =
+    storedBrand ?? (rateLimit?.whitelisted ? "growthbridge" : null);
   const vipBubbleShownRef = useRef(false);
 
   // localStorage 브랜드 변경 구독 (이메일 제출 직후 즉시 반영)
