@@ -12,7 +12,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
-import CostDashboard from "@/components/admin/CostDashboard";
+
 
 interface Summary {
   totalSessions: number;
@@ -312,23 +312,21 @@ export default function Admin() {
           </div>
         </div>
 
-        {/* SEO 운영 화면 진입 */}
+        {/* 별도 운영 화면 진입 */}
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="pt-4 pb-4 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-sm font-bold text-foreground">🔎 SEO 운영 콘솔</p>
-              <p className="text-xs text-muted-foreground">키워드 모니터링 · 색인 큐 · AI 성장 루프는 별도 화면에서 관리합니다.</p>
+              <p className="text-sm font-bold text-foreground">🧭 운영 콘솔 바로가기</p>
+              <p className="text-xs text-muted-foreground">키워드 · 색인 · 성장 루프 · 크레딧 비용은 전용 화면에서 관리합니다.</p>
             </div>
             <div className="flex gap-2 flex-wrap">
+              <a href="/admin/credits"><Button size="sm">💰 크레딧 / 비용 →</Button></a>
               <a href="/admin/seo-monitor"><Button size="sm" variant="outline">SEO 모니터 →</Button></a>
               <a href="/admin/indexing-queue"><Button size="sm" variant="outline">색인 큐 →</Button></a>
               <a href="/admin/ai-growth-loop"><Button size="sm" variant="outline">AI 성장 루프 →</Button></a>
             </div>
           </CardContent>
         </Card>
-
-        {/* API 비용 / 크레딧 정밀 추적 */}
-        <CostDashboard />
 
         {loading && !data ? (
           <div className="text-center py-20 text-muted-foreground">로딩 중...</div>
