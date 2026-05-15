@@ -652,6 +652,48 @@ export type Database = {
         }
         Relationships: []
       }
+      external_balance_snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          limit_usd: number | null
+          notes: string | null
+          period_resets_at: string | null
+          provider: string
+          snapshot_at: string
+          topup_balance_usd: number
+          topup_used_usd: number
+          used_usd: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          limit_usd?: number | null
+          notes?: string | null
+          period_resets_at?: string | null
+          provider: string
+          snapshot_at?: string
+          topup_balance_usd?: number
+          topup_used_usd?: number
+          used_usd?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          limit_usd?: number | null
+          notes?: string | null
+          period_resets_at?: string | null
+          provider?: string
+          snapshot_at?: string
+          topup_balance_usd?: number
+          topup_used_usd?: number
+          used_usd?: number
+        }
+        Relationships: []
+      }
       indexing_queue: {
         Row: {
           created_at: string

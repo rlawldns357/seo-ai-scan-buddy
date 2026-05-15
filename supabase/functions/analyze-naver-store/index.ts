@@ -22,6 +22,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { loadNaverRulebook } from "../_shared/naver-rulebook.ts";
+import { logApiCost } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,6 +82,12 @@ async function naverSearch(
     },
   });
   const body = await res.json().catch(() => ({}));
+  logApiCost({
+    function_name: "analyze-naver-store",
+    model: "naver/search",
+    requests: 1,
+    metadata: { surface: type, query: query.slice(0, 60), status: res.status },
+  });
   return { ok: res.ok, status: res.status, body };
 }
 

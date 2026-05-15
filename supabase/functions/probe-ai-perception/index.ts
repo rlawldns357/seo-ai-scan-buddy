@@ -161,6 +161,8 @@ async function probeGemini(url: string, host: string, brand: string, category: s
         throw new Error(`gemini ${r.status}: ${body.slice(0, 200)}`);
       }
       const j = await r.json();
+      const u = extractUsage(j);
+      logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out });
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const awarenessPrompt = `"${url}" 또는 "${brand}"이라는 브랜드/사이트가 무엇을 하는 곳인지 한국어로 1~2문장으로 알려주세요. 모르면 "모릅니다"라고만 답하세요. 추측 금지.`;
@@ -207,6 +209,8 @@ async function probePerplexity(url: string, host: string, brand: string, categor
       }));
       if (!r.ok) throw new Error(`perplexity ${r.status}`);
       const j = await r.json();
+      const u = extractUsage(j);
+      logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out, requests: 1 });
       return {
         text: j?.choices?.[0]?.message?.content ?? "",
         citations: (j?.citations as string[]) ?? [],
@@ -277,6 +281,8 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
         throw new Error(`openai-model ${r.status}: ${body.slice(0, 200)}`);
       }
       const j = await r.json();
+      const u = extractUsage(j);
+      logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out });
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const [aw, rec] = await Promise.all([
@@ -326,6 +332,13 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       }));
       if (!r.ok) throw new Error(`anthropic ${r.status}`);
       const j = await r.json();
+      const usage = j?.usage ?? {};
+      logApiCost({
+        function_name: "probe-ai-perception",
+        model,
+        tokens_in: Number(usage.input_tokens ?? 0) || 0,
+        tokens_out: Number(usage.output_tokens ?? 0) || 0,
+      });
       const blocks = j?.content ?? [];
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
@@ -387,6 +400,17 @@ async function probeNaver(url: string, host: string, brand: string, category: st
         throw new Error(`hyperclova ${r.status}: ${body.slice(0, 200)}`);
       }
       const j = await r.json();
+      // CLOVA usage: { result: { inputLength, outputLength } } — char counts, not tokens
+      const inLen = Number(j?.result?.inputLength ?? 0) || 0;
+      const outLen = Number(j?.result?.outputLength ?? 0) || 0;
+      // Approx 1.5 chars per token for KR; convert chars→tokens for pricing table
+      logApiCost({
+        function_name: "probe-ai-perception",
+        model,
+        tokens_in: Math.ceil(inLen / 1.5),
+        tokens_out: Math.ceil(outLen / 1.5),
+        metadata: { input_chars: inLen, output_chars: outLen },
+      });
       return j?.result?.message?.content ?? "";
     };
     const aw = await ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`);

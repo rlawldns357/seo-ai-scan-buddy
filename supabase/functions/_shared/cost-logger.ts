@@ -32,14 +32,28 @@ const PRICING: Record<string, ModelPricing> = {
   // Firecrawl (per request, ~1 credit ≈ $0.0009)
   "firecrawl/scrape": { inputPerM: 0, outputPerM: 0, perRequest: 0.001 },
   "firecrawl/search": { inputPerM: 0, outputPerM: 0, perRequest: 0.005 },
+  // Anthropic (Claude) — direct API
+  "claude-haiku-4-5":  { inputPerM: 1.00, outputPerM: 5.00 },
+  "claude-sonnet-4-5": { inputPerM: 3.00, outputPerM: 15.00 },
+  // Naver CLOVA Studio HCX (KRW per 1k chars; converted assuming ~1.5 chars/token)
+  "HCX-005": { inputPerM: 4.00, outputPerM: 8.00 },
+  // Naver Search Open API — free up to 25k req/day per app, then ₩… per call
+  // (within free tier we record 0; admin can mark estimated overage in budget notes)
+  "naver/search": { inputPerM: 0, outputPerM: 0, perRequest: 0 },
+  // Google PageSpeed Insights — free quota 25k/day, no charge under quota
+  "google/psi": { inputPerM: 0, outputPerM: 0, perRequest: 0 },
 };
 
 function providerOfModel(model: string): string {
+  if (model === "google/psi") return "psi";
   if (model.startsWith("google/")) return "lovable_ai";
   if (model.startsWith("openai/")) return "lovable_ai";
   if (model.startsWith("anthropic/")) return "lovable_ai";
   if (model === "sonar" || model === "sonar-pro") return "perplexity";
   if (model.startsWith("firecrawl/")) return "firecrawl";
+  if (model.startsWith("claude-")) return "anthropic";
+  if (model.startsWith("HCX-")) return "clova";
+  if (model.startsWith("naver/")) return "naver";
   return "other";
 }
 

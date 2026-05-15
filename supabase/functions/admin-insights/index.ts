@@ -149,6 +149,56 @@ Deno.serve(async (req) => {
       );
     }
 
+    // === EXTERNAL BALANCE SNAPSHOTS ===
+    if (action === "getExternalBalances") {
+      const { data: rows } = await supabase
+        .from("external_balance_snapshots")
+        .select("*")
+        .order("snapshot_at", { ascending: false })
+        .limit(200);
+      const latestByProvider: Record<string, any> = {};
+      const history: any[] = [];
+      for (const r of rows || []) {
+        if (!latestByProvider[r.provider]) latestByProvider[r.provider] = r;
+        history.push(r);
+      }
+      return new Response(
+        JSON.stringify({
+          latest: Object.values(latestByProvider),
+          history: history.slice(0, 50),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "saveExternalBalance") {
+      const snap = body.snapshot || {};
+      const insertable = {
+        provider: String(snap.provider || "").slice(0, 50),
+        label: snap.label ? String(snap.label).slice(0, 100) : null,
+        used_usd: Number(snap.used_usd) || 0,
+        limit_usd: snap.limit_usd != null && snap.limit_usd !== "" ? Number(snap.limit_usd) : null,
+        topup_used_usd: Number(snap.topup_used_usd) || 0,
+        topup_balance_usd: Number(snap.topup_balance_usd) || 0,
+        period_resets_at: snap.period_resets_at || null,
+        notes: snap.notes ? String(snap.notes).slice(0, 500) : null,
+      };
+      if (!insertable.provider) {
+        return new Response(JSON.stringify({ error: "provider required" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: inserted, error: insErr } = await supabase
+        .from("external_balance_snapshots")
+        .insert(insertable)
+        .select()
+        .single();
+      return new Response(
+        JSON.stringify({ success: !insErr, error: insErr?.message, snapshot: inserted }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Handle engine status action
     if (action === "engineStatus") {
       const { data: config } = await supabase
