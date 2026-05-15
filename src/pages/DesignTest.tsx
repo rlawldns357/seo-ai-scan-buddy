@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
 import AIPerceptionCard from "@/components/AIPerceptionCard";
@@ -26,9 +27,16 @@ const fakePsi = {
 
 const DesignTest = () => (
   <div className="min-h-screen flex flex-col bg-background">
+    <Helmet>
+      <title>Design System Test – 서치튠OS</title>
+      <meta name="description" content="서치튠OS 내부 UI/UX 통합 테스트 페이지입니다." />
+      <meta name="robots" content="noindex, nofollow" />
+      <link rel="canonical" href="https://searchtuneos.com/design-test" />
+    </Helmet>
     <Navbar />
     <main className="flex-1 px-2 sm:px-4 pt-10 pb-40 sm:pt-16 sm:pb-44">
       <div className="max-w-4xl mx-auto space-y-5">
+        <h1 className="sr-only">Design System Test</h1>
         <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
         <AIPerceptionCard url={DEMO_URL} />
