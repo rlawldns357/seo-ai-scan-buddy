@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink, Search, Target } from "lucide-react";
+import { BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink, Search, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   ChartContainer,
   ChartTooltip,
@@ -47,10 +46,9 @@ function formatDuration(sec: number) {
 }
 
 export default function Admin() {
-  const [password, setPassword] = useState("");
-  const [authed, setAuthed] = useState(false);
+  // Auth handled by AdminLayout — admin_pw is in sessionStorage when this renders.
+  const password = "";
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [data, setData] = useState<InsightsData | null>(null);
   const [days, setDays] = useState(30);
   const [blogPosts, setBlogPosts] = useState<{ id: string; title: string; slug: string; published: boolean; date: string; category: string }[]>([]);
@@ -88,25 +86,6 @@ export default function Admin() {
       if (res && !res.error) setUsageStats(res);
     } catch {}
     setUsageLoading(false);
-  };
-
-  const handleLogin = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const { data: res, error: err } = await supabase.functions.invoke("admin-auth", {
-        body: { password },
-      });
-      if (err || res?.error) {
-        setError("비밀번호가 틀렸습니다");
-      } else {
-        setAuthed(true);
-        sessionStorage.setItem("admin_pw", password);
-      }
-    } catch {
-      setError("서버 오류");
-    }
-    setLoading(false);
   };
 
   const fetchInsights = async (d: number) => {
@@ -235,64 +214,40 @@ export default function Admin() {
     setTimeout(() => { fetchSerpTracking(); setSerpTriggering(false); }, 3000);
   };
 
+  // Critical first-paint: only insights. Stagger the rest after idle so the
+  // page paints fast and admin-insights edge function isn't hit with 7
+  // concurrent same-instance calls (which serialize on a cold isolate).
+  // Clarity is intentionally NOT auto-fetched — it's the slowest external API.
   useEffect(() => {
-    if (authed) {
-      fetchInsights(days);
-      fetchBlogPosts();
-      fetchEngineStatus();
-      fetchFailedPosts();
-      fetchClarity(1);
-      fetchSerpTracking();
-      fetchUsageStats();
-    }
-  }, [authed, days]);
+    fetchInsights(days);
+  }, [days]);
 
-  if (!authed) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Helmet>
-          <title>관리자 인증 – 서치튠OS</title>
-          <meta name="description" content="서치튠OS 관리자 전용 페이지입니다." />
-          <meta name="robots" content="noindex, nofollow" />
-          <link rel="canonical" href="https://searchtuneos.com/admin" />
-        </Helmet>
-        <Card className="w-full max-w-sm">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center mb-3">
-              <Lock className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <CardTitle className="text-lg">관리자 인증</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            />
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button className="w-full" onClick={handleLogin} disabled={loading}>
-              {loading ? "확인 중..." : "로그인"}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  useEffect(() => {
+    const idle =
+      (window as any).requestIdleCallback ||
+      ((cb: () => void, opts?: { timeout?: number }) => setTimeout(cb, opts?.timeout ?? 1));
+    const handles: any[] = [];
+    handles.push(idle(() => fetchBlogPosts(), { timeout: 600 }));
+    handles.push(idle(() => fetchEngineStatus(), { timeout: 900 }));
+    handles.push(idle(() => fetchFailedPosts(), { timeout: 1200 }));
+    handles.push(idle(() => fetchUsageStats(), { timeout: 1500 }));
+    handles.push(idle(() => fetchSerpTracking(), { timeout: 1800 }));
+    return () => {
+      const cancel = (window as any).cancelIdleCallback || clearTimeout;
+      handles.forEach((h) => cancel(h));
+    };
+  }, []);
 
   const s = data?.summary;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="space-y-6">
       <Helmet>
         <title>인사이트 대시보드 – 서치튠OS 관리자</title>
         <meta name="description" content="서치튠OS 관리자 인사이트 대시보드 — 서비스 핵심 지표와 운영 현황을 확인합니다." />
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://searchtuneos.com/admin" />
       </Helmet>
-      <div className="container py-8 space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">📊 인사이트</h1>
@@ -975,7 +930,6 @@ export default function Admin() {
             </Card>
           </>
         ) : null}
-      </div>
     </div>
   );
 }
