@@ -116,6 +116,7 @@ Deno.serve(async (req) => {
           });
           if (searchRes.ok) {
             const searchData = await searchRes.json();
+            logApiCost({ function_name: "update-analysis-engine", model: "firecrawl/search", requests: 1, metadata: { query } });
             for (const r of searchData.data || []) {
               trendResults.push(`[${r.title}] ${r.description || ""}`);
               if (r.url) trendCitations.push(r.url);
