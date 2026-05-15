@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 import { buildAiOgPrompt, buildSvgOg, resolveStyle } from "../_shared/og-design-rulebook.ts";
 import { svgToPng } from "../_shared/og-png-renderer.ts";
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
