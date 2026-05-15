@@ -62,14 +62,25 @@ async function fetchPosts() {
 }
 
 // ── 3. Static blog posts (fallback if DB is empty) ──────────────────
-const STATIC_POSTS = [
-  { slug: "what-is-aeo", title: "AEO란? AI 답변 엔진에 내 콘텐츠를 인용시키는 전략", excerpt: "ChatGPT, Perplexity, 뤼튼 같은 AI가 내 콘텐츠를 직접 답변으로 인용하도록 최적화하는 AEO의 핵심 개념과 실전 전략.", category: "AEO", author: "서치튠 블로거", date: "2026-04-01" },
-  { slug: "naver-search-advisor-guide", title: "네이버 서치어드바이저 완벽 가이드 2026", excerpt: "네이버 서치어드바이저 등록부터 사이트맵 제출, 크롤링 최적화까지 실전 설정 가이드.", category: "가이드", author: "서치튠 블로거", date: "2026-03-28" },
-  { slug: "naver-seo-optimization-tips", title: "네이버 SEO 최적화 핵심 팁 7가지", excerpt: "네이버 검색에서 상위 노출되기 위한 핵심 SEO 최적화 전략 7가지.", category: "SEO", author: "서치튠 블로거", date: "2026-03-25" },
-  { slug: "naver-cue-geo-strategy", title: "네이버 Cue: 시대의 GEO 전략", excerpt: "네이버 Cue: AI 검색에서 브랜드와 콘텐츠가 인용되도록 준비하는 GEO 전략.", category: "GEO", author: "서치튠 블로거", date: "2026-03-22" },
-  { slug: "cafe24-seo-optimization-guide", title: "카페24 SEO 최적화 완벽 가이드 2026", excerpt: "카페24 쇼핑몰의 SEO를 극대화하는 실전 가이드.", category: "가이드", author: "서치튠 블로거", date: "2026-03-19" },
-  { slug: "imweb-seo-guide", title: "아임웹 SEO 완벽 가이드 2026", excerpt: "아임웹 사이트의 검색 노출을 극대화하는 SEO 최적화 가이드.", category: "가이드", author: "서치튠 블로거", date: "2026-03-16" },
-];
+// Auto-parsed from src/data/blogPosts.ts so legacy client-side slugs
+// (e.g. seo-vs-aeo-vs-geo) also get a canonical .html file generated.
+function loadStaticPostsFromSource() {
+  try {
+    const src = fs.readFileSync(path.resolve("src/data/blogPosts.ts"), "utf-8");
+    const re = /slug:\s*"([^"]+)",[\s\S]*?title:\s*\n?\s*"([^"]+)",[\s\S]*?excerpt:\s*\n?\s*"([^"]+)",[\s\S]*?category:\s*"([^"]+)",[\s\S]*?author:\s*"([^"]+)",[\s\S]*?date:\s*"([^"]+)"/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(src))) {
+      out.push({ slug: m[1], title: m[2], excerpt: m[3], category: m[4], author: m[5], date: m[6] });
+    }
+    return out;
+  } catch (e) {
+    console.warn("[prerender] Failed to parse blogPosts.ts:", e.message);
+    return [];
+  }
+}
+const STATIC_POSTS = loadStaticPostsFromSource();
+console.log(`[prerender] Loaded ${STATIC_POSTS.length} static posts from blogPosts.ts`);
 
 // ── 4. Simple markdown → HTML ───────────────────────────────────────
 function mdToHtml(md) {
