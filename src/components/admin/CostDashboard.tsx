@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, RefreshCw, Copy, Check, AlertTriangle } from "lucide-react";
+import { Wallet, RefreshCw, Copy, Check, AlertTriangle, Info } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface CostData {
@@ -79,6 +79,10 @@ export default function CostDashboard() {
     for (const f of data.by_function.slice(0, 3)) {
       lines.push(`• ${f.function_name}: ${won(f.cost_krw)} (${f.requests}회)`);
     }
+    lines.push("");
+    lines.push(`⏳ 임시(추정) 추적 — 위 합계 미포함`);
+    lines.push(`• analyze-naver-store, probe-ai-perception, track-serp-keywords`);
+    lines.push(`  → 정밀 계측 적용 전, 실제 청구액 ±10~20% 더 클 수 있음`);
     return lines.join("\n");
   }, [data]);
 
@@ -200,6 +204,28 @@ export default function CostDashboard() {
                     <div className="col-span-2 text-right tabular-nums text-muted-foreground">{f.requests}회</div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Estimated / temporary tracking notice */}
+            <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3">
+              <div className="flex items-start gap-2">
+                <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="text-xs space-y-1.5 text-foreground">
+                  <p className="font-semibold text-amber-700 dark:text-amber-400">
+                    ⏳ 일부 함수는 아직 <span className="underline">임시(추정)</span> 추적입니다
+                  </p>
+                  <p className="text-muted-foreground leading-relaxed">
+                    아래 함수들은 정밀 토큰 계측이 아직 적용되지 않아 위 표/예산에서 <b>제외</b>됐어요.
+                    실제 청구액은 ±10~20% 더 클 수 있어요.
+                  </p>
+                  <ul className="text-muted-foreground space-y-0.5 ml-1 mt-1">
+                    <li>• <code className="font-mono text-foreground">analyze-naver-store</code> <span className="text-amber-600">(임시)</span> — Firecrawl + Gemini 사용, 호출당 약 ₩10~15 추정</li>
+                    <li>• <code className="font-mono text-foreground">probe-ai-perception</code> <span className="text-amber-600">(임시)</span> — Gemini + Perplexity + Claude 호출, 캐시 갱신 시 ₩20~40 추정</li>
+                    <li>• <code className="font-mono text-foreground">psi-proxy</code> <span className="text-amber-600">(임시·무료)</span> — Google 무료 쿼터(25k/일), 비용 ₩0</li>
+                    <li>• <code className="font-mono text-foreground">track-serp-keywords</code> <span className="text-amber-600">(임시)</span> — 매일 06:00 SERP, Firecrawl 호출당 ₩7 추정</li>
+                  </ul>
+                </div>
               </div>
             </div>
 
