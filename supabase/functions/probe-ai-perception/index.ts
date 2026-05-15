@@ -163,7 +163,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
     const self = isSelfDomain(host);
     const model = "google/gemini-3-flash-preview";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const r = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           "Lovable-API-Key": KEY,
@@ -179,7 +179,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
             { role: "user", content: prompt },
           ],
         }),
-      }));
+      });
       if (!r.ok) {
         const body = await r.text().catch(() => "");
         console.error("Lovable AI Gemini error", r.status, body.slice(0, 500));
@@ -219,7 +219,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     const self = isSelfDomain(host);
     const model = self ? "sonar-pro" : "sonar";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://api.perplexity.ai/chat/completions", {
+      const r = await fetchWithRetry("https://api.perplexity.ai/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -231,7 +231,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
             { role: "user", content: prompt },
           ],
         }),
-      }));
+      });
       if (!r.ok) throw new Error(`perplexity ${r.status}`);
       const j = await r.json();
       const u = extractUsage(j);
@@ -283,7 +283,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
     const self = isSelfDomain(host);
     const model = "openai/gpt-5-nano";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const r = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           "Lovable-API-Key": KEY,
@@ -299,7 +299,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
             { role: "user", content: prompt },
           ],
         }),
-      }));
+      });
       if (!r.ok) {
         const body = await r.text().catch(() => "");
         console.error("Lovable AI OpenAI-model error", r.status, body.slice(0, 500));
@@ -339,7 +339,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
     const self = isSelfDomain(host);
     const model = self ? "claude-sonnet-4-5" : "claude-haiku-4-5";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
+      const r = await fetchWithRetry("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "x-api-key": KEY,
@@ -354,7 +354,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
             ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
             : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"",
         }),
-      }));
+      });
       if (!r.ok) throw new Error(`anthropic ${r.status}`);
       const j = await r.json();
       const usage = j?.usage ?? {};
@@ -394,7 +394,7 @@ async function probeNaver(url: string, host: string, brand: string, category: st
     const self = isSelfDomain(host);
     const model = "HCX-005";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch(`https://clovastudio.stream.ntruss.com/v3/chat-completions/${model}`, {
+      const r = await fetchWithRetry(`https://clovastudio.stream.ntruss.com/v3/chat-completions/${model}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${KEY}`,
@@ -418,7 +418,7 @@ async function probeNaver(url: string, host: string, brand: string, category: st
           stopBefore: [],
           includeAiFilters: false,
         }),
-      }));
+      });
       if (!r.ok) {
         const body = await r.text().catch(() => "");
         console.error("HyperCLOVA X error", r.status, body.slice(0, 500));
