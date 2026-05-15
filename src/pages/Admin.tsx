@@ -249,7 +249,7 @@ export default function Admin() {
 
   if (!authed) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <div className="admin-brutal admin-brutal-paper min-h-screen flex items-center justify-center p-4">
         <Helmet>
           <title>관리자 인증 – 서치튠OS</title>
           <meta name="description" content="서치튠OS 관리자 전용 페이지입니다." />
