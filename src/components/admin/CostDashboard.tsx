@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Wallet, RefreshCw, Copy, Check, AlertTriangle } from "lucide-react";
+import { Wallet, RefreshCw, Copy, Check, AlertTriangle, Info } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 interface CostData {
