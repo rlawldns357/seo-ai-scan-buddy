@@ -202,7 +202,7 @@ export default function NaverStore() {
                   <div className={`inline-flex w-9 h-9 rounded-xl items-center justify-center mb-2 ${item.color}`}>
                     {item.icon}
                   </div>
-                  <h3 className="text-sm font-bold text-foreground mb-1">{item.title}</h3>
+                  <h2 className="text-sm font-bold text-foreground mb-1">{item.title}</h2>
                   <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
                 </div>
               ))}
