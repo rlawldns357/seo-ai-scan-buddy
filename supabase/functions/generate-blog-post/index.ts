@@ -610,6 +610,8 @@ ${naverRulebook}
         throw new Error(`AI gateway returned ${r.status}`);
       }
       const data = await r.json();
+      const u = extractUsage(data);
+      logApiCost({ function_name: "generate-blog-post", model: "google/gemini-2.5-pro", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "draft" } });
       const tc = data.choices?.[0]?.message?.tool_calls?.[0];
       if (!tc) throw new Error("No tool call in AI response");
       return JSON.parse(tc.function.arguments);
