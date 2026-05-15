@@ -79,6 +79,10 @@ export default function CostDashboard() {
     for (const f of data.by_function.slice(0, 3)) {
       lines.push(`• ${f.function_name}: ${won(f.cost_krw)} (${f.requests}회)`);
     }
+    lines.push("");
+    lines.push(`⏳ 임시(추정) 추적 — 위 합계 미포함`);
+    lines.push(`• analyze-naver-store, probe-ai-perception, track-serp-keywords`);
+    lines.push(`  → 정밀 계측 적용 전, 실제 청구액 ±10~20% 더 클 수 있음`);
     return lines.join("\n");
   }, [data]);
 
