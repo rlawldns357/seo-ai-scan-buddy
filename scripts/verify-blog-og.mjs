@@ -32,11 +32,15 @@ function extractAttr(html, tagRe, attr) {
   return m ? m[1] : null;
 }
 
-function verifyFile(filePath, expectedUrl) {
+function verifyFile(filePath, expectedUrl, isStub = false) {
   const html = fs.readFileSync(filePath, "utf-8");
   const errors = [];
 
+  // Stub files are meta-refresh redirects to the canonical .html.
+  // They carry per-post title/description/canonical/og:* but intentionally
+  // omit the full Article JSON-LD body (it lives on the canonical .html).
   for (const { name, re } of REQUIRED_TAGS) {
+    if (isStub && name === "Article JSON-LD") continue;
     if (!re.test(html)) errors.push(`missing ${name}`);
   }
 
