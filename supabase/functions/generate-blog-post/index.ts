@@ -372,6 +372,7 @@ Deno.serve(async (req) => {
             if (fcRes.ok) {
               const fcData = await fcRes.json();
               const results = (fcData?.data || fcData?.web?.results || []).slice(0, 2);
+              logApiCost({ function_name: "generate-blog-post", model: "firecrawl/search", requests: 1, metadata: { query: theme } });
               if (Array.isArray(results) && results.length > 0) {
                 freshContext = results
                   .map((r: any, i: number) => `[참고 ${i + 1}] ${r.title || ""}\n출처: ${r.url || ""}\n요약: ${(r.description || r.snippet || "").slice(0, 220)}`)
