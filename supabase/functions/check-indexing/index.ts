@@ -201,6 +201,7 @@ Deno.serve(async (req) => {
     };
 
     if (naverResponse) {
+      logApiCost({ function_name: "check-indexing", model: "naver/search", requests: 1, metadata: { domain, free_quota: true } });
       try {
         const naverData = await naverResponse.json();
         const items: any[] = Array.isArray(naverData?.items) ? naverData.items : [];
