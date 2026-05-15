@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { logApiCost } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -63,6 +64,14 @@ serve(async (req) => {
     clearTimeout(timeout);
 
     const body = await res.json();
+
+    // Cost log: PSI is free up to 25k/day quota
+    logApiCost({
+      function_name: "psi-proxy",
+      model: "google/psi",
+      requests: 1,
+      metadata: { strategy: validStrategy, status: res.status, free_quota: true },
+    });
 
     return new Response(JSON.stringify({ status: res.status, body }), {
       status: 200,

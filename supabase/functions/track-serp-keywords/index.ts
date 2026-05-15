@@ -2,6 +2,7 @@
 // Naver: official Search API (NAVER_CLIENT_ID/SECRET)
 // Google: Firecrawl /v2/search (FIRECRAWL_API_KEY)
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { logApiCost } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -54,6 +55,12 @@ async function searchNaver(keyword: string): Promise<{ items: SerpItem[]; total?
       return { items: [], error: `Naver API ${res.status}: ${txt.slice(0, 200)}` };
     }
     const data = await res.json();
+    logApiCost({
+      function_name: "track-serp-keywords",
+      model: "naver/search",
+      requests: 1,
+      metadata: { surface: "webkr", keyword: keyword.slice(0, 60) },
+    });
     const items: SerpItem[] = (data.items || []).map((it: any, i: number) => ({
       rank: i + 1,
       url: it.link,
@@ -82,6 +89,12 @@ async function searchGoogle(keyword: string): Promise<{ items: SerpItem[]; error
       return { items: [], error: `Firecrawl ${res.status}: ${txt.slice(0, 200)}` };
     }
     const data = await res.json();
+    logApiCost({
+      function_name: "track-serp-keywords",
+      model: "firecrawl/search",
+      requests: 1,
+      metadata: { surface: "google", keyword: keyword.slice(0, 60) },
+    });
     // v2 returns { success, data: { web: [{ url, title, description, ... }] } } or { data: [...] }
     const raw = data?.data?.web || data?.web || data?.data || [];
     const items: SerpItem[] = (Array.isArray(raw) ? raw : []).slice(0, 10).map((it: any, i: number) => ({
