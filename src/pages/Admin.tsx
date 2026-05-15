@@ -327,6 +327,9 @@ export default function Admin() {
           </CardContent>
         </Card>
 
+        {/* API 비용 / 크레딧 정밀 추적 */}
+        <CostDashboard />
+
         {loading && !data ? (
           <div className="text-center py-20 text-muted-foreground">로딩 중...</div>
         ) : data && s ? (
