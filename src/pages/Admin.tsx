@@ -284,49 +284,72 @@ export default function Admin() {
   const s = data?.summary;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="admin-brutal admin-brutal-paper min-h-screen">
       <Helmet>
         <title>인사이트 대시보드 – 서치튠OS 관리자</title>
         <meta name="description" content="서치튠OS 관리자 인사이트 대시보드 — 서비스 핵심 지표와 운영 현황을 확인합니다." />
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://searchtuneos.com/admin" />
       </Helmet>
-      <div className="container py-8 space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">📊 인사이트</h1>
-            <p className="text-sm text-muted-foreground">서비스 핵심 지표 대시보드</p>
+      <div className="container py-8 space-y-6 max-w-[1400px]">
+        {/* Brutalist Header */}
+        <header className="br-card-ink p-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="br-tag-accent">01 / INSIGHTS</span>
+              <span className="br-label" style={{ color: "#fff", opacity: 0.6 }}>// CORE METRICS</span>
+            </div>
+            <h1 className="br-h1 text-3xl md:text-4xl">SERVICE<br/>VITALS.</h1>
+            <p className="br-label" style={{ color: "#fff", opacity: 0.7 }}>세션 · 분석 · 리드 · 전환</p>
           </div>
           <div className="flex gap-2">
             {[7, 14, 30].map((d) => (
-              <Button
+              <button
                 key={d}
-                variant={days === d ? "default" : "outline"}
-                size="sm"
                 onClick={() => setDays(d)}
+                className={days === d ? "br-btn" : "br-btn-ghost"}
+                style={days !== d ? { background: "#fff", color: "#000" } : undefined}
               >
-                {d}일
-              </Button>
+                {d}D
+              </button>
             ))}
           </div>
-        </div>
+        </header>
 
-        {/* 별도 운영 화면 진입 */}
-        <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="pt-4 pb-4 flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-sm font-bold text-foreground">🧭 운영 콘솔 바로가기</p>
-              <p className="text-xs text-muted-foreground">키워드 · 색인 · 성장 루프 · 크레딧 비용은 전용 화면에서 관리합니다.</p>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              <a href="/admin/credits"><Button size="sm">💰 크레딧 / 비용 →</Button></a>
-              <a href="/admin/seo-monitor"><Button size="sm" variant="outline">SEO 모니터 →</Button></a>
-              <a href="/admin/indexing-queue"><Button size="sm" variant="outline">색인 큐 →</Button></a>
-              <a href="/admin/ai-growth-loop"><Button size="sm" variant="outline">AI 성장 루프 →</Button></a>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Ops console quick-jump */}
+        <div className="br-card-flat">
+          <div className="border-b-2 border-black px-4 py-2.5 bg-black text-white flex items-center justify-between">
+            <span className="br-label" style={{ color: "#fff" }}>// OPS CONSOLE QUICK-JUMP</span>
+            <span className="br-tag-accent">5 MODULES</span>
+          </div>
+          <div className="p-4 grid grid-cols-2 md:grid-cols-5 gap-3">
+            <a href="/admin/credits" className="br-card br-hover-pop p-4 block">
+              <p className="br-label">06</p>
+              <p className="text-sm font-black uppercase tracking-wider mt-1">💰 Credits</p>
+              <p className="br-label mt-2 normal-case tracking-normal">API 비용</p>
+            </a>
+            <a href="/admin/seo-monitor" className="br-card br-hover-pop p-4 block">
+              <p className="br-label">03</p>
+              <p className="text-sm font-black uppercase tracking-wider mt-1">SEO Monitor</p>
+              <p className="br-label mt-2 normal-case tracking-normal">키워드 추적</p>
+            </a>
+            <a href="/admin/indexing-queue" className="br-card br-hover-pop p-4 block">
+              <p className="br-label">04</p>
+              <p className="text-sm font-black uppercase tracking-wider mt-1">Indexing</p>
+              <p className="br-label mt-2 normal-case tracking-normal">색인 큐</p>
+            </a>
+            <a href="/admin/ai-growth-loop" className="br-card br-hover-pop p-4 block">
+              <p className="br-label">05</p>
+              <p className="text-sm font-black uppercase tracking-wider mt-1">Growth Loop</p>
+              <p className="br-label mt-2 normal-case tracking-normal">AI 루프</p>
+            </a>
+            <a href="/admin/blog" className="br-card br-hover-pop p-4 block">
+              <p className="br-label">02</p>
+              <p className="text-sm font-black uppercase tracking-wider mt-1">Blog</p>
+              <p className="br-label mt-2 normal-case tracking-normal">콘텐츠</p>
+            </a>
+          </div>
+        </div>
 
         {loading && !data ? (
           <div className="text-center py-20 text-muted-foreground">로딩 중...</div>
