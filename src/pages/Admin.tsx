@@ -931,7 +931,6 @@ export default function Admin() {
             </Card>
           </>
         ) : null}
-      </div>
     </div>
   );
 }
