@@ -1,6 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 import { buildAiOgPrompt, buildSvgOg, resolveStyle } from "../_shared/og-design-rulebook.ts";
 import { svgToPng } from "../_shared/og-png-renderer.ts";
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -78,6 +79,10 @@ Deno.serve(async (req) => {
             continue;
           }
           const data = await response.json();
+          try {
+            const u = extractUsage(data);
+            logApiCost({ function_name: "generate-og-image", model: model as any, tokens_in: u.tokens_in, tokens_out: u.tokens_out, requests: 1, metadata: { slug, category } });
+          } catch (_) {}
           const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
           if (!imageUrl) {
             lastError = `${model}: no image in response`;

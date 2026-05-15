@@ -18,7 +18,8 @@ const PRICING: Record<string, ModelPricing> = {
   "google/gemini-2.5-flash":            { inputPerM: 0.30, outputPerM: 2.50 },
   "google/gemini-2.5-flash-lite":       { inputPerM: 0.10, outputPerM: 0.40 },
   "google/gemini-3-flash-preview":      { inputPerM: 0.30, outputPerM: 2.50 },
-  "google/gemini-3.1-flash-image-preview": { inputPerM: 0.30, outputPerM: 2.50 },
+  "google/gemini-3.1-flash-image-preview": { inputPerM: 0.30, outputPerM: 2.50, perRequest: 0.039 },
+  "google/gemini-2.5-flash-image":      { inputPerM: 0.30, outputPerM: 2.50, perRequest: 0.039 },
   "google/gemini-3-pro-image-preview":  { inputPerM: 1.25, outputPerM: 10.00 },
   "google/gemini-3.1-pro-preview":      { inputPerM: 1.25, outputPerM: 10.00 },
   // Lovable AI Gateway -> OpenAI

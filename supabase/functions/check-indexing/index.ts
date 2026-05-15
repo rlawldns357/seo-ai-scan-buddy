@@ -1,3 +1,5 @@
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
@@ -62,6 +64,10 @@ async function checkGoogleViaPerplexity(
     }
 
     const data = await res.json();
+    try {
+      const u = extractUsage(data);
+      logApiCost({ function_name: "check-indexing", model: "sonar", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "google-index-check", domain } });
+    } catch (_) {}
     const content: string = data?.choices?.[0]?.message?.content ?? "";
     const citations: string[] = Array.isArray(data?.citations)
       ? data.citations
@@ -195,6 +201,7 @@ Deno.serve(async (req) => {
     };
 
     if (naverResponse) {
+      logApiCost({ function_name: "check-indexing", model: "naver/search", requests: 1, metadata: { domain, free_quota: true } });
       try {
         const naverData = await naverResponse.json();
         const items: any[] = Array.isArray(naverData?.items) ? naverData.items : [];

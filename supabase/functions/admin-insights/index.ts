@@ -741,6 +741,11 @@ Deno.serve(async (req) => {
           }),
         });
         const aiJson = await aiRes.json();
+        try {
+          const { logApiCost, extractUsage } = await import("../_shared/cost-logger.ts");
+          const u = extractUsage(aiJson);
+          logApiCost({ function_name: "admin-insights", model: "google/gemini-2.5-flash", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "ai-judge-action", action_id: body.actionId } });
+        } catch (_) {}
         const text: string = aiJson?.choices?.[0]?.message?.content?.trim() || "";
         const [verdict, ...rest] = text.split("|");
         const v = verdict.trim().toLowerCase();
