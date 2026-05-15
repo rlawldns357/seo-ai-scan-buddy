@@ -47,10 +47,9 @@ function formatDuration(sec: number) {
 }
 
 export default function Admin() {
-  const [password, setPassword] = useState("");
-  const [authed, setAuthed] = useState(false);
+  // Auth handled by AdminLayout — admin_pw is in sessionStorage when this renders.
+  const password = "";
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [data, setData] = useState<InsightsData | null>(null);
   const [days, setDays] = useState(30);
   const [blogPosts, setBlogPosts] = useState<{ id: string; title: string; slug: string; published: boolean; date: string; category: string }[]>([]);
@@ -88,25 +87,6 @@ export default function Admin() {
       if (res && !res.error) setUsageStats(res);
     } catch {}
     setUsageLoading(false);
-  };
-
-  const handleLogin = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const { data: res, error: err } = await supabase.functions.invoke("admin-auth", {
-        body: { password },
-      });
-      if (err || res?.error) {
-        setError("비밀번호가 틀렸습니다");
-      } else {
-        setAuthed(true);
-        sessionStorage.setItem("admin_pw", password);
-      }
-    } catch {
-      setError("서버 오류");
-    }
-    setLoading(false);
   };
 
   const fetchInsights = async (d: number) => {
