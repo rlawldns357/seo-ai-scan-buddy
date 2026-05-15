@@ -242,6 +242,7 @@ export default function Admin() {
       fetchFailedPosts();
       fetchClarity(1);
       fetchSerpTracking();
+      fetchUsageStats();
     }
   }, [authed, days]);
 
