@@ -119,7 +119,7 @@ export default function LoadingScreen({ completedPhases = new Set(), skipLightho
                       ? "text-primary"
                       : active
                         ? "text-foreground"
-                        : "text-muted-foreground/70"
+                        : "text-muted-foreground"
                   }`}
                 >
                   {done ? (
@@ -208,7 +208,7 @@ export default function LoadingScreen({ completedPhases = new Set(), skipLightho
         </div>
 
         {/* Subtle hint */}
-        <p className="text-[11px] text-muted-foreground/60">
+        <p className="text-[11px] text-muted-foreground">
           {skipLighthouse ? "AI 분석만 실행 · 30초 이내" : "모바일 + 데스크톱 동시 측정 · 평균 10~30초"}
         </p>
 

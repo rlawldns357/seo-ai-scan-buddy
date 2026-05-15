@@ -534,7 +534,7 @@ const Index = () => {
                   )}
                   <Search
                     className={`absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none transition-colors z-10 ${
-                      naverMode ? "text-naver" : "text-muted-foreground/60 group-focus-within:text-primary"
+                      naverMode ? "text-naver" : "text-muted-foreground group-focus-within:text-primary"
                     }`}
                     strokeWidth={2.5}
                   />
@@ -544,7 +544,7 @@ const Index = () => {
                     onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                     placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
-                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/90 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
+                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/90 backdrop-blur text-foreground placeholder:text-muted-foreground focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
                       naverMode
                         ? "border-naver/50 focus:border-naver focus:ring-2 focus:ring-naver/30 shadow-[0_0_0_4px_hsl(var(--naver)/0.10)]"
                         : "border-input focus:ring-2 focus:ring-primary/40 focus:border-primary"
@@ -607,7 +607,7 @@ const Index = () => {
                 if (!url) {
                   return (
                     <div className="relative flex flex-wrap items-center justify-center gap-1.5 mt-3.5 animate-fade-in">
-                      <span className="text-[11px] text-muted-foreground/70 mr-0.5">예시</span>
+                      <span className="text-[11px] text-muted-foreground mr-0.5">예시</span>
                       {EXAMPLE_URLS.map((ex) => (
                         <button
                           key={ex.url}
@@ -726,7 +726,7 @@ const Index = () => {
               <NaverStoreTeaser onActivate={() => setNaverMode(true)} />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
-              <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
+              <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground uppercase tracking-widest">
                 FAQ
               </h2>
               <FaqSection compact />

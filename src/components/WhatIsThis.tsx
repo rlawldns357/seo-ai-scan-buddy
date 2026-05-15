@@ -24,7 +24,7 @@ const items = [
 export default function WhatIsThis() {
   return (
     <section className="mt-10 max-w-lg mx-auto text-left">
-      <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
+      <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground uppercase tracking-widest">
         About
       </h2>
       <Accordion type="single" collapsible className="w-full space-y-1.5">
@@ -37,7 +37,7 @@ export default function WhatIsThis() {
             <AccordionTrigger className="text-xs font-medium text-muted-foreground hover:text-foreground hover:no-underline py-2.5">
               {it.q}
             </AccordionTrigger>
-            <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
+            <AccordionContent className="text-[11px] text-muted-foreground leading-relaxed pb-2.5">
               {it.a}
             </AccordionContent>
           </AccordionItem>

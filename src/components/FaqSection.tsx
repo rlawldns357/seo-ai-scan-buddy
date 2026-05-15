@@ -63,7 +63,7 @@ export default function FaqSection({ compact = false, expanded = false }: FaqSec
   return (
     <section className={compact ? "" : "mt-10 mb-6"}>
       {!compact && (
-        <h2 className={`text-center mb-4 tracking-tight ${expanded ? "text-sm font-bold text-foreground" : "text-xs font-medium text-muted-foreground/60 uppercase tracking-widest"}`}>
+        <h2 className={`text-center mb-4 tracking-tight ${expanded ? "text-sm font-bold text-foreground" : "text-xs font-medium text-muted-foreground uppercase tracking-widest"}`}>
           자주 묻는 질문
         </h2>
       )}
@@ -78,7 +78,7 @@ export default function FaqSection({ compact = false, expanded = false }: FaqSec
               <AccordionTrigger className="text-sm font-semibold text-foreground hover:text-foreground hover:no-underline py-2.5">
                 {faq.q}
               </AccordionTrigger>
-              <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
+              <AccordionContent className="text-[11px] text-muted-foreground leading-relaxed pb-2.5">
                 {faq.a}
               </AccordionContent>
             </AccordionItem>
@@ -95,7 +95,7 @@ export default function FaqSection({ compact = false, expanded = false }: FaqSec
               <AccordionTrigger className="text-xs font-medium text-muted-foreground hover:text-foreground hover:no-underline py-2.5">
                 {faq.q}
               </AccordionTrigger>
-              <AccordionContent className="text-[11px] text-muted-foreground/70 leading-relaxed pb-2.5">
+              <AccordionContent className="text-[11px] text-muted-foreground leading-relaxed pb-2.5">
                 {faq.a}
               </AccordionContent>
             </AccordionItem>

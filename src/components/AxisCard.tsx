@@ -34,7 +34,7 @@ export default function AxisCard({ axis }: AxisCardProps) {
         <ul className="space-y-1">
           {(axis.issues || []).map((item, i) => (
             <li key={i} className="text-xs text-muted-foreground leading-relaxed flex gap-2">
-              <span className="text-muted-foreground/60 mt-0.5 shrink-0">•</span>
+              <span className="text-muted-foreground mt-0.5 shrink-0">•</span>
               {item}
             </li>
           ))}
