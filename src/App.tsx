@@ -59,11 +59,11 @@ const App = () => (
             <Route path="/design-test" element={<DesignTest />} />
             <Route path="/vip-test" element={<VipTest />} />
 
-            {/* ───── 관리자 ───────────────────────────────────────────── */}
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/insights" element={<Admin />} />
-            <Route path="/admin/blog" element={<Admin />} />
+            {/* ───── 관리자 (모두 AdminLayout 사이드바 아래에서 통일) ───── */}
             <Route element={<AdminLayout />}>
+              <Route path="/admin" element={<Admin />} />
+              <Route path="/admin/insights" element={<Admin />} />
+              <Route path="/admin/blog" element={<Admin />} />
               <Route path="/admin/seo-monitor" element={<SeoMonitor />} />
               <Route path="/admin/indexing-queue" element={<IndexingQueue />} />
               <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
