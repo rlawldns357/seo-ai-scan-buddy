@@ -32,11 +32,15 @@ function extractAttr(html, tagRe, attr) {
   return m ? m[1] : null;
 }
 
-function verifyFile(filePath, expectedUrl) {
+function verifyFile(filePath, expectedUrl, isStub = false) {
   const html = fs.readFileSync(filePath, "utf-8");
   const errors = [];
 
+  // Stub files are meta-refresh redirects to the canonical .html.
+  // They carry per-post title/description/canonical/og:* but intentionally
+  // omit the full Article JSON-LD body (it lives on the canonical .html).
   for (const { name, re } of REQUIRED_TAGS) {
+    if (isStub && name === "Article JSON-LD") continue;
     if (!re.test(html)) errors.push(`missing ${name}`);
   }
 
@@ -71,7 +75,7 @@ function collectBlogFiles() {
     if (entry.isDirectory()) {
       const idx = path.join(BLOG_DIR, entry.name, "index.html");
       if (fs.existsSync(idx)) {
-        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx });
+        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx, isStub: true });
       }
       continue;
     }
@@ -104,7 +108,7 @@ function main() {
     // Canonical URL form is the explicit .html file. Published hosting can
     // route /blog/{slug}/ to the SPA home fallback, which exposes the home OG.
     const expectedUrl = `${SITE}/blog/${file.slug}.html`;
-    const errors = verifyFile(file.path, expectedUrl);
+    const errors = verifyFile(file.path, expectedUrl, file.isStub === true);
     if (file.compatibility && !canonicalSlugs.has(file.slug)) {
       errors.push(`missing canonical /blog/${file.slug}.html`);
     }
