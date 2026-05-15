@@ -12,7 +12,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
-import CostDashboard from "@/components/admin/CostDashboard";
+
 
 interface Summary {
   totalSessions: number;
