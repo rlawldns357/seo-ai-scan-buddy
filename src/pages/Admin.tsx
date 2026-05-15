@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink, Search, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -228,6 +229,12 @@ export default function Admin() {
   if (!authed) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Helmet>
+          <title>관리자 인증 – 서치튠OS</title>
+          <meta name="description" content="서치튠OS 관리자 전용 페이지입니다." />
+          <meta name="robots" content="noindex, nofollow" />
+          <link rel="canonical" href="https://searchtuneos.com/admin" />
+        </Helmet>
         <Card className="w-full max-w-sm">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center mb-3">
@@ -257,6 +264,12 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>인사이트 대시보드 – 서치튠OS 관리자</title>
+        <meta name="description" content="서치튠OS 관리자 인사이트 대시보드 — 서비스 핵심 지표와 운영 현황을 확인합니다." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://searchtuneos.com/admin" />
+      </Helmet>
       <div className="container py-8 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">

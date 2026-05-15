@@ -29,7 +29,8 @@ const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips"
 // App route stays local; public share URLs use a live backend-rendered OG page
 // so newly published posts get article images without waiting for a frontend deploy.
 const blogPostPath = (slug: string) => `/blog/${slug}.html`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}`;
+// Canonical URL must match the forced redirect path (.html) so crawlers don't see the bare /blog/{slug} as a duplicate.
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
 const blogShareUrl = (slug: string) => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share?slug=${encodeURIComponent(slug)}`;
 
 function isNaverPost(slug: string) {
