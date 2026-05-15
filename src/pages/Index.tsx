@@ -155,8 +155,7 @@ const Index = () => {
     const t1 = setTimeout(() => setVipBubble(1), 500);
     const t2 = setTimeout(() => setVipBubble(0), 2700);
     const t3 = setTimeout(() => setVipBubble(2), 3100);
-    const t4 = setTimeout(() => setVipBubble(0), 6100);
-    return () => { [t1, t2, t3, t4].forEach(clearTimeout); };
+    return () => { [t1, t2, t3].forEach(clearTimeout); };
   }, [effectiveBrand]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [indexingResult, setIndexingResult] = useState<IndexingResult | null>(null);
@@ -562,11 +561,15 @@ const Index = () => {
                       }`}
                       aria-hidden="true"
                     >
-                      <div className="relative px-3 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-semibold shadow-lg">
+                      <div className={`relative px-3 py-1.5 rounded-xl text-white text-xs font-semibold shadow-lg ${
+                        effectiveBrand === "progressmedia" ? "bg-blue-600" : "bg-emerald-600"
+                      }`}>
                         {vipBubble === 1
                           ? `Hello 👋 ${BRAND_LABEL[effectiveBrand]}`
                           : "무제한으로 바뀌었어요 ✨"}
-                        <span className="absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 bg-emerald-600" />
+                        <span className={`absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 ${
+                          effectiveBrand === "progressmedia" ? "bg-blue-600" : "bg-emerald-600"
+                        }`} />
                       </div>
                     </div>
                   )}
