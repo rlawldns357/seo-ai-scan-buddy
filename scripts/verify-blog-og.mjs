@@ -108,7 +108,7 @@ function main() {
     // Canonical URL form is the explicit .html file. Published hosting can
     // route /blog/{slug}/ to the SPA home fallback, which exposes the home OG.
     const expectedUrl = `${SITE}/blog/${file.slug}.html`;
-    const errors = verifyFile(file.path, expectedUrl);
+    const errors = verifyFile(file.path, expectedUrl, file.isStub === true);
     if (file.compatibility && !canonicalSlugs.has(file.slug)) {
       errors.push(`missing canonical /blog/${file.slug}.html`);
     }
