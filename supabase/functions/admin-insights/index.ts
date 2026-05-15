@@ -39,6 +39,116 @@ Deno.serve(async (req) => {
       );
     }
 
+    // === COST INSIGHTS ===
+    if (action === "costInsights") {
+      const now = new Date();
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+
+      // Aggregate this month per provider
+      const { data: monthRows } = await supabase
+        .from("api_cost_log")
+        .select("provider, function_name, model, cost_krw, cost_usd, tokens_in, tokens_out, requests, created_at")
+        .gte("created_at", monthStart)
+        .order("created_at", { ascending: false })
+        .limit(10000);
+
+      const rows = monthRows || [];
+
+      const byProvider: Record<string, { cost_krw: number; cost_usd: number; requests: number; tokens_in: number; tokens_out: number }> = {};
+      const byFunction: Record<string, { cost_krw: number; requests: number }> = {};
+      const byModel: Record<string, { cost_krw: number; requests: number }> = {};
+      const byDay: Record<string, number> = {};
+      let monthCostKrw = 0;
+      let monthCostUsd = 0;
+      let todayCostKrw = 0;
+      let last7CostKrw = 0;
+
+      for (const r of rows) {
+        const c = Number(r.cost_krw) || 0;
+        const cu = Number(r.cost_usd) || 0;
+        monthCostKrw += c;
+        monthCostUsd += cu;
+        if (r.created_at >= todayStart) todayCostKrw += c;
+        if (r.created_at >= sevenDaysAgo) last7CostKrw += c;
+
+        const p = r.provider || "other";
+        byProvider[p] ??= { cost_krw: 0, cost_usd: 0, requests: 0, tokens_in: 0, tokens_out: 0 };
+        byProvider[p].cost_krw += c;
+        byProvider[p].cost_usd += cu;
+        byProvider[p].requests += Number(r.requests) || 0;
+        byProvider[p].tokens_in += Number(r.tokens_in) || 0;
+        byProvider[p].tokens_out += Number(r.tokens_out) || 0;
+
+        const f = r.function_name || "unknown";
+        byFunction[f] ??= { cost_krw: 0, requests: 0 };
+        byFunction[f].cost_krw += c;
+        byFunction[f].requests += Number(r.requests) || 0;
+
+        const m = r.model || "unknown";
+        byModel[m] ??= { cost_krw: 0, requests: 0 };
+        byModel[m].cost_krw += c;
+        byModel[m].requests += Number(r.requests) || 0;
+
+        const day = (r.created_at as string).slice(0, 10);
+        byDay[day] = (byDay[day] || 0) + c;
+      }
+
+      const { data: budgets } = await supabase
+        .from("api_cost_budget")
+        .select("provider, monthly_budget_krw, alert_threshold_pct, notes")
+        .order("provider");
+
+      const budgetSummary = (budgets || []).map((b) => {
+        const spent = byProvider[b.provider]?.cost_krw || 0;
+        const budget = Number(b.monthly_budget_krw) || 0;
+        const remaining = Math.max(budget - spent, 0);
+        const pct = budget > 0 ? Math.round((spent / budget) * 100) : 0;
+        return {
+          provider: b.provider,
+          notes: b.notes,
+          monthly_budget_krw: budget,
+          spent_krw: Math.round(spent * 100) / 100,
+          remaining_krw: Math.round(remaining * 100) / 100,
+          used_pct: pct,
+          alert_threshold_pct: b.alert_threshold_pct,
+          alert: pct >= (b.alert_threshold_pct || 80),
+        };
+      });
+
+      const dailySeries = Object.entries(byDay)
+        .sort(([a], [b]) => (a < b ? -1 : 1))
+        .map(([date, krw]) => ({ date, cost_krw: Math.round(krw * 100) / 100 }));
+
+      return new Response(
+        JSON.stringify({
+          today_krw: Math.round(todayCostKrw * 100) / 100,
+          last7_krw: Math.round(last7CostKrw * 100) / 100,
+          month_krw: Math.round(monthCostKrw * 100) / 100,
+          month_usd: Math.round(monthCostUsd * 10000) / 10000,
+          by_provider: Object.entries(byProvider).map(([p, v]) => ({
+            provider: p,
+            cost_krw: Math.round(v.cost_krw * 100) / 100,
+            cost_usd: Math.round(v.cost_usd * 10000) / 10000,
+            requests: v.requests,
+            tokens_in: v.tokens_in,
+            tokens_out: v.tokens_out,
+          })).sort((a, b) => b.cost_krw - a.cost_krw),
+          by_function: Object.entries(byFunction).map(([f, v]) => ({
+            function_name: f, cost_krw: Math.round(v.cost_krw * 100) / 100, requests: v.requests,
+          })).sort((a, b) => b.cost_krw - a.cost_krw),
+          by_model: Object.entries(byModel).map(([m, v]) => ({
+            model: m, cost_krw: Math.round(v.cost_krw * 100) / 100, requests: v.requests,
+          })).sort((a, b) => b.cost_krw - a.cost_krw),
+          daily: dailySeries,
+          budgets: budgetSummary,
+          generated_at: now.toISOString(),
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Handle engine status action
     if (action === "engineStatus") {
       const { data: config } = await supabase
