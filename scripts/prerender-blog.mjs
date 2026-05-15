@@ -307,10 +307,11 @@ async function main() {
     fs.mkdirSync(slugDir, { recursive: true });
     fs.writeFileSync(path.join(slugDir, "index.html"), stub, "utf-8");
 
-    // Try extensionless /blog/{slug} stub too. Lovable hosting may or may not
-    // serve this before the SPA fallback — verified post-deploy via curl.
-    // If hosting serves it as octet-stream, we'll remove it; for now ship it.
-    fs.writeFileSync(path.join(blogDir, post.slug), stub, "utf-8");
+    // NOTE: Cannot also write an extensionless file at /blog/{slug} because the
+    // path is already used by the slugDir directory above. Hosting will resolve
+    // /blog/{slug} (no trailing slash) either to the directory's index.html
+    // (=stub, ideal) or to the SPA fallback (BlogPost.tsx then redirects to
+    // .html on mount). Verified post-deploy via curl.
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
