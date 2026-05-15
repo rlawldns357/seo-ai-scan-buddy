@@ -600,10 +600,94 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Rate-limit / credit usage stats — feeds /admin "사용량" card.
+    if (action === "usageStats") {
+      const today = new Date().toISOString().split("T")[0];
+      const since7 = new Date();
+      since7.setDate(since7.getDate() - 6);
+      const since7Str = since7.toISOString().split("T")[0];
+
+      const [{ data: cfg }, { data: todayRows }, { data: weekRows }] = await Promise.all([
+        supabase
+          .from("rate_limit_config")
+          .select("free_limit, email_bonus, whitelisted_ips, updated_at")
+          .eq("id", 1)
+          .maybeSingle(),
+        supabase
+          .from("analysis_usage")
+          .select("ip_address, usage_count, email_unlocked, updated_at")
+          .eq("used_date", today)
+          .order("usage_count", { ascending: false }),
+        supabase
+          .from("analysis_usage")
+          .select("used_date, usage_count, email_unlocked")
+          .gte("used_date", since7Str),
+      ]);
+
+      const free = cfg?.free_limit ?? 3;
+      const bonus = cfg?.email_bonus ?? 5;
+      const whitelist: string[] = Array.isArray(cfg?.whitelisted_ips) ? cfg!.whitelisted_ips : [];
+
+      const todayList = (todayRows || []).filter((r: any) => !whitelist.includes(r.ip_address));
+      const todaySummary = {
+        date: today,
+        ipCount: todayList.length,
+        emailUnlockedCount: todayList.filter((r: any) => r.email_unlocked).length,
+        totalAnalyses: todayList.reduce((s: number, r: any) => s + (r.usage_count || 0), 0),
+        atLimitCount: todayList.filter((r: any) => {
+          const cap = r.email_unlocked ? free + bonus : free;
+          return (r.usage_count || 0) >= cap;
+        }).length,
+      };
+
+      const dailyMap = new Map<string, { date: string; ips: number; analyses: number; unlocked: number }>();
+      for (let i = 0; i < 7; i++) {
+        const d = new Date();
+        d.setDate(d.getDate() - (6 - i));
+        const k = d.toISOString().split("T")[0];
+        dailyMap.set(k, { date: k, ips: 0, analyses: 0, unlocked: 0 });
+      }
+      for (const r of weekRows || []) {
+        const slot = dailyMap.get(r.used_date);
+        if (!slot) continue;
+        slot.ips += 1;
+        slot.analyses += r.usage_count || 0;
+        if (r.email_unlocked) slot.unlocked += 1;
+      }
+
+      const topIps = todayList.slice(0, 15).map((r: any) => {
+        const parts = String(r.ip_address).split(".");
+        const masked = parts.length === 4 ? `${parts[0]}.${parts[1]}.${parts[2]}.x` : r.ip_address;
+        const cap = r.email_unlocked ? free + bonus : free;
+        return {
+          ip: masked,
+          usage: r.usage_count,
+          cap,
+          email_unlocked: r.email_unlocked,
+          updated_at: r.updated_at,
+        };
+      });
+
+      return new Response(
+        JSON.stringify({
+          config: {
+            free_limit: free,
+            email_bonus: bonus,
+            whitelisted_count: whitelist.length,
+            updated_at: cfg?.updated_at,
+          },
+          today: todaySummary,
+          daily: Array.from(dailyMap.values()),
+          topIps,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const since = new Date();
     since.setDate(since.getDate() - days);
     const sinceStr = since.toISOString();
+
 
     // Pagination helper to fetch all rows beyond 1000 limit
     async function fetchAll(table: string, sinceStr: string) {
