@@ -227,6 +227,10 @@ IMPORTANT RULES:
     }
 
     const aiData = await aiRes.json();
+    {
+      const u = extractUsage(aiData);
+      logApiCost({ function_name: "update-analysis-engine", model: "google/gemini-3-flash-preview", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "engine-update" } });
+    }
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) throw new Error("No tool call in AI response");
 
