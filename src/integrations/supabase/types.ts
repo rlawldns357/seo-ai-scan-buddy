@@ -131,6 +131,78 @@ export type Database = {
         }
         Relationships: []
       }
+      api_cost_budget: {
+        Row: {
+          alert_threshold_pct: number
+          created_at: string
+          id: string
+          monthly_budget_krw: number
+          notes: string | null
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          alert_threshold_pct?: number
+          created_at?: string
+          id?: string
+          monthly_budget_krw?: number
+          notes?: string | null
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          alert_threshold_pct?: number
+          created_at?: string
+          id?: string
+          monthly_budget_krw?: number
+          notes?: string | null
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      api_cost_log: {
+        Row: {
+          cost_krw: number
+          cost_usd: number
+          created_at: string
+          function_name: string
+          id: string
+          metadata: Json | null
+          model: string | null
+          provider: string
+          requests: number
+          tokens_in: number
+          tokens_out: number
+        }
+        Insert: {
+          cost_krw?: number
+          cost_usd?: number
+          created_at?: string
+          function_name: string
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          provider: string
+          requests?: number
+          tokens_in?: number
+          tokens_out?: number
+        }
+        Update: {
+          cost_krw?: number
+          cost_usd?: number
+          created_at?: string
+          function_name?: string
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          provider?: string
+          requests?: number
+          tokens_in?: number
+          tokens_out?: number
+        }
+        Relationships: []
+      }
       autoblog_engine_config: {
         Row: {
           config_key: string
