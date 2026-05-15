@@ -11,7 +11,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TIMEOUT_MS = 12000;
+const TIMEOUT_MS = 25000;
+const RETRY_DELAY_MS = 800;
+
+/** fetch with timeout + 1 retry on network/5xx errors. */
+async function fetchWithRetry(url: string, init: RequestInit, ms = TIMEOUT_MS): Promise<Response> {
+  const attempt = async () => {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    try {
+      return await fetch(url, { ...init, signal: ctrl.signal });
+    } finally {
+      clearTimeout(t);
+    }
+  };
+  try {
+    const r = await attempt();
+    if (r.status >= 500 || r.status === 429) {
+      await new Promise((res) => setTimeout(res, RETRY_DELAY_MS));
+      return await attempt();
+    }
+    return r;
+  } catch (e) {
+    await new Promise((res) => setTimeout(res, RETRY_DELAY_MS));
+    return await attempt();
+  }
+}
 
 // 🎯 Self-grounding: 자체 도메인일 땐 최신 컨텍스트를 프롬프트에 주입
 // (학습 cutoff 이전 신생 도메인이라도 "알고 있는 것처럼" 답하게 함)
@@ -138,7 +163,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
     const self = isSelfDomain(host);
     const model = "google/gemini-3-flash-preview";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const r = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           "Lovable-API-Key": KEY,
@@ -154,7 +179,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
             { role: "user", content: prompt },
           ],
         }),
-      }));
+      });
       if (!r.ok) {
         const body = await r.text().catch(() => "");
         console.error("Lovable AI Gemini error", r.status, body.slice(0, 500));
@@ -194,7 +219,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     const self = isSelfDomain(host);
     const model = self ? "sonar-pro" : "sonar";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://api.perplexity.ai/chat/completions", {
+      const r = await fetchWithRetry("https://api.perplexity.ai/chat/completions", {
         method: "POST",
         headers: { Authorization: `Bearer ${KEY}`, "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -206,7 +231,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
             { role: "user", content: prompt },
           ],
         }),
-      }));
+      });
       if (!r.ok) throw new Error(`perplexity ${r.status}`);
       const j = await r.json();
       const u = extractUsage(j);
@@ -258,7 +283,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
     const self = isSelfDomain(host);
     const model = "openai/gpt-5-nano";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const r = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           "Lovable-API-Key": KEY,
@@ -274,7 +299,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
             { role: "user", content: prompt },
           ],
         }),
-      }));
+      });
       if (!r.ok) {
         const body = await r.text().catch(() => "");
         console.error("Lovable AI OpenAI-model error", r.status, body.slice(0, 500));
@@ -314,7 +339,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
     const self = isSelfDomain(host);
     const model = self ? "claude-sonnet-4-5" : "claude-haiku-4-5";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch("https://api.anthropic.com/v1/messages", {
+      const r = await fetchWithRetry("https://api.anthropic.com/v1/messages", {
         method: "POST",
         headers: {
           "x-api-key": KEY,
@@ -329,7 +354,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
             ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
             : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"",
         }),
-      }));
+      });
       if (!r.ok) throw new Error(`anthropic ${r.status}`);
       const j = await r.json();
       const usage = j?.usage ?? {};
@@ -342,10 +367,12 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       const blocks = j?.content ?? [];
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
-    const aw = await ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`);
-    const rec = await ask(category
-      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`);
+    const [aw, rec] = await Promise.all([
+      ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
+      ask(category
+        ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
+        : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`),
+    ]);
     const { awareness } = detectAwareness(aw, host, brand);
     const r = detectRecommendation(rec, host, brand, awareness);
     return {
@@ -369,7 +396,7 @@ async function probeNaver(url: string, host: string, brand: string, category: st
     const self = isSelfDomain(host);
     const model = "HCX-005";
     const ask = async (prompt: string) => {
-      const r = await withTimeout(fetch(`https://clovastudio.stream.ntruss.com/v3/chat-completions/${model}`, {
+      const r = await fetchWithRetry(`https://clovastudio.stream.ntruss.com/v3/chat-completions/${model}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${KEY}`,
@@ -393,7 +420,7 @@ async function probeNaver(url: string, host: string, brand: string, category: st
           stopBefore: [],
           includeAiFilters: false,
         }),
-      }));
+      });
       if (!r.ok) {
         const body = await r.text().catch(() => "");
         console.error("HyperCLOVA X error", r.status, body.slice(0, 500));
