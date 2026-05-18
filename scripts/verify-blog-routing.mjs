@@ -1,13 +1,8 @@
 /**
- * Routing compatibility test:
- * For every blog slug, ensures that both URL shapes
- *   - /blog/{slug}.html   (canonical Kakao-safe URL)
- *   - /blog/{slug}/index.html (compatibility directory index)
- * resolve to the SAME canonical and og:url.
- *
- * CRITICAL: We do NOT write an extensionless physical file at dist/blog/{slug}
- * because Lovable hosting may serve some of those as application/octet-stream,
- * which Kakao rejects as Invalid URL.
+ * Routing test: every blog slug must have dist/blog/{slug}/index.html with
+ * canonical + og:url pointing to the clean URL https://searchtuneos.com/blog/{slug}.
+ * Cloudflare 301s legacy /blog/{slug}.html → /blog/{slug}, so we no longer emit
+ * a .html sibling file.
  *
  * Fails the build (exit 1) on any mismatch.
  */
@@ -23,9 +18,8 @@ function readMeta(filePath) {
   const html = fs.readFileSync(filePath, "utf-8");
   const canonical = html.match(/<link\s+rel=["']canonical["'][^>]*href=["']([^"']+)["']/i)?.[1] ?? null;
   const ogUrl = html.match(/<meta\s+property=["']og:url["'][^>]*content=["']([^"']+)["']/i)?.[1] ?? null;
-  const ogTitle = html.match(/<meta\s+property=["']og:title["'][^>]*content=["']([^"']+)["']/i)?.[1] ?? null;
   const ogImage = html.match(/<meta\s+property=["']og:image["'][^>]*content=["']([^"']+)["']/i)?.[1] ?? null;
-  return { canonical, ogUrl, ogTitle, ogImage };
+  return { canonical, ogUrl, ogImage };
 }
 
 function listSlugs() {
@@ -34,8 +28,6 @@ function listSlugs() {
   for (const entry of fs.readdirSync(BLOG_DIR, { withFileTypes: true })) {
     if (entry.isDirectory() && fs.existsSync(path.join(BLOG_DIR, entry.name, "index.html"))) {
       slugs.add(entry.name);
-    } else if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
-      slugs.add(entry.name.replace(/\.html$/, ""));
     }
   }
   return [...slugs];
@@ -56,33 +48,22 @@ function main() {
   let failed = 0;
   for (const slug of slugs) {
     const indexHtml = path.join(BLOG_DIR, slug, "index.html");
-    const unsafeSlugFile = path.join(BLOG_DIR, slug);
     const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
-    const expected = `${SITE}/blog/${slug}.html`;
+    const expected = `${SITE}/blog/${slug}`;
     const errors = [];
 
-    // Canonical index.html must exist, and the unsafe extensionless file must not.
     if (!fs.existsSync(indexHtml) || !fs.statSync(indexHtml).isFile()) {
       errors.push(`missing canonical file at /blog/${slug}/index.html`);
     }
-    if (fs.existsSync(unsafeSlugFile) && fs.statSync(unsafeSlugFile).isFile()) {
-      errors.push(`unsafe extensionless file exists at /blog/${slug}`);
+    if (fs.existsSync(dotHtml) && fs.statSync(dotHtml).isFile()) {
+      errors.push(`legacy /blog/${slug}.html file still present (Cloudflare handles 301, should not be emitted)`);
     }
-    if (!fs.existsSync(dotHtml)) errors.push(`missing /blog/${slug}.html`);
 
     if (errors.length === 0) {
-      const a = readMeta(indexHtml);
-      const b = readMeta(dotHtml);
-
-      if (a.canonical !== expected) errors.push(`index.html canonical "${a.canonical}" ≠ "${expected}"`);
-      if (b.canonical !== expected) errors.push(`.html canonical "${b.canonical}" ≠ "${expected}"`);
-      if (a.ogUrl !== expected) errors.push(`index.html og:url "${a.ogUrl}" ≠ "${expected}"`);
-      if (b.ogUrl !== expected) errors.push(`.html og:url "${b.ogUrl}" ≠ "${expected}"`);
-
-      if (a.canonical !== b.canonical) errors.push(`canonical mismatch between variants: "${a.canonical}" vs "${b.canonical}"`);
-      if (a.ogUrl !== b.ogUrl) errors.push(`og:url mismatch between variants: "${a.ogUrl}" vs "${b.ogUrl}"`);
-      if (a.ogTitle !== b.ogTitle) errors.push(`og:title mismatch between variants`);
-      if (a.ogImage !== b.ogImage) errors.push(`og:image mismatch between variants`);
+      const meta = readMeta(indexHtml);
+      if (meta.canonical !== expected) errors.push(`canonical "${meta.canonical}" ≠ "${expected}"`);
+      if (meta.ogUrl !== expected) errors.push(`og:url "${meta.ogUrl}" ≠ "${expected}"`);
+      if (!meta.ogImage) errors.push(`missing og:image`);
     }
 
     if (errors.length) {
@@ -97,7 +78,7 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs use /blog/{slug}.html as canonical and keep /blog/{slug}/index.html compatible`);
+  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs use clean /blog/{slug} canonical via /blog/{slug}/index.html`);
 }
 
 main();

@@ -40,7 +40,7 @@ function ShareIconButton({ slug, title }: { slug: string; title: string }) {
   );
 }
 
-const blogPostPath = (slug: string) => `/blog/${slug}.html`;
+const blogPostPath = (slug: string) => `/blog/${slug}`;
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
