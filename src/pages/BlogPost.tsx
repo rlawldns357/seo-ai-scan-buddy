@@ -571,9 +571,9 @@ export default function BlogPost() {
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
-  // Canonical URL form is /blog/{slug}.html. If the user landed on
-  // /blog/{slug}, /blog/{slug}/, or /blog/{slug}/index.html, normalise the
-  // address bar so copy-paste yields crawler-friendly article metadata.
+  // Canonical URL form is clean /blog/{slug}. If the user landed on the legacy
+  // /blog/{slug}.html, /blog/{slug}/, or /blog/{slug}/index.html, normalise the
+  // address bar so copy-paste yields the canonical URL.
   useEffect(() => {
     if (!slug) return;
     const canonical = blogPostPath(slug);
