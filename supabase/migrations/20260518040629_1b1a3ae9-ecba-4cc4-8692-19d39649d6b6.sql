@@ -1,0 +1,1 @@
+DELETE FROM public.ai_perception_cache WHERE results::text LIKE '%ReferenceError%' OR results::text LIKE '%is not defined%';
