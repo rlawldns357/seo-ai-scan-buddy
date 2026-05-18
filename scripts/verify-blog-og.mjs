@@ -1,6 +1,7 @@
 /**
- * Post-build verification: ensures every prerendered blog HTML
- * contains correct OG metadata and that og:url matches the public share path.
+ * Post-build verification: ensures every prerendered blog HTML at
+ * dist/blog/{slug}/index.html contains correct OG metadata and that
+ * canonical/og:url point to the clean URL https://searchtuneos.com/blog/{slug}.
  *
  * Fails the build (exit 1) if any required tag is missing or mismatched.
  */
@@ -32,25 +33,19 @@ function extractAttr(html, tagRe, attr) {
   return m ? m[1] : null;
 }
 
-function verifyFile(filePath, expectedUrl, isStub = false) {
+function verifyFile(filePath, expectedUrl) {
   const html = fs.readFileSync(filePath, "utf-8");
   const errors = [];
 
-  // Stub files are meta-refresh redirects to the canonical .html.
-  // They carry per-post title/description/canonical/og:* but intentionally
-  // omit the full Article JSON-LD body (it lives on the canonical .html).
   for (const { name, re } of REQUIRED_TAGS) {
-    if (isStub && name === "Article JSON-LD") continue;
     if (!re.test(html)) errors.push(`missing ${name}`);
   }
 
-  // og:url must equal the canonical physical URL
   const ogUrl = extractAttr(html, /<meta\s+property=["']og:url["'][^>]*>/i, "content");
   if (ogUrl && ogUrl !== expectedUrl) {
     errors.push(`og:url mismatch: got "${ogUrl}", expected "${expectedUrl}"`);
   }
 
-  // canonical must equal og:url
   const canonical = extractAttr(html, /<link\s+rel=["']canonical["'][^>]*>/i, "href");
   if (canonical && canonical !== expectedUrl) {
     errors.push(`canonical mismatch: got "${canonical}", expected "${expectedUrl}"`);
@@ -71,18 +66,11 @@ function collectBlogFiles() {
   const files = [];
 
   for (const entry of entries) {
-    // Canonical shape: directory index at dist/blog/{slug}/index.html
     if (entry.isDirectory()) {
       const idx = path.join(BLOG_DIR, entry.name, "index.html");
       if (fs.existsSync(idx)) {
-        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx, isStub: true });
+        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx });
       }
-      continue;
-    }
-
-    if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
-      const slug = entry.name.replace(/\.html$/, "");
-      files.push({ slug, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name), compatibility: true });
     }
   }
 
@@ -103,15 +91,9 @@ function main() {
   }
 
   let failed = 0;
-  const canonicalSlugs = new Set(files.filter((f) => !f.compatibility).map((f) => f.slug));
   for (const file of files) {
-    // Canonical URL form is the explicit .html file. Published hosting can
-    // route /blog/{slug}/ to the SPA home fallback, which exposes the home OG.
-    const expectedUrl = `${SITE}/blog/${file.slug}.html`;
-    const errors = verifyFile(file.path, expectedUrl, file.isStub === true);
-    if (file.compatibility && !canonicalSlugs.has(file.slug)) {
-      errors.push(`missing canonical /blog/${file.slug}.html`);
-    }
+    const expectedUrl = `${SITE}/blog/${file.slug}`;
+    const errors = verifyFile(file.path, expectedUrl);
     if (errors.length) {
       failed++;
       console.error(`[verify-og] ❌ ${file.label}`);
