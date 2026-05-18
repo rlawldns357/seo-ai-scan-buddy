@@ -137,7 +137,7 @@ async function main() {
     if (!p?.slug || seen.has(p.slug)) continue;
     seen.add(p.slug);
     postEntries.push({
-      loc: `${SITE}/blog/${encodeURI(p.slug)}.html`,
+      loc: `${SITE}/blog/${encodeURI(p.slug)}`,
       lastmod: ymd(p.updated_at || p.date),
       changefreq: "monthly",
       priority: "0.7",
