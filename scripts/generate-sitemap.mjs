@@ -147,7 +147,7 @@ async function main() {
     if (seen.has(slug)) continue;
     seen.add(slug);
     postEntries.push({
-      loc: `${SITE}/blog/${slug}.html`,
+      loc: `${SITE}/blog/${slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",
