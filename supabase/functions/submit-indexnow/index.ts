@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     if (body.urls && Array.isArray(body.urls)) {
       urls = body.urls;
     } else if (body.slug) {
-      urls = [`${SITE_URL}/blog/${body.slug}.html`];
+      urls = [`${SITE_URL}/blog/${body.slug}`];
     } else if (body.submitAll === true) {
       // Full re-submission: home + about + blog index + every published post
       urls = [`${SITE_URL}/`, `${SITE_URL}/about`, `${SITE_URL}/blog`];
@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
         .from("blog_posts")
         .select("slug")
         .eq("published", true);
-      if (posts) urls.push(...posts.map((p: { slug: string }) => `${SITE_URL}/blog/${p.slug}.html`));
+      if (posts) urls.push(...posts.map((p: { slug: string }) => `${SITE_URL}/blog/${p.slug}`));
     } else {
       // Submit all blog posts published today
       const today = new Date().toISOString().slice(0, 10);
@@ -47,7 +47,7 @@ Deno.serve(async (req) => {
         .eq("date", today);
 
       if (posts && posts.length > 0) {
-        urls = posts.map((p: { slug: string }) => `${SITE_URL}/blog/${p.slug}.html`);
+        urls = posts.map((p: { slug: string }) => `${SITE_URL}/blog/${p.slug}`);
       }
     }
 
