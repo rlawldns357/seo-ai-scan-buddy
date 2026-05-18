@@ -36,7 +36,7 @@ function resolveSlug(req: Request) {
 }
 
 function buildHtml(post: Record<string, any>, req: Request) {
-  const articleUrl = `${SITE}/blog/${encodeURIComponent(post.slug)}`;
+  const articleUrl = `${SITE}/blog/${encodeURIComponent(post.slug)}.html`;
   const shareUrl = req.url;
   const title = `${post.title} – 서치튠OS 블로그`;
   const description = post.excerpt || "SEO·AEO·GEO 실전 가이드";
