@@ -4,6 +4,7 @@
 // 24h 도메인 캐시. Promise.allSettled 병렬 + 8s 타임아웃.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
