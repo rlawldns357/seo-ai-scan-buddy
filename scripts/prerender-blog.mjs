@@ -162,11 +162,12 @@ function resolveOgImage(post) {
   return post.og_image;
 }
 
-// Canonical URL form: explicit .html file. On the published custom domain,
-// /blog/{slug} and /blog/{slug}/ can hit the SPA root fallback, so crawlers see
-// the home OG image instead of the article OG image.
+// Canonical URL form: clean /blog/{slug} (no .html). Cloudflare 301s legacy
+// /blog/{slug}.html to the clean URL. The published full body is written to
+// /blog/{slug}/index.html, which the host serves for both /blog/{slug} and
+// /blog/{slug}/ requests.
 function blogHtmlPath(slug) {
-  return `/blog/${slug}.html`;
+  return `/blog/${slug}`;
 }
 
 function blogHtmlUrl(slug) {
