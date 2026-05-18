@@ -345,22 +345,13 @@ async function main() {
   for (const post of allPosts) {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
-    const stub = generateRedirectStub(post);
 
-    // CANONICAL: /blog/{slug}.html holds the full article content + canonical meta.
+    // CANONICAL: /blog/{slug}/index.html holds the full article body + canonical
+    // meta pointing at the clean /blog/{slug} URL. Cloudflare 301s the legacy
+    // /blog/{slug}.html → /blog/{slug}, so we no longer emit a .html sibling file.
     const slugDir = path.join(blogDir, post.slug);
-    fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
-
-    // STUB at /blog/{slug}/index.html — meta-only redirect to .html so crawlers
-    // see the canonical signal and users get bounced. NOT a duplicate of the body.
     fs.mkdirSync(slugDir, { recursive: true });
-    fs.writeFileSync(path.join(slugDir, "index.html"), stub, "utf-8");
-
-    // NOTE: Cannot also write an extensionless file at /blog/{slug} because the
-    // path is already used by the slugDir directory above. Hosting will resolve
-    // /blog/{slug} (no trailing slash) either to the directory's index.html
-    // (=stub, ideal) or to the SPA fallback (BlogPost.tsx then redirects to
-    // .html on mount). Verified post-deploy via curl.
+    fs.writeFileSync(path.join(slugDir, "index.html"), html, "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
