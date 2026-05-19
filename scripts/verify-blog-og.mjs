@@ -1,7 +1,7 @@
 /**
- * Post-build verification: ensures every prerendered blog HTML at
- * dist/blog/{slug}/index.html contains correct OG metadata and that
- * canonical/og:url point to the clean URL https://searchtuneos.com/blog/{slug}.
+ * Post-build verification: ensures every prerendered canonical blog HTML at
+ * dist/blog/{slug}.html contains correct OG metadata and that canonical/og:url
+ * point to the .html URL https://searchtuneos.com/blog/{slug}.html.
  *
  * Fails the build (exit 1) if any required tag is missing or mismatched.
  */
