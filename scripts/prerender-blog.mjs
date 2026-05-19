@@ -162,12 +162,13 @@ function resolveOgImage(post) {
   return post.og_image;
 }
 
-// Canonical URL form: clean /blog/{slug} (no .html). Cloudflare 301s legacy
-// /blog/{slug}.html to the clean URL. The published full body is written to
-// /blog/{slug}/index.html, which the host serves for both /blog/{slug} and
-// /blog/{slug}/ requests.
+// Canonical URL form: /blog/{slug}.html. Lovable host serves .html files
+// directly, but clean URLs (/blog/{slug}) fall back to root /index.html
+// (homepage HTML), which breaks per-route SEO. So .html is the canonical
+// shipping format. We also emit dist/blog/{slug}/index.html as a redirect
+// stub so any crawler that reaches the clean URL ends up on the canonical.
 function blogHtmlPath(slug) {
-  return `/blog/${slug}`;
+  return `/blog/${slug}.html`;
 }
 
 function blogHtmlUrl(slug) {
