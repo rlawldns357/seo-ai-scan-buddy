@@ -3,11 +3,12 @@
  * so that search engine crawlers (especially Naver Yeti) can
  * index content without executing JavaScript.
  *
- * Runs after `vite build` and writes static HTML files to
- * dist/blog/{slug}.html as the canonical share page, plus a compatibility
- * dist/blog/{slug}/index.html copy.
- * Canonical/share URLs use .html because the published custom domain routes
- * /blog/{slug} and /blog/{slug}/ to the SPA home fallback.
+ * Runs after `vite build` and writes:
+ *   - dist/blog/{slug}.html       → canonical full article (Lovable serves directly)
+ *   - dist/blog/{slug}/index.html → redirect stub → /blog/{slug}.html
+ * Canonical/share URLs use .html because Lovable hosting's SPA fallback
+ * returns the homepage HTML for any extensionless deep path, which breaks
+ * per-route SEO. .html files are served as-is.
  */
 
 import fs from "fs";
@@ -162,12 +163,13 @@ function resolveOgImage(post) {
   return post.og_image;
 }
 
-// Canonical URL form: clean /blog/{slug} (no .html). Cloudflare 301s legacy
-// /blog/{slug}.html to the clean URL. The published full body is written to
-// /blog/{slug}/index.html, which the host serves for both /blog/{slug} and
-// /blog/{slug}/ requests.
+// Canonical URL form: /blog/{slug}.html. Lovable host serves .html files
+// directly, but clean URLs (/blog/{slug}) fall back to root /index.html
+// (homepage HTML), which breaks per-route SEO. So .html is the canonical
+// shipping format. We also emit dist/blog/{slug}/index.html as a redirect
+// stub so any crawler that reaches the clean URL ends up on the canonical.
 function blogHtmlPath(slug) {
-  return `/blog/${slug}`;
+  return `/blog/${slug}.html`;
 }
 
 function blogHtmlUrl(slug) {
@@ -346,12 +348,15 @@ async function main() {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
 
-    // CANONICAL: /blog/{slug}/index.html holds the full article body + canonical
-    // meta pointing at the clean /blog/{slug} URL. Cloudflare 301s the legacy
-    // /blog/{slug}.html → /blog/{slug}, so we no longer emit a .html sibling file.
+    // CANONICAL: /blog/{slug}.html holds the full article body + canonical
+    // meta. Lovable host serves .html files directly.
+    fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
+
+    // REDIRECT STUB: /blog/{slug}/index.html — if a crawler/user reaches
+    // the clean URL form, redirect to canonical .html via meta-refresh + JS.
     const slugDir = path.join(blogDir, post.slug);
     fs.mkdirSync(slugDir, { recursive: true });
-    fs.writeFileSync(path.join(slugDir, "index.html"), html, "utf-8");
+    fs.writeFileSync(path.join(slugDir, "index.html"), generateRedirectStub(post), "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh

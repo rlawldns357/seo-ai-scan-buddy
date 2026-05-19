@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
         if (!slugSet.has(post.slug)) {
           slugSet.add(post.slug);
           entries.push({
-            loc: `${SITE_URL}/blog/${post.slug}`,
+            loc: `${SITE_URL}/blog/${post.slug}.html`,
             lastmod: post.date,
             priority: "0.7",
           });
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
       if (!slugSet.has(slug)) {
         slugSet.add(slug);
         entries.push({
-          loc: `${SITE_URL}/blog/${slug}`,
+          loc: `${SITE_URL}/blog/${slug}.html`,
           lastmod: new Date().toISOString().split("T")[0],
           priority: "0.7",
         });

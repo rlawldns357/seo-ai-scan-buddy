@@ -1,7 +1,7 @@
 /**
- * Post-build verification: ensures every prerendered blog HTML at
- * dist/blog/{slug}/index.html contains correct OG metadata and that
- * canonical/og:url point to the clean URL https://searchtuneos.com/blog/{slug}.
+ * Post-build verification: ensures every prerendered canonical blog HTML at
+ * dist/blog/{slug}.html contains correct OG metadata and that canonical/og:url
+ * point to the .html URL https://searchtuneos.com/blog/{slug}.html.
  *
  * Fails the build (exit 1) if any required tag is missing or mismatched.
  */
@@ -66,11 +66,9 @@ function collectBlogFiles() {
   const files = [];
 
   for (const entry of entries) {
-    if (entry.isDirectory()) {
-      const idx = path.join(BLOG_DIR, entry.name, "index.html");
-      if (fs.existsSync(idx)) {
-        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx });
-      }
+    if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
+      const slug = entry.name.replace(/\.html$/, "");
+      files.push({ slug, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name) });
     }
   }
 
@@ -92,7 +90,7 @@ function main() {
 
   let failed = 0;
   for (const file of files) {
-    const expectedUrl = `${SITE}/blog/${file.slug}`;
+    const expectedUrl = `${SITE}/blog/${file.slug}.html`;
     const errors = verifyFile(file.path, expectedUrl);
     if (errors.length) {
       failed++;

@@ -26,10 +26,11 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-// Canonical URL form is clean (no .html). Cloudflare 301s legacy /blog/{slug}.html
-// → /blog/{slug}, so all internal links/canonical/og:url must use clean form.
-const blogPostPath = (slug: string) => `/blog/${slug}`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}`;
+// Canonical URL form is .html (e.g. /blog/what-is-aeo.html). Lovable host serves
+// .html files directly; clean URLs fall back to SPA index.html (homepage) which
+// breaks per-route SEO. So all internal links / canonical / og:url must use .html.
+const blogPostPath = (slug: string) => `/blog/${slug}.html`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
 const blogShareUrl = (slug: string) => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share?slug=${encodeURIComponent(slug)}`;
 
 function isNaverPost(slug: string) {
@@ -571,9 +572,10 @@ export default function BlogPost() {
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
-  // Canonical URL form is clean /blog/{slug}. If the user landed on the legacy
-  // /blog/{slug}.html, /blog/{slug}/, or /blog/{slug}/index.html, normalise the
-  // address bar so copy-paste yields the canonical URL.
+  // Canonical URL form is /blog/{slug}.html. If the user landed on the clean
+  // /blog/{slug}, /blog/{slug}/, or /blog/{slug}/index.html, redirect address
+  // bar to the canonical .html form (client-side fallback; Lovable host should
+  // 301 server-side, but normalising here ensures copy-paste yields canonical).
   useEffect(() => {
     if (!slug) return;
     const canonical = blogPostPath(slug);
