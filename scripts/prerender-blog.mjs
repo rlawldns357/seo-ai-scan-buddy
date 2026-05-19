@@ -347,12 +347,15 @@ async function main() {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
 
-    // CANONICAL: /blog/{slug}/index.html holds the full article body + canonical
-    // meta pointing at the clean /blog/{slug} URL. Cloudflare 301s the legacy
-    // /blog/{slug}.html → /blog/{slug}, so we no longer emit a .html sibling file.
+    // CANONICAL: /blog/{slug}.html holds the full article body + canonical
+    // meta. Lovable host serves .html files directly.
+    fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
+
+    // REDIRECT STUB: /blog/{slug}/index.html — if a crawler/user reaches
+    // the clean URL form, redirect to canonical .html via meta-refresh + JS.
     const slugDir = path.join(blogDir, post.slug);
     fs.mkdirSync(slugDir, { recursive: true });
-    fs.writeFileSync(path.join(slugDir, "index.html"), html, "utf-8");
+    fs.writeFileSync(path.join(slugDir, "index.html"), generateRedirectStub(post), "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
