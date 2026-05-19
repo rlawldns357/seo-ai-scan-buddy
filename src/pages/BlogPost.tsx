@@ -572,9 +572,10 @@ export default function BlogPost() {
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
-  // Canonical URL form is clean /blog/{slug}. If the user landed on the legacy
-  // /blog/{slug}.html, /blog/{slug}/, or /blog/{slug}/index.html, normalise the
-  // address bar so copy-paste yields the canonical URL.
+  // Canonical URL form is /blog/{slug}.html. If the user landed on the clean
+  // /blog/{slug}, /blog/{slug}/, or /blog/{slug}/index.html, redirect address
+  // bar to the canonical .html form (client-side fallback; Lovable host should
+  // 301 server-side, but normalising here ensures copy-paste yields canonical).
   useEffect(() => {
     if (!slug) return;
     const canonical = blogPostPath(slug);
