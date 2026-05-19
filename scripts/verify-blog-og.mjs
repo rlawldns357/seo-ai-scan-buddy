@@ -90,7 +90,7 @@ function main() {
 
   let failed = 0;
   for (const file of files) {
-    const expectedUrl = `${SITE}/blog/${file.slug}`;
+    const expectedUrl = `${SITE}/blog/${file.slug}.html`;
     const errors = verifyFile(file.path, expectedUrl);
     if (errors.length) {
       failed++;
