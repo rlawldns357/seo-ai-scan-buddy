@@ -3,11 +3,12 @@
  * so that search engine crawlers (especially Naver Yeti) can
  * index content without executing JavaScript.
  *
- * Runs after `vite build` and writes static HTML files to
- * dist/blog/{slug}.html as the canonical share page, plus a compatibility
- * dist/blog/{slug}/index.html copy.
- * Canonical/share URLs use .html because the published custom domain routes
- * /blog/{slug} and /blog/{slug}/ to the SPA home fallback.
+ * Runs after `vite build` and writes:
+ *   - dist/blog/{slug}.html       → canonical full article (Lovable serves directly)
+ *   - dist/blog/{slug}/index.html → redirect stub → /blog/{slug}.html
+ * Canonical/share URLs use .html because Lovable hosting's SPA fallback
+ * returns the homepage HTML for any extensionless deep path, which breaks
+ * per-route SEO. .html files are served as-is.
  */
 
 import fs from "fs";
