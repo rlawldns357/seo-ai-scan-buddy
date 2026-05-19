@@ -572,17 +572,18 @@ export default function BlogPost() {
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
-  // Canonical URL form is /blog/{slug}.html. If the user landed on the clean
-  // /blog/{slug}, /blog/{slug}/, or /blog/{slug}/index.html, redirect address
-  // bar to the canonical .html form (client-side fallback; Lovable host should
-  // 301 server-side, but normalising here ensures copy-paste yields canonical).
+  // Canonical URL form is /blog/{slug}.html. If the user landed on a clean
+  // URL (/blog/{slug} or /blog/{slug}/ or /blog/{slug}/index.html), do a
+  // hard client-side redirect via window.location.replace so the browser
+  // fetches the prerendered .html file (correct per-post meta/canonical/og).
+  // SPA navigate() would keep serving the homepage HTML shell — useless for SEO.
   useEffect(() => {
     if (!slug) return;
     const canonical = blogPostPath(slug);
     if (location.pathname !== canonical) {
-      navigate(canonical + location.search + location.hash, { replace: true });
+      window.location.replace(canonical + location.search + location.hash);
     }
-  }, [slug, location.pathname, location.search, location.hash, navigate]);
+  }, [slug, location.pathname, location.search, location.hash]);
 
   // Fetch DB posts for nav
   useEffect(() => {
