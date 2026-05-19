@@ -26,10 +26,11 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-// Canonical URL form is clean (no .html). Cloudflare 301s legacy /blog/{slug}.html
-// → /blog/{slug}, so all internal links/canonical/og:url must use clean form.
-const blogPostPath = (slug: string) => `/blog/${slug}`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}`;
+// Canonical URL form is .html (e.g. /blog/what-is-aeo.html). Lovable host serves
+// .html files directly; clean URLs fall back to SPA index.html (homepage) which
+// breaks per-route SEO. So all internal links / canonical / og:url must use .html.
+const blogPostPath = (slug: string) => `/blog/${slug}.html`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
 const blogShareUrl = (slug: string) => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share?slug=${encodeURIComponent(slug)}`;
 
 function isNaverPost(slug: string) {
