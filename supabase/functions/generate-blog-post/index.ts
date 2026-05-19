@@ -39,7 +39,7 @@ const TOPICS = [
       "페이지 경험 시그널 최적화",
       // 브랜드 친화
       "Google Search Console 활용 가이드",
-      "Google Core Web Vitals 2026 대응",
+      "Google Core Web Vitals 최신 대응",
       "네이버 서치어드바이저 활용 팁",
       "네이버 검색 알고리즘 이해",
       "Naver D.I.A. 2.0 콘텐츠 최적화",
@@ -89,7 +89,7 @@ const TOPICS = [
   {
     category: "가이드",
     themes: [
-      "2026년 검색 마케팅 트렌드",
+      "올해 검색 마케팅 트렌드",
       "소규모 비즈니스 SEO 시작 가이드",
       "콘텐츠 마케팅과 SEO 통합 전략",
       "경쟁사 분석으로 SEO 개선하기",
