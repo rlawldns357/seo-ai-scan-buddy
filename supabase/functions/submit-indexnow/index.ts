@@ -10,6 +10,22 @@ const corsHeaders = {
 const INDEXNOW_KEY = "e9f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5";
 const SITE_URL = "https://searchtuneos.com";
 
+/**
+ * Canonical blog URL is always /blog/{slug}.html.
+ * Defensive: adds .html if missing, prevents .html.html, accepts bare slug
+ * or full URL with/without trailing slash.
+ */
+function canonicalBlogUrl(input: string): string {
+  const s = String(input || "").trim();
+  if (!s) return "";
+  let path = s;
+  try { if (/^https?:\/\//i.test(s)) path = new URL(s).pathname; } catch { /* keep */ }
+  if (!path.startsWith("/")) path = `/blog/${path}`;
+  path = path.replace(/\/+$/, "");
+  if (/^\/blog\/[^/]+$/i.test(path) && !/\.html$/i.test(path)) path = `${path}.html`;
+  return `${SITE_URL}${path}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -20,35 +36,30 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Accept explicit URLs or fetch recent blog posts
     let urls: string[] = [];
-
     const body = await req.json().catch(() => ({}));
 
     if (body.urls && Array.isArray(body.urls)) {
-      urls = body.urls;
+      // Defensive canonicalization for any blog URL the caller passed in
+      urls = body.urls
+        .map((u: string) => {
+          const t = String(u || "").trim();
+          if (/\/blog\//i.test(t)) return canonicalBlogUrl(t);
+          return t;
+        })
+        .filter(Boolean);
     } else if (body.slug) {
-      urls = [`${SITE_URL}/blog/${body.slug}.html`];
+      urls = [canonicalBlogUrl(body.slug)];
     } else if (body.submitAll === true) {
-      // Full re-submission: home + about + blog index + every published post
       urls = [`${SITE_URL}/`, `${SITE_URL}/about`, `${SITE_URL}/blog`];
       const { data: posts } = await supabase
-        .from("blog_posts")
-        .select("slug")
-        .eq("published", true);
-      if (posts) urls.push(...posts.map((p: { slug: string }) => `${SITE_URL}/blog/${p.slug}.html`));
+        .from("blog_posts").select("slug").eq("published", true);
+      if (posts) urls.push(...posts.map((p: { slug: string }) => canonicalBlogUrl(p.slug)));
     } else {
-      // Submit all blog posts published today
       const today = new Date().toISOString().slice(0, 10);
       const { data: posts } = await supabase
-        .from("blog_posts")
-        .select("slug")
-        .eq("published", true)
-        .eq("date", today);
-
-      if (posts && posts.length > 0) {
-        urls = posts.map((p: { slug: string }) => `${SITE_URL}/blog/${p.slug}.html`);
-      }
+        .from("blog_posts").select("slug").eq("published", true).eq("date", today);
+      if (posts && posts.length > 0) urls = posts.map((p: { slug: string }) => canonicalBlogUrl(p.slug));
     }
 
     if (urls.length === 0) {
