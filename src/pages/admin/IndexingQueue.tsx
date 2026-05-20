@@ -97,10 +97,11 @@ export default function IndexingQueue() {
 
   const add = async () => {
     if (!newUrl) { toast.error("URL 입력 필요"); return; }
+    const canonical = canonicalizeBlogUrl(newUrl);
     const res = await adminInvoke<{ success: boolean; error?: string }>("addIndexingItem", {
-      url: newUrl, target_keyword: newKeyword || null, engine: newEngine, reason: newReason || null, priority: 5,
+      url: canonical, target_keyword: newKeyword || null, engine: newEngine, reason: newReason || null, priority: 5,
     });
-    if (res?.success) { toast.success("추가됨"); setNewUrl(""); setNewKeyword(""); setNewReason(""); load(); }
+    if (res?.success) { toast.success(`추가됨: ${canonical}`); setNewUrl(""); setNewKeyword(""); setNewReason(""); load(); }
     else toast.error(res?.error || "실패");
   };
 
