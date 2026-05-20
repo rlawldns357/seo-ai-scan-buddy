@@ -157,6 +157,7 @@ export default function IndexingQueue() {
             <option value="both">{ENGINE_LABEL.both}</option>
             <option value="naver">{ENGINE_LABEL.naver}</option>
             <option value="google">{ENGINE_LABEL.google}</option>
+            <option value="indexnow">{ENGINE_LABEL.indexnow}</option>
           </select>
           <Input placeholder="요청 사유" value={newReason} onChange={(e) => setNewReason(e.target.value)} />
           <Button onClick={add}>추가</Button>
