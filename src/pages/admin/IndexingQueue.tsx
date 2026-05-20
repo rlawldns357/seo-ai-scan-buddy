@@ -32,9 +32,31 @@ const STATUS: Record<string, { label: string; cls: string }> = {
 
 const ENGINE_LABEL: Record<string, string> = {
   both: "Naver + Google",
-  google: "Google",
-  naver: "Naver",
+  google: "Google (수동 확인)",
+  naver: "Naver (수동 제출)",
+  indexnow: "IndexNow (자동 · Bing/Naver/Yandex)",
 };
+
+/** Canonicalize /blog/{slug} -> /blog/{slug}.html (idempotent) */
+function canonicalizeBlogUrl(u: string): string {
+  const abs = toAbsoluteUrlSafe(u);
+  try {
+    const url = new URL(abs);
+    let p = url.pathname.replace(/\/+$/, "");
+    if (/^\/blog\/[^/]+$/i.test(p) && !/\.html$/i.test(p)) {
+      p = `${p}.html`;
+      return `${url.origin}${p}${url.search}${url.hash}`;
+    }
+    return abs;
+  } catch { return abs; }
+}
+function toAbsoluteUrlSafe(u: string): string {
+  if (!u) return "";
+  const t = u.trim();
+  if (/^https?:\/\//i.test(t)) return t;
+  if (t.startsWith("/")) return "https://searchtuneos.com" + t;
+  return `https://searchtuneos.com/${t}`;
+}
 
 const SITE_ORIGIN = "https://searchtuneos.com";
 function toAbsoluteUrl(u: string): string {
