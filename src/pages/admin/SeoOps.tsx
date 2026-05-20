@@ -43,11 +43,29 @@ interface QueueRow {
   status: string;
 }
 
+interface GscPage {
+  slug: string;
+  canonicalClicks: number; canonicalImpressions: number; canonicalPosition: number;
+  cleanClicks: number; cleanImpressions: number; cleanPosition: number;
+  totalClicks: number; totalImpressions: number;
+  mismatch: boolean;
+}
+interface GscQuery { query: string; clicks: number; impressions: number; ctr: number; position: number }
+interface GscData {
+  range: { start: string; end: string; days: number };
+  totals: { clicks: number; impressions: number; ctr: number; position: number };
+  blogPages: GscPage[];
+  topQueries: GscQuery[];
+}
+
 export default function SeoOps() {
   const [rows, setRows] = useState<Row[]>([]);
   const [queueAll, setQueueAll] = useState<QueueRow[]>([]);
   const [sitemapUrls, setSitemapUrls] = useState<Set<string>>(new Set());
   const [rssUrls, setRssUrls] = useState<Set<string>>(new Set());
+  const [gsc, setGsc] = useState<GscData | null>(null);
+  const [gscError, setGscError] = useState<string | null>(null);
+  const [gscDays, setGscDays] = useState(28);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -108,6 +126,31 @@ export default function SeoOps() {
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  const loadGsc = useCallback(async (days: number) => {
+    setGscError(null);
+    setGsc(null);
+    try {
+      const r = await fetch(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/gsc-blog-metrics?days=${days}`,
+        {
+          headers: {
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+        },
+      );
+      const j = await r.json();
+      if (!j.success) throw new Error(j.error || "GSC fetch failed");
+      setGsc(j as GscData);
+    } catch (e: any) {
+      setGscError(String(e?.message || e));
+    }
+  }, []);
+
+  useEffect(() => { loadGsc(gscDays); }, [loadGsc, gscDays]);
+
+
 
   const submitIndexNow = async (url: string) => {
     setSubmitting(true);
@@ -175,6 +218,119 @@ export default function SeoOps() {
           </p>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+          <CardTitle className="text-base">Google Search Console 실측 (최근 {gscDays}일)</CardTitle>
+          <div className="flex gap-1">
+            {[7, 28, 90].map(d => (
+              <Button key={d} size="sm" variant={gscDays === d ? "default" : "outline"} className="h-7 text-xs px-2"
+                onClick={() => setGscDays(d)}>{d}d</Button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {gscError && (
+            <div className="text-xs text-destructive bg-destructive/10 rounded p-2">
+              GSC 로딩 실패: {gscError}
+            </div>
+          )}
+          {!gsc && !gscError && <div className="text-xs text-muted-foreground">불러오는 중…</div>}
+          {gsc && (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <Kpi label="총 클릭" value={gsc.totals.clicks} tone={gsc.totals.clicks > 0 ? "good" : "warn"} />
+                <Kpi label="총 노출" value={gsc.totals.impressions} />
+                <Kpi label="평균 CTR" value={Math.round(gsc.totals.ctr * 1000) / 10} />
+                <Kpi label="평균 순위" value={Math.round(gsc.totals.position * 10) / 10} />
+              </div>
+
+              <div>
+                <div className="text-xs font-semibold mb-2 flex items-center gap-2">
+                  블로그 페이지별 노출 ({gsc.blogPages.length}건)
+                  {gsc.blogPages.filter(p => p.mismatch).length > 0 && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-destructive/15 text-destructive">
+                      ⚠ canonical mismatch {gsc.blogPages.filter(p => p.mismatch).length}건
+                    </span>
+                  )}
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground border-b">
+                      <tr className="text-left">
+                        <th className="py-1.5 pr-2">slug</th>
+                        <th className="py-1.5 pr-2 text-right">.html 노출</th>
+                        <th className="py-1.5 pr-2 text-right">clean 노출</th>
+                        <th className="py-1.5 pr-2 text-right">총 클릭</th>
+                        <th className="py-1.5 pr-2 text-right">평균 순위</th>
+                        <th className="py-1.5 pr-2">상태</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {gsc.blogPages.slice(0, 30).map(p => {
+                        const avgPos = p.canonicalImpressions >= p.cleanImpressions ? p.canonicalPosition : p.cleanPosition;
+                        return (
+                          <tr key={p.slug} className={`border-b last:border-b-0 ${p.mismatch ? "bg-destructive/[0.04]" : ""}`}>
+                            <td className="py-1.5 pr-2 font-mono text-[11px] truncate max-w-[260px]" title={p.slug}>{p.slug}</td>
+                            <td className="py-1.5 pr-2 text-right font-mono">{p.canonicalImpressions}</td>
+                            <td className={`py-1.5 pr-2 text-right font-mono ${p.cleanImpressions > 0 ? "text-destructive font-semibold" : ""}`}>{p.cleanImpressions}</td>
+                            <td className="py-1.5 pr-2 text-right font-mono">{p.totalClicks}</td>
+                            <td className="py-1.5 pr-2 text-right font-mono">{avgPos > 0 ? avgPos.toFixed(1) : "—"}</td>
+                            <td className="py-1.5 pr-2">
+                              {p.mismatch ? (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] bg-destructive/15 text-destructive">canonical mismatch</span>
+                              ) : p.totalImpressions === 0 ? (
+                                <span className="text-muted-foreground text-[10px]">노출 없음</span>
+                              ) : (
+                                <span className="text-score-excellent text-[10px]">OK</span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-2">
+                  <strong>canonical mismatch</strong> = clean URL(/blog/slug)로 색인·노출되는데 우리 canonical은 /blog/slug.html. Google이 정규형을 통합해주길 기다리거나, GSC에서 URL 검사 → 색인 요청으로 .html을 강제 색인시킬 것.
+                </p>
+              </div>
+
+              <div>
+                <div className="text-xs font-semibold mb-2">상위 검색 쿼리 (블로그 진입)</div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground border-b">
+                      <tr className="text-left">
+                        <th className="py-1.5 pr-2">쿼리</th>
+                        <th className="py-1.5 pr-2 text-right">클릭</th>
+                        <th className="py-1.5 pr-2 text-right">노출</th>
+                        <th className="py-1.5 pr-2 text-right">CTR</th>
+                        <th className="py-1.5 pr-2 text-right">순위</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {gsc.topQueries.slice(0, 20).map((q, i) => (
+                        <tr key={i} className="border-b last:border-b-0">
+                          <td className="py-1.5 pr-2 truncate max-w-[280px]" title={q.query}>{q.query}</td>
+                          <td className="py-1.5 pr-2 text-right font-mono">{q.clicks}</td>
+                          <td className="py-1.5 pr-2 text-right font-mono">{q.impressions}</td>
+                          <td className="py-1.5 pr-2 text-right font-mono">{(q.ctr * 100).toFixed(1)}%</td>
+                          <td className="py-1.5 pr-2 text-right font-mono">{q.position.toFixed(1)}</td>
+                        </tr>
+                      ))}
+                      {gsc.topQueries.length === 0 && (
+                        <tr><td colSpan={5} className="py-4 text-center text-muted-foreground">데이터 없음</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
 
       <Card>
         <CardHeader>
