@@ -66,6 +66,7 @@ const App = () => (
               <Route path="/admin/insights" element={<Admin />} />
               <Route path="/admin/blog" element={<Admin />} />
               <Route path="/admin/seo-monitor" element={<SeoMonitor />} />
+              <Route path="/admin/seo-ops" element={<SeoOps />} />
               <Route path="/admin/indexing-queue" element={<IndexingQueue />} />
               <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
               <Route path="/admin/credits" element={<Credits />} />
