@@ -43,11 +43,29 @@ interface QueueRow {
   status: string;
 }
 
+interface GscPage {
+  slug: string;
+  canonicalClicks: number; canonicalImpressions: number; canonicalPosition: number;
+  cleanClicks: number; cleanImpressions: number; cleanPosition: number;
+  totalClicks: number; totalImpressions: number;
+  mismatch: boolean;
+}
+interface GscQuery { query: string; clicks: number; impressions: number; ctr: number; position: number }
+interface GscData {
+  range: { start: string; end: string; days: number };
+  totals: { clicks: number; impressions: number; ctr: number; position: number };
+  blogPages: GscPage[];
+  topQueries: GscQuery[];
+}
+
 export default function SeoOps() {
   const [rows, setRows] = useState<Row[]>([]);
   const [queueAll, setQueueAll] = useState<QueueRow[]>([]);
   const [sitemapUrls, setSitemapUrls] = useState<Set<string>>(new Set());
   const [rssUrls, setRssUrls] = useState<Set<string>>(new Set());
+  const [gsc, setGsc] = useState<GscData | null>(null);
+  const [gscError, setGscError] = useState<string | null>(null);
+  const [gscDays, setGscDays] = useState(28);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
