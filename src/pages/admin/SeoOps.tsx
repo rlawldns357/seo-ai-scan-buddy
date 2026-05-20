@@ -127,6 +127,37 @@ export default function SeoOps() {
 
   useEffect(() => { load(); }, [load]);
 
+  const loadGsc = useCallback(async (days: number) => {
+    setGscError(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("gsc-blog-metrics", {
+        body: {},
+        method: "GET" as const,
+        // @ts-expect-error supabase-js doesn't type query helper for invoke
+        query: { days: String(days) },
+      });
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || "GSC fetch failed");
+      setGsc(data as GscData);
+    } catch (e: any) {
+      // Fallback: direct fetch with days in querystring
+      try {
+        const r = await fetch(`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/gsc-blog-metrics?days=${days}`, {
+          headers: { apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
+        });
+        const j = await r.json();
+        if (!j.success) throw new Error(j.error || "GSC fetch failed");
+        setGsc(j as GscData);
+      } catch (e2: any) {
+        setGscError(String(e2?.message || e?.message || e));
+      }
+    }
+  }, []);
+
+  useEffect(() => { loadGsc(gscDays); }, [loadGsc, gscDays]);
+
+
+
   const submitIndexNow = async (url: string) => {
     setSubmitting(true);
     const { data, error } = await supabase.functions.invoke("submit-indexnow", { body: { urls: [url] } });
