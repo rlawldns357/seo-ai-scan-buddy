@@ -173,7 +173,7 @@ const FONT_EMBED = `<defs>
 function tidyTitleForOg(rawTitle: string): string {
   let t = (rawTitle || "").trim();
   // 괄호 안 보조 설명 제거 (한/영 괄호 모두)
-  t = t.replace(/\s*[\(（][^\)）]*[\)）]\s*/g, " ").trim();
+  t = t.replace(/\s*[(（][^)）]*[)）]\s*/g, " ").trim();
   // 콜론/대시/세미콜론 뒤 보조 설명 잘라내기 (앞부분이 충분히 길 때만)
   const splitMatch = t.match(/^(.+?)\s*[:：\-—–|]\s*(.+)$/);
   if (splitMatch && splitMatch[1].length >= 8) {
