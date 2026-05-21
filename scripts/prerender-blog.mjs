@@ -13,6 +13,8 @@
 
 import fs from "fs";
 import path from "path";
+import vm from "vm";
+import ts from "typescript";
 
 const DIST = path.resolve("dist");
 const SITE = "https://searchtuneos.com";
@@ -68,13 +70,19 @@ async function fetchPosts() {
 function loadStaticPostsFromSource() {
   try {
     const src = fs.readFileSync(path.resolve("src/data/blogPosts.ts"), "utf-8");
-    const re = /slug:\s*"([^"]+)",[\s\S]*?title:\s*\n?\s*"([^"]+)",[\s\S]*?excerpt:\s*\n?\s*"([^"]+)",[\s\S]*?category:\s*"([^"]+)",[\s\S]*?author:\s*"([^"]+)",[\s\S]*?date:\s*"([^"]+)"/g;
-    const out = [];
-    let m;
-    while ((m = re.exec(src))) {
-      out.push({ slug: m[1], title: m[2], excerpt: m[3], category: m[4], author: m[5], date: m[6] });
-    }
-    return out;
+    const js = ts.transpileModule(src, {
+      compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+    }).outputText;
+    const sandbox = { exports: {}, module: { exports: {} }, console };
+    sandbox.module.exports = sandbox.exports;
+    vm.runInNewContext(js, sandbox, { timeout: 2000, filename: "blogPosts.ts" });
+    const posts = sandbox.exports.blogPosts || sandbox.module.exports.blogPosts || [];
+
+    return posts.map((post) => ({
+      ...post,
+      read_time: post.read_time || post.readTime,
+      og_image: post.og_image || post.ogImage,
+    }));
   } catch (e) {
     console.warn("[prerender] Failed to parse blogPosts.ts:", e.message);
     return [];
@@ -134,6 +142,7 @@ function esc(s) {
 
 function inlineF(s) {
   return esc(s)
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+|\/[^)\s]+)\)/g, '<a href="$2">$1</a>')
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/`(.+?)`/g, "<code>$1</code>");
 }
@@ -323,13 +332,15 @@ async function main() {
   const slugSet = new Set();
   const allPosts = [];
 
-  for (const p of dbPosts) {
+  // Static posts from src/data/blogPosts.ts are the source of truth for
+  // curated legacy slugs. DB posts are appended only when a slug is absent.
+  for (const p of STATIC_POSTS) {
     if (!slugSet.has(p.slug)) {
       slugSet.add(p.slug);
       allPosts.push(p);
     }
   }
-  for (const p of STATIC_POSTS) {
+  for (const p of dbPosts) {
     if (!slugSet.has(p.slug)) {
       slugSet.add(p.slug);
       allPosts.push(p);
