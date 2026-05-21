@@ -13,6 +13,7 @@ const NAV = [
   { to: "/admin/seo-monitor", label: "SEO 모니터", icon: Search },
   { to: "/admin/seo-ops", label: "SEO Ops Center", icon: ShieldCheck },
   { to: "/admin/indexing-queue", label: "색인 큐", icon: Inbox },
+  { to: "/admin/qa-status", label: "QA Status", icon: Activity },
   { to: "/admin/ai-growth-loop", label: "AI 성장 루프", icon: Sparkles },
   { to: "/admin/credits", label: "크레딧 / 비용", icon: Wallet },
 ];
