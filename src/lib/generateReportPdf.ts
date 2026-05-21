@@ -48,7 +48,7 @@ function addWatermark(doc: jsPDF) {
   
   // "BETA" stamp
   doc.setFontSize(120);
-  // @ts-ignore
+  // @ts-expect-error - jsPDF GState
   doc.setGState(new doc.GState({ opacity: 0.05 }));
   doc.setTextColor(100, 100, 120);
   doc.text("BETA", centerX, centerY + 20, {
