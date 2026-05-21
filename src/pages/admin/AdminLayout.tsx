@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, FileText, Search, Inbox, Sparkles, Wallet, ShieldCheck, Activity, CalendarClock } from "lucide-react";
+import { Lock, BarChart3, FileText, Search, Inbox, Sparkles, Wallet, ShieldCheck, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { to: "/admin/insights", label: "인사이트", icon: BarChart3 },
   { to: "/admin/blog", label: "블로그 관리", icon: FileText },
-  { to: "/admin/autopublish", label: "자동 발행 큐", icon: CalendarClock },
   { to: "/admin/seo-monitor", label: "SEO 모니터", icon: Search },
   { to: "/admin/seo-ops", label: "SEO Ops Center", icon: ShieldCheck },
   { to: "/admin/indexing-queue", label: "색인 큐", icon: Inbox },
