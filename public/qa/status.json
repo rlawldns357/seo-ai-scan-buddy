@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-05-21T04:35:00Z",
-  "source": "Hermes local debug run + Lovable agent batch B",
+  "generatedAt": "2026-05-21T00:00:00Z",
+  "source": "Lovable prerender stale fix + Batch B body verification",
   "checks": {
     "tests": { "status": "pass", "detail": "npm test -- --run: all suites passing" },
     "build": { "status": "pass", "detail": "vite build: success" },
-    "prerender": { "status": "pass", "detail": "scripts/prerender-blog.mjs: 14 posts rendered to dist/blog/*.html" },
+    "prerender": { "status": "pass", "detail": "scripts/prerender-blog.mjs: static blogPosts source-of-truth, 101 pages rendered to dist/blog/*.html" },
     "verifyBlogOg": { "status": "pass", "detail": "scripts/verify-blog-og.mjs: canonical + og:url + og:image all .html" },
-    "verifyBlogRouting": { "status": "pass", "detail": "scripts/verify-blog-routing.mjs: stubs redirect /blog/{slug}/ -> .html" },
+    "verifyBlogRouting": { "status": "pass", "detail": "scripts/verify-blog-routing.mjs: stubs redirect /blog/{slug}/ -> .html; body markers checked for what-is-aeo + Batch B" },
     "sitemap": { "status": "pass", "detail": "sitemap-posts.xml regenerated, all entries .html" },
     "lint": { "status": "warn", "detail": "107 errors / 27 warnings remaining (down from 124/27). Mostly @typescript-eslint/no-explicit-any, batched per file." }
   },
   "remaining": [
     "Type out remaining `any` in src/components/ScoreDashboard.tsx + src/lib/analyze.ts (next batch)",
     "Type out remaining `any` in supabase/functions/track-serp-keywords + probe-ai-perception",
-    "Click Publish/Update in Lovable to ship Batch B blog content + lint cleanup"
+    "Click Publish/Update in Lovable to ship prerender stale fix"
   ]
 }
