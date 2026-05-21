@@ -335,9 +335,13 @@ SearchTune OS에서 FAQ 스키마의 유효성과 AEO 기여도를 즉시 확인
       { question: "특정 AI 크롤러만 허용하고 나머지를 차단할 수 있나요?", answer: "네, robots.txt에서 User-agent별로 개별 규칙을 설정할 수 있습니다. 예를 들어 GPTBot만 허용하고 다른 AI 크롤러는 Disallow 규칙으로 차단할 수 있습니다." },
       { question: "AI 크롤러 차단이 일반 검색 SEO에도 영향을 주나요?", answer: "AI 크롤러(GPTBot 등)는 일반 검색 크롤러(Googlebot)와 별개이므로, AI 크롤러를 차단해도 일반 검색 노출에는 직접적인 영향이 없습니다. 하지만 GEO 점수는 하락합니다." },
     ],
-    content: `## robots.txt AI 크롤러 허용이 필요한 이유
+    content: `> **TL;DR** — robots.txt에서 **GPTBot · Google-Extended · ClaudeBot · PerplexityBot · Yeti**를 명시적으로 차단하지 않으면 자동 허용됩니다. 차단된 봇이 1개라도 있으면 GEO 점수에 직접 반영되니, 배포 전 robots.txt 한 줄씩 검토하세요.
 
-**robots.txt AI 크롤러 허용**은 GEO 최적화의 가장 기본적인 출발점입니다. ChatGPT·Google SGE·Perplexity 같은 AI 서비스는 각자 별도의 크롤러로 웹을 수집하는데, 대표적인 봇은 **GPTBot**(OpenAI), **Google-Extended**(Google AI), **ClaudeBot**(Anthropic), **PerplexityBot**(Perplexity), **Yeti**(네이버), Bingbot(Microsoft Copilot)입니다. 이들 봇이 robots.txt에서 차단돼 있으면 AI 답변에 인용될 가능성 자체가 사라집니다.
+관련: [AEO란 무엇인가](/blog/what-is-aeo.html) · [SEO·AEO·GEO 차이](/blog/seo-vs-aeo-vs-geo.html) · [GEO 최적화 완전 가이드](/blog/geo-generative-engine-optimization.html)
+
+## robots.txt AI 크롤러 허용이 필요한 이유
+
+**robots.txt AI 크롤러 허용**은 GEO 최적화의 가장 기본적인 출발점입니다. ChatGPT·Google SGE·Perplexity 같은 AI 서비스는 각자 별도의 크롤러로 웹을 수집하는데, 대표적인 봇은 **GPTBot**(OpenAI), **Google-Extended**(Google AI), **ClaudeBot**(Anthropic), **PerplexityBot**(Perplexity), **Yeti**(네이버), Bingbot(Microsoft Copilot)입니다. 이들 봇이 robots.txt에서 차단돼 있으면 AI 답변에 인용될 가능성 자체가 사라집니다. 공식 봇 식별자 목록은 [OpenAI GPTBot 문서](https://platform.openai.com/docs/gptbot)와 [Google Crawlers 공식 문서](https://developers.google.com/search/docs/crawling-indexing/overview-google-crawlers)에서 확인할 수 있습니다.
 
 ## robots.txt 설정 방법
 
