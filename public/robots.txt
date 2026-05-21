@@ -36,3 +36,7 @@ Allow: /
 
 Sitemap: https://searchtuneos.com/sitemap.xml
 Sitemap: https://searchtuneos.com/rss.xml
+
+# Brand hosted pages (autopublish queue) — not indexable externally
+User-agent: *
+Disallow: /sites/
