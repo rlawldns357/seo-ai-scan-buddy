@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
 
     // 2. Research latest trends — prefer Perplexity sonar-pro (real-time + citations),
     //    fall back to Firecrawl search if unavailable.
-    let trendResults: string[] = [];
+    const trendResults: string[] = [];
     let trendCitations: string[] = [];
 
     if (PERPLEXITY_API_KEY) {
