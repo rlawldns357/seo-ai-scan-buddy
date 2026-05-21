@@ -26,10 +26,11 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-// App route stays local; public share URLs use a live backend-rendered OG page
-// so newly published posts get article images without waiting for a frontend deploy.
+// Canonical URL form is .html (e.g. /blog/what-is-aeo.html). Lovable host serves
+// .html files directly; clean URLs fall back to SPA index.html (homepage) which
+// breaks per-route SEO. So all internal links / canonical / og:url must use .html.
 const blogPostPath = (slug: string) => `/blog/${slug}.html`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
 const blogShareUrl = (slug: string) => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share?slug=${encodeURIComponent(slug)}`;
 
 function isNaverPost(slug: string) {
@@ -571,16 +572,18 @@ export default function BlogPost() {
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
-  // Canonical URL form is /blog/{slug}.html. If the user landed on
-  // /blog/{slug}, /blog/{slug}/, or /blog/{slug}/index.html, normalise the
-  // address bar so copy-paste yields crawler-friendly article metadata.
+  // Canonical URL form is /blog/{slug}.html. If the user landed on a clean
+  // URL (/blog/{slug} or /blog/{slug}/ or /blog/{slug}/index.html), do a
+  // hard client-side redirect via window.location.replace so the browser
+  // fetches the prerendered .html file (correct per-post meta/canonical/og).
+  // SPA navigate() would keep serving the homepage HTML shell — useless for SEO.
   useEffect(() => {
     if (!slug) return;
     const canonical = blogPostPath(slug);
     if (location.pathname !== canonical) {
-      navigate(canonical + location.search + location.hash, { replace: true });
+      window.location.replace(canonical + location.search + location.hash);
     }
-  }, [slug, location.pathname, location.search, location.hash, navigate]);
+  }, [slug, location.pathname, location.search, location.hash]);
 
   // Fetch DB posts for nav
   useEffect(() => {
@@ -890,7 +893,7 @@ export default function BlogPost() {
                 <p className="mt-4 text-muted-foreground text-[11px] md:text-sm font-medium tracking-wide">
                   ChatGPT&nbsp;·&nbsp;Claude&nbsp;·&nbsp;Gemini&nbsp;·&nbsp;Perplexity&nbsp;·&nbsp;CLOVA&nbsp;X
                 </p>
-                <div className="mt-5 md:mt-6 flex items-center gap-2 text-muted-foreground/70 text-[10px] md:text-xs font-mono">
+                <div className="mt-5 md:mt-6 flex items-center gap-2 text-muted-foreground text-[10px] md:text-xs font-mono">
                   <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "linear-gradient(90deg, hsl(var(--primary)), hsl(var(--accent)))" }} />
                   searchtuneos.com
                 </div>
@@ -1022,7 +1025,7 @@ export default function BlogPost() {
           </div>
 
           {/* Feedback links */}
-          <div className="mt-10 flex items-center justify-center gap-3 text-[11px] text-muted-foreground/50">
+          <div className="mt-10 flex items-center justify-center gap-3 text-[11px] text-muted-foreground">
             <a
               href={`mailto:contact@searchtuneos.com?subject=수정 요청: ${encodeURIComponent(post.title)}&body=글 제목: ${encodeURIComponent(post.title)}%0A수정 내용:%0A`}
               className="underline underline-offset-2 hover:text-muted-foreground transition-colors"

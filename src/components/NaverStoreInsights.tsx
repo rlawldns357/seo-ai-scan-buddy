@@ -234,7 +234,7 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
           <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
             보조 진단 데이터
           </h2>
-          <span className="text-[10px] text-muted-foreground/70">2 metrics</span>
+          <span className="text-[10px] text-muted-foreground">2 metrics</span>
         </div>
 
         <div className="space-y-3">
@@ -268,7 +268,7 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
               AI는 제3자 정보로만 브랜드를 묘사합니다.
             </p>
             <InfoToggle title="채널별 의미 · 산출 기준 보기">
-              <ul className="space-y-1 list-disc list-inside marker:text-muted-foreground/40">
+              <ul className="space-y-1 list-disc list-inside marker:text-muted-foreground">
                 {surfaces.map((s) => (
                   <li key={s.key}>
                     <span className="font-semibold text-foreground">{s.label}</span> — {s.desc}
@@ -336,7 +336,7 @@ export default function NaverStoreInsights({ context }: NaverStoreInsightsProps)
           <h2 className="text-[11px] font-bold uppercase tracking-[0.15em] text-primary">
             What to do next
           </h2>
-          <span className="text-[10px] text-muted-foreground/70">우선순위 액션</span>
+          <span className="text-[10px] text-muted-foreground">우선순위 액션</span>
         </div>
         <ActionPlan context={context} />
       </section>

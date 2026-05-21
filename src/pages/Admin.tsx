@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink } from "lucide-react";
+import { BarChart3, Users, Zap, Clock, TrendingUp, Mail, Globe, MessageSquare, FileText, Eye, EyeOff, Cpu, RefreshCw, AlertTriangle, Trash2, Send, Sparkles, Activity, ExternalLink, Search, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   ChartContainer,
   ChartTooltip,
@@ -11,6 +11,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
+
 
 interface Summary {
   totalSessions: number;
@@ -45,10 +46,9 @@ function formatDuration(sec: number) {
 }
 
 export default function Admin() {
-  const [password, setPassword] = useState("");
-  const [authed, setAuthed] = useState(false);
+  // Auth handled by AdminLayout — admin_pw is in sessionStorage when this renders.
+  const password = "";
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [data, setData] = useState<InsightsData | null>(null);
   const [days, setDays] = useState(30);
   const [blogPosts, setBlogPosts] = useState<{ id: string; title: string; slug: string; published: boolean; date: string; category: string }[]>([]);
@@ -64,24 +64,28 @@ export default function Admin() {
   const [clarityErr, setClarityErr] = useState<string>("");
   const [clarityLoading, setClarityLoading] = useState(false);
   const [clarityDays, setClarityDays] = useState(1);
+  const [serpKeywords, setSerpKeywords] = useState<{ id: string; keyword: string; category: string; target_url: string | null; priority: number; active: boolean }[]>([]);
+  const [serpLatest, setSerpLatest] = useState<{ keyword: string; engine: string; our_exposed: boolean; our_rank: number | null; our_url: string | null; top_domains: string[]; checked_at: string; error: string | null }[]>([]);
+  const [serpTriggering, setSerpTriggering] = useState(false);
+  const [serpEngine, setSerpEngine] = useState<"all" | "naver" | "google">("all");
+  const [usageStats, setUsageStats] = useState<{
+    config: { free_limit: number; email_bonus: number; whitelisted_count: number; updated_at: string };
+    today: { date: string; ipCount: number; emailUnlockedCount: number; totalAnalyses: number; atLimitCount: number };
+    daily: { date: string; ips: number; analyses: number; unlocked: number }[];
+    topIps: { ip: string; usage: number; cap: number; email_unlocked: boolean; updated_at: string }[];
+  } | null>(null);
+  const [usageLoading, setUsageLoading] = useState(false);
 
-  const handleLogin = async () => {
-    setLoading(true);
-    setError("");
+  const fetchUsageStats = async () => {
+    setUsageLoading(true);
+    const pw = sessionStorage.getItem("admin_pw") || password;
     try {
-      const { data: res, error: err } = await supabase.functions.invoke("admin-auth", {
-        body: { password },
+      const { data: res } = await supabase.functions.invoke("admin-insights", {
+        body: { password: pw, action: "usageStats" },
       });
-      if (err || res?.error) {
-        setError("비밀번호가 틀렸습니다");
-      } else {
-        setAuthed(true);
-        sessionStorage.setItem("admin_pw", password);
-      }
-    } catch {
-      setError("서버 오류");
-    }
-    setLoading(false);
+      if (res && !res.error) setUsageStats(res);
+    } catch {}
+    setUsageLoading(false);
   };
 
   const fetchInsights = async (d: number) => {
@@ -192,50 +196,58 @@ export default function Admin() {
     setClarityLoading(false);
   };
 
-  useEffect(() => {
-    if (authed) {
-      fetchInsights(days);
-      fetchBlogPosts();
-      fetchEngineStatus();
-      fetchFailedPosts();
-      fetchClarity(1);
-    }
-  }, [authed, days]);
+  const fetchSerpTracking = async () => {
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    const { data: res } = await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "serpTracking" },
+    });
+    if (res?.keywords) setSerpKeywords(res.keywords);
+    if (res?.latest) setSerpLatest(res.latest);
+  };
 
-  if (!authed) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-4">
-        <Card className="w-full max-w-sm">
-          <CardHeader className="text-center">
-            <div className="mx-auto w-12 h-12 rounded-2xl gradient-primary flex items-center justify-center mb-3">
-              <Lock className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <CardTitle className="text-lg">관리자 인증</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Input
-              type="password"
-              placeholder="비밀번호"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-            />
-            {error && <p className="text-sm text-destructive">{error}</p>}
-            <Button className="w-full" onClick={handleLogin} disabled={loading}>
-              {loading ? "확인 중..." : "로그인"}
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+  const triggerSerpTracking = async () => {
+    setSerpTriggering(true);
+    const pw = sessionStorage.getItem("admin_pw") || password;
+    await supabase.functions.invoke("admin-insights", {
+      body: { password: pw, action: "triggerSerpTracking" },
+    });
+    setTimeout(() => { fetchSerpTracking(); setSerpTriggering(false); }, 3000);
+  };
+
+  // Critical first-paint: only insights. Stagger the rest after idle so the
+  // page paints fast and admin-insights edge function isn't hit with 7
+  // concurrent same-instance calls (which serialize on a cold isolate).
+  // Clarity is intentionally NOT auto-fetched — it's the slowest external API.
+  useEffect(() => {
+    fetchInsights(days);
+  }, [days]);
+
+  useEffect(() => {
+    const idle =
+      (window as any).requestIdleCallback ||
+      ((cb: () => void, opts?: { timeout?: number }) => setTimeout(cb, opts?.timeout ?? 1));
+    const handles: any[] = [];
+    handles.push(idle(() => fetchBlogPosts(), { timeout: 600 }));
+    handles.push(idle(() => fetchEngineStatus(), { timeout: 900 }));
+    handles.push(idle(() => fetchFailedPosts(), { timeout: 1200 }));
+    handles.push(idle(() => fetchUsageStats(), { timeout: 1500 }));
+    handles.push(idle(() => fetchSerpTracking(), { timeout: 1800 }));
+    return () => {
+      const cancel = (window as any).cancelIdleCallback || clearTimeout;
+      handles.forEach((h) => cancel(h));
+    };
+  }, []);
 
   const s = data?.summary;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container py-8 space-y-6">
-        {/* Header */}
+    <div className="space-y-6">
+      <Helmet>
+        <title>인사이트 대시보드 – 서치튠OS 관리자</title>
+        <meta name="description" content="서치튠OS 관리자 인사이트 대시보드 — 서비스 핵심 지표와 운영 현황을 확인합니다." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://searchtuneos.com/admin" />
+      </Helmet>
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground">📊 인사이트</h1>
@@ -254,6 +266,22 @@ export default function Admin() {
             ))}
           </div>
         </div>
+
+        {/* 별도 운영 화면 진입 */}
+        <Card className="border-primary/30 bg-primary/5">
+          <CardContent className="pt-4 pb-4 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-foreground">🧭 운영 콘솔 바로가기</p>
+              <p className="text-xs text-muted-foreground">키워드 · 색인 · 성장 루프 · 크레딧 비용은 전용 화면에서 관리합니다.</p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <a href="/admin/credits"><Button size="sm">💰 크레딧 / 비용 →</Button></a>
+              <a href="/admin/seo-monitor"><Button size="sm" variant="outline">SEO 모니터 →</Button></a>
+              <a href="/admin/indexing-queue"><Button size="sm" variant="outline">색인 큐 →</Button></a>
+              <a href="/admin/ai-growth-loop"><Button size="sm" variant="outline">AI 성장 루프 →</Button></a>
+            </div>
+          </CardContent>
+        </Card>
 
         {loading && !data ? (
           <div className="text-center py-20 text-muted-foreground">로딩 중...</div>
@@ -498,6 +526,95 @@ export default function Admin() {
               </CardContent>
             </Card>
 
+            {/* Credit / rate-limit usage — mid-hierarchy operational signal */}
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 via-background to-accent/5">
+              <CardHeader>
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-primary" />
+                    크레딧 · 사용량 (오늘)
+                    {usageStats?.config && (
+                      <span className="text-[11px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
+                        무료 {usageStats.config.free_limit}회 + 이메일 +{usageStats.config.email_bonus} · 화이트리스트 {usageStats.config.whitelisted_count}
+                      </span>
+                    )}
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2.5 text-xs gap-1"
+                    onClick={fetchUsageStats}
+                    disabled={usageLoading}
+                  >
+                    <RefreshCw className={`w-3 h-3 ${usageLoading ? "animate-spin" : ""}`} />
+                    새로고침
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!usageStats ? (
+                  <p className="text-sm text-muted-foreground">불러오는 중...</p>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {[
+                        { label: "총 분석", value: usageStats.today.totalAnalyses, accent: "text-primary" },
+                        { label: "사용 IP", value: usageStats.today.ipCount, accent: "text-foreground" },
+                        { label: "이메일 언락", value: usageStats.today.emailUnlockedCount, accent: "text-emerald-600" },
+                        { label: "한도 도달", value: usageStats.today.atLimitCount, accent: "text-destructive" },
+                      ].map((s) => (
+                        <div key={s.label} className="rounded-xl border bg-card/50 p-3">
+                          <div className="text-[11px] text-muted-foreground">{s.label}</div>
+                          <div className={`text-2xl font-bold ${s.accent}`}>{s.value.toLocaleString()}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {usageStats.daily.length > 0 && (
+                      <ChartContainer config={chartConfig} className="h-32 w-full">
+                        <BarChart data={usageStats.daily} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} className="stroke-muted" />
+                          <XAxis dataKey="date" tick={{ fontSize: 10 }} tickFormatter={(d) => d.slice(5)} />
+                          <YAxis tick={{ fontSize: 10 }} />
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Bar dataKey="analyses" fill="hsl(230 80% 56%)" radius={[4, 4, 0, 0]} name="분석 수" />
+                        </BarChart>
+                      </ChartContainer>
+                    )}
+
+                    {usageStats.topIps.length > 0 && (
+                      <div>
+                        <div className="text-xs font-semibold text-muted-foreground mb-2">상위 사용 IP (오늘)</div>
+                        <div className="space-y-1.5 max-h-64 overflow-auto">
+                          {usageStats.topIps.map((r) => {
+                            const pct = Math.min(100, Math.round((r.usage / r.cap) * 100));
+                            const atLimit = r.usage >= r.cap;
+                            return (
+                              <div key={r.ip + r.updated_at} className="flex items-center gap-3 text-xs">
+                                <span className="font-mono w-32 truncate">{r.ip}</span>
+                                <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                                  <div
+                                    className={`h-full ${atLimit ? "bg-destructive" : "bg-primary"}`}
+                                    style={{ width: `${pct}%` }}
+                                  />
+                                </div>
+                                <span className={`font-mono tabular-nums w-16 text-right ${atLimit ? "text-destructive font-semibold" : ""}`}>
+                                  {r.usage}/{r.cap}
+                                </span>
+                                {r.email_unlocked && (
+                                  <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">📧</span>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </CardContent>
+            </Card>
+
             {/* Microsoft Clarity insights */}
             <Card>
               <CardHeader>
@@ -722,9 +839,97 @@ export default function Admin() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* SERP 추적 */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3 flex-wrap">
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Search className="w-4 h-4" /> 🔎 SERP 추적 (Top 20 + 역키워드)
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {(["all", "naver", "google"] as const).map((e) => (
+                      <Button key={e} size="sm" variant={serpEngine === e ? "default" : "outline"} onClick={() => setSerpEngine(e)}>
+                        {e === "all" ? "전체" : e === "naver" ? "네이버" : "구글"}
+                      </Button>
+                    ))}
+                    <Button size="sm" variant="outline" onClick={fetchSerpTracking}>
+                      <RefreshCw className="w-3.5 h-3.5 mr-1" /> 새로고침
+                    </Button>
+                    <Button size="sm" onClick={triggerSerpTracking} disabled={serpTriggering}>
+                      <Zap className="w-3.5 h-3.5 mr-1" /> {serpTriggering ? "실행 중..." : "지금 추적"}
+                    </Button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  매일 06:00 KST 자동 실행 · 등록 키워드 {serpKeywords.length}개 · 노출 {serpLatest.filter(r => r.our_exposed).length}/{serpLatest.length}건
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="text-muted-foreground border-b">
+                      <tr className="text-left">
+                        <th className="py-2 pr-3">키워드</th>
+                        <th className="py-2 pr-3">엔진</th>
+                        <th className="py-2 pr-3">우리 순위</th>
+                        <th className="py-2 pr-3">매칭 URL</th>
+                        <th className="py-2 pr-3">Top 도메인</th>
+                        <th className="py-2 pr-3">시각</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {serpLatest
+                        .filter(r => serpEngine === "all" || r.engine === serpEngine)
+                        .sort((a, b) => Number(a.our_exposed) - Number(b.our_exposed) || (a.our_rank ?? 999) - (b.our_rank ?? 999))
+                        .map((r, i) => (
+                          <tr key={i} className="border-b last:border-b-0">
+                            <td className="py-2 pr-3 font-medium">{r.keyword}</td>
+                            <td className="py-2 pr-3">
+                              <span className={`px-1.5 py-0.5 rounded text-[10px] ${r.engine === "naver" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
+                                {r.engine === "naver" ? "Naver" : "Google"}
+                              </span>
+                            </td>
+                            <td className="py-2 pr-3">
+                              {r.error ? (
+                                <span className="text-destructive" title={r.error}>오류</span>
+                              ) : r.our_exposed ? (
+                                <span className="font-bold text-primary">#{r.our_rank}</span>
+                              ) : (
+                                <span className="text-muted-foreground">미노출</span>
+                              )}
+                            </td>
+                            <td className="py-2 pr-3">
+                              {r.our_url ? (
+                                <a href={r.our_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate inline-block max-w-[220px] align-middle">
+                                  {r.our_url.replace(/^https?:\/\//, "")}
+                                </a>
+                              ) : (
+                                <span className="text-muted-foreground">—</span>
+                              )}
+                            </td>
+                            <td className="py-2 pr-3 max-w-[280px]">
+                              <div className="flex flex-wrap gap-1">
+                                {(r.top_domains || []).slice(0, 5).map((d, j) => (
+                                  <span key={j} className="text-[10px] bg-muted px-1.5 py-0.5 rounded">{d}</span>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="py-2 pr-3 text-muted-foreground whitespace-nowrap">
+                              {new Date(r.checked_at).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                            </td>
+                          </tr>
+                        ))}
+                      {serpLatest.length === 0 && (
+                        <tr><td colSpan={6} className="py-6 text-center text-muted-foreground">아직 추적 데이터가 없습니다. "지금 추적"을 눌러주세요.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
           </>
         ) : null}
-      </div>
     </div>
   );
 }

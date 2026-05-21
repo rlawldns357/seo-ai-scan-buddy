@@ -80,3 +80,4 @@
 - [Naver Store Cache](mem://logic/naver-store-cache) — 네이버 스토어 분석 결과 24h 캐시 (storeUrl 키, IP 무관, engineMeta.cache 메타 동봉)
 - [OG PNG Rendering](mem://technical/og-font-embedding) — **OG 항상 PNG 출력** (카톡 SVG 미지원). resvg-wasm + Pretendard-Bold.ttf fontBuffers 주입.
 - [Blog URL Canonical](mem://technical/blog-url-canonical-form) — ✅ 확정: 블로그 공유 URL은 `/blog/{slug}/index.html` 명시 경로만 카카오 OG 정상. 확장자 없는 파일/단독 .html/trailing slash 단독 모두 깨짐. 카카오 디버거 검증 완료 (2026-04-30)
+- [Keyword Map v2](mem://strategy/keyword-map-v2) — 6축 키워드(브랜드/핵심/문제/플랫폼/경쟁/역키워드) + Top 20 우선 공략. 공식영역=SearchTune OS·서치튠OS, 노출영역=서치튠/SearchTuneOS 보조 혼용

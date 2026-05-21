@@ -35,11 +35,27 @@ serve(async (req) => {
     // Read dynamic limits from rate_limit_config (singleton row id=1)
     const { data: cfg } = await supabase
       .from("rate_limit_config")
-      .select("free_limit, email_bonus")
+      .select("free_limit, email_bonus, whitelisted_ips")
       .eq("id", 1)
       .maybeSingle();
     const FREE_LIMIT = cfg?.free_limit ?? DEFAULT_FREE_LIMIT;
     const EMAIL_BONUS = cfg?.email_bonus ?? DEFAULT_EMAIL_BONUS;
+    const WHITELIST: string[] = Array.isArray(cfg?.whitelisted_ips) ? cfg!.whitelisted_ips : [];
+
+    // Whitelisted IPs (team/office) bypass rate limit entirely — never counted, always allowed.
+    if (WHITELIST.includes(ip)) {
+      return new Response(
+        JSON.stringify({
+          allowed: true,
+          remaining: 9999,
+          limit: 9999,
+          usageCount: 0,
+          emailUnlocked: true,
+          whitelisted: true,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     // Get or create today's usage record
     const { data: existing } = await supabase

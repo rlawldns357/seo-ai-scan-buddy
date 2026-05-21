@@ -100,7 +100,7 @@ export default function FunnelCTAs({ result, url }: FunnelCTAsProps) {
               분석 결과를 상세 보고서로<br />자동 생성해 이메일로 전달
             </p>
           </div>
-          <span className="text-xs font-medium text-muted-foreground/60">
+          <span className="text-xs font-medium text-muted-foreground">
             곧 출시됩니다
           </span>
         </div>

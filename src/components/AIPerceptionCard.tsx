@@ -170,7 +170,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                 className={`flex items-center gap-3 text-sm transition-all ${
                   state === "done" ? "text-muted-foreground" :
                   state === "active" ? "text-foreground font-medium" :
-                  "text-muted-foreground/50"
+                  "text-muted-foreground"
                 }`}
               >
                 <span className="w-5 flex items-center justify-center">
@@ -281,7 +281,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {data.cached && (
-              <span className="text-[10px] text-muted-foreground/70 px-1.5 py-0.5 rounded-md bg-muted/40">24h 캐시</span>
+              <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded-md bg-muted/40">24h 캐시</span>
             )}
             {isAdmin && (
               <button
@@ -302,7 +302,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
             <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
               {aware}
             </span>
-            <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground/60 tabular-nums">
+            <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground tabular-nums">
               / {measurable}
             </span>
             <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
@@ -378,7 +378,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                 </div>
 
                 {canExpand && (
-                  <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground/60 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
                 )}
               </button>
 
@@ -408,7 +408,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                       </ul>
                     </div>
                   )}
-                  {b.model && <p className="text-[10px] text-muted-foreground/60">모델: {b.model}</p>}
+                  {b.model && <p className="text-[10px] text-muted-foreground">모델: {b.model}</p>}
                 </div>
               )}
             </div>
@@ -418,7 +418,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
         {/* Unsupported group */}
         {unsupportedBrands.length > 0 && (
           <div className="px-4 sm:px-6 py-3 bg-muted/20">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70 mb-2">측정 대기 중 · 공식 API 미공개</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">측정 대기 중 · 공식 API 미공개</p>
             <div className="flex flex-wrap gap-2">
               {unsupportedBrands.map((b) => {
                 const meta = BRAND_META[b.brand];
@@ -431,7 +431,7 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
                       <meta.Logo className="w-3 h-3" />
                     </div>
                     <span className="text-[11px] font-semibold text-muted-foreground">{meta.name}</span>
-                    <Lock className="w-2.5 h-2.5 text-muted-foreground/60" />
+                    <Lock className="w-2.5 h-2.5 text-muted-foreground" />
                   </div>
                 );
               })}

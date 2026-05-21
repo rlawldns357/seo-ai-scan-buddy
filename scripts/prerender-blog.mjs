@@ -3,11 +3,12 @@
  * so that search engine crawlers (especially Naver Yeti) can
  * index content without executing JavaScript.
  *
- * Runs after `vite build` and writes static HTML files to
- * dist/blog/{slug}.html as the canonical share page, plus a compatibility
- * dist/blog/{slug}/index.html copy.
- * Canonical/share URLs use .html because the published custom domain routes
- * /blog/{slug} and /blog/{slug}/ to the SPA home fallback.
+ * Runs after `vite build` and writes:
+ *   - dist/blog/{slug}.html       → canonical full article (Lovable serves directly)
+ *   - dist/blog/{slug}/index.html → redirect stub → /blog/{slug}.html
+ * Canonical/share URLs use .html because Lovable hosting's SPA fallback
+ * returns the homepage HTML for any extensionless deep path, which breaks
+ * per-route SEO. .html files are served as-is.
  */
 
 import fs from "fs";
@@ -62,14 +63,25 @@ async function fetchPosts() {
 }
 
 // ── 3. Static blog posts (fallback if DB is empty) ──────────────────
-const STATIC_POSTS = [
-  { slug: "what-is-aeo", title: "AEO란? AI 답변 엔진에 내 콘텐츠를 인용시키는 전략", excerpt: "ChatGPT, Perplexity, 뤼튼 같은 AI가 내 콘텐츠를 직접 답변으로 인용하도록 최적화하는 AEO의 핵심 개념과 실전 전략.", category: "AEO", author: "서치튠 블로거", date: "2026-04-01" },
-  { slug: "naver-search-advisor-guide", title: "네이버 서치어드바이저 완벽 가이드 2026", excerpt: "네이버 서치어드바이저 등록부터 사이트맵 제출, 크롤링 최적화까지 실전 설정 가이드.", category: "가이드", author: "서치튠 블로거", date: "2026-03-28" },
-  { slug: "naver-seo-optimization-tips", title: "네이버 SEO 최적화 핵심 팁 7가지", excerpt: "네이버 검색에서 상위 노출되기 위한 핵심 SEO 최적화 전략 7가지.", category: "SEO", author: "서치튠 블로거", date: "2026-03-25" },
-  { slug: "naver-cue-geo-strategy", title: "네이버 Cue: 시대의 GEO 전략", excerpt: "네이버 Cue: AI 검색에서 브랜드와 콘텐츠가 인용되도록 준비하는 GEO 전략.", category: "GEO", author: "서치튠 블로거", date: "2026-03-22" },
-  { slug: "cafe24-seo-optimization-guide", title: "카페24 SEO 최적화 완벽 가이드 2026", excerpt: "카페24 쇼핑몰의 SEO를 극대화하는 실전 가이드.", category: "가이드", author: "서치튠 블로거", date: "2026-03-19" },
-  { slug: "imweb-seo-guide", title: "아임웹 SEO 완벽 가이드 2026", excerpt: "아임웹 사이트의 검색 노출을 극대화하는 SEO 최적화 가이드.", category: "가이드", author: "서치튠 블로거", date: "2026-03-16" },
-];
+// Auto-parsed from src/data/blogPosts.ts so legacy client-side slugs
+// (e.g. seo-vs-aeo-vs-geo) also get a canonical .html file generated.
+function loadStaticPostsFromSource() {
+  try {
+    const src = fs.readFileSync(path.resolve("src/data/blogPosts.ts"), "utf-8");
+    const re = /slug:\s*"([^"]+)",[\s\S]*?title:\s*\n?\s*"([^"]+)",[\s\S]*?excerpt:\s*\n?\s*"([^"]+)",[\s\S]*?category:\s*"([^"]+)",[\s\S]*?author:\s*"([^"]+)",[\s\S]*?date:\s*"([^"]+)"/g;
+    const out = [];
+    let m;
+    while ((m = re.exec(src))) {
+      out.push({ slug: m[1], title: m[2], excerpt: m[3], category: m[4], author: m[5], date: m[6] });
+    }
+    return out;
+  } catch (e) {
+    console.warn("[prerender] Failed to parse blogPosts.ts:", e.message);
+    return [];
+  }
+}
+const STATIC_POSTS = loadStaticPostsFromSource();
+console.log(`[prerender] Loaded ${STATIC_POSTS.length} static posts from blogPosts.ts`);
 
 // ── 4. Simple markdown → HTML ───────────────────────────────────────
 function mdToHtml(md) {
@@ -151,9 +163,11 @@ function resolveOgImage(post) {
   return post.og_image;
 }
 
-// Canonical URL form: explicit .html file. On the published custom domain,
-// /blog/{slug} and /blog/{slug}/ can hit the SPA root fallback, so crawlers see
-// the home OG image instead of the article OG image.
+// Canonical URL form: /blog/{slug}.html. Lovable host serves .html files
+// directly, but clean URLs (/blog/{slug}) fall back to root /index.html
+// (homepage HTML), which breaks per-route SEO. So .html is the canonical
+// shipping format. We also emit dist/blog/{slug}/index.html as a redirect
+// stub so any crawler that reaches the clean URL ends up on the canonical.
 function blogHtmlPath(slug) {
   return `/blog/${slug}.html`;
 }
@@ -258,6 +272,43 @@ function generateHtml(post, assets, related = []) {
 </html>`;
 }
 
+// ── 6b. Redirect stub for /blog/{slug}/index.html ───────────────────
+// Goal: zero duplicate body. Crawlers see canonical → .html only.
+// Browsers get http-equiv refresh + JS replace fallback.
+function generateRedirectStub(post) {
+  const postUrl = blogHtmlUrl(post.slug);
+  const postPath = blogHtmlPath(post.slug);
+  const title = `${post.title} – 서치튠OS 블로그`;
+  const ogImage = resolveOgImage(post);
+  return `<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${esc(title)}</title>
+  <meta name="description" content="${esc(post.excerpt)}" />
+  <link rel="canonical" href="${postUrl}" />
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+  <meta property="og:title" content="${esc(title)}" />
+  <meta property="og:description" content="${esc(post.excerpt)}" />
+  <meta property="og:url" content="${postUrl}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:image" content="${ogImage}" />
+  <meta property="og:site_name" content="서치튠OS" />
+  <meta property="og:locale" content="ko_KR" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="${esc(title)}" />
+  <meta name="twitter:description" content="${esc(post.excerpt)}" />
+  <meta name="twitter:image" content="${ogImage}" />
+  <meta http-equiv="refresh" content="0; url=${postPath}" />
+  <script>location.replace(${JSON.stringify(postPath)});</script>
+</head>
+<body>
+  <a href="${postPath}">canonical article로 이동</a>
+</body>
+</html>`;
+}
+
 // ── 7. Main ─────────────────────────────────────────────────────────
 async function main() {
   if (!fs.existsSync(DIST)) {
@@ -297,18 +348,15 @@ async function main() {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
 
-    // Canonical form is /blog/{slug}/index.html. Make sure no extensionless
-    // physical file (/blog/{slug}) exists, since older builds could be served as
-    // a downloadable object by some crawlers/hosting paths.
-    const slugDir = path.join(blogDir, post.slug);
-    const extensionlessFile = path.join(blogDir, post.slug); // same path, but as a file
-    if (fs.existsSync(extensionlessFile) && fs.statSync(extensionlessFile).isFile()) {
-      fs.rmSync(extensionlessFile, { force: true });
-    }
-    fs.mkdirSync(slugDir, { recursive: true });
-    fs.writeFileSync(path.join(slugDir, "index.html"), html, "utf-8");
-    // Legacy compatibility: keep /blog/{slug}.html for any old links/RSS readers.
+    // CANONICAL: /blog/{slug}.html holds the full article body + canonical
+    // meta. Lovable host serves .html files directly.
     fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
+
+    // REDIRECT STUB: /blog/{slug}/index.html — if a crawler/user reaches
+    // the clean URL form, redirect to canonical .html via meta-refresh + JS.
+    const slugDir = path.join(blogDir, post.slug);
+    fs.mkdirSync(slugDir, { recursive: true });
+    fs.writeFileSync(path.join(slugDir, "index.html"), generateRedirectStub(post), "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh

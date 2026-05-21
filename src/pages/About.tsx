@@ -63,7 +63,7 @@ export default function About() {
           <p className="text-center text-muted-foreground text-sm mb-12 leading-relaxed">
             SEO·AEO·GEO 3개 축을 데이터 기반으로 함께 점검합니다.
             <br />
-            <span className="text-xs text-muted-foreground/60">마지막 엔진 업데이트: 2026년 4월 · Google Lighthouse v12 기준 · Schema.org 2024 표준 기반</span>
+            <span className="text-xs text-muted-foreground">마지막 엔진 업데이트: 2026년 4월 · Google Lighthouse v12 기준 · Schema.org 2024 표준 기반</span>
           </p>
 
           {/* Analytics Section */}

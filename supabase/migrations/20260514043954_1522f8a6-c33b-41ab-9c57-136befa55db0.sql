@@ -1,0 +1,1 @@
+UPDATE public.rate_limit_config SET free_limit = 3, email_bonus = 2, updated_at = now() WHERE id = 1;

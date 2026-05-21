@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -81,6 +82,8 @@ Deno.serve(async (req) => {
         if (pplxRes.ok) {
           const pplxData = await pplxRes.json();
           const content = pplxData.choices?.[0]?.message?.content;
+          const u = extractUsage(pplxData);
+          logApiCost({ function_name: "update-analysis-engine", model: "sonar-pro", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "trend-research" } });
           if (content) trendResults.push(`[Perplexity Research]\n${content}`);
           if (Array.isArray(pplxData.citations)) {
             trendCitations = pplxData.citations.slice(0, 15);
@@ -113,6 +116,7 @@ Deno.serve(async (req) => {
           });
           if (searchRes.ok) {
             const searchData = await searchRes.json();
+            logApiCost({ function_name: "update-analysis-engine", model: "firecrawl/search", requests: 1, metadata: { query } });
             for (const r of searchData.data || []) {
               trendResults.push(`[${r.title}] ${r.description || ""}`);
               if (r.url) trendCitations.push(r.url);
@@ -223,6 +227,10 @@ IMPORTANT RULES:
     }
 
     const aiData = await aiRes.json();
+    {
+      const u = extractUsage(aiData);
+      logApiCost({ function_name: "update-analysis-engine", model: "google/gemini-3-flash-preview", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "engine-update" } });
+    }
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) throw new Error("No tool call in AI response");
 

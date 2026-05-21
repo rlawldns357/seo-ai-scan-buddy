@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 
@@ -51,10 +52,24 @@ const Unsubscribe = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
+      <Helmet>
+        <title>이메일 수신 거부 – 서치튠OS</title>
+        <meta name="description" content="서치튠OS 이메일 수신 거부 페이지입니다. 받은 링크를 통해 더 이상 이메일을 받지 않도록 설정할 수 있어요." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://searchtuneos.com/unsubscribe" />
+        <meta property="og:title" content="이메일 수신 거부 – 서치튠OS" />
+        <meta property="og:description" content="서치튠OS 이메일 수신 거부 페이지입니다." />
+        <meta property="og:url" content="https://searchtuneos.com/unsubscribe" />
+      </Helmet>
       <Navbar />
       <main className="flex-1 flex items-center justify-center px-4 pt-16 pb-32">
         <div className="max-w-md w-full text-center space-y-4">
-          {status === "loading" && <p className="text-muted-foreground">확인 중...</p>}
+          {status === "loading" && (
+            <>
+              <h1 className="text-xl font-bold text-foreground">이메일 수신 거부</h1>
+              <p className="text-muted-foreground">확인 중...</p>
+            </>
+          )}
           {status === "valid" && (
             <>
               <h1 className="text-xl font-bold text-foreground">이메일 수신 거부</h1>

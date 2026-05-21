@@ -114,7 +114,7 @@ const IndexingStatus = ({ result, loading, url }: IndexingStatusProps) => {
               ? `네이버에서 ${result.naver.resultCount}건의 관련 결과가 발견됨`
               : "네이버 검색에서 이 도메인의 페이지가 발견되지 않았습니다"}
           </p>
-          <p className="text-[10px] text-muted-foreground/60">
+          <p className="text-[10px] text-muted-foreground">
             * 도메인명 키워드 검색 기반의 간접 확인 결과입니다
           </p>
           {result.naver.topResults.length > 0 && (

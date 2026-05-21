@@ -1,117 +1,83 @@
+# 어드민 SEO 운영 화면 분리 + 자가학습 루프
 
-# AI 인식 미리보기 (AI Perception Preview)
+기존 `/admin` 한 페이지에 SERP 추적까지 욱여넣은 구조를 4개 라우트로 분리하고, 매일의 운영 루프(추적 → 색인 요청 → 결과 측정 → 다음 액션)를 데이터 모델까지 갖춰 만듭니다.
 
-GEO 점수의 "증거화" — 진짜 AI가 당신 브랜드를 어떻게 답하는지를 결과 화면 **최상단에 펼쳐서** 노출. 기존 "원인 분석"은 접힘 기본.
+## 1. 라우트 구조
 
-## 0. 결과 화면 레이아웃 변경
-
-```text
-[기존]
-┌ 점수 게이지 ──────────────┐
-├ 원인 분석 (펼침 기본) ────┤  ← 닫힘 기본으로 변경
-└ 개선 액션 ────────────────┘
-
-[변경 후]
-┌ 점수 게이지 ──────────────┐
-├ 🤖 AI 인식 미리보기 ──────┤  ← 신규, 펼침 기본
-│   (6대 브랜드 매트릭스)    │
-├ 원인 분석 (닫힘 기본) ────┤  ← 클릭 시 펼침
-└ 개선 액션 ────────────────┘
+```
+/admin                  → /admin/insights 로 redirect
+/admin/insights         → 기존 운영 인사이트 (세션·리드·블로그 관리·엔진 업데이트·Clarity 등)
+/admin/blog             → 기존 블로그/실패 글 관리 (인사이트에서 분리)
+/admin/seo-monitor      → 키워드/노출/순위 모니터링 (현 SERP 카드 확장판)
+/admin/indexing-queue   → 네이버/구글 색인 요청 작업대
+/admin/ai-growth-loop   → 수정 액션 ↔ 노출 변화 학습 리포트
 ```
 
-- AI 인식 카드가 점수 바로 아래 = "AI가 당신 모름" → 점수 정당화 즉시 체감
-- 원인 분석은 "더 알아보기" 식으로 접근 (한 번 클릭해야 펼침)
-- 모바일도 동일 순서, Internal Expansion 패턴 유지
+공통 좌측 사이드바(또는 상단 탭) 컴포넌트 `AdminShell`을 만들어 5개 메뉴를 노출. 비밀번호 인증/Admin 권한 체크는 한 번만 통과시키고 모든 하위 라우트가 공유.
 
-## 1. 브랜드 매트릭스 (6대)
+## 2. 데이터 모델 (마이그레이션 1건)
 
-| 브랜드 | 측정 방식 | 무료 노출 | 비용/콜 | 비고 |
-|---|---|---|---|---|
-| **ChatGPT** | OpenAI gpt-5-mini + web_search 툴 | ✅ | ~$0.04 | 진짜 ChatGPT 경험 |
-| **Claude** | Anthropic claude-sonnet | ✅ | ~$0.015 | 학습컷오프 기반 |
-| **Gemini** | Lovable AI Gateway | ✅ | 무료 | grounding 옵션 |
-| **Perplexity** | sonar-pro (보유) | ✅ | ~$0.01 | citations로 추천 노출 입증 |
-| **Bing/Copilot** | ⚠️ 공식 API 없음 | "🔒 곧 지원" 배지 | - | 자리는 표시, 진정성 ↑ |
-| **Naver Cue:** | ⚠️ 공식 API 없음 | "🔒 곧 지원" 배지 | - | 한국 사이트한정 후크 |
+기존 `serp_keywords`, `serp_tracking_results` 유지. 다음 3개 테이블 신규 + 1개 컬럼 추가.
 
-→ 측정 가능한 4개는 진짜 답변, 안되는 2개는 솔직하게 lock 표시. 가짜 시뮬레이션 절대 ❌.
+- `serp_keywords`에 컬럼 추가
+  - `status text default 'monitoring'` — `monitoring | exposed | missing | needs_fix | indexing_pending`
+  - `last_action_at timestamptz`
+- `indexing_queue`
+  - `id, url text, target_keyword text, engine text(naver|google|both), reason text, priority smallint, status text(pending|requested|verified|failed|re_request|hold), requested_at, verified_at, result text, note text, created_at, updated_at`
+- `seo_actions` (자가학습 루프)
+  - `id, page_url text, target_keyword text, action_type text, before_state jsonb, after_state jsonb, result text(improved|no_change|worse|waiting|unclear), ai_judgement text, next_action text, remeasure_at timestamptz, created_at, updated_at`
+- `seo_action_metrics` (액션 ↔ SERP 결과 연결)
+  - `id, action_id uuid, keyword text, engine text, rank_before int, rank_after int, measured_at timestamptz`
 
-## 2. 질의 세트 (브랜드당 2콜)
+모든 테이블 RLS: service_role ALL + admin SELECT (`has_role`). INSERT/UPDATE는 어드민 전용 edge function 경유.
 
-1. **인지도**: `"{도메인} / {브랜드명}이 뭐 하는 곳이야? 모르면 모른다고 답해."`
-2. **추천 노출**: `"{카테고리}에서 추천할 만한 곳 3~5개 알려줘"` → 답변에 내 도메인/브랜드명 포함 여부 체크
+## 3. Edge Functions
 
-→ 4모델 × 2콜 = **8콜, 약 ₩90~120/분석**, 24h 캐시 적용 시 1/5
+- `seo-monitor` — 추적 키워드 + 최신 결과 + 전일 대비 순위 변화 + 그룹별 카운트 반환. 필터(engine/status/group/days) 지원.
+- `indexing-queue` — list / add / update_status / bulk_add_from_missing 액션. 자동 제출은 하지 않음(요구사항).
+- `seo-actions` — list / create / update_result / mark_remeasure / ai_judge(LOVABLE_API_KEY로 Gemini 호출, 액션 전후 SERP 데이터 보고 판단 1줄 생성).
+- 기존 `track-serp-keywords` 는 그대로. `seo-monitor`가 결과 조회만 담당.
 
-## 3. UI (결과 화면 점수 바로 아래, 풀폭)
+## 4. UI 컴포넌트
 
-```text
-┌─ 🤖 지금 AI는 당신을 이렇게 봅니다 ───────────┐
-│  ChatGPT     ✅ 인지   △ 추천 0/5            │
-│  Claude      ❌ 모름                          │
-│  Gemini      ✅ 인지   ✅ 추천 2/5            │
-│  Perplexity  ❌ 인용 0/8                     │
-│  Bing        🔒 곧 지원                       │
-│  Naver Cue:  🔒 곧 지원                       │
-│                                               │
-│  → 4개 AI 중 1곳에서만 추천됨                │
-│  [전체 답변 펼쳐 보기] (이메일 잠금 — Phase 2)│
-└───────────────────────────────────────────────┘
-```
+`/admin/seo-monitor`
+- 상단 6개 KPI 카드: 추적 키워드/노출/미노출/색인대기/상승/하락
+- 필터바: 엔진·상태·그룹·기간(1·7·14·30일)
+- 메인 테이블: 키워드, 그룹, 엔진, 상태 뱃지, 현재 순위, 전일 순위, Δ, 매칭 URL, 실제 노출 URL, 마지막 확인/수정/색인 요청, 다음 추천 액션
+- 행 액션: URL 복사 / 검색 결과 새 탭 / 색인 큐 추가 / 수정 액션 생성 / 모니터링 완료
 
-- 펼침 기본 (collapsed=false)
-- 각 행 클릭 → 실제 AI 답변 전문 펼침
-- 측정 불가 행: lock 아이콘 + 회색
-- 모바일: 6 카드 세로 (Internal Expansion)
+`/admin/indexing-queue`
+- 상단 5개 KPI: 오늘 후보/완료/색인확인/재요청/보류
+- 테이블 컬럼: 우선순위, URL, 타겟 키워드, 엔진, 사유, 상태, 요청일, 확인일, 결과, 메모
+- 각 행: **URL 복사 버튼(굵게 강조)**, 외부 링크(네이버 서치어드바이저/구글 서치 콘솔), 상태 변경 버튼들
+- 일괄 자동 제출 없음 — 후보 선정·상태 관리 only
 
-## 4. 단계적 출시 (퍼널 + 유료화 레버)
+`/admin/ai-growth-loop`
+- 상단 5개 KPI: 총 액션/효과 확인/미확인/재검토/평균 개선 일수
+- 테이블: 수정일, 페이지, 키워드, 수정 유형, 전·후 상태, 결과 뱃지, AI 판단, 다음 액션, 재측정 예정일
+- "AI 재판단" 버튼 — `seo-actions/ai_judge` 호출, 결과 1줄 갱신
+- "재측정" 버튼 — 해당 키워드 `track-serp-keywords` 강제 실행 후 결과 비교
 
-| Phase | 노출 | 게이트 | 목적 |
-|---|---|---|---|
-| **1 (지금)** | 4브랜드 풀공개, 답변 전문도 무료 | 없음 | 바이럴/스크린샷 공유 유도 |
-| **2 (1~2주 후)** | 요약 ✅❌만 무료, 답변 전문은 이메일 잠금 | 이메일 | 리드 수집 |
-| **3 (트래픽 검증 후)** | 재측정/심층 = 유료 (Lite ₩4,900~) | 결제 | 전환 |
+상태 뱃지 색상: 노출중/개선됨=score-excellent, 미노출/악화=destructive, 색인대기/대기=warning, 수정필요=accent, 상승=primary↑, 하락=destructive↓.
 
-## 5. 비용 방어
+## 5. 기존 Admin.tsx 정리
 
-- **24h 도메인 캐싱**: `ai_perception_cache(url, results jsonb, expires_at)`
-- **IP 레이트리밋**: 기존 3회/일 라인 통합
-- **타임아웃 8s/모델, 병렬 호출**, 한 모델 실패해도 나머지 표시
-- **실패 = "측정 실패" 배지** (가짜 답변 ❌)
+현재 SERP 추적 카드 + 트리거 버튼은 `/admin/seo-monitor`로 이전. `/admin/insights`에는 SERP 카드 자리에 "SEO 모니터로 이동" 링크 카드 1개만 남김. 인사이트 페이지의 다른 기능(엔진 업데이트, Clarity, 블로그 실패 글 등)은 그대로 유지하되, 블로그 관리는 `/admin/blog`로 이동.
 
-## 6. 구현 단계
+## 6. 구현 순서
 
-```text
-M1  DB: ai_perception_cache 테이블
-M2  API 키 추가: OPENAI_API_KEY, ANTHROPIC_API_KEY
-M3  Edge Function: probe-ai-perception
-    - 캐시 hit 즉시 반환 / 미스 시 4모델 병렬
-    - Promise.allSettled, 8s 타임아웃
-    - 도메인/브랜드명 정규식 매칭으로 인지/추천 판정
-    - 결과 캐시 + 반환
-M4  프론트: AIPerceptionCard (점수 바로 아래 풀폭)
-    - 데스크톱 6행 표, 모바일 카드
-    - 펼침 기본
-M5  결과 화면 통합
-    - AIPerceptionCard 삽입
-    - 기존 원인 분석 섹션 = collapsed 기본 (defaultOpen=false)
-M6  분석 트래킹: ai_perception_shown / brand_clicked / cause_analysis_opened
-```
+1. 마이그레이션: 컬럼 추가 + 3개 테이블 + RLS
+2. `AdminShell` + 라우트 5개 등록 (App.tsx, 중첩 라우트)
+3. edge functions 3개 작성 + 배포
+4. `/admin/seo-monitor` 구현 (현 카드 이전 + 확장)
+5. `/admin/indexing-queue` 구현
+6. `/admin/ai-growth-loop` 구현
+7. 기존 Admin.tsx에서 SERP/블로그 카드 분리 정리
+8. 빌드 확인
 
-## 7. 기술 메모
+## 기술 노트
 
-- ChatGPT 진짜 경험 = `gpt-5-mini` + Responses API `tools: [{type: "web_search_preview"}]`
-- Claude `web_search` 툴 베타 — 일단 학습컷오프 기반
-- 도메인 매칭: `www.` strip, query/hash 무시, 호스트 normalize
-- Naver/Bing 자리는 lock 배지로 채워서 매트릭스 완성도 ↑
-
-## 8. 메모리 영향
-
-- `geo-scoring-strategy`, `aeo-geo-concepts` 보강
-- 신규 메모: `ai-perception-preview` (브랜드 매트릭스, 캐시 정책, Phase, **결과화면 노출 순서: 점수 → AI 인식(펼침) → 원인 분석(닫힘) → 개선**)
-
-## 9. 비반영
-
-- Naver/Bing 시뮬레이션 ❌
-- GEO 점수 산정 로직 변경 ❌ (점수는 그대로, 증거만 추가)
-- 호출당 결제 ❌ (Phase 3 전까지 무료)
+- 라우트 중첩: `<Route path="/admin" element={<AdminShell/>}><Route index .../><Route path="seo-monitor" .../>...`
+- 상태/그룹 카운트는 edge function 내 SQL 집계로 1회 조회, 클라이언트는 표시만.
+- "다음 추천 액션"은 룰 기반(미노출+매칭 URL 있음→수정필요, 미노출+매칭 URL 없음→신규 글 필요, 노출중+순위>10→FAQ/내부링크 보강 등). AI 호출은 ai-growth-loop만 사용.
+- Naver 서치어드바이저 외부 링크: `https://searchadvisor.naver.com/console/board/request`, Google: `https://search.google.com/search-console`.

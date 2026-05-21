@@ -312,7 +312,7 @@ export default function ConsultationModal({ open, onClose }: ConsultationModalPr
                 )}
               </button>
 
-              <p className="text-[10px] text-muted-foreground/60 text-center">
+              <p className="text-[10px] text-muted-foreground text-center">
                 개인정보는 상담 목적으로만 활용되며 제3자에게 제공되지 않습니다.
               </p>
             </div>

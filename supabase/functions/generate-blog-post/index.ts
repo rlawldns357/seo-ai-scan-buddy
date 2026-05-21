@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 import { loadNaverRulebook } from "../_shared/naver-rulebook.ts";
+import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -38,7 +39,7 @@ const TOPICS = [
       "페이지 경험 시그널 최적화",
       // 브랜드 친화
       "Google Search Console 활용 가이드",
-      "Google Core Web Vitals 2026 대응",
+      "Google Core Web Vitals 최신 대응",
       "네이버 서치어드바이저 활용 팁",
       "네이버 검색 알고리즘 이해",
       "Naver D.I.A. 2.0 콘텐츠 최적화",
@@ -88,7 +89,7 @@ const TOPICS = [
   {
     category: "가이드",
     themes: [
-      "2026년 검색 마케팅 트렌드",
+      "올해 검색 마케팅 트렌드",
       "소규모 비즈니스 SEO 시작 가이드",
       "콘텐츠 마케팅과 SEO 통합 전략",
       "경쟁사 분석으로 SEO 개선하기",
@@ -335,6 +336,8 @@ Deno.serve(async (req) => {
             const pplxData = await pplxRes.json();
             const content = pplxData.choices?.[0]?.message?.content as string | undefined;
             const citations: string[] = Array.isArray(pplxData.citations) ? pplxData.citations.slice(0, 5) : [];
+            const u = extractUsage(pplxData);
+            logApiCost({ function_name: "generate-blog-post", model: "sonar", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { theme } });
             if (content && content.trim().length > 50) {
               freshContext =
                 `[Perplexity 실시간 리서치]\n${content.trim()}` +
@@ -369,6 +372,7 @@ Deno.serve(async (req) => {
             if (fcRes.ok) {
               const fcData = await fcRes.json();
               const results = (fcData?.data || fcData?.web?.results || []).slice(0, 2);
+              logApiCost({ function_name: "generate-blog-post", model: "firecrawl/search", requests: 1, metadata: { query: theme } });
               if (Array.isArray(results) && results.length > 0) {
                 freshContext = results
                   .map((r: any, i: number) => `[참고 ${i + 1}] ${r.title || ""}\n출처: ${r.url || ""}\n요약: ${(r.description || r.snippet || "").slice(0, 220)}`)
@@ -393,11 +397,16 @@ Deno.serve(async (req) => {
 SearchTune OS라는 SEO/AEO/GEO 분석 도구의 블로그에 게시될 전문적인 콘텐츠를 생성하세요.
 
 [시점 기준]
-오늘 날짜: ${today}, 현재 연도: ${currentYear}년. 모든 콘텐츠는 ${currentYear}년 기준. 2024/2025년 같은 과거 연도 사용 금지.
+오늘 날짜: ${today}, 현재 연도: ${currentYear}년. 내부 참고용 최신 연도는 ${currentYear}년이며, 2024~${currentYear}년 자료만 인용. 단, **제목·도입부·본문에서 "${currentYear}년"을 반복적으로 노출하지 말 것** (필요할 때 1회만, 보통은 생략). 과거 연도(2024/2025) 단정도 금지.
 
 [최근 발행 글 — 중복 절대 금지]
 ${recentTitleList}
 위 제목과 30% 이상 유사한 주제·구성 금지. 새로운 시각·독창적 사례 필수.
+**제목 다양성 규칙 (엄격)**:
+- 위 최근 제목들과 동일/유사한 패턴 금지. 특히 "${currentYear}년 OO: △△ N단계 가이드", "${currentYear}년 OO N가지 전략" 같은 정형 구조 연속 사용 금지.
+- 제목 첫머리에 "${currentYear}년"으로 시작 금지. 연도가 꼭 필요하면 부제·괄호로 빼거나 생략.
+- 매번 다른 형태로: 질문형("왜 …은 …인가"), 단언형("…의 진짜 이유"), 비교형("A vs B"), 사례형("…했더니 …"), How-to("…하는 법"), 체크리스트형, 미신 깨기형 등 회전.
+- "N단계 가이드 / N가지 전략 / 완벽 가이드 / 백서 / 실전 가이드" 같은 클리셰 표현은 최근 5개 제목 중 1회 이하로 제한.
 
 [논리·사실성 가드 — 매우 중요]
 - **억지·과장·근거 없는 단정 금지**. "X하면 트래픽 N배"처럼 입증 불가한 인과 주장 금지.
@@ -457,7 +466,7 @@ ${naverRulebook}
 위 주제로 전문적인 블로그 글을 작성해주세요. 위 시스템 규칙(특히 표·숫자리스트·코드블록·내부링크·D.I.A. 깊이·출처 신빙성, 그리고 FAQ 톤 분리)을 모두 충족해야 합니다.
 
 요청 필드:
-- title: 한국어, SEO 친화적, 매력적 (핵심 키워드 포함)
+- title: 한국어, SEO 친화적, 매력적 (핵심 키워드 포함). **"${currentYear}년"으로 시작 금지**, "N단계 가이드/N가지 전략/완벽 가이드" 같은 클리셰 회피, 최근 발행 제목과 구조·패턴이 겹치지 않게 다른 형태(질문형/비교형/사례형/단언형/How-to 등)로 작성.
 - excerpt: 2-3문장 요약 (160자 이내, 검색결과 노출용 — 클릭 유도 메시지 포함)
 - readTime: "3분" / "4분" / "5분" 중 하나
 - content: 본문 마크다운 (FAQ 제외, 표·숫자리스트·코드블록·내부링크 모두 포함)
@@ -606,6 +615,8 @@ ${naverRulebook}
         throw new Error(`AI gateway returned ${r.status}`);
       }
       const data = await r.json();
+      const u = extractUsage(data);
+      logApiCost({ function_name: "generate-blog-post", model: "google/gemini-2.5-pro", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "draft" } });
       const tc = data.choices?.[0]?.message?.tool_calls?.[0];
       if (!tc) throw new Error("No tool call in AI response");
       return JSON.parse(tc.function.arguments);
@@ -664,6 +675,8 @@ ${naverRulebook}
           return null;
         }
         const d = await r.json();
+        const u = extractUsage(d);
+        logApiCost({ function_name: "generate-blog-post", model: "google/gemini-3-flash-preview", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "self-score" } });
         const args = JSON.parse(d.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments || "{}");
         const seo = Number(args.seo) || 0;
         const aeo = Number(args.aeo) || 0;

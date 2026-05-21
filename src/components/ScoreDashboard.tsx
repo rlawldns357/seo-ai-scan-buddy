@@ -118,7 +118,7 @@ function SignalBar({ name, score, weight }: { name: string; score: number; weigh
         <div className={`h-full rounded-full ${color}`} style={{ width: `${score}%` }} />
       </div>
       <span className={`text-[11px] font-semibold w-6 text-right tabular-nums ${isCritical ? "text-score-poor" : "text-foreground"}`}>{score}</span>
-      <span className="text-[9px] text-muted-foreground/60 w-5 text-right">×{weight}</span>
+      <span className="text-[9px] text-muted-foreground w-5 text-right">×{weight}</span>
     </div>
   );
 }
@@ -221,8 +221,8 @@ function SummaryCard({
             </div>
           </div>
           <div className="flex items-center justify-center gap-1 py-1.5 border-t border-border/50">
-            <span className="text-[10px] text-muted-foreground/70 font-medium">{selected ? "접기" : "자세히 보기"}</span>
-            <ChevronDown className={`w-3 h-3 text-muted-foreground/70 transition-transform duration-200 ${selected ? "rotate-180" : ""}`} />
+            <span className="text-[10px] text-muted-foreground font-medium">{selected ? "접기" : "자세히 보기"}</span>
+            <ChevronDown className={`w-3 h-3 text-muted-foreground transition-transform duration-200 ${selected ? "rotate-180" : ""}`} />
           </div>
         </button>
         {selected && (
@@ -232,8 +232,8 @@ function SummaryCard({
               onClick={handleCollapse}
               className="flex items-center justify-center gap-1 w-full py-2 border-t border-border/50"
             >
-              <span className="text-[10px] text-muted-foreground/70 font-medium">접기</span>
-              <ChevronDown className="w-3 h-3 text-muted-foreground/70 rotate-180" />
+              <span className="text-[10px] text-muted-foreground font-medium">접기</span>
+              <ChevronDown className="w-3 h-3 text-muted-foreground rotate-180" />
             </button>
           </div>
         )}
@@ -263,7 +263,7 @@ function SummaryCard({
           {isCritical && <p className="text-[11px] font-medium text-score-poor leading-snug">{config.lossDesc}</p>}
           {isWarning && <p className="text-[11px] text-score-warning leading-snug">{config.warnDesc}</p>}
         </div>
-        <p className="text-[10px] text-muted-foreground/70 mt-1 leading-relaxed line-clamp-2">{axis.description}</p>
+        <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed line-clamp-2">{axis.description}</p>
         {axis.scoreCap && (
           <div className={`w-full mt-2 flex items-start gap-1.5 px-2.5 py-1.5 rounded-lg border text-[11px] leading-snug text-left ${
             isCritical ? "bg-score-poor/6 border-score-poor/15 text-score-poor font-medium" : "bg-score-warning/6 border-score-warning/12 text-score-warning"
@@ -595,7 +595,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 onChange={(e) => handleSlider(Number(e.target.value))}
                 className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-border accent-primary"
               />
-              <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                 <span>100명</span>
                 <span className="text-muted-foreground font-medium">하루 방문자가 {dailyVisitors.toLocaleString()}명이라면?</span>
                 <span>100,000명</span>
@@ -603,7 +603,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
             </div>
           )}
           {isGoodScore && (
-            <p className="text-xs text-muted-foreground/50">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
+            <p className="text-xs text-muted-foreground">현재 상태를 유지하면서 세부 항목을 더 강화해 보세요</p>
           )}
         </div>
         {/* 2-Step Funnel CTA */}
@@ -708,7 +708,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
         )}
 
         {!isGoodScore && ctaStep === "idle" && (
-          <p className="hidden sm:block text-[10px] text-muted-foreground/40">
+          <p className="hidden sm:block text-[10px] text-muted-foreground">
             {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
           </p>
         )}
@@ -718,7 +718,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
           {!mobileExpanded ? (
             <button
               onClick={() => setMobileExpanded(true)}
-              className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors py-1 mt-1"
+              className="w-full flex items-center justify-center gap-1 text-[10px] text-muted-foreground hover:text-muted-foreground transition-colors py-1 mt-1"
             >
               상세 수치 보기
               <ChevronDown className="w-3 h-3" />
@@ -735,7 +735,7 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                     onChange={(e) => handleSlider(Number(e.target.value))}
                     className="w-full h-1.5 rounded-full appearance-none cursor-pointer bg-border accent-primary"
                   />
-                  <div className="flex justify-between text-[10px] text-muted-foreground/50 mt-1">
+                  <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                     <span>100명</span>
                     <span className="text-muted-foreground font-medium">하루 방문자가 {dailyVisitors.toLocaleString()}명이라면?</span>
                     <span>100,000명</span>
@@ -743,14 +743,14 @@ function InlineCTA({ avgScore, url, result }: { avgScore: number; url?: string; 
                 </div>
               )}
               {!isGoodScore && (
-                <p className="text-center text-[10px] text-muted-foreground/40 pt-1">
+                <p className="text-center text-[10px] text-muted-foreground pt-1">
                   {dailyVisitors.toLocaleString()}명 × {t.lossPct} = {lostVisitors.toLocaleString()}명/일 · 출처: {t.source}
                 </p>
               )}
               <div className="flex justify-center pt-1">
                 <button
                   onClick={() => setMobileExpanded(false)}
-                  className="flex items-center gap-0.5 text-[10px] text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                  className="flex items-center gap-0.5 text-[10px] text-muted-foreground hover:text-muted-foreground transition-colors"
                 >
                   접기
                   <ChevronDown className="w-3.5 h-3.5 rotate-180" />

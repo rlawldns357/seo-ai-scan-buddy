@@ -131,6 +131,78 @@ export type Database = {
         }
         Relationships: []
       }
+      api_cost_budget: {
+        Row: {
+          alert_threshold_pct: number
+          created_at: string
+          id: string
+          monthly_budget_krw: number
+          notes: string | null
+          provider: string
+          updated_at: string
+        }
+        Insert: {
+          alert_threshold_pct?: number
+          created_at?: string
+          id?: string
+          monthly_budget_krw?: number
+          notes?: string | null
+          provider: string
+          updated_at?: string
+        }
+        Update: {
+          alert_threshold_pct?: number
+          created_at?: string
+          id?: string
+          monthly_budget_krw?: number
+          notes?: string | null
+          provider?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      api_cost_log: {
+        Row: {
+          cost_krw: number
+          cost_usd: number
+          created_at: string
+          function_name: string
+          id: string
+          metadata: Json | null
+          model: string | null
+          provider: string
+          requests: number
+          tokens_in: number
+          tokens_out: number
+        }
+        Insert: {
+          cost_krw?: number
+          cost_usd?: number
+          created_at?: string
+          function_name: string
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          provider: string
+          requests?: number
+          tokens_in?: number
+          tokens_out?: number
+        }
+        Update: {
+          cost_krw?: number
+          cost_usd?: number
+          created_at?: string
+          function_name?: string
+          id?: string
+          metadata?: Json | null
+          model?: string | null
+          provider?: string
+          requests?: number
+          tokens_in?: number
+          tokens_out?: number
+        }
+        Relationships: []
+      }
       autoblog_engine_config: {
         Row: {
           config_key: string
@@ -580,6 +652,96 @@ export type Database = {
         }
         Relationships: []
       }
+      external_balance_snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          limit_usd: number | null
+          notes: string | null
+          period_resets_at: string | null
+          provider: string
+          snapshot_at: string
+          topup_balance_usd: number
+          topup_used_usd: number
+          used_usd: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          limit_usd?: number | null
+          notes?: string | null
+          period_resets_at?: string | null
+          provider: string
+          snapshot_at?: string
+          topup_balance_usd?: number
+          topup_used_usd?: number
+          used_usd?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          limit_usd?: number | null
+          notes?: string | null
+          period_resets_at?: string | null
+          provider?: string
+          snapshot_at?: string
+          topup_balance_usd?: number
+          topup_used_usd?: number
+          used_usd?: number
+        }
+        Relationships: []
+      }
+      indexing_queue: {
+        Row: {
+          created_at: string
+          engine: string
+          id: string
+          note: string | null
+          priority: number
+          reason: string | null
+          requested_at: string | null
+          result: string | null
+          status: string
+          target_keyword: string | null
+          updated_at: string
+          url: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          engine?: string
+          id?: string
+          note?: string | null
+          priority?: number
+          reason?: string | null
+          requested_at?: string | null
+          result?: string | null
+          status?: string
+          target_keyword?: string | null
+          updated_at?: string
+          url: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          engine?: string
+          id?: string
+          note?: string | null
+          priority?: number
+          reason?: string | null
+          requested_at?: string | null
+          result?: string | null
+          status?: string
+          target_keyword?: string | null
+          updated_at?: string
+          url?: string
+          verified_at?: string | null
+        }
+        Relationships: []
+      }
       naver_store_analysis_cache: {
         Row: {
           analyzed_at: string
@@ -610,18 +772,21 @@ export type Database = {
           free_limit: number
           id: number
           updated_at: string
+          whitelisted_ips: string[]
         }
         Insert: {
           email_bonus?: number
           free_limit?: number
           id?: number
           updated_at?: string
+          whitelisted_ips?: string[]
         }
         Update: {
           email_bonus?: number
           free_limit?: number
           id?: number
           updated_at?: string
+          whitelisted_ips?: string[]
         }
         Relationships: []
       }
@@ -692,6 +857,184 @@ export type Database = {
             columns: ["post_id"]
             isOneToOne: false
             referencedRelation: "site_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_action_metrics: {
+        Row: {
+          action_id: string | null
+          engine: string
+          id: string
+          keyword: string
+          measured_at: string
+          rank_after: number | null
+          rank_before: number | null
+        }
+        Insert: {
+          action_id?: string | null
+          engine: string
+          id?: string
+          keyword: string
+          measured_at?: string
+          rank_after?: number | null
+          rank_before?: number | null
+        }
+        Update: {
+          action_id?: string | null
+          engine?: string
+          id?: string
+          keyword?: string
+          measured_at?: string
+          rank_after?: number | null
+          rank_before?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seo_action_metrics_action_id_fkey"
+            columns: ["action_id"]
+            isOneToOne: false
+            referencedRelation: "seo_actions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seo_actions: {
+        Row: {
+          action_type: string
+          after_state: Json | null
+          ai_judgement: string | null
+          before_state: Json | null
+          created_at: string
+          id: string
+          next_action: string | null
+          page_url: string
+          remeasure_at: string | null
+          result: string
+          target_keyword: string | null
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          after_state?: Json | null
+          ai_judgement?: string | null
+          before_state?: Json | null
+          created_at?: string
+          id?: string
+          next_action?: string | null
+          page_url: string
+          remeasure_at?: string | null
+          result?: string
+          target_keyword?: string | null
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          after_state?: Json | null
+          ai_judgement?: string | null
+          before_state?: Json | null
+          created_at?: string
+          id?: string
+          next_action?: string | null
+          page_url?: string
+          remeasure_at?: string | null
+          result?: string
+          target_keyword?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      serp_keywords: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          id: string
+          keyword: string
+          last_action_at: string | null
+          priority: number
+          status: string
+          target_url: string | null
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          keyword: string
+          last_action_at?: string | null
+          priority?: number
+          status?: string
+          target_url?: string | null
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          id?: string
+          keyword?: string
+          last_action_at?: string | null
+          priority?: number
+          status?: string
+          target_url?: string | null
+        }
+        Relationships: []
+      }
+      serp_tracking_results: {
+        Row: {
+          checked_at: string
+          engine: string
+          error: string | null
+          id: string
+          keyword: string
+          keyword_id: string | null
+          our_exposed: boolean
+          our_rank: number | null
+          our_snippet: string | null
+          our_title: string | null
+          our_url: string | null
+          top_domains: string[]
+          top10: Json
+          total_results: number | null
+        }
+        Insert: {
+          checked_at?: string
+          engine: string
+          error?: string | null
+          id?: string
+          keyword: string
+          keyword_id?: string | null
+          our_exposed?: boolean
+          our_rank?: number | null
+          our_snippet?: string | null
+          our_title?: string | null
+          our_url?: string | null
+          top_domains?: string[]
+          top10?: Json
+          total_results?: number | null
+        }
+        Update: {
+          checked_at?: string
+          engine?: string
+          error?: string | null
+          id?: string
+          keyword?: string
+          keyword_id?: string | null
+          our_exposed?: boolean
+          our_rank?: number | null
+          our_snippet?: string | null
+          our_title?: string | null
+          our_url?: string | null
+          top_domains?: string[]
+          top10?: Json
+          total_results?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "serp_tracking_results_keyword_id_fkey"
+            columns: ["keyword_id"]
+            isOneToOne: false
+            referencedRelation: "serp_keywords"
             referencedColumns: ["id"]
           },
         ]

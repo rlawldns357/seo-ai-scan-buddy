@@ -18,6 +18,7 @@ import { type PsiResult, type PsiError } from "@/lib/psi";
 import { trackEvent } from "@/lib/analytics";
 import { validateUrl } from "@/lib/urlValidation";
 import { type RateLimitStatus } from "@/lib/rateLimit";
+import { BRAND_LABEL, getStoredVipBrand, subscribeVipBrand, type VipBrand } from "@/lib/vipBrand";
 import type { AnalysisPhase } from "@/components/LoadingScreen";
 import type { IndexingResult } from "@/lib/checkIndexing";
 
@@ -134,6 +135,28 @@ const Index = () => {
 
   // Rate limit state
   const [rateLimit, setRateLimit] = useState<RateLimitStatus | null>(null);
+  const [vipBubble, setVipBubble] = useState<0 | 1 | 2>(0);
+  const [storedBrand, setStoredBrand] = useState<VipBrand | null>(() => getStoredVipBrand());
+  // 우선순위: localStorage 브랜드(ProgressMedia 등) > 화이트리스트 IP(GrowthBridge)
+  // → ProgressMedia 이메일 제출자는 IP가 화이트리스트여도 ProgressMedia로 유지
+  const effectiveBrand: VipBrand | null =
+    storedBrand ?? (rateLimit?.whitelisted ? "growthbridge" : null);
+  const vipBubbleShownRef = useRef(false);
+
+  // localStorage 브랜드 변경 구독 (이메일 제출 직후 즉시 반영)
+  useEffect(() => {
+    return subscribeVipBrand(() => setStoredBrand(getStoredVipBrand()));
+  }, []);
+
+  // 브랜드가 잡히는 첫 시점에 말풍선 2단계로 한 번만 노출
+  useEffect(() => {
+    if (!effectiveBrand || vipBubbleShownRef.current) return;
+    vipBubbleShownRef.current = true;
+    const t1 = setTimeout(() => setVipBubble(1), 500);
+    const t2 = setTimeout(() => setVipBubble(0), 2700);
+    const t3 = setTimeout(() => setVipBubble(2), 3100);
+    return () => { [t1, t2, t3].forEach(clearTimeout); };
+  }, [effectiveBrand]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [indexingResult, setIndexingResult] = useState<IndexingResult | null>(null);
   const [indexingLoading, setIndexingLoading] = useState(false);
@@ -161,6 +184,25 @@ const Index = () => {
       }, 50);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 화이트리스트(팀/사무실) IP 인식 → 환영 배너 표시용으로 mount 시 1회 조회
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { checkRateLimit } = await import("@/lib/rateLimit");
+        const status = await checkRateLimit();
+        if (!cancelled) {
+          setRateLimit((prev) => prev ?? status);
+        }
+      } catch {
+        /* fail silently — 환영 배너는 부가 기능 */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const runAnalysis = async (finalUrl: string) => {
@@ -429,9 +471,26 @@ const Index = () => {
       {screen === "home" && (
         <main className="flex-1 flex items-center justify-center px-4 pt-14 sm:pt-20 pb-44 sm:pb-44">
           <div className="max-w-2xl w-full text-center animate-fade-up">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold mb-8">
-              <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
-              무료 베타 서비스
+            <div className="inline-flex flex-wrap items-center justify-center gap-2 mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/8 text-accent text-sm font-semibold">
+                <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                무료 베타 서비스
+              </div>
+              {effectiveBrand && (() => {
+                const isPm = effectiveBrand === "progressmedia";
+                const text = isPm ? "text-blue-600 dark:text-blue-400" : "text-emerald-600 dark:text-emerald-400";
+                const dot = isPm ? "bg-blue-500" : "bg-emerald-500";
+                return (
+                  <div className={`inline-flex items-center gap-2 px-2 py-2 ${text} text-sm font-semibold leading-none`}>
+                    <span className="relative inline-flex items-center justify-center w-2 h-2">
+                      {/* 닷 크기는 그대로, 펄스 halo만 더 크게 퍼지도록 */}
+                      <span className={`absolute w-4 h-4 rounded-full ${dot} opacity-50 animate-ping`} />
+                      <span className={`relative inline-block w-2 h-2 rounded-full ${dot}`} />
+                    </span>
+                    {BRAND_LABEL[effectiveBrand]} 전용 · 무제한 활성화 🔓 접속
+                  </div>
+                );
+              })()}
             </div>
             <h1 className="text-4xl sm:text-5xl md:text-6xl text-foreground leading-[1.15] sm:leading-[1.1] mb-6 tracking-tight">
               <span className="block font-light text-muted-foreground text-2xl sm:text-3xl md:text-4xl mb-3">
@@ -475,7 +534,7 @@ const Index = () => {
                   )}
                   <Search
                     className={`absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none transition-colors z-10 ${
-                      naverMode ? "text-naver" : "text-muted-foreground/60 group-focus-within:text-primary"
+                      naverMode ? "text-naver" : "text-muted-foreground group-focus-within:text-primary"
                     }`}
                     strokeWidth={2.5}
                   />
@@ -485,7 +544,7 @@ const Index = () => {
                     onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                     onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                     placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
-                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/90 backdrop-blur text-foreground placeholder:text-muted-foreground/70 focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
+                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/90 backdrop-blur text-foreground placeholder:text-muted-foreground focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
                       naverMode
                         ? "border-naver/50 focus:border-naver focus:ring-2 focus:ring-naver/30 shadow-[0_0_0_4px_hsl(var(--naver)/0.10)]"
                         : "border-input focus:ring-2 focus:ring-primary/40 focus:border-primary"
@@ -493,21 +552,45 @@ const Index = () => {
                     style={{ paddingLeft: "3rem" }}
                   />
                 </div>
-                <button
-                  onClick={handleAnalyze}
-                  disabled={isAnalyzing}
-                  aria-busy={isAnalyzing}
-                  className="h-14 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none disabled:opacity-95 disabled:cursor-wait inline-flex items-center justify-center gap-2"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>분석 시작 중…</span>
-                    </>
-                  ) : (
-                    "무료로 분석하기"
+                <div className="relative">
+                  {/* 이스터에그 말풍선: VIP 브랜드(GrowthBridge/ProgressMedia) 첫 진입 시 2단계 노출 */}
+                  {effectiveBrand && (
+                    <div
+                      className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap z-10 transition-all duration-500 ease-out ${
+                        vipBubble !== 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <div className={`relative px-3 py-1.5 rounded-xl text-white text-xs font-semibold shadow-lg ${
+                        effectiveBrand === "progressmedia" ? "bg-blue-600" : "bg-emerald-600"
+                      }`}>
+                        {vipBubble === 1
+                          ? `Hello 👋 ${BRAND_LABEL[effectiveBrand]}`
+                          : "무제한으로 바뀌었어요 ✨"}
+                        <span className={`absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 ${
+                          effectiveBrand === "progressmedia" ? "bg-blue-600" : "bg-emerald-600"
+                        }`} />
+                      </div>
+                    </div>
                   )}
-                </button>
+                  <button
+                    onClick={handleAnalyze}
+                    disabled={isAnalyzing}
+                    aria-busy={isAnalyzing}
+                    className="h-14 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none disabled:opacity-95 disabled:cursor-wait inline-flex items-center justify-center gap-2"
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>분석 시작 중…</span>
+                      </>
+                    ) : effectiveBrand ? (
+                      "무제한 분석하기"
+                    ) : (
+                      "무료로 분석하기"
+                    )}
+                  </button>
+                </div>
               </div>
               {(() => {
                 const trimmed = url.trim();
@@ -524,7 +607,7 @@ const Index = () => {
                 if (!url) {
                   return (
                     <div className="relative flex flex-wrap items-center justify-center gap-1.5 mt-3.5 animate-fade-in">
-                      <span className="text-[11px] text-muted-foreground/70 mr-0.5">예시</span>
+                      <span className="text-[11px] text-muted-foreground mr-0.5">예시</span>
                       {EXAMPLE_URLS.map((ex) => (
                         <button
                           key={ex.url}
@@ -643,7 +726,7 @@ const Index = () => {
               <NaverStoreTeaser onActivate={() => setNaverMode(true)} />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
-              <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground/60 uppercase tracking-widest">
+              <h2 className="text-center mb-3 text-xs font-medium text-muted-foreground uppercase tracking-widest">
                 FAQ
               </h2>
               <FaqSection compact />

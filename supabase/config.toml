@@ -15,3 +15,5 @@ project_id = "dmnrbmarbvirtymhszww"
     verify_jwt = true
   [functions.blog-share]
     verify_jwt = false
+  [functions.ops-readonly]
+    verify_jwt = false

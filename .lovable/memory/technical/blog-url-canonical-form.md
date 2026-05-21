@@ -1,34 +1,31 @@
 ---
 name: Blog URL Canonical Form
-description: 블로그 공유 URL 정규형 — `/blog/{slug}/index.html` 명시 경로만 카카오/페북 OG 정상 동작
+description: Canonical=`/blog/{slug}.html`. Lovable host serves .html directly; clean URLs SPA-fallback to homepage HTML (breaks SEO). All canonical/og/sitemap/RSS/internal links use .html
 type: constraint
 ---
 
-# 블로그 URL 정규형 (확정)
+# 블로그 URL 정규형 (확정 v5 — .html canonical, Lovable hosting reality)
+
+## 왜 .html인가
+- **Lovable 호스팅의 SPA fallback**: 확장자 없는 deep path(`/blog/{slug}` 또는 `/blog/{slug}/`)는 **무조건 루트 `/index.html`**(=홈페이지)로 폴백됨. 중첩 디렉토리의 index.html을 default document로 서빙하지 않음
+- 결과적으로 clean URL은 홈페이지 title/description/canonical/og를 반환 → per-route SEO 깨짐
+- `.html` 파일은 정상적으로 직접 서빙됨 → 유일하게 작동하는 canonical 형태
 
 ## 핵심 규칙
-**모든 블로그 공유 URL은 `https://searchtuneos.com/blog/{slug}/index.html` 형태여야 한다.**
+- **Canonical / og:url / twitter:url**: `https://searchtuneos.com/blog/{slug}.html`
+- **빌드 산출물**:
+  - `dist/blog/{slug}.html` — canonical full article body
+  - `dist/blog/{slug}/index.html` — meta-refresh + JS redirect stub → canonical `.html`
+- **SPA 라우팅**: `/blog/{slug}` 진입 시 `BlogPost.tsx` useEffect가 `/blog/{slug}.html` 로 즉시 `navigate(..., {replace:true})`
 
-## 왜?
-Lovable Hosting (정확히는 publish 인프라)이 다음과 같이 동작:
-- `/blog/{slug}` (확장자 없음) → `application/octet-stream`으로 응답 (= 카톡에서 다운로드 버그 발생)
-- `/blog/{slug}.html` (직접 파일) → SPA fallback에 가려서 home OG 노출
-- `/blog/{slug}/` (디렉토리, trailing slash) → 일부 환경에서 SPA root로 빠짐
-- ✅ `/blog/{slug}/index.html` (명시) → `text/html` + 글 전용 OG 정상 (카카오 디버거 검증 완료 2026-04-30)
+## 코드 위치
+- `BlogPost.tsx`: `blogPostPath(slug) = /blog/${slug}.html` / `blogPostUrl = https://searchtuneos.com/blog/${slug}.html`
+- `Blog.tsx`: 동일
+- `App.tsx`: 3 routes (`:slug.html`, `:slug/index.html`, `:slug`) 유지 — clean URL 진입 시 normalize redirect
+- Edge functions: `sitemap`, `rss`, `blog-share`, `submit-indexnow` 전부 `.html`
+- Build scripts: `prerender-blog.mjs`, `generate-sitemap.mjs`, `verify-blog-og.mjs`, `verify-blog-routing.mjs` 모두 `.html` 기준
 
-## 적용 위치 (절대 깨지면 안 됨)
-1. `src/pages/BlogPost.tsx` — `blogPostPath()` + `useEffect` 주소창 자동 정규화 (`/blog/{slug}/index.html`로 navigate replace)
-2. `src/pages/Blog.tsx` — 카드 링크
-3. `src/pages/Admin.tsx` — 미리보기 링크
-4. `scripts/prerender-blog.mjs` — `dist/blog/{slug}/index.html`로 출력. **확장자 없는 파일(`dist/blog/{slug}`) 생성 금지** (다운로드 버그 원인)
-5. `scripts/generate-sitemap.mjs` + `supabase/functions/sitemap/index.ts` — sitemap loc
-6. `scripts/verify-blog-og.mjs` + `verify-blog-routing.mjs` — 빌드 검증
-
-## 검증 방법
-- 카카오 공유 디버거: https://developers.kakao.com/tool/debugger/sharing
-- `https://searchtuneos.com/blog/{slug}/index.html` 입력 → "캐시 초기화" → Content-Type `text/html; charset=utf-8` + 글별 OG 이미지 표시되면 OK
-
-## 절대 하지 말 것
-- 확장자 없는 정적 파일 (`dist/blog/{slug}`) 생성
-- `/blog/{slug}.html` 단독 파일 권장 형태로 사용
-- trailing slash만 있는 형태(`/blog/{slug}/`)로 og:url/canonical 설정
+## 절대 금지
+- 새 코드에서 `/blog/${slug}` (확장자 없음) 형태 canonical/og:url/sitemap entry 생성
+- `dist/blog/{slug}/index.html`에 full article body 출력 (반드시 redirect stub)
+- canonical과 og:url을 서로 다른 형태로 지정

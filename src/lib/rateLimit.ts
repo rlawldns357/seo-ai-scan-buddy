@@ -4,6 +4,8 @@ export interface RateLimitStatus {
   limit: number;
   usageCount: number;
   emailUnlocked: boolean;
+  /** True when caller's IP is on the team whitelist (rate limit bypassed). */
+  whitelisted?: boolean;
 }
 
 const functionUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/check-rate-limit`;

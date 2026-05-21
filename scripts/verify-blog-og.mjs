@@ -1,6 +1,7 @@
 /**
- * Post-build verification: ensures every prerendered blog HTML
- * contains correct OG metadata and that og:url matches the public share path.
+ * Post-build verification: ensures every prerendered canonical blog HTML at
+ * dist/blog/{slug}.html contains correct OG metadata and that canonical/og:url
+ * point to the .html URL https://searchtuneos.com/blog/{slug}.html.
  *
  * Fails the build (exit 1) if any required tag is missing or mismatched.
  */
@@ -40,13 +41,11 @@ function verifyFile(filePath, expectedUrl) {
     if (!re.test(html)) errors.push(`missing ${name}`);
   }
 
-  // og:url must equal the canonical physical URL
   const ogUrl = extractAttr(html, /<meta\s+property=["']og:url["'][^>]*>/i, "content");
   if (ogUrl && ogUrl !== expectedUrl) {
     errors.push(`og:url mismatch: got "${ogUrl}", expected "${expectedUrl}"`);
   }
 
-  // canonical must equal og:url
   const canonical = extractAttr(html, /<link\s+rel=["']canonical["'][^>]*>/i, "href");
   if (canonical && canonical !== expectedUrl) {
     errors.push(`canonical mismatch: got "${canonical}", expected "${expectedUrl}"`);
@@ -67,18 +66,9 @@ function collectBlogFiles() {
   const files = [];
 
   for (const entry of entries) {
-    // Canonical shape: directory index at dist/blog/{slug}/index.html
-    if (entry.isDirectory()) {
-      const idx = path.join(BLOG_DIR, entry.name, "index.html");
-      if (fs.existsSync(idx)) {
-        files.push({ slug: entry.name, label: `/blog/${entry.name}/index.html`, path: idx });
-      }
-      continue;
-    }
-
     if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
       const slug = entry.name.replace(/\.html$/, "");
-      files.push({ slug, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name), compatibility: true });
+      files.push({ slug, label: `/blog/${entry.name}`, path: path.join(BLOG_DIR, entry.name) });
     }
   }
 
@@ -99,15 +89,9 @@ function main() {
   }
 
   let failed = 0;
-  const canonicalSlugs = new Set(files.filter((f) => !f.compatibility).map((f) => f.slug));
   for (const file of files) {
-    // Canonical URL form is the explicit .html file. Published hosting can
-    // route /blog/{slug}/ to the SPA home fallback, which exposes the home OG.
     const expectedUrl = `${SITE}/blog/${file.slug}.html`;
     const errors = verifyFile(file.path, expectedUrl);
-    if (file.compatibility && !canonicalSlugs.has(file.slug)) {
-      errors.push(`missing canonical /blog/${file.slug}.html`);
-    }
     if (errors.length) {
       failed++;
       console.error(`[verify-og] ❌ ${file.label}`);
