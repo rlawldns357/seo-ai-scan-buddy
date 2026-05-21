@@ -1,44 +1,21 @@
 {
   "summary": {
-    "generatedAt": "2026-05-21T04:30:31.749Z",
+    "generatedAt": "2026-05-21T04:31:25.910Z",
     "source": "src/data/blogPosts.ts static corpus",
     "totalPosts": 14,
     "bySeverity": {
-      "ok": 1,
-      "medium": 13
+      "ok": 3,
+      "medium": 10,
+      "low": 1
     },
     "issueCounts": {
-      "authority_link_missing": 13,
-      "internal_links_under_2": 12,
-      "tldr_missing": 13,
+      "authority_link_missing": 10,
+      "internal_links_under_2": 9,
+      "tldr_missing": 10,
       "title_length_review": 2,
       "excerpt_length_review": 4
     },
     "topPriority": [
-      {
-        "slug": "ai-crawler-access",
-        "canonicalUrl": "https://searchtuneos.com/blog/ai-crawler-access.html",
-        "cleanUrl": "https://searchtuneos.com/blog/ai-crawler-access",
-        "title": "robots.txt AI 크롤러 허용 설정법 — GPTBot·Google-Extended·ClaudeBot",
-        "category": "GEO",
-        "excerptLength": 149,
-        "faqCount": 5,
-        "h2Count": 4,
-        "h3Count": 2,
-        "tableCount": 0,
-        "internalLinks": 0,
-        "externalLinks": 0,
-        "checklistItems": 0,
-        "hasTldr": false,
-        "hasInteractionCandidate": true,
-        "issues": [
-          "title_length_review",
-          "authority_link_missing",
-          "internal_links_under_2",
-          "tldr_missing"
-        ],
-        "severity": "medium"
-      },
       {
         "slug": "meta-tags-best-practices",
         "canonicalUrl": "https://searchtuneos.com/blog/meta-tags-best-practices.html",
@@ -146,52 +123,6 @@
         "h2Count": 6,
         "h3Count": 5,
         "tableCount": 0,
-        "internalLinks": 0,
-        "externalLinks": 0,
-        "checklistItems": 0,
-        "hasTldr": false,
-        "hasInteractionCandidate": true,
-        "issues": [
-          "authority_link_missing",
-          "internal_links_under_2",
-          "tldr_missing"
-        ],
-        "severity": "medium"
-      },
-      {
-        "slug": "faq-schema-aeo-boost",
-        "canonicalUrl": "https://searchtuneos.com/blog/faq-schema-aeo-boost.html",
-        "cleanUrl": "https://searchtuneos.com/blog/faq-schema-aeo-boost",
-        "title": "FAQ 스키마 작성 방법 — FAQPage 구조화 데이터로 AEO 점수 올리기",
-        "category": "AEO",
-        "excerptLength": 115,
-        "faqCount": 5,
-        "h2Count": 3,
-        "h3Count": 5,
-        "tableCount": 0,
-        "internalLinks": 0,
-        "externalLinks": 0,
-        "checklistItems": 0,
-        "hasTldr": false,
-        "hasInteractionCandidate": true,
-        "issues": [
-          "authority_link_missing",
-          "internal_links_under_2",
-          "tldr_missing"
-        ],
-        "severity": "medium"
-      },
-      {
-        "slug": "geo-generative-engine-optimization",
-        "canonicalUrl": "https://searchtuneos.com/blog/geo-generative-engine-optimization.html",
-        "cleanUrl": "https://searchtuneos.com/blog/geo-generative-engine-optimization",
-        "title": "GEO 최적화 완전 가이드 — 생성형 검색 최적화·AI 검색 최적화 (2026)",
-        "category": "GEO",
-        "excerptLength": 132,
-        "faqCount": 5,
-        "h2Count": 4,
-        "h3Count": 4,
-        "tableCount": 1,
         "internalLinks": 0,
         "externalLinks": 0,
         "checklistItems": 0,
@@ -318,6 +249,27 @@
           "tldr_missing"
         ],
         "severity": "medium"
+      },
+      {
+        "slug": "ai-crawler-access",
+        "canonicalUrl": "https://searchtuneos.com/blog/ai-crawler-access.html",
+        "cleanUrl": "https://searchtuneos.com/blog/ai-crawler-access",
+        "title": "robots.txt AI 크롤러 허용 설정법 — GPTBot·Google-Extended·ClaudeBot",
+        "category": "GEO",
+        "excerptLength": 149,
+        "faqCount": 5,
+        "h2Count": 4,
+        "h3Count": 2,
+        "tableCount": 0,
+        "internalLinks": 3,
+        "externalLinks": 2,
+        "checklistItems": 0,
+        "hasTldr": true,
+        "hasInteractionCandidate": true,
+        "issues": [
+          "title_length_review"
+        ],
+        "severity": "low"
       }
     ]
   },
@@ -352,17 +304,13 @@
       "h2Count": 4,
       "h3Count": 4,
       "tableCount": 1,
-      "internalLinks": 0,
-      "externalLinks": 0,
+      "internalLinks": 4,
+      "externalLinks": 2,
       "checklistItems": 0,
-      "hasTldr": false,
+      "hasTldr": true,
       "hasInteractionCandidate": true,
-      "issues": [
-        "authority_link_missing",
-        "internal_links_under_2",
-        "tldr_missing"
-      ],
-      "severity": "medium"
+      "issues": [],
+      "severity": "ok"
     },
     {
       "slug": "structured-data-guide",
@@ -421,17 +369,13 @@
       "h2Count": 3,
       "h3Count": 5,
       "tableCount": 0,
-      "internalLinks": 0,
-      "externalLinks": 0,
+      "internalLinks": 3,
+      "externalLinks": 2,
       "checklistItems": 0,
-      "hasTldr": false,
+      "hasTldr": true,
       "hasInteractionCandidate": true,
-      "issues": [
-        "authority_link_missing",
-        "internal_links_under_2",
-        "tldr_missing"
-      ],
-      "severity": "medium"
+      "issues": [],
+      "severity": "ok"
     },
     {
       "slug": "ai-crawler-access",
@@ -444,18 +388,15 @@
       "h2Count": 4,
       "h3Count": 2,
       "tableCount": 0,
-      "internalLinks": 0,
-      "externalLinks": 0,
+      "internalLinks": 3,
+      "externalLinks": 2,
       "checklistItems": 0,
-      "hasTldr": false,
+      "hasTldr": true,
       "hasInteractionCandidate": true,
       "issues": [
-        "title_length_review",
-        "authority_link_missing",
-        "internal_links_under_2",
-        "tldr_missing"
+        "title_length_review"
       ],
-      "severity": "medium"
+      "severity": "low"
     },
     {
       "slug": "lighthouse-score-improve",
