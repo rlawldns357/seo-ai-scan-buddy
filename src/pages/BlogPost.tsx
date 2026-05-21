@@ -455,8 +455,22 @@ function enrichAnchorText(text: string, url: string): string {
 }
 
 function inline(text: string) {
-  // images ![alt](src) — alt fallback from filename (Naver rule)
-  let s = text.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
+  // 1) Protect inline code first so its content is fully HTML-escaped.
+  //    Otherwise tokens like `<title>` get parsed as real HTML tags inside
+  //    dangerouslySetInnerHTML and swallow the rest of the paragraph
+  //    (this caused blog posts to appear "cut off" mid-sentence).
+  const codeStash: string[] = [];
+  let s = text.replace(/`([^`]+)`/g, (_m, code: string) => {
+    const idx = codeStash.length;
+    codeStash.push(escapeHtml(code));
+    return `\u0000CODE${idx}\u0000`;
+  });
+
+  // 2) Escape stray < and > in remaining prose for the same reason.
+  s = s.replace(/[<>]/g, (ch) => (ch === "<" ? "&lt;" : "&gt;"));
+
+  // 3) images ![alt](src) — alt fallback from filename (Naver rule)
+  s = s.replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,
     (_m, alt: string, src: string) => {
       const safeAlt = (alt && alt.trim()) ? alt : deriveAltFromSrc(src);
       const escaped = safeAlt.replace(/"/g, "&quot;");
@@ -471,8 +485,11 @@ function inline(text: string) {
   // bold + italic
   s = s.replace(/\*\*(.+?)\*\*/g, '<strong class="text-foreground font-semibold">$1</strong>');
   s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
-  // inline code
-  s = s.replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">$1</code>');
+
+  // 4) Restore inline code with escaped content.
+  s = s.replace(/\u0000CODE(\d+)\u0000/g, (_m, idx: string) =>
+    `<code class="bg-muted px-1.5 py-0.5 rounded text-sm font-mono text-foreground">${codeStash[Number(idx)]}</code>`,
+  );
   return s;
 }
 
