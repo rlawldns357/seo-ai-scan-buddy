@@ -84,7 +84,7 @@ export default function Admin() {
         body: { password: pw, action: "usageStats" },
       });
       if (res && !res.error) setUsageStats(res);
-    } catch {}
+    } catch { /* ignore */ }
     setUsageLoading(false);
   };
 
