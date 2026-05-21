@@ -123,7 +123,7 @@ Deno.serve(async (req) => {
       const body = await req.json();
       providedPassword = body?.password ?? null;
       if (body?.force) force = true;
-    } catch {}
+    } catch { /* body optional */ }
   }
   const isAdmin = !!(adminPassword && providedPassword === adminPassword);
 
