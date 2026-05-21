@@ -10,7 +10,7 @@ const corsHeaders = {
 
 // 자체 SEO/AEO/GEO 채점 통과 임계 (평균)
 const QUALITY_PASS_THRESHOLD = 70;
-const MAX_QUALITY_RETRIES = 2; // 임계 미달 시 추가 재시도 (최대)
+const MAX_QUALITY_RETRIES = 0; // 임계 미달 시 추가 재시도 (타임아웃 방지로 0)
 const ENABLE_FRESH_REFERENCES = true; // Firecrawl로 최신 레퍼런스 1~2개 자동 수집
 
 /**
@@ -696,7 +696,7 @@ ${naverRulebook}
     let bestIssues: string[] = [];
     let bestScore = -1; // (content length) - (issues.length * 1000)
     let attempt = 0;
-    const MAX_ATTEMPTS = 4;
+    const MAX_ATTEMPTS = 2; // 타임아웃 방지 (Edge Function ~200s 한계)
     let lastFeedback = "";
     while (attempt < MAX_ATTEMPTS) {
       attempt++;
