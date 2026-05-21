@@ -639,7 +639,7 @@ export default function BlogPost() {
 
       if (data) {
         let faqs: FAQ[] | undefined;
-        let content = data.content;
+        const content = data.content;
         const faqMatch = content.match(/##\s+(?:자주 묻는 질문|FAQ)[\s\S]*$/);
         if (faqMatch) {
           const faqSection = faqMatch[0];
