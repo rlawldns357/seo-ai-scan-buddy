@@ -279,7 +279,7 @@ function renderMarkdown(md: string) {
       l.replace(/^\||\|$/g, "").split("|").map((c) => c.trim())
     );
     // detect alignment row
-    let headerRow = rows[0];
+    const headerRow = rows[0];
     let bodyRows = rows.slice(1);
     if (bodyRows.length > 0 && bodyRows[0].every((c) => /^:?-{2,}:?$/.test(c))) {
       bodyRows = bodyRows.slice(1);
@@ -639,7 +639,7 @@ export default function BlogPost() {
 
       if (data) {
         let faqs: FAQ[] | undefined;
-        let content = data.content;
+        const content = data.content;
         const faqMatch = content.match(/##\s+(?:자주 묻는 질문|FAQ)[\s\S]*$/);
         if (faqMatch) {
           const faqSection = faqMatch[0];

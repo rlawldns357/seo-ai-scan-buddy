@@ -24,6 +24,7 @@ const AiGrowthLoop = lazy(() => import("./pages/admin/AiGrowthLoop.tsx"));
 const Credits = lazy(() => import("./pages/admin/Credits.tsx"));
 const OpsReadonly = lazy(() => import("./pages/admin/OpsReadonly.tsx"));
 const SeoOps = lazy(() => import("./pages/admin/SeoOps.tsx"));
+const QaStatus = lazy(() => import("./pages/admin/QaStatus.tsx"));
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
 const Privacy = lazy(() => import("./pages/Privacy.tsx"));
@@ -68,6 +69,7 @@ const App = () => (
               <Route path="/admin/seo-monitor" element={<SeoMonitor />} />
               <Route path="/admin/seo-ops" element={<SeoOps />} />
               <Route path="/admin/indexing-queue" element={<IndexingQueue />} />
+              <Route path="/admin/qa-status" element={<QaStatus />} />
               <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
               <Route path="/admin/credits" element={<Credits />} />
             </Route>

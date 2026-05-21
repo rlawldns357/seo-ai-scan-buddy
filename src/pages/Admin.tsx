@@ -84,7 +84,7 @@ export default function Admin() {
         body: { password: pw, action: "usageStats" },
       });
       if (res && !res.error) setUsageStats(res);
-    } catch {}
+    } catch { /* ignore */ }
     setUsageLoading(false);
   };
 
@@ -98,7 +98,7 @@ export default function Admin() {
       if (!err && !res?.error) {
         setData(res);
       }
-    } catch {}
+    } catch { /* ignore */ }
     setLoading(false);
   };
 
@@ -136,7 +136,7 @@ export default function Admin() {
       if (res?.success) {
         await fetchEngineStatus();
       }
-    } catch {}
+    } catch { /* ignore */ }
     setEngineUpdating(false);
   };
 
