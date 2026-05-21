@@ -696,7 +696,7 @@ ${naverRulebook}
     let bestIssues: string[] = [];
     let bestScore = -1; // (content length) - (issues.length * 1000)
     let attempt = 0;
-    const MAX_ATTEMPTS = 2; // 타임아웃 방지 (Edge Function ~200s 한계)
+    const MAX_ATTEMPTS = 1; // 150s IDLE_TIMEOUT 방지: 단발 호출 (품질 미달은 failure_attempts로 기록)
     let lastFeedback = "";
     while (attempt < MAX_ATTEMPTS) {
       attempt++;
