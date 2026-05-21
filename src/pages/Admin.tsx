@@ -98,7 +98,7 @@ export default function Admin() {
       if (!err && !res?.error) {
         setData(res);
       }
-    } catch {}
+    } catch { /* ignore */ }
     setLoading(false);
   };
 
