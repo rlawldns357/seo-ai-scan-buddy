@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, FileText, Search, Inbox, Sparkles, Wallet, ShieldCheck } from "lucide-react";
+import { Lock, BarChart3, FileText, Search, Inbox, Sparkles, Wallet, ShieldCheck, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
