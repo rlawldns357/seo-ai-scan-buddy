@@ -14,7 +14,7 @@ function addWatermark(doc: jsPDF) {
   const pageHeight = doc.internal.pageSize.getHeight();
   
   doc.saveGraphicsState();
-  // @ts-ignore - jsPDF supports this
+  // @ts-expect-error - jsPDF supports this
   doc.setGState(new doc.GState({ opacity: 0.09 }));
   doc.setTextColor(120, 120, 140);
   
