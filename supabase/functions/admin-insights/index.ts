@@ -776,6 +776,72 @@ Deno.serve(async (req) => {
     }
 
     // Rate-limit / credit usage stats — feeds /admin "사용량" card.
+    // === AUTOPUBLISH SETTINGS ===
+    if (action === "listAutopublishSettings") {
+      const { data: sites } = await supabase
+        .from("user_sites")
+        .select("id, site_slug, title, site_url")
+        .order("created_at", { ascending: true });
+      const { data: settings } = await supabase
+        .from("autopublish_settings")
+        .select("*");
+      const byId = new Map((settings || []).map((s: any) => [s.site_id, s]));
+      const queueCounts: Record<string, number> = {};
+      for (const s of sites || []) {
+        const { count } = await supabase
+          .from("site_posts")
+          .select("id", { count: "exact", head: true })
+          .eq("site_id", s.id)
+          .in("status", ["idea", "scheduled", "draft"]);
+        queueCounts[s.id] = count ?? 0;
+      }
+      return new Response(
+        JSON.stringify({ sites: sites || [], settings: Object.fromEntries(byId), queueCounts }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "upsertAutopublishSettings" && body.siteId) {
+      const payload: any = {
+        site_id: body.siteId,
+        enabled: !!body.enabled,
+        weekdays: Array.isArray(body.weekdays) && body.weekdays.length ? body.weekdays : [1,2,3,4,5],
+        hours_kst: Array.isArray(body.hours_kst) && body.hours_kst.length ? body.hours_kst : [9],
+        daily_limit: Math.max(1, Math.min(10, Number(body.daily_limit) || 1)),
+        auto_topup: body.auto_topup !== false,
+        min_queue: Math.max(1, Math.min(50, Number(body.min_queue) || 5)),
+        updated_at: new Date().toISOString(),
+      };
+      const { data: existing } = await supabase
+        .from("autopublish_settings")
+        .select("id")
+        .eq("site_id", body.siteId)
+        .maybeSingle();
+      const result = existing
+        ? await supabase.from("autopublish_settings").update(payload).eq("site_id", body.siteId).select().maybeSingle()
+        : await supabase.from("autopublish_settings").insert(payload).select().maybeSingle();
+      return new Response(
+        JSON.stringify({ success: !result.error, error: result.error?.message, settings: result.data }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "triggerProcessScheduled") {
+      const flush = body.flushBacklog ? "?flush_backlog=1" : "";
+      const r = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/process-scheduled-posts${flush}`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await r.json().catch(() => ({}));
+      return new Response(
+        JSON.stringify({ success: r.ok, result: data }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "usageStats") {
       const today = new Date().toISOString().split("T")[0];
       const since7 = new Date();
