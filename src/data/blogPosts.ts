@@ -119,9 +119,13 @@ SearchTune OS의 분석 도구를 사용하면 웹사이트의 AEO 준비도를 
       { question: "robots.txt에서 AI 크롤러를 어떻게 허용하나요?", answer: "GPTBot, Google-Extended, ClaudeBot 등 AI 크롤러를 robots.txt에서 명시적으로 차단하지 않으면 자동으로 허용됩니다. 기존 차단 규칙이 있다면 해당 봇의 Disallow 규칙을 제거하세요." },
       { question: "GEO 점수가 낮으면 어떤 문제가 있나요?", answer: "생성형 AI 검색 결과에서 경쟁사 대비 노출 기회를 잃게 됩니다. AI 검색 사용이 급증하는 추세에서 GEO 대비 없이는 유기적 트래픽이 감소할 수 있습니다." },
     ],
-    content: `## GEO 최적화란? — 생성형 검색 최적화의 정의
+    content: `> **TL;DR** — GEO는 "AI가 답변할 때 내 사이트를 출처로 고르도록 만드는 작업"입니다. ① AI 크롤러 허용 ② 깊이 있는 컨텍스트 ③ 구조화 데이터(Schema.org) ④ 브랜드 인용 4축만 잡으면 SGE·Cue·Copilot 노출 기반이 만들어집니다.
 
-**GEO 최적화**(Generative Engine Optimization)는 Google SGE·Naver Cue:·Bing Copilot 같은 **생성형 AI 검색 엔진**에서 내 브랜드와 콘텐츠가 출처로 인용되도록 만드는 **AI 검색 최적화** 전략입니다. 단순 키워드 매칭이 아니라, AI가 답변을 합성할 때 신뢰 가능한 출처로 선택하는 것이 목표입니다.
+관련: [AEO란 무엇인가](/blog/what-is-aeo.html) · [SEO·AEO·GEO 차이](/blog/seo-vs-aeo-vs-geo.html) · [AI 크롤러 허용 설정법](/blog/ai-crawler-access.html) · [구조화 데이터 가이드](/blog/structured-data-guide.html)
+
+## GEO 최적화란? — 생성형 검색 최적화의 정의
+
+**GEO 최적화**(Generative Engine Optimization)는 Google SGE·Naver Cue:·Bing Copilot 같은 **생성형 AI 검색 엔진**에서 내 브랜드와 콘텐츠가 출처로 인용되도록 만드는 **AI 검색 최적화** 전략입니다. 단순 키워드 매칭이 아니라, AI가 답변을 합성할 때 신뢰 가능한 출처로 선택하는 것이 목표입니다. 기반 개념은 [Google Search Central — AI features and your website](https://developers.google.com/search/docs/appearance/ai-features)와 [Schema.org](https://schema.org/) 표준에 정리돼 있습니다.
 
 ## GEO vs SEO: 무엇이 다른가?
 
