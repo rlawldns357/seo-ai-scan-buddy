@@ -14,6 +14,13 @@ const DIST = path.resolve("dist");
 const BLOG_DIR = path.join(DIST, "blog");
 const SITE = "https://searchtuneos.com";
 
+const REQUIRED_BODY_MARKERS = {
+  "what-is-aeo": ["TL;DR", "Schema.org FAQPage", "Google Search Central"],
+  "geo-generative-engine-optimization": ["TL;DR", "Google Search Central", "/blog/ai-crawler-access.html"],
+  "faq-schema-aeo-boost": ["TL;DR", "Schema.org FAQPage", "/blog/seo-vs-aeo-vs-geo.html"],
+  "ai-crawler-access": ["TL;DR", "OpenAI GPTBot", "/blog/geo-generative-engine-optimization.html"],
+};
+
 function readMeta(filePath) {
   const html = fs.readFileSync(filePath, "utf-8");
   const canonical = html.match(/<link\s+rel=["']canonical["'][^>]*href=["']([^"']+)["']/i)?.[1] ?? null;
@@ -56,10 +63,14 @@ function main() {
     if (!fs.existsSync(dotHtml) || !fs.statSync(dotHtml).isFile()) {
       errors.push(`missing canonical file at /blog/${slug}.html`);
     } else {
+      const html = fs.readFileSync(dotHtml, "utf-8");
       const meta = readMeta(dotHtml);
       if (meta.canonical !== expected) errors.push(`canonical "${meta.canonical}" ≠ "${expected}"`);
       if (meta.ogUrl !== expected) errors.push(`og:url "${meta.ogUrl}" ≠ "${expected}"`);
       if (!meta.ogImage) errors.push(`missing og:image`);
+      for (const marker of REQUIRED_BODY_MARKERS[slug] || []) {
+        if (!html.includes(marker)) errors.push(`missing prerender body marker "${marker}"`);
+      }
     }
 
     if (!fs.existsSync(stubHtml) || !fs.statSync(stubHtml).isFile()) {
