@@ -136,7 +136,7 @@ export default function Admin() {
       if (res?.success) {
         await fetchEngineStatus();
       }
-    } catch {}
+    } catch { /* ignore */ }
     setEngineUpdating(false);
   };
 
