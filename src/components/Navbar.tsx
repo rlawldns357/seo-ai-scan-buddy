@@ -28,27 +28,16 @@ export default function Navbar() {
   useEffect(() => {
     const fetchVersion = () => {
       supabase
-        .from("engine_config")
-        .select("version")
-        .eq("config_key", "analysis_prompt")
-        .order("version", { ascending: false })
-        .limit(1)
-        .maybeSingle()
+        .rpc("get_engine_version", { _config_key: "analysis_prompt" })
         .then(({ data }) => {
-          if (data) setEngineVersion(data.version);
+          if (typeof data === "number") setEngineVersion(data);
         });
     };
     fetchVersion();
-
-    const channel = supabase
-      .channel("engine_config_changes")
-      .on("postgres_changes", { event: "*", schema: "public", table: "engine_config" }, () => {
-        fetchVersion();
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
+    const interval = setInterval(fetchVersion, 60_000);
+    return () => clearInterval(interval);
   }, []);
+
 
   const menuItems = [
     { icon: Bell, label: "출시 알림 신청", desc: "정식 출시 소식을 먼저 받아보세요", action: () => { setDropdownOpen(false); setLeadOpen(true); } },
