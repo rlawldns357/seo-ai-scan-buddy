@@ -85,26 +85,44 @@ export default function CostDashboard() {
     }
   };
 
+  // 보수적 최댓값: 정밀 추적(KRW) + 모든 외부 스냅샷(무료 used + 충전 used) 합산
+  const totals = useMemo(() => {
+    const krwPerUsd = data && data.month_usd > 0 ? data.month_krw / data.month_usd : 1380;
+    const snapshotFreeUsd = balances.reduce((s, b) => s + (Number(b.used_usd) || 0), 0);
+    const snapshotTopupUsd = balances.reduce((s, b) => s + (Number(b.topup_used_usd) || 0), 0);
+    const snapshotUsedUsd = snapshotFreeUsd + snapshotTopupUsd;
+    const snapshotUsedKrw = snapshotUsedUsd * krwPerUsd;
+    const preciseKrw = data?.month_krw || 0;
+    const preciseUsd = data?.month_usd || 0;
+    return {
+      krwPerUsd,
+      snapshotFreeUsd,
+      snapshotTopupUsd,
+      snapshotUsedUsd,
+      snapshotUsedKrw,
+      preciseKrw,
+      preciseUsd,
+      totalKrw: preciseKrw + snapshotUsedKrw,
+      totalUsd: preciseUsd + snapshotUsedUsd,
+    };
+  }, [data, balances]);
+
   const kakaoText = useMemo(() => {
     if (!data) return "";
     const now = new Date();
     const monthStr = `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
     const lines: string[] = [];
-
-    // 두괄식 총합: 정밀 추적(KRW) + 외부 스냅샷(USD) 모두 합산
-    const krwPerUsd = data.month_usd > 0 ? data.month_krw / data.month_usd : 1380;
-    const snapshotUsedUsd = balances.reduce((s, b) => s + (b.used_usd || 0), 0);
-    const snapshotUsedKrw = snapshotUsedUsd * krwPerUsd;
-    const totalKrw = data.month_krw + snapshotUsedKrw;
-    const totalUsd = data.month_usd + snapshotUsedUsd;
+    const t = totals;
 
     lines.push(`📊 SearchTune OS API 비용 리포트`);
     lines.push(`(${now.toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" })})`);
     lines.push("");
-    lines.push(`💸 ${monthStr} 총 사용액: ${won(totalKrw)}  (≈ $${totalUsd.toFixed(2)})`);
-    lines.push(`├ 정밀 추적(API): ${won(data.month_krw)}`);
-    if (snapshotUsedUsd > 0) {
-      lines.push(`└ 외부 스냅샷: $${snapshotUsedUsd.toFixed(2)} (≈ ${won(snapshotUsedKrw)})`);
+    lines.push(`💸 ${monthStr} 총 사용액 (보수적 최댓값): ${won(t.totalKrw)}  (≈ $${t.totalUsd.toFixed(2)})`);
+    lines.push(`├ 정밀 추적(API): ${won(t.preciseKrw)}  (≈ $${t.preciseUsd.toFixed(2)})`);
+    if (t.snapshotUsedUsd > 0) {
+      lines.push(`└ 외부 스냅샷: $${t.snapshotUsedUsd.toFixed(2)} (≈ ${won(t.snapshotUsedKrw)})`);
+      lines.push(`   ├ 무료 한도 사용: $${t.snapshotFreeUsd.toFixed(2)}`);
+      lines.push(`   └ 충전 잔액 사용: $${t.snapshotTopupUsd.toFixed(2)}`);
     } else {
       lines.push(`└ 외부 스냅샷: 없음`);
     }
@@ -118,8 +136,9 @@ export default function CostDashboard() {
       lines.push(`📦 외부 잔액 스냅샷 (수동 입력)`);
       for (const b of balances) {
         const lim = b.limit_usd ? `${usd(b.used_usd)}/${usd(b.limit_usd)}` : usd(b.used_usd);
-        const top = b.topup_balance_usd > 0 ? ` · topup ${usd(b.topup_balance_usd)}` : "";
-        lines.push(`• ${b.label || b.provider}: ${lim}${top}`);
+        const topUsed = b.topup_used_usd > 0 ? ` · 충전사용 ${usd(b.topup_used_usd)}` : "";
+        const topBal = b.topup_balance_usd > 0 ? ` · 충전잔액 ${usd(b.topup_balance_usd)}` : "";
+        lines.push(`• ${b.label || b.provider}: 무료 ${lim}${topUsed}${topBal}`);
       }
       lines.push(`(스냅샷 시각: ${new Date(balances[0].snapshot_at).toLocaleString("ko-KR")})`);
       lines.push("");
@@ -129,7 +148,8 @@ export default function CostDashboard() {
       lines.push(`• ${PROVIDER_LABEL[p.provider] || p.provider}: ${won(p.cost_krw)} (${p.requests.toLocaleString()}회)`);
     }
     return lines.join("\n");
-  }, [data, balances]);
+  }, [data, balances, totals]);
+
 
   const copyKakao = async () => {
     if (!kakaoText) return;
