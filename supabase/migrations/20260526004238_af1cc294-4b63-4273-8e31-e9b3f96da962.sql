@@ -1,0 +1,2 @@
+UPDATE public.blog_posts SET date = '2026-05-23' WHERE slug = 'natural-backlink-building-blueprint-ai-era-20260526';
+UPDATE public.blog_posts SET date = '2026-05-24' WHERE slug = 'cafe24-seo-checklist-stagnant-traffic-20260526';
