@@ -609,6 +609,7 @@ ${naverRulebook}
           }),
         }
       );
+      clearTimeout(timer);
 
       if (!r.ok) {
         const errText = await r.text();
@@ -621,7 +622,11 @@ ${naverRulebook}
       const u = extractUsage(data);
       logApiCost({ function_name: "generate-blog-post", model: "google/gemini-2.5-pro", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "draft" } });
       const tc = data.choices?.[0]?.message?.tool_calls?.[0];
-      if (!tc) throw new Error("No tool call in AI response");
+      if (!tc) {
+        const finishReason = data.choices?.[0]?.finish_reason;
+        console.error("No tool call in AI response. finish_reason:", finishReason, "raw:", JSON.stringify(data).slice(0, 500));
+        throw new Error(`No tool call in AI response (finish_reason=${finishReason})`);
+      }
       return JSON.parse(tc.function.arguments);
     }
 
