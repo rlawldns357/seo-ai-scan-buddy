@@ -90,8 +90,24 @@ export default function CostDashboard() {
     const now = new Date();
     const monthStr = `${now.getFullYear()}년 ${now.getMonth() + 1}월`;
     const lines: string[] = [];
+
+    // 두괄식 총합: 정밀 추적(KRW) + 외부 스냅샷(USD) 모두 합산
+    const krwPerUsd = data.month_usd > 0 ? data.month_krw / data.month_usd : 1380;
+    const snapshotUsedUsd = balances.reduce((s, b) => s + (b.used_usd || 0), 0);
+    const snapshotUsedKrw = snapshotUsedUsd * krwPerUsd;
+    const totalKrw = data.month_krw + snapshotUsedKrw;
+    const totalUsd = data.month_usd + snapshotUsedUsd;
+
     lines.push(`📊 SearchTune OS API 비용 리포트`);
     lines.push(`(${now.toLocaleString("ko-KR", { dateStyle: "short", timeStyle: "short" })})`);
+    lines.push("");
+    lines.push(`💸 ${monthStr} 총 사용액: ${won(totalKrw)}  (≈ $${totalUsd.toFixed(2)})`);
+    lines.push(`├ 정밀 추적(API): ${won(data.month_krw)}`);
+    if (snapshotUsedUsd > 0) {
+      lines.push(`└ 외부 스냅샷: $${snapshotUsedUsd.toFixed(2)} (≈ ${won(snapshotUsedKrw)})`);
+    } else {
+      lines.push(`└ 외부 스냅샷: 없음`);
+    }
     lines.push("");
     lines.push(`✅ 정밀 추적 (api_cost_log)`);
     lines.push(`💰 ${monthStr} 누적: ${won(data.month_krw)}  (≈ $${data.month_usd.toFixed(2)})`);
