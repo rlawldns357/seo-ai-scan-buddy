@@ -141,8 +141,8 @@ function getKSTDateString(): string {
  * and Naver indexing failures. AI is now responsible for generating slug_en;
  * this fn validates / sanitizes / falls back.
  */
-function buildSafeSlug(slugEn: string | undefined, fallbackTitle: string): string {
-  const date = getKSTDateString().replace(/-/g, "");
+function buildSafeSlug(slugEn: string | undefined, fallbackTitle: string, dateOverride?: string): string {
+  const date = (dateOverride || getKSTDateString()).replace(/-/g, "");
   // 1) Sanitize AI-provided slug_en (strip non-ASCII just in case)
   const cleaned = (slugEn || "")
     .toLowerCase()
@@ -217,7 +217,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const today = getKSTDateString();
+    let today = getKSTDateString();
     const currentYear = new Date().getFullYear();
     const MAX_POSTS_PER_DAY = 2;
 
@@ -225,11 +225,18 @@ Deno.serve(async (req) => {
     let forceBypass = false;
     let customTheme: string | undefined;
     let customCategory: string | undefined;
+    let targetDate: string | undefined; // YYYY-MM-DD — backfill으로 누락된 날짜 채울 때 사용
     try {
       const body = await req.clone().json();
       forceBypass = body?.force === true;
       if (typeof body?.theme === "string" && body.theme.trim()) customTheme = body.theme.trim();
       if (typeof body?.category === "string" && body.category.trim()) customCategory = body.category.trim();
+      const td = body?.target_date ?? body?.targetDate;
+      if (typeof td === "string" && /^\d{4}-\d{2}-\d{2}$/.test(td)) {
+        targetDate = td;
+        today = td; // date 컬럼 + 중복 체크 + slug 모두 이 날짜로 박힘
+        forceBypass = true; // 백필은 일일 캡 무시
+      }
     } catch (_) { /* no body */ }
 
     // Check daily limit
@@ -704,7 +711,7 @@ ${naverRulebook}
     let bestIssues: string[] = [];
     let bestScore = -1; // (content length) - (issues.length * 1000)
     let attempt = 0;
-    const MAX_ATTEMPTS = 2; // 1차 실패/빈본문 시 1회 재시도 (각 호출 90s AbortController로 IDLE_TIMEOUT 방지)
+    const MAX_ATTEMPTS = 3; // 1차 실패/빈본문 시 최대 2회 재시도 (각 호출 90s AbortController로 IDLE_TIMEOUT 방지)
     let lastFeedback = "";
     while (attempt < MAX_ATTEMPTS) {
       attempt++;
@@ -829,7 +836,7 @@ ${naverRulebook}
     }
 
     const titleForSlug = args?.title || `failed-${theme}`;
-    const slug = buildSafeSlug(args?.slug_en, titleForSlug) + (isFailed ? `-failed-${Date.now().toString(36)}` : "");
+    const slug = buildSafeSlug(args?.slug_en, titleForSlug, targetDate) + (isFailed ? `-failed-${Date.now().toString(36)}` : "");
 
     const scoreSummary = qualityScore
       ? `[자체점수 SEO ${qualityScore.seo} / AEO ${qualityScore.aeo} / GEO ${qualityScore.geo} / 평균 ${qualityScore.avg}]`
