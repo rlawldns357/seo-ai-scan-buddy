@@ -164,7 +164,49 @@ export default function CostDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* === 외부 잔액 (수동 스냅샷, 오차 0 보장) === */}
+      {/* === 두괄식 총 사용액 (보수적 최댓값) === */}
+      {data && (
+        <Card className="border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5">
+          <CardContent className="pt-6 pb-5">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+              <div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wide font-semibold">
+                  이번 달 총 사용액 (보수적 최댓값)
+                </p>
+                <p className="text-3xl md:text-4xl font-bold text-primary tabular-nums mt-1">
+                  {won(totals.totalKrw)}
+                </p>
+                <p className="text-sm text-muted-foreground tabular-nums">
+                  ≈ ${totals.totalUsd.toFixed(2)}
+                </p>
+              </div>
+              <div className="text-xs text-muted-foreground space-y-1 min-w-[200px]">
+                <div className="flex justify-between gap-3">
+                  <span>정밀 추적(API)</span>
+                  <span className="tabular-nums font-semibold text-foreground">{won(totals.preciseKrw)}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span>외부 무료 한도</span>
+                  <span className="tabular-nums font-semibold text-foreground">${totals.snapshotFreeUsd.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between gap-3">
+                  <span>외부 충전 사용</span>
+                  <span className="tabular-nums font-semibold text-foreground">${totals.snapshotTopupUsd.toFixed(2)}</span>
+                </div>
+              </div>
+              <Button size="sm" variant="outline" onClick={copyKakao}>
+                {copied ? <Check className="w-3 h-3 mr-1" /> : <Copy className="w-3 h-3 mr-1" />}
+                {copied ? "복사됨" : "카톡 복사"}
+              </Button>
+            </div>
+            <p className="text-[11px] text-muted-foreground mt-3">
+              ⚠️ 보수적 최댓값 = 정밀 추적 + 외부 스냅샷의 무료/충전 사용액을 모두 합산. 실제 청구액보다 클 수 있어요.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-base flex items-center gap-2">
