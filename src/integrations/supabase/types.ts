@@ -1395,6 +1395,7 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      get_engine_version: { Args: { _config_key: string }; Returns: number }
       get_user_tier: {
         Args: { _user_id: string }
         Returns: Database["public"]["Enums"]["app_role"]
