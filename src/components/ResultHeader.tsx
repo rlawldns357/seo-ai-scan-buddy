@@ -237,16 +237,12 @@ export default function ResultHeader({ psi, psiError, url, result }: ResultHeade
 
   useEffect(() => {
     supabase
-      .from("engine_config")
-      .select("version")
-      .eq("config_key", "analysis_prompt")
-      .order("version", { ascending: false })
-      .limit(1)
-      .single()
+      .rpc("get_engine_version", { _config_key: "analysis_prompt" })
       .then(({ data }) => {
-        if (data) setEngineVersion(data.version);
+        if (typeof data === "number") setEngineVersion(data);
       });
   }, []);
+
 
   const domain = (() => {
     try { return new URL(url).hostname; } catch { return url; }
