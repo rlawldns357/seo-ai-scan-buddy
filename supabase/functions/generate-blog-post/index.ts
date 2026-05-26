@@ -141,8 +141,8 @@ function getKSTDateString(): string {
  * and Naver indexing failures. AI is now responsible for generating slug_en;
  * this fn validates / sanitizes / falls back.
  */
-function buildSafeSlug(slugEn: string | undefined, fallbackTitle: string): string {
-  const date = getKSTDateString().replace(/-/g, "");
+function buildSafeSlug(slugEn: string | undefined, fallbackTitle: string, dateOverride?: string): string {
+  const date = (dateOverride || getKSTDateString()).replace(/-/g, "");
   // 1) Sanitize AI-provided slug_en (strip non-ASCII just in case)
   const cleaned = (slugEn || "")
     .toLowerCase()
