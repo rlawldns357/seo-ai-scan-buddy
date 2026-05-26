@@ -537,10 +537,13 @@ ${naverRulebook}
       const finalSystem = extraInstruction
         ? `${systemPrompt}\n\n[이전 시도 피드백 — 반드시 보완]\n${extraInstruction}`
         : systemPrompt;
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 90_000); // 90s per call (avoid 150s IDLE_TIMEOUT)
       const r = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
           method: "POST",
+          signal: ac.signal,
           headers: {
             Authorization: `Bearer ${LOVABLE_API_KEY}`,
             "Content-Type": "application/json",
@@ -606,6 +609,7 @@ ${naverRulebook}
           }),
         }
       );
+      clearTimeout(timer);
 
       if (!r.ok) {
         const errText = await r.text();
@@ -618,7 +622,11 @@ ${naverRulebook}
       const u = extractUsage(data);
       logApiCost({ function_name: "generate-blog-post", model: "google/gemini-2.5-pro", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { stage: "draft" } });
       const tc = data.choices?.[0]?.message?.tool_calls?.[0];
-      if (!tc) throw new Error("No tool call in AI response");
+      if (!tc) {
+        const finishReason = data.choices?.[0]?.finish_reason;
+        console.error("No tool call in AI response. finish_reason:", finishReason, "raw:", JSON.stringify(data).slice(0, 500));
+        throw new Error(`No tool call in AI response (finish_reason=${finishReason})`);
+      }
       return JSON.parse(tc.function.arguments);
     }
 
@@ -696,7 +704,7 @@ ${naverRulebook}
     let bestIssues: string[] = [];
     let bestScore = -1; // (content length) - (issues.length * 1000)
     let attempt = 0;
-    const MAX_ATTEMPTS = 1; // 150s IDLE_TIMEOUT 방지: 단발 호출 (품질 미달은 failure_attempts로 기록)
+    const MAX_ATTEMPTS = 2; // 1차 실패/빈본문 시 1회 재시도 (각 호출 90s AbortController로 IDLE_TIMEOUT 방지)
     let lastFeedback = "";
     while (attempt < MAX_ATTEMPTS) {
       attempt++;
@@ -712,8 +720,22 @@ ${naverRulebook}
           return new Response(JSON.stringify({ error: "Credits exhausted" }),
             { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-        throw e;
+        // Recoverable: 마지막 시도면 throw, 아니면 재시도 (timeout/abort/no-tool-call 등)
+        console.warn(`[Attempt ${attempt}] callAI failed:`, msg);
+        if (attempt >= MAX_ATTEMPTS) throw e;
+        lastFeedback = "이전 호출이 실패했습니다(빈 응답 또는 타임아웃). 더 짧고 핵심에 집중한 본문(1,800-2,500자)으로 한 번에 완성해 주세요.";
+        continue;
       }
+
+      // 빈 본문 또는 너무 짧으면 재시도 트리거
+      if (!args?.content || (args.content?.length || 0) < 800) {
+        console.warn(`[Attempt ${attempt}] empty/short content (${args?.content?.length || 0}자) — retrying`);
+        if (attempt < MAX_ATTEMPTS) {
+          lastFeedback = "이전 본문이 너무 짧거나 비어 있었습니다. 반드시 1,800-2,500자 분량의 완전한 마크다운을 한 번에 생성해 주세요.";
+          continue;
+        }
+      }
+
 
       // YEAR fix
       const wrongYearPattern = /\b(2024|2025)\b년?/g;
