@@ -704,7 +704,7 @@ ${naverRulebook}
     let bestIssues: string[] = [];
     let bestScore = -1; // (content length) - (issues.length * 1000)
     let attempt = 0;
-    const MAX_ATTEMPTS = 1; // 150s IDLE_TIMEOUT 방지: 단발 호출 (품질 미달은 failure_attempts로 기록)
+    const MAX_ATTEMPTS = 2; // 1차 실패/빈본문 시 1회 재시도 (각 호출 90s AbortController로 IDLE_TIMEOUT 방지)
     let lastFeedback = "";
     while (attempt < MAX_ATTEMPTS) {
       attempt++;
