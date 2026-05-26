@@ -720,8 +720,22 @@ ${naverRulebook}
           return new Response(JSON.stringify({ error: "Credits exhausted" }),
             { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
         }
-        throw e;
+        // Recoverable: 마지막 시도면 throw, 아니면 재시도 (timeout/abort/no-tool-call 등)
+        console.warn(`[Attempt ${attempt}] callAI failed:`, msg);
+        if (attempt >= MAX_ATTEMPTS) throw e;
+        lastFeedback = "이전 호출이 실패했습니다(빈 응답 또는 타임아웃). 더 짧고 핵심에 집중한 본문(1,800-2,500자)으로 한 번에 완성해 주세요.";
+        continue;
       }
+
+      // 빈 본문 또는 너무 짧으면 재시도 트리거
+      if (!args?.content || (args.content?.length || 0) < 800) {
+        console.warn(`[Attempt ${attempt}] empty/short content (${args?.content?.length || 0}자) — retrying`);
+        if (attempt < MAX_ATTEMPTS) {
+          lastFeedback = "이전 본문이 너무 짧거나 비어 있었습니다. 반드시 1,800-2,500자 분량의 완전한 마크다운을 한 번에 생성해 주세요.";
+          continue;
+        }
+      }
+
 
       // YEAR fix
       const wrongYearPattern = /\b(2024|2025)\b년?/g;
