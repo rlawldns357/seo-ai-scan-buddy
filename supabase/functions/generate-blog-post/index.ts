@@ -217,7 +217,7 @@ Deno.serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const today = getKSTDateString();
+    let today = getKSTDateString();
     const currentYear = new Date().getFullYear();
     const MAX_POSTS_PER_DAY = 2;
 
@@ -225,11 +225,18 @@ Deno.serve(async (req) => {
     let forceBypass = false;
     let customTheme: string | undefined;
     let customCategory: string | undefined;
+    let targetDate: string | undefined; // YYYY-MM-DD — backfill으로 누락된 날짜 채울 때 사용
     try {
       const body = await req.clone().json();
       forceBypass = body?.force === true;
       if (typeof body?.theme === "string" && body.theme.trim()) customTheme = body.theme.trim();
       if (typeof body?.category === "string" && body.category.trim()) customCategory = body.category.trim();
+      const td = body?.target_date ?? body?.targetDate;
+      if (typeof td === "string" && /^\d{4}-\d{2}-\d{2}$/.test(td)) {
+        targetDate = td;
+        today = td; // date 컬럼 + 중복 체크 + slug 모두 이 날짜로 박힘
+        forceBypass = true; // 백필은 일일 캡 무시
+      }
     } catch (_) { /* no body */ }
 
     // Check daily limit
