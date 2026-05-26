@@ -537,10 +537,13 @@ ${naverRulebook}
       const finalSystem = extraInstruction
         ? `${systemPrompt}\n\n[이전 시도 피드백 — 반드시 보완]\n${extraInstruction}`
         : systemPrompt;
+      const ac = new AbortController();
+      const timer = setTimeout(() => ac.abort(), 90_000); // 90s per call (avoid 150s IDLE_TIMEOUT)
       const r = await fetch(
         "https://ai.gateway.lovable.dev/v1/chat/completions",
         {
           method: "POST",
+          signal: ac.signal,
           headers: {
             Authorization: `Bearer ${LOVABLE_API_KEY}`,
             "Content-Type": "application/json",
