@@ -2,10 +2,8 @@
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>https://searchtuneos.com/sitemap-pages.xml</loc>
-    <lastmod>2026-05-21</lastmod>
   </sitemap>
   <sitemap>
-    <loc>https://searchtuneos.com/sitemap-posts.xml</loc>
-    <lastmod>2026-05-21</lastmod>
+    <loc>https://dmnrbmarbvirtymhszww.supabase.co/functions/v1/sitemap?type=posts</loc>
   </sitemap>
 </sitemapindex>
