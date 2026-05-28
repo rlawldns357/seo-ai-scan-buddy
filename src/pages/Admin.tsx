@@ -730,8 +730,8 @@ export default function Admin() {
                     </span>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                <CardContent>
+                  <div className="space-y-2 max-h-[640px] overflow-y-auto pr-1">
                     {data.recentLeads.length === 0 ? (
                       <p className="text-sm text-muted-foreground">수집된 리드 없음</p>
                     ) : (
@@ -745,35 +745,6 @@ export default function Admin() {
                       ))
                     )}
                   </div>
-
-                  {data.recentLeads.length > 0 && (() => {
-                    const domainCounts = data.recentLeads.reduce<Record<string, number>>((acc, l) => {
-                      const d = (l.email.split("@")[1] || "unknown").toLowerCase();
-                      acc[d] = (acc[d] || 0) + 1;
-                      return acc;
-                    }, {});
-                    const sorted = Object.entries(domainCounts).sort(([, a], [, b]) => b - a).slice(0, 5);
-                    const max = sorted[0]?.[1] ?? 1;
-                    return (
-                      <div className="pt-3 border-t border-border">
-                        <div className="text-xs text-muted-foreground mb-2">이메일 도메인 분포 (최근 리드)</div>
-                        <div className="space-y-1.5">
-                          {sorted.map(([domain, count]) => (
-                            <div key={domain} className="flex items-center gap-2 text-xs">
-                              <span className="font-mono text-foreground w-32 truncate">@{domain}</span>
-                              <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                                <div
-                                  className="h-full bg-primary rounded-full"
-                                  style={{ width: `${(count / max) * 100}%` }}
-                                />
-                              </div>
-                              <span className="text-muted-foreground w-6 text-right">{count}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })()}
                 </CardContent>
               </Card>
             </div>
