@@ -274,12 +274,31 @@ export default function SeoOps() {
               </div>
 
               <div>
-                <div className="text-xs font-semibold mb-2 flex items-center gap-2">
+                <div className="text-xs font-semibold mb-2 flex items-center gap-2 flex-wrap">
                   블로그 페이지별 노출 ({gsc.blogPages.length}건)
                   {gsc.blogPages.filter(p => p.mismatch).length > 0 && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] bg-destructive/15 text-destructive">
-                      ⚠ canonical mismatch {gsc.blogPages.filter(p => p.mismatch).length}건
-                    </span>
+                    <>
+                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-destructive/15 text-destructive">
+                        ⚠ canonical mismatch {gsc.blogPages.filter(p => p.mismatch).length}건
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 text-[10px] px-2"
+                        disabled={submitting}
+                        onClick={async () => {
+                          const urls = gsc.blogPages.filter(p => p.mismatch).map(p => canonicalBlogUrl(p.slug));
+                          if (urls.length === 0) return;
+                          setSubmitting(true);
+                          const { data, error } = await supabase.functions.invoke("submit-indexnow", { body: { urls } });
+                          if (error || !data?.success) toast.error(`재제출 실패: ${error?.message || data?.response || "unknown"}`);
+                          else toast.success(`${urls.length}건 .html canonical IndexNow 재제출 완료. Google 재크롤까지 3~14일.`);
+                          setSubmitting(false);
+                        }}
+                      >
+                        mismatch .html 일괄 재제출
+                      </Button>
+                    </>
                   )}
                 </div>
                 <div className="overflow-x-auto">
