@@ -212,7 +212,9 @@ export default function SeoOps() {
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
           <RefreshCw className={`w-3.5 h-3.5 mr-1 ${loading ? "animate-spin" : ""}`} /> 새로고침
         </Button>
-      </div>
+        <Button variant="default" size="sm" onClick={autoFixAll} disabled={submitting || loading}>
+          문제 글 자동 수정 (IndexNow 일괄)
+        </Button>
 
       <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
         <Kpi label="블로그 글" value={summary.total} />
