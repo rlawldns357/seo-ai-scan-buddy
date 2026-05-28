@@ -162,6 +162,28 @@ export default function SeoOps() {
     setSubmitting(false);
   };
 
+  const autoFixAll = async () => {
+    const targets = rows.filter(r => r.published && r.problems.some(p => p === "sitemap 누락" || p === "RSS 누락"));
+    if (targets.length === 0) {
+      toast.info("자동 수정 대상 없음 (sitemap/RSS 누락 글 없음)");
+      return;
+    }
+    setSubmitting(true);
+    const urls = targets.map(r => r.canonical);
+    try {
+      const { data, error } = await supabase.functions.invoke("submit-indexnow", { body: { urls } });
+      if (error || !data?.success) {
+        toast.error(`자동 수정 실패: ${error?.message || data?.response || "unknown"}`);
+      } else {
+        toast.success(`${urls.length}건 IndexNow 일괄 제출 완료`);
+        await load();
+      }
+    } catch (e: any) {
+      toast.error(`자동 수정 오류: ${e?.message || e}`);
+    }
+    setSubmitting(false);
+  };
+
   const summary = useMemo(() => {
     const total = rows.length;
     const sitemapOk = rows.filter(r => r.inSitemap).length;
