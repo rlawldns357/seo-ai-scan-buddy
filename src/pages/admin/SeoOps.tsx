@@ -75,7 +75,9 @@ export default function SeoOps() {
       const [postsRes, queueRes, sitemapTxt, rssTxt] = await Promise.all([
         supabase.from("blog_posts").select("slug,title,published,date").order("date", { ascending: false }).limit(50),
         supabase.from("indexing_queue").select("id,url,engine,status").order("created_at", { ascending: false }).limit(500),
-        fetch(`${SITE_ORIGIN}/sitemap-posts.xml`, { cache: "no-store" }).then(r => r.ok ? r.text() : "").catch(() => ""),
+        // Live dynamic sitemap (DB-backed edge function) — static /sitemap-posts.xml is a stale fallback
+        fetch(`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/sitemap?type=posts`, { cache: "no-store" })
+          .then(r => r.ok ? r.text() : "").catch(() => ""),
         fetch(`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co/functions/v1/rss`, { cache: "no-store" })
           .then(r => r.ok ? r.text() : "").catch(() => ""),
       ]);
