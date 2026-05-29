@@ -308,7 +308,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
 
         {/* Hero — 숫자 + 메시지 + 다이얼 CTA */}
         <div className="relative">
-          <div className="flex items-center justify-between gap-5">
+          <div className="flex items-start justify-between gap-5">
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 mb-2.5">
                 <span className={`text-[52px] sm:text-[64px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
@@ -338,25 +338,25 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                 type="button"
                 onClick={onAnswerShareClick}
                 aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
-                className="dial-cta group hidden sm:inline-flex shrink-0 relative items-center gap-3 h-[56px] pl-2 pr-5 rounded-full bg-foreground hover:bg-foreground/90 text-background shadow-[0_2px_0_0_hsl(var(--foreground)/0.15),0_8px_24px_-8px_hsl(var(--foreground)/0.45)] hover:shadow-[0_2px_0_0_hsl(var(--foreground)/0.15),0_14px_32px_-10px_hsl(var(--foreground)/0.6)] hover:-translate-y-px active:translate-y-0 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-foreground/20"
+                className="dial-cta group hidden sm:inline-flex shrink-0 relative items-center gap-3 h-[72px] pl-2 pr-5 rounded-2xl bg-foreground hover:bg-foreground/90 text-background shadow-[0_2px_0_0_hsl(var(--foreground)/0.15),0_10px_28px_-10px_hsl(var(--foreground)/0.5)] hover:shadow-[0_2px_0_0_hsl(var(--foreground)/0.15),0_16px_36px_-12px_hsl(var(--foreground)/0.65)] hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-foreground/20"
               >
-                {/* askai circular badge */}
-                <span className="relative flex items-center justify-center w-10 h-10 rounded-full bg-askai text-white shadow-inner">
-                  <span className="absolute inset-0 rounded-full bg-gradient-to-br from-white/25 to-transparent" />
-                  <span className="relative flex items-baseline gap-[0.5px] font-black tracking-tighter">
-                    <span className="text-[9px] leading-none self-start mt-1 opacity-90">×</span>
-                    <span className="text-[16px] leading-none tabular-nums">30</span>
+                {/* ×30 icon-badge (square, prominent) */}
+                <span className="relative flex items-center justify-center w-14 h-14 rounded-xl bg-gradient-to-br from-askai to-askai-deep text-white shadow-[inset_0_1px_0_0_hsl(0_0%_100%_/_0.25),0_4px_12px_-2px_hsl(var(--askai)/0.5)]">
+                  <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+                  <span className="relative flex items-baseline font-black tracking-tighter">
+                    <span className="text-[14px] leading-none self-start mt-[3px] opacity-90">×</span>
+                    <span className="text-[26px] leading-none tabular-nums">30</span>
                   </span>
                 </span>
 
-                <span className="flex flex-col items-start leading-tight">
-                  <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">AI 응답 점유율 측정</span>
-                  <span className="text-[10.5px] font-medium text-background/60 whitespace-nowrap mt-0.5">
+                <span className="flex flex-col items-start leading-tight text-left">
+                  <span className="text-[15px] lg:text-[16px] font-bold tracking-tight whitespace-nowrap">AI 응답 점유율 측정</span>
+                  <span className="text-[11px] font-medium text-background/65 whitespace-nowrap mt-1 tabular-nums">
                     베타 무료 · 4 AI × 5 질문 동시
                   </span>
                 </span>
 
-                <span className="ml-1 text-background/70 group-hover:translate-x-0.5 group-hover:text-background transition-all text-[16px] font-semibold">→</span>
+                <span className="ml-1 text-background/70 group-hover:translate-x-0.5 group-hover:text-background transition-all text-[18px] font-semibold">→</span>
               </button>
             )}
           </div>
@@ -366,26 +366,27 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               type="button"
               onClick={onAnswerShareClick}
               aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
-              className="dial-cta group sm:hidden mt-5 w-full inline-flex items-center gap-3 h-[56px] pl-2 pr-4 rounded-full bg-foreground text-background shadow-[0_2px_0_0_hsl(var(--foreground)/0.15),0_8px_22px_-8px_hsl(var(--foreground)/0.5)] active:scale-[0.985] transition-transform"
+              className="dial-cta group sm:hidden mt-5 w-full inline-flex items-center gap-3 h-[68px] pl-2 pr-4 rounded-2xl bg-foreground text-background shadow-[0_2px_0_0_hsl(var(--foreground)/0.15),0_10px_26px_-10px_hsl(var(--foreground)/0.55)] active:scale-[0.985] transition-transform"
             >
-              <span className="relative flex items-center justify-center w-10 h-10 rounded-full bg-askai text-white shrink-0">
-                <span className="absolute inset-0 rounded-full bg-gradient-to-br from-white/25 to-transparent" />
-                <span className="relative flex items-baseline gap-[0.5px] font-black tracking-tighter">
-                  <span className="text-[9px] leading-none self-start mt-1 opacity-90">×</span>
-                  <span className="text-[16px] leading-none tabular-nums">30</span>
+              <span className="relative flex items-center justify-center w-[52px] h-[52px] rounded-xl bg-gradient-to-br from-askai to-askai-deep text-white shadow-[inset_0_1px_0_0_hsl(0_0%_100%_/_0.25),0_4px_12px_-2px_hsl(var(--askai)/0.5)] shrink-0">
+                <span className="absolute inset-0 rounded-xl bg-gradient-to-br from-white/20 to-transparent pointer-events-none" />
+                <span className="relative flex items-baseline font-black tracking-tighter">
+                  <span className="text-[13px] leading-none self-start mt-[3px] opacity-90">×</span>
+                  <span className="text-[24px] leading-none tabular-nums">30</span>
                 </span>
               </span>
 
               <span className="flex flex-col items-start leading-tight flex-1 min-w-0 text-left">
                 <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">AI 응답 점유율 측정</span>
-                <span className="text-[10.5px] font-medium text-background/60 whitespace-nowrap mt-0.5">
+                <span className="text-[10.5px] font-medium text-background/65 whitespace-nowrap mt-0.5 tabular-nums">
                   베타 무료 · 4 AI × 5 질문 동시
                 </span>
               </span>
 
-              <span className="text-background/70 text-[16px] font-semibold shrink-0">→</span>
+              <span className="text-background/70 text-[18px] font-semibold shrink-0">→</span>
             </button>
           )}
+
 
           <style>{`
             .dial-cta .dial-sheen {
