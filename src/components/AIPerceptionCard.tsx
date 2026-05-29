@@ -77,12 +77,13 @@ function AwarenessBadge({ b }: { b: BrandResult }) {
     );
   }
   if (b.awareness === "yes") {
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">✅ 인지함</span>;
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-score-excellent/10 text-score-excellent">언급됨</span>;
   }
   if (b.awareness === "partial") {
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20">△ 부분 인지</span>;
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-score-warning/10 text-score-warning">부분 언급</span>;
   }
-  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">❌ 모름</span>;
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-score-poor/10 text-score-poor">미포함</span>;
+
 }
 
 function RecBadge({ b }: { b: BrandResult }) {
@@ -254,13 +255,15 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
 
   return (
     <div className="rounded-3xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
-      <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-muted/30 overflow-hidden">
+
+      <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-7 sm:pb-8 border-b border-border bg-card overflow-hidden">
         <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
-        <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
-          <div className="inline-flex items-center gap-2.5 pl-2.5 pr-3.5 py-1.5 rounded-full bg-white dark:bg-card border border-askai/20 shadow-sm">
+        {/* 상단 메타바 — LIVE + Ask AI 인라인 */}
+        <div className="relative flex items-center justify-between gap-3 mb-5 sm:mb-6">
+          <div className="flex items-center gap-2.5 min-w-0">
             <span
-              className="relative group/live inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-askai/10 cursor-help"
+              className="relative group/live inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-askai/10 cursor-help shrink-0"
               tabIndex={0}
               role="button"
               aria-label="실시간으로 신호를 요약한 데모 표시"
@@ -278,13 +281,17 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                 <span className="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 rotate-45 bg-foreground" />
               </span>
             </span>
-            <span className="text-[13px] sm:text-sm font-semibold tracking-tight text-foreground">
-              <span className="font-black bg-gradient-to-br from-askai to-askai-deep bg-clip-text text-transparent">Ask AI</span> · AI에게 직접 질문했어요 · <span className="font-black text-askai">{measurable}모델 동시 수집</span>
+            <span className="text-[13px] sm:text-[14px] font-semibold tracking-tight text-foreground truncate">
+              <span className="font-black text-askai">Ask AI</span>
+              <span className="text-muted-foreground font-medium"> · AI에게 직접 질문했어요 · </span>
+              <span className="font-bold text-foreground">{measurable}모델 동시 수집</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
             {data.cached && (
-              <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded-md bg-muted/40">24h 캐시</span>
+              <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                <span className="opacity-60">⏱</span> 24h 캐시
+              </span>
             )}
             {isAdmin && (
               <button
@@ -299,73 +306,71 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
           </div>
         </div>
 
-        {/* Hero — 숫자 + 메시지만 */}
-
+        {/* Hero — 숫자 + 메시지 + 다이얼 CTA */}
         <div className="relative">
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex items-center justify-between gap-5">
             <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2 mb-2 flex-wrap">
-                <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
+              <div className="flex items-baseline gap-2 mb-2.5">
+                <span className={`text-[52px] sm:text-[64px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
                   {aware}
                 </span>
-                <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground tabular-nums">
+                <span className="text-[20px] sm:text-[24px] font-bold text-muted-foreground/70 tabular-nums">
                   / {measurable}
                 </span>
-                <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-                  AI가 인지
-                </span>
-                {recommended > 0 && (
-                  <span className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-score-excellent/10 text-score-excellent border border-score-excellent/20 text-[10px] sm:text-[11px] font-bold tabular-nums">
-                    +{recommended} 추천
-                  </span>
-                )}
               </div>
-              <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
-                {heroMessage.title}
+              <h3 className="text-[20px] sm:text-[26px] leading-[1.2] font-extrabold tracking-tight text-foreground">
+                <span className={toneClasses.text}>{aware}개 AI</span>
+                <span className="text-foreground">는 알고 있어요</span>
               </h3>
-              <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug max-w-md">
+              <p className="text-[12px] sm:text-[13px] text-muted-foreground mt-1.5 leading-snug max-w-md">
                 {heroMessage.sub}
               </p>
+              {recommended > 0 && (
+                <span className="mt-3 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-score-excellent/10 text-score-excellent text-[11px] font-bold tabular-nums">
+                  +{recommended} 추천 노출
+                </span>
+              )}
             </div>
+
             {onAnswerShareClick && (
               <button
                 type="button"
                 onClick={onAnswerShareClick}
                 aria-label="AI 응답 점유율 측정"
-                className="dial-cta group hidden sm:flex shrink-0 relative w-[160px] h-[110px] bg-card border border-border rounded-xl shadow-sm overflow-hidden flex-col items-center justify-end pb-3 hover:shadow-md hover:-translate-y-px transition-all"
+                className="dial-cta group hidden sm:flex shrink-0 relative w-[260px] h-[108px] bg-muted/40 hover:bg-muted/60 border border-border hover:border-foreground/20 rounded-2xl overflow-hidden flex-row items-center gap-4 px-4 hover:shadow-lg hover:-translate-y-0.5 transition-all"
               >
-                <span className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
-                <div className="relative w-[100px] h-[55px] mb-1.5">
+                <div className="relative w-[88px] h-[52px] shrink-0">
                   <svg viewBox="0 0 100 55" className="w-full h-full">
-                    <g className="stroke-border fill-none" strokeWidth="1.5">
+                    <g className="stroke-muted-foreground/40 fill-none" strokeWidth="1.5">
                       {Array.from({ length: 11 }).map((_, i) => (
-                        <line key={i} x1="10" y1="50" x2="15" y2="48" transform={`rotate(${i * 16}, 50, 50)`} />
+                        <line key={i} x1="10" y1="50" x2="15" y2="48" transform={`rotate(${i * 18}, 50, 50)`} />
                       ))}
-                      <line x1="10" y1="50" x2="18" y2="49" transform="rotate(180, 50, 50)" className="stroke-muted-foreground" />
                     </g>
-                    <circle cx="50" cy="50" r="5" className="fill-card stroke-border" strokeWidth="0.5" />
+                    <circle cx="50" cy="50" r="4" className="fill-card stroke-border" strokeWidth="0.5" />
                     <g className="dial-needle origin-[50px_50px]">
-                      <line x1="50" y1="50" x2="12" y2="50" className="stroke-foreground" strokeWidth="2" strokeLinecap="round" />
-                      <circle cx="50" cy="50" r="2" className="fill-foreground" />
+                      <line x1="50" y1="50" x2="12" y2="50" className="stroke-foreground" strokeWidth="2.5" strokeLinecap="round" />
+                      <circle cx="50" cy="50" r="2.5" className="fill-foreground" />
                     </g>
                   </svg>
                 </div>
-                <div className="flex flex-col items-center text-center px-2">
-                  <span className="text-[10px] font-bold text-foreground leading-tight tracking-tight">AI 응답 점유율 측정</span>
-                  <span className="text-[8px] text-muted-foreground font-medium mt-0.5">4사 동시 수집 · 무료</span>
+                <div className="flex flex-col items-start text-left flex-1 min-w-0">
+                  <span className="text-[14px] font-bold text-foreground leading-tight tracking-tight">AI 응답 점유율 측정</span>
+                  <span className="text-[11px] text-muted-foreground font-medium mt-1">4사 동시 수집 · 무료</span>
                 </div>
+                <span className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all text-base shrink-0">›</span>
               </button>
             )}
           </div>
+
           {onAnswerShareClick && (
             <button
               type="button"
               onClick={onAnswerShareClick}
-              className="dial-cta group sm:hidden mt-4 w-full flex items-center gap-3 h-14 px-4 rounded-2xl bg-card border border-border active:scale-[0.99] transition-transform"
+              className="dial-cta group sm:hidden mt-5 w-full flex items-center gap-3 h-14 px-4 rounded-2xl bg-muted/40 border border-border active:scale-[0.99] transition-transform"
             >
               <div className="relative w-[60px] h-[34px] shrink-0">
                 <svg viewBox="0 0 100 55" className="w-full h-full">
-                  <g className="stroke-border fill-none" strokeWidth="2">
+                  <g className="stroke-muted-foreground/40 fill-none" strokeWidth="2">
                     {[0, 36, 72, 108, 144, 180].map((r) => (
                       <line key={r} x1="10" y1="50" x2="16" y2="48" transform={`rotate(${r}, 50, 50)`} />
                     ))}
@@ -384,6 +389,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               <span className="text-muted-foreground text-lg">→</span>
             </button>
           )}
+
           <style>{`
             .dial-cta .dial-needle {
               transform: rotate(0deg);
@@ -404,6 +410,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
           `}</style>
         </div>
       </div>
+
 
 
       {/* Brand rows */}
