@@ -390,7 +390,9 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                 </span>
                 <span className="mx-1.5 text-border">·</span>
                 4 AI × 5 질문 동시
-
+              </p>
+            </div>
+          )}
 
 
           <style>{`
