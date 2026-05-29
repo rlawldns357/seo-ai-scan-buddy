@@ -427,122 +427,150 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
       </div>
 
 
-      {/* Brand rows */}
-      <div className="divide-y divide-border/60">
-        {supportedBrands.map((b) => {
-          const meta = BRAND_META[b.brand];
-          const isExpanded = expandedBrand === b.brand;
-          const canExpand = b.status === "ok" && (b.awarenessAnswer || b.recommendationAnswer);
-          const isAware = b.awareness === "yes";
-          const isRecommended = b.recommendation?.mentioned;
+      {/* Brand chips — horizontal row, click to expand inline */}
+      <div className="px-4 sm:px-6 pt-4 pb-2">
+        <div className="flex items-center justify-between mb-2.5">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            AI별 응답 ({supportedBrands.length})
+          </p>
+          <p className="text-[10px] text-muted-foreground">탭하면 펼쳐져요</p>
+        </div>
+        <div className="flex flex-wrap gap-1.5">
+          {supportedBrands.map((b) => {
+            const meta = BRAND_META[b.brand];
+            const isExpanded = expandedBrand === b.brand;
+            const canExpand = b.status === "ok" && (b.awarenessAnswer || b.recommendationAnswer);
+            const isAware = b.awareness === "yes";
+            const isPartial = b.awareness === "partial";
+            const isRecommended = b.recommendation?.mentioned;
+            const dotClass =
+              b.status !== "ok" ? "bg-muted-foreground/40"
+              : isRecommended ? "bg-score-excellent"
+              : isAware ? "bg-score-good"
+              : isPartial ? "bg-score-warning"
+              : "bg-score-poor";
+            const ringClass = isExpanded
+              ? "border-foreground/60 bg-muted/50 shadow-sm"
+              : "border-border/70 bg-card hover:bg-muted/40";
 
-          return (
-            <div key={b.brand}>
+            return (
               <button
+                key={b.brand}
                 type="button"
                 onClick={() => {
                   if (!canExpand) return;
                   setExpandedBrand(isExpanded ? null : b.brand);
                   if (!isExpanded) trackEvent("ai_perception_brand_clicked", { brand: b.brand });
                 }}
-                className={`w-full px-4 sm:px-6 py-4 flex items-center gap-3.5 text-left ${canExpand ? "hover:bg-muted/30 cursor-pointer" : "cursor-default"} transition-colors`}
+                aria-expanded={isExpanded}
+                className={`inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full border transition-all ${ringClass} ${canExpand ? "cursor-pointer" : "cursor-default opacity-80"}`}
               >
-                {/* Official brand logo */}
-                <div
-                  className="relative w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-card border border-border flex items-center justify-center shrink-0 shadow-sm"
+                <span
+                  className="relative w-5 h-5 rounded-full bg-card border border-border/60 flex items-center justify-center shrink-0"
                   style={{ color: meta.brandColor }}
                 >
-                  <meta.Logo className="w-6 h-6 sm:w-[26px] sm:h-[26px]" />
-                  {b.status === "ok" && (
-                    <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full ring-2 ring-card ${
-                      isAware ? "bg-score-excellent" : "bg-score-poor"
-                    }`} />
-                  )}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-sm sm:text-[15px] font-bold text-foreground">{meta.name}</span>
-                    <AwarenessBadge b={b} />
-                    {isRecommended ? (
-                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
-                        ✓ 추천
-                      </span>
-                    ) : b.status === "ok" ? (
-                      <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md text-[10px] font-medium bg-muted/40 text-muted-foreground border border-border">
-                        추천 미노출
-                      </span>
-                    ) : null}
-                  </div>
-                  {b.status === "ok" && b.awarenessAnswer && (
-                    <p className="mt-1 text-[12px] sm:text-[13px] text-muted-foreground line-clamp-1 italic">
-                      “{b.awarenessAnswer.replace(/\s+/g, " ").trim()}”
-                    </p>
-                  )}
-                </div>
-
-                {canExpand && (
-                  <ChevronDown className={`w-4 h-4 shrink-0 text-muted-foreground transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                  <meta.Logo className="w-3 h-3" />
+                  <span className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full ring-1 ring-card ${dotClass}`} />
+                </span>
+                <span className="text-[11px] font-semibold text-foreground tracking-tight">{meta.name}</span>
+                {isRecommended && (
+                  <span className="text-[9px] font-bold text-score-excellent">✓</span>
                 )}
               </button>
+            );
+          })}
 
-              {isExpanded && b.status === "ok" && (
-                <div className="px-4 sm:px-6 pb-4 pt-1 space-y-3 bg-muted/20 animate-fade-up border-t border-border/40">
-                  {b.awarenessAnswer && (
-                    <div className="rounded-lg bg-card/60 p-3 border border-border/40">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">인지도 응답</p>
-                      <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.awarenessAnswer}</p>
-                    </div>
-                  )}
-                  {b.recommendationAnswer && (
-                    <div className="rounded-lg bg-card/60 p-3 border border-border/40">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">추천 질의 응답</p>
-                      <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.recommendationAnswer}</p>
-                    </div>
-                  )}
-                  {b.citations && b.citations.length > 0 && (
-                    <div>
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">인용 출처</p>
-                      <ul className="space-y-0.5">
-                        {b.citations.slice(0, 5).map((c, i) => (
-                          <li key={i} className="text-[11px] text-primary truncate">
-                            <a href={c} target="_blank" rel="noopener noreferrer" className="hover:underline">{c}</a>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  {b.model && <p className="text-[10px] text-muted-foreground">모델: {b.model}</p>}
+          {/* Unsupported as smaller, locked chips inline */}
+          {unsupportedBrands.map((b) => {
+            const meta = BRAND_META[b.brand];
+            return (
+              <div
+                key={b.brand}
+                className="inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full border border-dashed border-border/60 bg-muted/20 opacity-70"
+                title="공식 API 미공개 — 측정 대기 중"
+              >
+                <span
+                  className="w-5 h-5 rounded-full bg-card border border-border/60 flex items-center justify-center shrink-0"
+                  style={{ color: meta.brandColor }}
+                >
+                  <meta.Logo className="w-3 h-3" />
+                </span>
+                <span className="text-[11px] font-medium text-muted-foreground">{meta.name}</span>
+                <Lock className="w-2.5 h-2.5 text-muted-foreground" />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Expanded detail panel — compact, scrolls if long */}
+      {(() => {
+        const b = supportedBrands.find((x) => x.brand === expandedBrand);
+        if (!b || b.status !== "ok") return null;
+        const meta = BRAND_META[b.brand];
+        const isRecommended = b.recommendation?.mentioned;
+        return (
+          <div
+            key={b.brand /* re-mount on switch to trigger anim */}
+            className="mx-4 sm:mx-6 mb-4 rounded-xl border border-border/60 bg-muted/20 animate-fade-up overflow-hidden"
+          >
+            <div className="flex items-center justify-between gap-2 px-3.5 py-2 border-b border-border/40 bg-card/40">
+              <div className="flex items-center gap-2 min-w-0">
+                <span
+                  className="w-5 h-5 rounded-full bg-card border border-border/60 flex items-center justify-center shrink-0"
+                  style={{ color: meta.brandColor }}
+                >
+                  <meta.Logo className="w-3 h-3" />
+                </span>
+                <span className="text-[12px] font-bold text-foreground truncate">{meta.name}</span>
+                <AwarenessBadge b={b} />
+                {isRecommended && (
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
+                    ✓ 추천
+                  </span>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => setExpandedBrand(null)}
+                aria-label="접기"
+                className="text-[10px] font-medium text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded-md hover:bg-muted/40 transition-colors shrink-0"
+              >
+                접기 ▴
+              </button>
+            </div>
+
+            <div className="max-h-[240px] sm:max-h-[260px] overflow-y-auto px-3.5 py-3 space-y-2.5">
+              {b.awarenessAnswer && (
+                <div className="rounded-lg bg-card/60 p-2.5 border border-border/40">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">인지도 응답</p>
+                  <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.awarenessAnswer}</p>
                 </div>
               )}
-            </div>
-          );
-        })}
-
-        {/* Unsupported group */}
-        {unsupportedBrands.length > 0 && (
-          <div className="px-4 sm:px-6 py-3 bg-muted/20">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">측정 대기 중 · 공식 API 미공개</p>
-            <div className="flex flex-wrap gap-2">
-              {unsupportedBrands.map((b) => {
-                const meta = BRAND_META[b.brand];
-                return (
-                  <div key={b.brand} className="inline-flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-card border border-border/60">
-                    <div
-                      className="w-5 h-5 rounded-full bg-card border border-border/60 flex items-center justify-center opacity-70"
-                      style={{ color: meta.brandColor }}
-                    >
-                      <meta.Logo className="w-3 h-3" />
-                    </div>
-                    <span className="text-[11px] font-semibold text-muted-foreground">{meta.name}</span>
-                    <Lock className="w-2.5 h-2.5 text-muted-foreground" />
-                  </div>
-                );
-              })}
+              {b.recommendationAnswer && (
+                <div className="rounded-lg bg-card/60 p-2.5 border border-border/40">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">추천 질의 응답</p>
+                  <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.recommendationAnswer}</p>
+                </div>
+              )}
+              {b.citations && b.citations.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1">인용 출처</p>
+                  <ul className="space-y-0.5">
+                    {b.citations.slice(0, 5).map((c, i) => (
+                      <li key={i} className="text-[11px] text-primary truncate">
+                        <a href={c} target="_blank" rel="noopener noreferrer" className="hover:underline">{c}</a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {b.model && <p className="text-[10px] text-muted-foreground">모델: {b.model}</p>}
             </div>
           </div>
-        )}
-      </div>
+        );
+      })()}
+
 
       {/* Footer */}
       <div className="px-5 sm:px-6 py-3 border-t border-border bg-muted/20 text-[11px] text-muted-foreground flex items-center gap-1.5">
