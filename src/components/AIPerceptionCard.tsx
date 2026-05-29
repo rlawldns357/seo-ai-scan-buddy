@@ -337,41 +337,47 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               <button
                 type="button"
                 onClick={onAnswerShareClick}
-                aria-label="AI 응답 점유율 측정 — 베타 기간 무료"
-                className="dial-cta group hidden sm:flex shrink-0 relative w-[260px] lg:w-[284px] h-[120px] bg-gradient-to-br from-askai to-askai/85 hover:from-askai hover:to-askai border border-askai/40 rounded-2xl overflow-hidden flex-row items-center gap-3.5 pl-4 pr-5 shadow-[0_10px_30px_-10px_hsl(var(--askai)/0.55)] hover:shadow-[0_18px_44px_-12px_hsl(var(--askai)/0.7)] hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-askai/30"
+                aria-label="x30 AI 응답 점유율 동시 측정 — 베타 기간 무료"
+                className="dial-cta group hidden sm:flex shrink-0 relative w-[300px] lg:w-[324px] h-[120px] bg-gradient-to-br from-askai to-askai/85 hover:from-askai hover:to-askai border border-askai/40 rounded-2xl overflow-hidden flex-col items-stretch justify-center px-4 py-3 shadow-[0_10px_30px_-10px_hsl(var(--askai)/0.55)] hover:shadow-[0_18px_44px_-12px_hsl(var(--askai)/0.7)] hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-askai/30"
               >
-                {/* sheen sweep */}
                 <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent" />
 
-                <div className="relative w-[80px] h-[48px] shrink-0">
+                {/* dial in corner */}
+                <div className="absolute top-2.5 right-3 w-[44px] h-[26px] opacity-70">
                   <svg viewBox="0 0 100 55" className="w-full h-full">
-                    <g className="stroke-white/45 fill-none" strokeWidth="1.5">
+                    <g className="stroke-white/50 fill-none" strokeWidth="1.5">
                       {Array.from({ length: 11 }).map((_, i) => (
                         <line key={i} x1="10" y1="50" x2="15" y2="48" transform={`rotate(${i * 18}, 50, 50)`} />
                       ))}
                     </g>
-                    <circle cx="50" cy="50" r="4" className="fill-white/10 stroke-white/40" strokeWidth="0.5" />
                     <g className="dial-needle origin-[50px_50px]">
-                      <line x1="50" y1="50" x2="12" y2="50" className="stroke-white" strokeWidth="2.5" strokeLinecap="round" />
-                      <circle cx="50" cy="50" r="2.5" className="fill-white" />
+                      <line x1="50" y1="50" x2="14" y2="50" className="stroke-white" strokeWidth="3" strokeLinecap="round" />
+                      <circle cx="50" cy="50" r="3" className="fill-white" />
                     </g>
                   </svg>
                 </div>
 
-                <div className="flex flex-col items-start text-left flex-1 min-w-0">
-                  <span className="inline-flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-white/20 text-white text-[10px] font-bold tracking-wide whitespace-nowrap">
-                    <span className="w-1 h-1 rounded-full bg-white" />
-                    베타 기간 무료
+                {/* Title row: huge ×30 + label */}
+                <div className="flex items-end gap-2 leading-none">
+                  <span className="text-white font-black tracking-tighter tabular-nums text-[52px] lg:text-[58px] leading-[0.85] drop-shadow-[0_2px_8px_hsl(var(--askai-deep)/0.5)]">
+                    ×30
                   </span>
-                  <span className="text-[15px] lg:text-[16px] font-extrabold text-white leading-tight tracking-tight mt-1.5 whitespace-nowrap">
-                    AI 응답 점유율 측정
-                  </span>
-                  <span className="text-[11px] text-white/85 font-medium mt-1 whitespace-nowrap tabular-nums">
-                    4개 AI × 5개 질문 동시 측정
+                  <span className="text-white font-extrabold text-[15px] lg:text-[16px] leading-[1.1] tracking-tight pb-1.5 whitespace-nowrap">
+                    AI 응답 점유율<br/>동시 측정
                   </span>
                 </div>
 
-                <span className="text-white/90 group-hover:translate-x-1 transition-transform text-xl font-bold shrink-0">›</span>
+                {/* Subline: beta + sub-copy + arrow */}
+                <div className="flex items-center gap-2 mt-2.5">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-white/25 text-white text-[10px] font-bold tracking-wide whitespace-nowrap">
+                    <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                    베타 무료
+                  </span>
+                  <span className="text-[11px] text-white/85 font-medium whitespace-nowrap tabular-nums">
+                    4 AI × 5 질문
+                  </span>
+                  <span className="ml-auto text-white/95 group-hover:translate-x-1 transition-transform text-xl font-bold">›</span>
+                </div>
               </button>
             )}
           </div>
@@ -380,39 +386,47 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             <button
               type="button"
               onClick={onAnswerShareClick}
-              aria-label="AI 응답 점유율 측정 — 베타 기간 무료"
-              className="dial-cta group sm:hidden mt-5 w-full flex items-center gap-3 min-h-[68px] py-2.5 px-3.5 rounded-2xl bg-gradient-to-br from-askai to-askai/85 border border-askai/40 shadow-[0_8px_24px_-10px_hsl(var(--askai)/0.6)] active:scale-[0.98] transition-transform relative overflow-hidden"
+              aria-label="x30 AI 응답 점유율 동시 측정 — 베타 기간 무료"
+              className="dial-cta group sm:hidden mt-5 w-full flex flex-col items-stretch gap-2 py-3 px-3.5 rounded-2xl bg-gradient-to-br from-askai to-askai/85 border border-askai/40 shadow-[0_8px_24px_-10px_hsl(var(--askai)/0.6)] active:scale-[0.98] transition-transform relative overflow-hidden"
             >
               <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-              <div className="relative w-[54px] h-[32px] shrink-0">
+
+              <div className="absolute top-2 right-2.5 w-[36px] h-[22px] opacity-70">
                 <svg viewBox="0 0 100 55" className="w-full h-full">
                   <g className="stroke-white/50 fill-none" strokeWidth="2">
                     {[0, 36, 72, 108, 144, 180].map((r) => (
                       <line key={r} x1="10" y1="50" x2="16" y2="48" transform={`rotate(${r}, 50, 50)`} />
                     ))}
                   </g>
-                  <circle cx="50" cy="50" r="5" className="fill-white/10 stroke-white/40" />
                   <g className="dial-needle origin-[50px_50px]">
-                    <line x1="50" y1="50" x2="12" y2="50" className="stroke-white" strokeWidth="3" strokeLinecap="round" />
-                    <circle cx="50" cy="50" r="2.5" className="fill-white" />
+                    <line x1="50" y1="50" x2="14" y2="50" className="stroke-white" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="50" cy="50" r="3" className="fill-white" />
                   </g>
                 </svg>
               </div>
-              <div className="flex flex-col items-start flex-1 text-left min-w-0">
-                <span className="inline-flex items-center gap-1 px-1.5 py-[1px] rounded-full bg-white/20 text-white text-[10px] font-bold tracking-wide whitespace-nowrap">
-                  <span className="w-1 h-1 rounded-full bg-white" />
-                  베타 기간 무료
+
+              <div className="flex items-end gap-2 leading-none">
+                <span className="text-white font-black tracking-tighter tabular-nums text-[44px] leading-[0.85] drop-shadow-[0_2px_8px_hsl(var(--askai-deep)/0.5)]">
+                  ×30
                 </span>
-                <span className="text-[15px] font-extrabold text-white leading-tight mt-1 whitespace-nowrap">
-                  AI 응답 점유율 측정
-                </span>
-                <span className="text-[10.5px] text-white/85 font-medium mt-0.5 whitespace-nowrap tabular-nums">
-                  4개 AI × 5개 질문 동시 측정
+                <span className="text-white font-extrabold text-[14px] leading-[1.1] tracking-tight pb-1 text-left">
+                  AI 응답 점유율<br/>동시 측정
                 </span>
               </div>
-              <span className="text-white text-xl font-bold shrink-0">→</span>
+
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 px-1.5 py-[1px] rounded-full bg-white/25 text-white text-[10px] font-bold tracking-wide whitespace-nowrap">
+                  <span className="w-1 h-1 rounded-full bg-white animate-pulse" />
+                  베타 무료
+                </span>
+                <span className="text-[10.5px] text-white/85 font-medium whitespace-nowrap tabular-nums">
+                  4 AI × 5 질문
+                </span>
+                <span className="ml-auto text-white text-xl font-bold">→</span>
+              </div>
             </button>
           )}
+
 
 
           <style>{`
