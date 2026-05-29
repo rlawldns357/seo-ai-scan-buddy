@@ -77,6 +77,7 @@ export default function ScoreSummary4Col({ result, mobile, desktop }: Props) {
           style={{ animationDelay: "200ms" }}
         >
           <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-foreground">Lighthouse</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-foreground whitespace-nowrap">Lighthouse</p>
 
           <div className="flex items-center justify-center gap-3 my-3">
             {lighthouseDesktop !== null && (
