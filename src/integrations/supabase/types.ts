@@ -131,6 +131,69 @@ export type Database = {
         }
         Relationships: []
       }
+      answer_share_results: {
+        Row: {
+          avg_brand_position: number | null
+          brand: string
+          by_engine: Json
+          by_query: Json
+          citation_share: number
+          competitor_share: Json
+          cost_usd: number
+          created_at: string
+          domain: string | null
+          email: string | null
+          first_mention_share: number
+          id: string
+          ip_address: string | null
+          missed_queries: Json
+          queries_used: Json
+          response_share: number
+          total_responses: number
+          url: string
+        }
+        Insert: {
+          avg_brand_position?: number | null
+          brand: string
+          by_engine?: Json
+          by_query?: Json
+          citation_share?: number
+          competitor_share?: Json
+          cost_usd?: number
+          created_at?: string
+          domain?: string | null
+          email?: string | null
+          first_mention_share?: number
+          id?: string
+          ip_address?: string | null
+          missed_queries?: Json
+          queries_used?: Json
+          response_share?: number
+          total_responses?: number
+          url: string
+        }
+        Update: {
+          avg_brand_position?: number | null
+          brand?: string
+          by_engine?: Json
+          by_query?: Json
+          citation_share?: number
+          competitor_share?: Json
+          cost_usd?: number
+          created_at?: string
+          domain?: string | null
+          email?: string | null
+          first_mention_share?: number
+          id?: string
+          ip_address?: string | null
+          missed_queries?: Json
+          queries_used?: Json
+          response_share?: number
+          total_responses?: number
+          url?: string
+        }
+        Relationships: []
+      }
       api_cost_budget: {
         Row: {
           alert_threshold_pct: number
