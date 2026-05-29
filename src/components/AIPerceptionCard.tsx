@@ -103,7 +103,8 @@ const LOADING_STEPS = [
   { label: "응답을 분석하는 중", emoji: "🧩" },
 ];
 
-export default function AIPerceptionCard({ url, brand, category }: Props) {
+export default function AIPerceptionCard({ url, brand, category, onAnswerShareClick }: Props) {
+
   const [data, setData] = useState<ProbeResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
