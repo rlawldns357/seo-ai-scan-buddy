@@ -148,6 +148,26 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
     return () => { cancelled = true; };
   }, [url, brand, category, reloadKey]);
 
+  // Auto-expand worst-score chip on first load (urgency-first)
+  useEffect(() => {
+    if (!data) return;
+    const supported = ORDER.map((k) => data.brands.find((b) => b.brand === k)).filter(
+      (b): b is BrandResult => !!b && b.status !== "unsupported"
+    );
+    if (supported.length === 0) return;
+    const rank = (b: BrandResult) => {
+      if (b.status !== "ok") return 4;
+      if (b.awareness === "no") return 0;
+      if (b.awareness === "partial") return 1;
+      if (!b.recommendation?.mentioned) return 2;
+      return 3;
+    };
+    const worst = [...supported].sort((a, b) => rank(a) - rank(b))[0];
+    if (worst && (worst.awarenessAnswer || worst.recommendationAnswer)) {
+      setExpandedBrand(worst.brand);
+    }
+  }, [data]);
+
   // Loading step ticker (advance every ~2.2s, hold on last)
   useEffect(() => {
     if (!loading) return;
