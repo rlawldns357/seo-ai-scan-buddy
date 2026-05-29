@@ -357,55 +357,41 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               </p>
             </div>
 
-            {/* 다이얼 CTA — 가로 우측 */}
+            {/* CTA — 깔끔한 카드 버튼 (다이얼 그래픽 제거, 미니 바차트 아이콘) */}
             {onAnswerShareClick && (
               <button
                 type="button"
                 onClick={onAnswerShareClick}
                 aria-label="AI 응답 점유율 측정"
-                className="dial-cta group shrink-0 inline-flex items-center gap-3 pl-3 pr-4 py-2.5 rounded-2xl bg-foreground/5 hover:bg-foreground/10 border border-border hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20 transition-all"
+                className="share-cta group shrink-0 inline-flex items-center gap-3 px-4 py-3 rounded-2xl bg-card hover:bg-muted/40 border border-border hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/15 transition-all shadow-sm hover:shadow-md"
               >
-                <div className="relative w-[52px] h-[30px]">
-                  <svg viewBox="0 0 100 55" className="w-full h-full overflow-visible">
-                    <g className="stroke-border fill-none" strokeWidth="1.5">
-                      {Array.from({ length: 9 }).map((_, i) => (
-                        <line key={i} x1="10" y1="50" x2="15" y2="48" transform={`rotate(${i * 20}, 50, 50)`} />
-                      ))}
-                    </g>
-                    <g className="dial-needle origin-[50px_50px]">
-                      <line x1="50" y1="50" x2="14" y2="50" className="stroke-foreground" strokeWidth="2.5" strokeLinecap="round" />
-                      <circle cx="50" cy="50" r="3" className="fill-foreground" />
-                    </g>
-                  </svg>
-                </div>
+                <span className="flex items-end gap-[3px] h-6 shrink-0" aria-hidden="true">
+                  <span className="share-bar w-[5px] rounded-sm bg-score-poor/70" style={{ height: "30%" }} />
+                  <span className="share-bar w-[5px] rounded-sm bg-score-warning/70" style={{ height: "55%" }} />
+                  <span className="share-bar w-[5px] rounded-sm bg-score-good/80" style={{ height: "75%" }} />
+                  <span className="share-bar w-[5px] rounded-sm bg-foreground" style={{ height: "100%" }} />
+                </span>
                 <div className="flex flex-col leading-tight text-left">
-                  <span className="text-[13px] font-bold text-foreground tracking-tight">
+                  <span className="text-[13px] sm:text-[14px] font-bold text-foreground tracking-tight inline-flex items-center gap-1">
                     응답 점유율 측정
-                    <span className="dial-arrow inline-block ml-1 text-muted-foreground transition-transform group-hover:translate-x-0.5">→</span>
+                    <span className="text-muted-foreground transition-transform group-hover:translate-x-0.5">→</span>
                   </span>
-                  <span className="text-[10px] text-muted-foreground font-medium">4사 동시 · 무료</span>
+                  <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium">4사 동시 · 무료</span>
                 </div>
               </button>
             )}
           </div>
           <style>{`
-            .dial-cta .dial-needle {
-              transform: rotate(0deg);
-              transform-origin: 50px 50px;
-              transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            .share-cta .share-bar {
+              transition: height 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+              transform-origin: bottom;
             }
-            .dial-cta:hover .dial-needle,
-            .dial-cta:focus-visible .dial-needle {
-              animation: dial-needle-sweep 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            }
-            @keyframes dial-needle-sweep {
-              0%   { transform: rotate(0deg); }
-              65%  { transform: rotate(128deg); }
-              80%  { transform: rotate(122deg); }
-              92%  { transform: rotate(127deg); }
-              100% { transform: rotate(126deg); }
-            }
+            .share-cta:hover .share-bar:nth-child(1) { height: 55%; }
+            .share-cta:hover .share-bar:nth-child(2) { height: 75%; }
+            .share-cta:hover .share-bar:nth-child(3) { height: 90%; }
+            .share-cta:hover .share-bar:nth-child(4) { height: 100%; }
           `}</style>
+
         </div>
       </div>
 
