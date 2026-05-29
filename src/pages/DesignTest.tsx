@@ -39,7 +39,7 @@ const DesignTest = () => (
         <h1 className="sr-only">Design System Test</h1>
         <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
-        <AIPerceptionCard url={DEMO_URL} />
+        <AIPerceptionCard url={DEMO_URL} onAnswerShareClick={() => alert("응답 점유율 측정 모달 (데모)")} />
         <ScoreDashboard result={demoResult} url={DEMO_URL} />
         <VerificationLinks url={DEMO_URL} />
         
