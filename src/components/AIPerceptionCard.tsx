@@ -332,27 +332,27 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                 type="button"
                 onClick={onAnswerShareClick}
                 aria-label="AI 응답 점유율 측정"
-                className="dial-cta group hidden sm:flex shrink-0 relative w-[160px] h-[110px] bg-card border border-border rounded-xl shadow-sm overflow-hidden flex-col items-center justify-end pb-3 hover:shadow-md hover:-translate-y-px transition-all"
+                className="dial-cta group hidden sm:inline-flex shrink-0 items-center gap-2.5 pl-2 pr-3 py-1.5 -mr-1 rounded-lg text-left hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none transition-colors"
               >
-                <span className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
-                <div className="relative w-[100px] h-[55px] mb-1.5">
-                  <svg viewBox="0 0 100 55" className="w-full h-full">
+                <div className="relative w-[44px] h-[26px]">
+                  <svg viewBox="0 0 100 55" className="w-full h-full overflow-visible">
                     <g className="stroke-border fill-none" strokeWidth="1.5">
-                      {Array.from({ length: 11 }).map((_, i) => (
-                        <line key={i} x1="10" y1="50" x2="15" y2="48" transform={`rotate(${i * 16}, 50, 50)`} />
+                      {Array.from({ length: 9 }).map((_, i) => (
+                        <line key={i} x1="10" y1="50" x2="15" y2="48" transform={`rotate(${i * 20}, 50, 50)`} />
                       ))}
-                      <line x1="10" y1="50" x2="18" y2="49" transform="rotate(180, 50, 50)" className="stroke-muted-foreground" />
                     </g>
-                    <circle cx="50" cy="50" r="5" className="fill-card stroke-border" strokeWidth="0.5" />
                     <g className="dial-needle origin-[50px_50px]">
-                      <line x1="50" y1="50" x2="12" y2="50" className="stroke-foreground" strokeWidth="2" strokeLinecap="round" />
-                      <circle cx="50" cy="50" r="2" className="fill-foreground" />
+                      <line x1="50" y1="50" x2="14" y2="50" className="stroke-foreground" strokeWidth="2.5" strokeLinecap="round" />
+                      <circle cx="50" cy="50" r="3" className="fill-foreground" />
                     </g>
                   </svg>
                 </div>
-                <div className="flex flex-col items-center text-center px-2">
-                  <span className="text-[10px] font-bold text-foreground leading-tight tracking-tight">AI 응답 점유율 측정</span>
-                  <span className="text-[8px] text-muted-foreground font-medium mt-0.5">4사 동시 수집 · 무료</span>
+                <div className="flex flex-col leading-tight">
+                  <span className="text-[12px] font-semibold text-foreground tracking-tight">
+                    응답 점유율 측정
+                    <span className="dial-arrow inline-block ml-1 text-muted-foreground transition-transform group-hover:translate-x-0.5">→</span>
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-medium">4사 동시 · 무료</span>
                 </div>
               </button>
             )}
@@ -361,27 +361,26 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             <button
               type="button"
               onClick={onAnswerShareClick}
-              className="dial-cta group sm:hidden mt-4 w-full flex items-center gap-3 h-14 px-4 rounded-2xl bg-card border border-border active:scale-[0.99] transition-transform"
+              className="dial-cta group sm:hidden mt-4 w-full flex items-center gap-3 py-2.5 px-1 border-t border-border/60 active:opacity-70 transition-opacity"
             >
-              <div className="relative w-[60px] h-[34px] shrink-0">
+              <div className="relative w-[44px] h-[26px] shrink-0">
                 <svg viewBox="0 0 100 55" className="w-full h-full">
                   <g className="stroke-border fill-none" strokeWidth="2">
-                    {[0, 36, 72, 108, 144, 180].map((r) => (
+                    {[0, 30, 60, 90, 120, 150, 180].map((r) => (
                       <line key={r} x1="10" y1="50" x2="16" y2="48" transform={`rotate(${r}, 50, 50)`} />
                     ))}
                   </g>
-                  <circle cx="50" cy="50" r="5" className="fill-card stroke-border" />
                   <g className="dial-needle origin-[50px_50px]">
-                    <line x1="50" y1="50" x2="12" y2="50" className="stroke-foreground" strokeWidth="3" strokeLinecap="round" />
-                    <circle cx="50" cy="50" r="2.5" className="fill-foreground" />
+                    <line x1="50" y1="50" x2="14" y2="50" className="stroke-foreground" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="50" cy="50" r="3" className="fill-foreground" />
                   </g>
                 </svg>
               </div>
               <div className="flex flex-col items-start flex-1 text-left">
-                <span className="text-sm font-bold text-foreground">AI 응답 점유율 측정하기</span>
-                <span className="text-[11px] text-muted-foreground">4사 동시 수집 · 무료</span>
+                <span className="text-[13px] font-semibold text-foreground">응답 점유율 측정하기</span>
+                <span className="text-[11px] text-muted-foreground">4사 동시 · 무료</span>
               </div>
-              <span className="text-muted-foreground text-lg">→</span>
+              <span className="text-muted-foreground text-base">→</span>
             </button>
           )}
           <style>{`
@@ -402,6 +401,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               100% { transform: rotate(126deg); }
             }
           `}</style>
+
         </div>
       </div>
 
