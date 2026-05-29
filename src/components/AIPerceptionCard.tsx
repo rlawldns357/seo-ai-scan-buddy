@@ -274,11 +274,13 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
   const ratioPct = measurable > 0 ? Math.round((aware / measurable) * 100) : 0;
 
   return (
-    <div className="rounded-3xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
-      <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-8 sm:pb-9 border-b border-border bg-muted/30 overflow-hidden">
+    <div className="space-y-3 animate-fade-up">
+      {/* ===== HERO CARD — horizontal layout ===== */}
+      <div className="relative rounded-3xl bg-card border border-border overflow-hidden shadow-card">
         <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
 
-        <div className="relative flex items-center justify-between gap-3 mb-4 sm:mb-5">
+        {/* Top row: LIVE chip + admin controls */}
+        <div className="flex items-center justify-between gap-3 px-5 sm:px-8 pt-5 sm:pt-6">
           <div className="inline-flex items-center gap-2.5 pl-2.5 pr-3.5 py-1.5 rounded-full bg-white dark:bg-card border border-askai/20 shadow-sm">
             <span
               className="relative group/live inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-askai/10 cursor-help"
@@ -300,7 +302,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               </span>
             </span>
             <span className="text-[13px] sm:text-sm font-semibold tracking-tight text-foreground">
-              <span className="font-black bg-gradient-to-br from-askai to-askai-deep bg-clip-text text-transparent">Ask AI</span> · AI에게 직접 질문했어요 · <span className="font-black text-askai">{measurable}모델 동시 수집</span>
+              <span className="font-black bg-gradient-to-br from-askai to-askai-deep bg-clip-text text-transparent">Ask AI</span> · <span className="font-black text-askai">{measurable}모델 동시</span>
             </span>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
@@ -320,42 +322,50 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
           </div>
         </div>
 
-        {/* Hero — 숫자 + 메시지만 */}
-
-        <div className="relative">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2 mb-2 flex-wrap">
-                <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
-                  {aware}
-                </span>
-                <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground tabular-nums">
+        {/* Hero — horizontal: [숫자 | 메시지 | 다이얼 CTA] */}
+        <div className="px-5 sm:px-8 pb-6 sm:pb-7 pt-5 sm:pt-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-5 sm:gap-7">
+            {/* 숫자 블록 */}
+            <div className="flex items-baseline gap-2 shrink-0">
+              <span className={`text-[56px] sm:text-[72px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
+                {aware}
+              </span>
+              <div className="flex flex-col leading-tight">
+                <span className="text-[18px] sm:text-[20px] font-bold text-muted-foreground tabular-nums">
                   / {measurable}
                 </span>
-                <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground mt-0.5">
                   AI가 인지
                 </span>
+              </div>
+            </div>
+
+            {/* 메시지 */}
+            <div className="flex-1 min-w-0 sm:border-l sm:border-border sm:pl-7">
+              <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
+                  {heroMessage.title}
+                </h3>
                 {recommended > 0 && (
-                  <span className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-score-excellent/10 text-score-excellent border border-score-excellent/20 text-[10px] sm:text-[11px] font-bold tabular-nums">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-score-excellent/10 text-score-excellent border border-score-excellent/20 text-[11px] font-bold tabular-nums">
                     +{recommended} 추천
                   </span>
                 )}
               </div>
-              <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
-                {heroMessage.title}
-              </h3>
-              <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug max-w-md">
+              <p className="text-[12px] sm:text-sm text-muted-foreground leading-snug">
                 {heroMessage.sub}
               </p>
             </div>
+
+            {/* 다이얼 CTA — 가로 우측 */}
             {onAnswerShareClick && (
               <button
                 type="button"
                 onClick={onAnswerShareClick}
                 aria-label="AI 응답 점유율 측정"
-                className="dial-cta group hidden sm:inline-flex shrink-0 items-center gap-2.5 pl-2 pr-3 py-1.5 -mr-1 rounded-lg text-left hover:bg-muted/60 focus-visible:bg-muted/60 focus-visible:outline-none transition-colors"
+                className="dial-cta group shrink-0 inline-flex items-center gap-3 pl-3 pr-4 py-2.5 rounded-2xl bg-foreground/5 hover:bg-foreground/10 border border-border hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/20 transition-all"
               >
-                <div className="relative w-[44px] h-[26px]">
+                <div className="relative w-[52px] h-[30px]">
                   <svg viewBox="0 0 100 55" className="w-full h-full overflow-visible">
                     <g className="stroke-border fill-none" strokeWidth="1.5">
                       {Array.from({ length: 9 }).map((_, i) => (
@@ -368,8 +378,8 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                     </g>
                   </svg>
                 </div>
-                <div className="flex flex-col leading-tight">
-                  <span className="text-[12px] font-semibold text-foreground tracking-tight">
+                <div className="flex flex-col leading-tight text-left">
+                  <span className="text-[13px] font-bold text-foreground tracking-tight">
                     응답 점유율 측정
                     <span className="dial-arrow inline-block ml-1 text-muted-foreground transition-transform group-hover:translate-x-0.5">→</span>
                   </span>
@@ -378,32 +388,6 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               </button>
             )}
           </div>
-          {onAnswerShareClick && (
-            <button
-              type="button"
-              onClick={onAnswerShareClick}
-              className="dial-cta group sm:hidden mt-4 w-full flex items-center gap-3 py-2.5 px-1 border-t border-border/60 active:opacity-70 transition-opacity"
-            >
-              <div className="relative w-[44px] h-[26px] shrink-0">
-                <svg viewBox="0 0 100 55" className="w-full h-full">
-                  <g className="stroke-border fill-none" strokeWidth="2">
-                    {[0, 30, 60, 90, 120, 150, 180].map((r) => (
-                      <line key={r} x1="10" y1="50" x2="16" y2="48" transform={`rotate(${r}, 50, 50)`} />
-                    ))}
-                  </g>
-                  <g className="dial-needle origin-[50px_50px]">
-                    <line x1="50" y1="50" x2="14" y2="50" className="stroke-foreground" strokeWidth="3" strokeLinecap="round" />
-                    <circle cx="50" cy="50" r="3" className="fill-foreground" />
-                  </g>
-                </svg>
-              </div>
-              <div className="flex flex-col items-start flex-1 text-left">
-                <span className="text-[13px] font-semibold text-foreground">응답 점유율 측정하기</span>
-                <span className="text-[11px] text-muted-foreground">4사 동시 · 무료</span>
-              </div>
-              <span className="text-muted-foreground text-base">→</span>
-            </button>
-          )}
           <style>{`
             .dial-cta .dial-needle {
               transform: rotate(0deg);
@@ -422,170 +406,190 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               100% { transform: rotate(126deg); }
             }
           `}</style>
-
         </div>
       </div>
 
-
-      {/* Brand chips — status-colored, click to expand inline */}
-      <div className="px-4 sm:px-6 pt-3 pb-2.5">
-        <div className="flex flex-wrap gap-1.5">
-          {supportedBrands.map((b) => {
-            const meta = BRAND_META[b.brand];
-            const isExpanded = expandedBrand === b.brand;
-            const canExpand = b.status === "ok" && (b.awarenessAnswer || b.recommendationAnswer);
-            const isAware = b.awareness === "yes";
-            const isPartial = b.awareness === "partial";
-            const isRecommended = b.recommendation?.mentioned;
-
-            // Single source of truth for chip status
-            const statusTone =
-              b.status !== "ok" ? "muted"
-              : isRecommended ? "excellent"
-              : isAware ? "good"
-              : isPartial ? "warning"
-              : "poor";
-
-            const toneStyle = {
-              excellent: "border-score-excellent/40 bg-score-excellent/8 text-score-excellent",
-              good:      "border-score-good/35 bg-score-good/8 text-score-good",
-              warning:   "border-score-warning/40 bg-score-warning/10 text-score-warning",
-              poor:      "border-score-poor/35 bg-score-poor/8 text-score-poor",
-              muted:     "border-border/60 bg-muted/30 text-muted-foreground",
-            }[statusTone];
-
-            const statusLabel = {
-              excellent: "✓ 추천",
-              good:      "✓ 인지",
-              warning:   "△ 부분",
-              poor:      "✕ 모름",
-              muted:     "측정 실패",
-            }[statusTone];
-
-            return (
-              <button
-                key={b.brand}
-                type="button"
-                onClick={() => {
-                  if (!canExpand) return;
-                  setExpandedBrand(isExpanded ? null : b.brand);
-                  if (!isExpanded) trackEvent("ai_perception_brand_clicked", { brand: b.brand });
-                }}
-                aria-expanded={isExpanded}
-                className={`group/chip relative inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full border transition-all ${toneStyle} ${isExpanded ? "ring-2 ring-foreground/20 shadow-sm" : "hover:brightness-105"} ${canExpand ? "cursor-pointer" : "cursor-default"}`}
-              >
-                <span
-                  className="w-5 h-5 rounded-full bg-card border border-border/60 flex items-center justify-center shrink-0"
-                  style={{ color: meta.brandColor }}
-                >
-                  <meta.Logo className="w-3 h-3" />
-                </span>
-                <span className="text-[11px] font-semibold text-foreground tracking-tight">{meta.name}</span>
-                <span className="text-[10px] font-bold tabular-nums leading-none">
-                  {statusLabel}
-                </span>
-              </button>
-            );
-          })}
-
-          {/* Unsupported as locked chips inline */}
-          {unsupportedBrands.map((b) => {
-            const meta = BRAND_META[b.brand];
-            return (
-              <div
-                key={b.brand}
-                className="inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full border border-dashed border-border/60 bg-muted/20 opacity-70"
-                title="공식 API 미공개 — 측정 대기 중"
-              >
-                <span
-                  className="w-5 h-5 rounded-full bg-card border border-border/60 flex items-center justify-center shrink-0"
-                  style={{ color: meta.brandColor }}
-                >
-                  <meta.Logo className="w-3 h-3" />
-                </span>
-                <span className="text-[11px] font-medium text-muted-foreground">{meta.name}</span>
-                <Lock className="w-2.5 h-2.5 text-muted-foreground" />
-              </div>
-            );
-          })}
+      {/* ===== BRAND CARDS — separate card, 5-column grid ===== */}
+      <div className="rounded-3xl bg-card border border-border overflow-hidden shadow-card">
+        <div className="px-5 sm:px-6 pt-4 pb-2 flex items-center justify-between">
+          <h4 className="text-[12px] font-bold uppercase tracking-[0.12em] text-muted-foreground">
+            AI별 응답 ({supportedBrands.length})
+          </h4>
+          <span className="text-[10px] text-muted-foreground">탭하면 상세 응답이 펼쳐져요</span>
         </div>
-      </div>
 
-      {/* Expanded detail panel — compact inline */}
-      {(() => {
-        const b = supportedBrands.find((x) => x.brand === expandedBrand);
-        if (!b || b.status !== "ok") return null;
-        const meta = BRAND_META[b.brand];
-        const isRecommended = b.recommendation?.mentioned;
-        return (
-          <div
-            key={b.brand}
-            className="mx-4 sm:mx-6 mb-3 rounded-lg border border-border/60 bg-muted/15 animate-fade-up overflow-hidden"
-          >
-            <div className="flex items-center justify-between gap-2 px-3 py-1.5 border-b border-border/40 bg-card/50">
-              <div className="flex items-center gap-1.5 min-w-0">
-                <span
-                  className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
-                  style={{ color: meta.brandColor }}
+        <div className="px-4 sm:px-6 pb-4">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-2.5">
+            {supportedBrands.map((b) => {
+              const meta = BRAND_META[b.brand];
+              const isExpanded = expandedBrand === b.brand;
+              const canExpand = b.status === "ok" && (b.awarenessAnswer || b.recommendationAnswer);
+              const isAware = b.awareness === "yes";
+              const isPartial = b.awareness === "partial";
+              const isRecommended = b.recommendation?.mentioned;
+
+              const statusTone =
+                b.status !== "ok" ? "muted"
+                : isRecommended ? "excellent"
+                : isAware ? "good"
+                : isPartial ? "warning"
+                : "poor";
+
+              const toneStyle = {
+                excellent: "border-score-excellent/40 bg-score-excellent/8 hover:bg-score-excellent/12",
+                good:      "border-score-good/35 bg-score-good/8 hover:bg-score-good/12",
+                warning:   "border-score-warning/40 bg-score-warning/10 hover:bg-score-warning/14",
+                poor:      "border-score-poor/35 bg-score-poor/8 hover:bg-score-poor/12",
+                muted:     "border-border/60 bg-muted/30",
+              }[statusTone];
+
+              const statusText = {
+                excellent: "text-score-excellent",
+                good:      "text-score-good",
+                warning:   "text-score-warning",
+                poor:      "text-score-poor",
+                muted:     "text-muted-foreground",
+              }[statusTone];
+
+              const statusLabel = {
+                excellent: "✓ 추천",
+                good:      "✓ 인지",
+                warning:   "△ 부분",
+                poor:      "✕ 모름",
+                muted:     "측정 실패",
+              }[statusTone];
+
+              return (
+                <button
+                  key={b.brand}
+                  type="button"
+                  onClick={() => {
+                    if (!canExpand) return;
+                    setExpandedBrand(isExpanded ? null : b.brand);
+                    if (!isExpanded) trackEvent("ai_perception_brand_clicked", { brand: b.brand });
+                  }}
+                  aria-expanded={isExpanded}
+                  className={`group/chip relative flex flex-col items-center gap-2 px-2 py-3.5 rounded-2xl border-2 transition-all ${toneStyle} ${isExpanded ? "ring-2 ring-foreground/25 shadow-md scale-[1.02]" : ""} ${canExpand ? "cursor-pointer active:scale-[0.98]" : "cursor-default"}`}
                 >
-                  <meta.Logo className="w-3 h-3" />
-                </span>
-                <span className="text-[11px] font-bold text-foreground truncate">{meta.name}</span>
-                <AwarenessBadge b={b} />
-                {isRecommended && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
-                    ✓ 추천
+                  <span
+                    className="w-10 h-10 rounded-full bg-card border border-border/60 flex items-center justify-center shrink-0 shadow-sm"
+                    style={{ color: meta.brandColor }}
+                  >
+                    <meta.Logo className="w-5 h-5" />
                   </span>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => setExpandedBrand(null)}
-                aria-label="접기"
-                className="text-[10px] font-medium text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded hover:bg-muted/40 transition-colors shrink-0"
-              >
-                접기 ▴
-              </button>
-            </div>
-
-            <div className="max-h-[200px] overflow-y-auto px-3 py-2.5 space-y-2">
-              {b.awarenessAnswer && (
-                <div className="rounded-md bg-card/60 p-2 border border-border/40">
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">인지도 응답</p>
-                  <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.awarenessAnswer}</p>
-                </div>
-              )}
-              {b.recommendationAnswer && (
-                <div className="rounded-md bg-card/60 p-2 border border-border/40">
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">추천 질의 응답</p>
-                  <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.recommendationAnswer}</p>
-                </div>
-              )}
-              {b.citations && b.citations.length > 0 && (
-                <div>
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">인용 출처</p>
-                  <ul className="space-y-0.5">
-                    {b.citations.slice(0, 5).map((c, i) => (
-                      <li key={i} className="text-[11px] text-primary truncate">
-                        <a href={c} target="_blank" rel="noopener noreferrer" className="hover:underline">{c}</a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              {b.model && <p className="text-[10px] text-muted-foreground">모델: {b.model}</p>}
-            </div>
+                  <span className="text-[12px] sm:text-[13px] font-bold text-foreground tracking-tight text-center leading-tight line-clamp-1">
+                    {meta.name.replace(" (HyperCLOVA X)", "")}
+                  </span>
+                  <span className={`text-[11px] font-bold tabular-nums leading-none ${statusText}`}>
+                    {statusLabel}
+                  </span>
+                </button>
+              );
+            })}
           </div>
-        );
-      })()}
 
+          {/* Unsupported — small row */}
+          {unsupportedBrands.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-border/40">
+              <span className="text-[10px] text-muted-foreground self-center mr-1">측정 대기:</span>
+              {unsupportedBrands.map((b) => {
+                const meta = BRAND_META[b.brand];
+                return (
+                  <div
+                    key={b.brand}
+                    className="inline-flex items-center gap-1.5 pl-1.5 pr-2 py-1 rounded-full border border-dashed border-border/60 bg-muted/20 opacity-70"
+                    title="공식 API 미공개 — 측정 대기 중"
+                  >
+                    <span
+                      className="w-4 h-4 rounded-full flex items-center justify-center shrink-0"
+                      style={{ color: meta.brandColor }}
+                    >
+                      <meta.Logo className="w-2.5 h-2.5" />
+                    </span>
+                    <span className="text-[10px] font-medium text-muted-foreground">{meta.name}</span>
+                    <Lock className="w-2.5 h-2.5 text-muted-foreground" />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
 
+        {/* Expanded detail panel — inside same card */}
+        {(() => {
+          const b = supportedBrands.find((x) => x.brand === expandedBrand);
+          if (!b || b.status !== "ok") return null;
+          const meta = BRAND_META[b.brand];
+          const isRecommended = b.recommendation?.mentioned;
+          return (
+            <div
+              key={b.brand}
+              className="mx-4 sm:mx-6 mb-4 rounded-xl border border-border/60 bg-muted/20 animate-fade-up overflow-hidden"
+            >
+              <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/40 bg-card/60">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span
+                    className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                    style={{ color: meta.brandColor }}
+                  >
+                    <meta.Logo className="w-3.5 h-3.5" />
+                  </span>
+                  <span className="text-[12px] font-bold text-foreground truncate">{meta.name}</span>
+                  <AwarenessBadge b={b} />
+                  {isRecommended && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">
+                      ✓ 추천
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpandedBrand(null)}
+                  aria-label="접기"
+                  className="text-[10px] font-medium text-muted-foreground hover:text-foreground px-1.5 py-0.5 rounded hover:bg-muted/40 transition-colors shrink-0"
+                >
+                  접기 ▴
+                </button>
+              </div>
 
-      {/* Footer */}
-      <div className="px-5 sm:px-6 py-3 border-t border-border bg-muted/20 text-[11px] text-muted-foreground flex items-center gap-1.5">
-        <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground/40" />
-        실제 AI에 같은 질문을 보내 받은 답변이에요. 24시간마다 캐시 갱신.
+              <div className="max-h-[220px] overflow-y-auto px-3 py-2.5 space-y-2">
+                {b.awarenessAnswer && (
+                  <div className="rounded-md bg-card/60 p-2 border border-border/40">
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">인지도 응답</p>
+                    <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.awarenessAnswer}</p>
+                  </div>
+                )}
+                {b.recommendationAnswer && (
+                  <div className="rounded-md bg-card/60 p-2 border border-border/40">
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">추천 질의 응답</p>
+                    <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.recommendationAnswer}</p>
+                  </div>
+                )}
+                {b.citations && b.citations.length > 0 && (
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground mb-0.5">인용 출처</p>
+                    <ul className="space-y-0.5">
+                      {b.citations.slice(0, 5).map((c, i) => (
+                        <li key={i} className="text-[11px] text-primary truncate">
+                          <a href={c} target="_blank" rel="noopener noreferrer" className="hover:underline">{c}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {b.model && <p className="text-[10px] text-muted-foreground">모델: {b.model}</p>}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Footer */}
+        <div className="px-5 sm:px-6 py-2.5 border-t border-border bg-muted/20 text-[11px] text-muted-foreground flex items-center gap-1.5">
+          <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground/40" />
+          실제 AI에 같은 질문을 보내 받은 답변이에요. 24시간마다 캐시 갱신.
+        </div>
       </div>
     </div>
   );
 }
+
