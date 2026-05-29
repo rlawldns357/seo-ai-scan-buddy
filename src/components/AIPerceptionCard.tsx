@@ -357,10 +357,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
         </div>
       </div>
 
-            {heroMessage.sub}
-          </p>
-        </div>
-      </div>
+
 
       {/* Brand rows */}
       <div className="divide-y divide-border/60">
