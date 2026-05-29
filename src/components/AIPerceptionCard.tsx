@@ -358,7 +358,6 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
       </div>
 
 
-
       {/* Brand rows */}
       <div className="divide-y divide-border/60">
         {supportedBrands.map((b) => {
