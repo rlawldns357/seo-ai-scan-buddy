@@ -46,7 +46,9 @@ interface Props {
   url?: string;
   brand?: string;
   category?: string;
+  onAnswerShareClick?: () => void;
 }
+
 
 const BRAND_META: Record<BrandKey, { name: string; Logo: React.ComponentType<{ className?: string }>; brandColor: string }> = {
   chatgpt:    { name: "ChatGPT",        Logo: OpenAIMark,    brandColor: "#000000" },
