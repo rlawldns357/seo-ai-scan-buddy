@@ -339,17 +339,13 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                   type="button"
                   onClick={onAnswerShareClick}
                   aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
-                  className="dial-cta group relative inline-flex items-center gap-2.5 h-[56px] pl-2 pr-6 rounded-full bg-askai hover:bg-askai-deep text-white transition-all hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-askai/25"
-                  style={{
-                    boxShadow:
-                      "0 0 0 6px hsl(var(--askai) / 0.18), 0 14px 30px -8px hsl(var(--askai) / 0.55), inset 0 1px 0 0 hsl(0 0% 100% / 0.18)",
-                  }}
+                  className="dial-cta group relative inline-flex items-center gap-3 h-[60px] pl-2 pr-6 rounded-full bg-foreground text-background transition-transform hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-foreground/15"
                 >
-                  {/* ×30 icon-chip */}
-                  <span className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-askai-deep shadow-[inset_0_-1px_0_0_hsl(var(--askai)/0.15)]">
-                    <span className="flex items-baseline font-black tracking-tighter">
-                      <span className="text-[10px] leading-none self-start mt-[3px] opacity-80">×</span>
-                      <span className="text-[18px] leading-none tabular-nums">30</span>
+                  {/* ×30 flat impact chip */}
+                  <span className="flex items-center justify-center h-11 px-3 rounded-full bg-askai text-white">
+                    <span className="flex items-baseline font-black tracking-tighter leading-none">
+                      <span className="text-[12px] self-start mt-[4px] mr-[1px] opacity-90">×</span>
+                      <span className="text-[26px] tabular-nums">30</span>
                     </span>
                   </span>
 
@@ -375,16 +371,12 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                 type="button"
                 onClick={onAnswerShareClick}
                 aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
-                className="dial-cta group relative inline-flex items-center gap-2.5 h-[56px] pl-2 pr-5 rounded-full bg-askai text-white active:scale-[0.985] transition-transform"
-                style={{
-                  boxShadow:
-                    "0 0 0 5px hsl(var(--askai) / 0.16), 0 12px 26px -8px hsl(var(--askai) / 0.55), inset 0 1px 0 0 hsl(0 0% 100% / 0.18)",
-                }}
+                className="dial-cta group relative inline-flex items-center gap-3 h-[60px] pl-2 pr-5 rounded-full bg-foreground text-background active:scale-[0.985] transition-transform"
               >
-                <span className="flex items-center justify-center w-10 h-10 rounded-full bg-white text-askai-deep shrink-0">
-                  <span className="flex items-baseline font-black tracking-tighter">
-                    <span className="text-[10px] leading-none self-start mt-[3px] opacity-80">×</span>
-                    <span className="text-[18px] leading-none tabular-nums">30</span>
+                <span className="flex items-center justify-center h-11 px-3 rounded-full bg-askai text-white shrink-0">
+                  <span className="flex items-baseline font-black tracking-tighter leading-none">
+                    <span className="text-[12px] self-start mt-[4px] mr-[1px] opacity-90">×</span>
+                    <span className="text-[26px] tabular-nums">30</span>
                   </span>
                 </span>
                 <span className="text-[16px] font-bold tracking-tight whitespace-nowrap flex-1 text-left">
@@ -398,9 +390,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                 </span>
                 <span className="mx-1.5 text-border">·</span>
                 4 AI × 5 질문 동시
-              </p>
-            </div>
-          )}
+
 
 
           <style>{`
