@@ -296,7 +296,11 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                 ↻ 캐시 비우기
               </button>
             )}
+          </div>
+        </div>
+
         {/* Hero — 숫자 + 메시지만 */}
+
         <div className="relative">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
