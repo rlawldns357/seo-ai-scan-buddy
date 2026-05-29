@@ -337,27 +337,36 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                 type="button"
                 onClick={onAnswerShareClick}
                 aria-label="AI 응답 점유율 측정"
-                className="dial-cta group hidden sm:flex shrink-0 relative w-[260px] h-[108px] bg-muted/40 hover:bg-muted/60 border border-border hover:border-foreground/20 rounded-2xl overflow-hidden flex-row items-center gap-4 px-4 hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                className="dial-cta group hidden sm:flex shrink-0 relative w-[280px] h-[116px] bg-gradient-to-br from-askai to-askai/85 hover:from-askai hover:to-askai border border-askai/40 rounded-2xl overflow-hidden flex-row items-center gap-4 px-5 shadow-[0_10px_30px_-10px_hsl(var(--askai)/0.55)] hover:shadow-[0_18px_44px_-12px_hsl(var(--askai)/0.7)] hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-askai/30"
               >
+                {/* sheen sweep */}
+                <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                {/* corner pulse dot */}
+                <span aria-hidden className="absolute top-2.5 right-3 flex w-2 h-2 items-center justify-center">
+                  <span className="absolute inline-flex w-full h-full rounded-full bg-white/80 animate-ping opacity-75" />
+                  <span className="relative inline-flex w-2 h-2 rounded-full bg-white" />
+                </span>
+
                 <div className="relative w-[88px] h-[52px] shrink-0">
                   <svg viewBox="0 0 100 55" className="w-full h-full">
-                    <g className="stroke-muted-foreground/40 fill-none" strokeWidth="1.5">
+                    <g className="stroke-white/45 fill-none" strokeWidth="1.5">
                       {Array.from({ length: 11 }).map((_, i) => (
                         <line key={i} x1="10" y1="50" x2="15" y2="48" transform={`rotate(${i * 18}, 50, 50)`} />
                       ))}
                     </g>
-                    <circle cx="50" cy="50" r="4" className="fill-card stroke-border" strokeWidth="0.5" />
+                    <circle cx="50" cy="50" r="4" className="fill-white/10 stroke-white/40" strokeWidth="0.5" />
                     <g className="dial-needle origin-[50px_50px]">
-                      <line x1="50" y1="50" x2="12" y2="50" className="stroke-foreground" strokeWidth="2.5" strokeLinecap="round" />
-                      <circle cx="50" cy="50" r="2.5" className="fill-foreground" />
+                      <line x1="50" y1="50" x2="12" y2="50" className="stroke-white" strokeWidth="2.5" strokeLinecap="round" />
+                      <circle cx="50" cy="50" r="2.5" className="fill-white" />
                     </g>
                   </svg>
                 </div>
                 <div className="flex flex-col items-start text-left flex-1 min-w-0">
-                  <span className="text-[14px] font-bold text-foreground leading-tight tracking-tight">AI 응답 점유율 측정</span>
-                  <span className="text-[11px] text-muted-foreground font-medium mt-1">4사 동시 수집 · 무료</span>
+                  <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/75">무료 · 30초</span>
+                  <span className="text-[16px] font-extrabold text-white leading-tight tracking-tight mt-0.5">AI 응답 점유율 측정</span>
+                  <span className="text-[11px] text-white/80 font-medium mt-1">ChatGPT · Perplexity · Gemini · Claude</span>
                 </div>
-                <span className="text-muted-foreground group-hover:text-foreground group-hover:translate-x-0.5 transition-all text-base shrink-0">›</span>
+                <span className="text-white/90 group-hover:translate-x-1 transition-transform text-xl font-bold shrink-0">›</span>
               </button>
             )}
           </div>
@@ -366,27 +375,28 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             <button
               type="button"
               onClick={onAnswerShareClick}
-              className="dial-cta group sm:hidden mt-5 w-full flex items-center gap-3 h-14 px-4 rounded-2xl bg-muted/40 border border-border active:scale-[0.99] transition-transform"
+              className="dial-cta group sm:hidden mt-5 w-full flex items-center gap-3 h-16 px-4 rounded-2xl bg-gradient-to-br from-askai to-askai/85 border border-askai/40 shadow-[0_8px_24px_-10px_hsl(var(--askai)/0.6)] active:scale-[0.98] transition-transform relative overflow-hidden"
             >
+              <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent" />
               <div className="relative w-[60px] h-[34px] shrink-0">
                 <svg viewBox="0 0 100 55" className="w-full h-full">
-                  <g className="stroke-muted-foreground/40 fill-none" strokeWidth="2">
+                  <g className="stroke-white/50 fill-none" strokeWidth="2">
                     {[0, 36, 72, 108, 144, 180].map((r) => (
                       <line key={r} x1="10" y1="50" x2="16" y2="48" transform={`rotate(${r}, 50, 50)`} />
                     ))}
                   </g>
-                  <circle cx="50" cy="50" r="5" className="fill-card stroke-border" />
+                  <circle cx="50" cy="50" r="5" className="fill-white/10 stroke-white/40" />
                   <g className="dial-needle origin-[50px_50px]">
-                    <line x1="50" y1="50" x2="12" y2="50" className="stroke-foreground" strokeWidth="3" strokeLinecap="round" />
-                    <circle cx="50" cy="50" r="2.5" className="fill-foreground" />
+                    <line x1="50" y1="50" x2="12" y2="50" className="stroke-white" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="50" cy="50" r="2.5" className="fill-white" />
                   </g>
                 </svg>
               </div>
               <div className="flex flex-col items-start flex-1 text-left">
-                <span className="text-sm font-bold text-foreground">AI 응답 점유율 측정하기</span>
-                <span className="text-[11px] text-muted-foreground">4사 동시 수집 · 무료</span>
+                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/80">무료 · 30초</span>
+                <span className="text-[15px] font-extrabold text-white leading-tight">AI 응답 점유율 측정하기</span>
               </div>
-              <span className="text-muted-foreground text-lg">→</span>
+              <span className="text-white text-xl font-bold">→</span>
             </button>
           )}
 
@@ -395,10 +405,16 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               transform: rotate(0deg);
               transform-origin: 50px 50px;
               transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+              animation: dial-idle-tick 3.6s ease-in-out infinite;
             }
             .dial-cta:hover .dial-needle,
             .dial-cta:focus-visible .dial-needle {
               animation: dial-needle-sweep 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            }
+            @keyframes dial-idle-tick {
+              0%, 100% { transform: rotate(0deg); }
+              45%      { transform: rotate(14deg); }
+              55%      { transform: rotate(10deg); }
             }
             @keyframes dial-needle-sweep {
               0%   { transform: rotate(0deg); }
@@ -407,7 +423,14 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               92%  { transform: rotate(127deg); }
               100% { transform: rotate(126deg); }
             }
+            .dial-cta .dial-sheen {
+              transition: transform 0.9s ease;
+            }
+            .dial-cta:hover .dial-sheen {
+              transform: translateX(100%);
+            }
           `}</style>
+
         </div>
       </div>
 
