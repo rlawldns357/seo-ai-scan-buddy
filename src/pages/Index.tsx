@@ -840,34 +840,6 @@ const Index = () => {
                 </div>
               )}
 
-              {/* AI 응답 점유율 측정 — 진단 후 1클릭 심화 측정 */}
-              {result && normalizedUrl && (
-                <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-5 sm:p-6 animate-fade-up">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-                    <div className="space-y-1">
-                      <h3 className="text-sm sm:text-base font-bold text-foreground flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-primary" />
-                        AI 응답 점유율 측정
-                      </h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                        ChatGPT·Perplexity·Gemini·Claude가 카테고리 질문에 답할 때 우리 브랜드를 얼마나 추천하는지, 경쟁사 대비 점유율은 어떤지 1분 안에 확인하세요.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        trackEvent("answer_share_button_click", { url: normalizedUrl });
-                        setAnswerShareOpen(true);
-                      }}
-                      className="shrink-0 inline-flex items-center justify-center gap-2 h-11 px-5 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-colors shadow-sm whitespace-nowrap"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      응답 점유율 측정
-                    </button>
-                  </div>
-                </div>
-              )}
-
               <Suspense fallback={null}>
                 <AnswerShareModal
                   open={answerShareOpen}
