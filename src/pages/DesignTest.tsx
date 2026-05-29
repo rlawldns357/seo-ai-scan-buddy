@@ -1,3 +1,4 @@
+import { lazy, Suspense, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import Navbar from "@/components/Navbar";
 import ScoreDashboard from "@/components/ScoreDashboard";
@@ -12,6 +13,8 @@ import FaqSection from "@/components/FaqSection";
 
 import { getDemoResult } from "@/data/demoResults";
 
+const AnswerShareModal = lazy(() => import("@/components/AnswerShareModal"));
+
 const DEMO_URL = "https://example.com";
 const demoResult = getDemoResult(DEMO_URL);
 
@@ -25,32 +28,39 @@ const fakePsi = {
   fetchTime: new Date().toISOString(),
 };
 
-const DesignTest = () => (
-  <div className="min-h-screen flex flex-col bg-background">
-    <Helmet>
-      <title>Design System Test – 서치튠OS</title>
-      <meta name="description" content="서치튠OS 내부 UI/UX 통합 테스트 페이지입니다." />
-      <meta name="robots" content="noindex, nofollow" />
-      <link rel="canonical" href="https://searchtuneos.com/design-test" />
-    </Helmet>
-    <Navbar />
-    <main className="flex-1 px-2 sm:px-4 pt-10 pb-40 sm:pt-16 sm:pb-44">
-      <div className="max-w-4xl mx-auto space-y-5">
-        <h1 className="sr-only">Design System Test</h1>
-        <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
-        <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
-        <AIPerceptionCard url={DEMO_URL} />
-        <ScoreDashboard result={demoResult} url={DEMO_URL} />
-        <VerificationLinks url={DEMO_URL} />
-        
-        <FunnelCTAs result={demoResult} url={DEMO_URL} />
-        <EmailForm onSubmitted={() => {}} />
-        <FaqSection expanded />
-        <div className="h-24" />
-      </div>
-      <StickyBottomCTA />
-    </main>
-  </div>
-);
+const DesignTest = () => {
+  const [answerShareOpen, setAnswerShareOpen] = useState(false);
+
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Helmet>
+        <title>Design System Test – 서치튠OS</title>
+        <meta name="description" content="서치튠OS 내부 UI/UX 통합 테스트 페이지입니다." />
+        <meta name="robots" content="noindex, nofollow" />
+        <link rel="canonical" href="https://searchtuneos.com/design-test" />
+      </Helmet>
+      <Navbar />
+      <main className="flex-1 px-2 sm:px-4 pt-10 pb-40 sm:pt-16 sm:pb-44">
+        <div className="max-w-4xl mx-auto space-y-5">
+          <h1 className="sr-only">Design System Test</h1>
+          <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
+          <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
+          <AIPerceptionCard url={DEMO_URL} onAnswerShareClick={() => setAnswerShareOpen(true)} />
+          <ScoreDashboard result={demoResult} url={DEMO_URL} />
+          <VerificationLinks url={DEMO_URL} />
+
+          <FunnelCTAs result={demoResult} url={DEMO_URL} />
+          <EmailForm onSubmitted={() => {}} />
+          <FaqSection expanded />
+          <div className="h-24" />
+        </div>
+        <StickyBottomCTA />
+      </main>
+      <Suspense fallback={null}>
+        <AnswerShareModal open={answerShareOpen} onOpenChange={setAnswerShareOpen} url={DEMO_URL} />
+      </Suspense>
+    </div>
+  );
+};
 
 export default DesignTest;
