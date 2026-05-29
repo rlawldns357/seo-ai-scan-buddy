@@ -409,7 +409,6 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
         </div>
       </div>
 
-      </div>
 
 
       {/* Brand rows */}
