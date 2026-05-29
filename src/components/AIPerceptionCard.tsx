@@ -77,12 +77,13 @@ function AwarenessBadge({ b }: { b: BrandResult }) {
     );
   }
   if (b.awareness === "yes") {
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-excellent/10 text-score-excellent border border-score-excellent/20">✅ 인지함</span>;
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-score-excellent/10 text-score-excellent">언급됨</span>;
   }
   if (b.awareness === "partial") {
-    return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-score-warning/10 text-score-warning border border-score-warning/20">△ 부분 인지</span>;
+    return <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-score-warning/10 text-score-warning">부분 언급</span>;
   }
-  return <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-score-poor/10 text-score-poor border border-score-poor/20">❌ 모름</span>;
+  return <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold bg-score-poor/10 text-score-poor">미포함</span>;
+
 }
 
 function RecBadge({ b }: { b: BrandResult }) {
