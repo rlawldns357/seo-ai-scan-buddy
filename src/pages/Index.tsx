@@ -36,6 +36,7 @@ const ScoreComparison = lazy(() => import("@/components/ScoreComparison"));
 const IndexingStatus = lazy(() => import("@/components/IndexingStatus"));
 
 const NaverStoreInsights = lazy(() => import("@/components/NaverStoreInsights"));
+const AnswerShareModal = lazy(() => import("@/components/AnswerShareModal"));
 
 
 type Screen = "home" | "loading" | "result";
