@@ -331,19 +331,29 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               <button
                 type="button"
                 onClick={onAnswerShareClick}
-                className="hidden sm:inline-flex shrink-0 flex-col items-center justify-center gap-1 px-4 py-3 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all border border-primary/20 group"
                 aria-label="AI 응답 점유율 측정"
+                className="dial-cta group hidden sm:flex shrink-0 relative w-[160px] h-[110px] bg-card border border-border rounded-xl shadow-sm overflow-hidden flex-col items-center justify-end pb-3 hover:shadow-md hover:-translate-y-px transition-all"
               >
-                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/20">
-                  <Sparkles className="w-2.5 h-2.5" />
-                  NEW · 무료
-                </span>
-                <span className="text-[13px] font-bold leading-tight whitespace-nowrap">
-                  응답 점유율
-                </span>
-                <span className="text-[11px] font-semibold leading-tight whitespace-nowrap opacity-90">
-                  측정하기 →
-                </span>
+                <span className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
+                <div className="relative w-[100px] h-[55px] mb-1.5">
+                  <svg viewBox="0 0 100 55" className="w-full h-full">
+                    <g className="stroke-border fill-none" strokeWidth="1.5">
+                      {Array.from({ length: 11 }).map((_, i) => (
+                        <line key={i} x1="10" y1="50" x2="15" y2="48" transform={`rotate(${i * 16}, 50, 50)`} />
+                      ))}
+                      <line x1="10" y1="50" x2="18" y2="49" transform="rotate(180, 50, 50)" className="stroke-muted-foreground" />
+                    </g>
+                    <circle cx="50" cy="50" r="5" className="fill-card stroke-border" strokeWidth="0.5" />
+                    <g className="dial-needle origin-[50px_50px]">
+                      <line x1="50" y1="50" x2="12" y2="50" className="stroke-foreground" strokeWidth="2" strokeLinecap="round" />
+                      <circle cx="50" cy="50" r="2" className="fill-foreground" />
+                    </g>
+                  </svg>
+                </div>
+                <div className="flex flex-col items-center text-center px-2">
+                  <span className="text-[10px] font-bold text-foreground leading-tight tracking-tight">AI 응답 점유율 측정</span>
+                  <span className="text-[8px] text-muted-foreground font-medium mt-0.5">4사 동시 수집 · 무료</span>
+                </div>
               </button>
             )}
           </div>
@@ -351,13 +361,47 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             <button
               type="button"
               onClick={onAnswerShareClick}
-              className="sm:hidden mt-4 w-full inline-flex items-center justify-center gap-2 h-11 rounded-full bg-gradient-to-r from-primary to-primary/85 text-primary-foreground text-sm font-bold shadow-md active:scale-[0.98] transition-transform"
+              className="dial-cta group sm:hidden mt-4 w-full flex items-center gap-3 h-14 px-4 rounded-2xl bg-card border border-border active:scale-[0.99] transition-transform"
             >
-              <Sparkles className="w-4 h-4" />
-              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/20">NEW</span>
-              AI 응답 점유율 측정하기
+              <div className="relative w-[60px] h-[34px] shrink-0">
+                <svg viewBox="0 0 100 55" className="w-full h-full">
+                  <g className="stroke-border fill-none" strokeWidth="2">
+                    {[0, 36, 72, 108, 144, 180].map((r) => (
+                      <line key={r} x1="10" y1="50" x2="16" y2="48" transform={`rotate(${r}, 50, 50)`} />
+                    ))}
+                  </g>
+                  <circle cx="50" cy="50" r="5" className="fill-card stroke-border" />
+                  <g className="dial-needle origin-[50px_50px]">
+                    <line x1="50" y1="50" x2="12" y2="50" className="stroke-foreground" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="50" cy="50" r="2.5" className="fill-foreground" />
+                  </g>
+                </svg>
+              </div>
+              <div className="flex flex-col items-start flex-1 text-left">
+                <span className="text-sm font-bold text-foreground">AI 응답 점유율 측정하기</span>
+                <span className="text-[11px] text-muted-foreground">4사 동시 수집 · 무료</span>
+              </div>
+              <span className="text-muted-foreground text-lg">→</span>
             </button>
           )}
+          <style>{`
+            .dial-cta .dial-needle {
+              transform: rotate(0deg);
+              transform-origin: 50px 50px;
+              transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+            }
+            .dial-cta:hover .dial-needle,
+            .dial-cta:focus-visible .dial-needle {
+              animation: dial-needle-sweep 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            }
+            @keyframes dial-needle-sweep {
+              0%   { transform: rotate(0deg); }
+              65%  { transform: rotate(128deg); }
+              80%  { transform: rotate(122deg); }
+              92%  { transform: rotate(127deg); }
+              100% { transform: rotate(126deg); }
+            }
+          `}</style>
         </div>
       </div>
 
