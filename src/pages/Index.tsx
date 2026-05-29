@@ -824,6 +824,10 @@ const Index = () => {
                     <AIPerceptionCard
                       url={normalizedUrl}
                       brand={result.storeContext.slug}
+                      onAnswerShareClick={() => {
+                        trackEvent("answer_share_button_click", { url: normalizedUrl });
+                        setAnswerShareOpen(true);
+                      }}
                     />
                   </div>
                 </>
@@ -836,9 +840,16 @@ const Index = () => {
 
               {result && !result.storeContext && askAIEnabled && (
                 <div id="ai-perception" className="scroll-mt-20">
-                  <AIPerceptionCard url={normalizedUrl} />
+                  <AIPerceptionCard
+                    url={normalizedUrl}
+                    onAnswerShareClick={() => {
+                      trackEvent("answer_share_button_click", { url: normalizedUrl });
+                      setAnswerShareOpen(true);
+                    }}
+                  />
                 </div>
               )}
+
 
               <Suspense fallback={null}>
                 <AnswerShareModal
