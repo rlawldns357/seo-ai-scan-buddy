@@ -387,26 +387,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             </button>
           )}
 
-              transform-origin: 50px 50px;
-              transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-              animation: dial-idle-tick 3.6s ease-in-out infinite;
-            }
-            .dial-cta:hover .dial-needle,
-            .dial-cta:focus-visible .dial-needle {
-              animation: dial-needle-sweep 1.1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-            }
-            @keyframes dial-idle-tick {
-              0%, 100% { transform: rotate(0deg); }
-              45%      { transform: rotate(14deg); }
-              55%      { transform: rotate(10deg); }
-            }
-            @keyframes dial-needle-sweep {
-              0%   { transform: rotate(0deg); }
-              65%  { transform: rotate(128deg); }
-              80%  { transform: rotate(122deg); }
-              92%  { transform: rotate(127deg); }
-              100% { transform: rotate(126deg); }
-            }
+          <style>{`
             .dial-cta .dial-sheen {
               transition: transform 0.9s ease;
             }
@@ -414,6 +395,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               transform: translateX(100%);
             }
           `}</style>
+
 
         </div>
       </div>
