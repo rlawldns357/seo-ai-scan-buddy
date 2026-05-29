@@ -59,7 +59,8 @@ const BRAND_META: Record<BrandKey, { name: string; Logo: React.ComponentType<{ c
   naver:      { name: "네이버 (HyperCLOVA X)", Logo: SiNaver, brandColor: "#03C75A" },
 };
 
-const ORDER: BrandKey[] = ["chatgpt", "claude", "gemini", "perplexity", "bing", "naver"];
+// Bing(Copilot)은 아직 측정 라인에서 제외 — 추후 재오픈 시 다시 추가
+const ORDER: BrandKey[] = ["chatgpt", "claude", "gemini", "perplexity", "naver"];
 
 function AwarenessBadge({ b }: { b: BrandResult }) {
   if (b.status === "unsupported") {
