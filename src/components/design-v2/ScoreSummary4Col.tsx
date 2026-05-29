@@ -50,11 +50,14 @@ function ScoreCard({
 }
 
 export default function ScoreSummary4Col({ result, mobile, desktop }: Props) {
-  const total = Math.round((result.seoScore + result.aeoScore + result.geoScore) / 3);
-  const totalColor = getTotalColor(total);
-
   const lighthouseMobile = mobile ? avgScore(mobile) : null;
   const lighthouseDesktop = desktop ? avgScore(desktop) : null;
+  const lighthouseAvg =
+    lighthouseMobile !== null && lighthouseDesktop !== null
+      ? Math.round((lighthouseMobile + lighthouseDesktop) / 2)
+      : lighthouseMobile ?? lighthouseDesktop ?? 0;
+  const lhColor = getTotalColor(lighthouseAvg);
+  const lhBadge = severityBadge(lighthouseAvg);
 
   return (
     <section className="rounded-3xl bg-card border border-border shadow-card p-4 sm:p-5 animate-fade-up">
@@ -68,54 +71,42 @@ export default function ScoreSummary4Col({ result, mobile, desktop }: Props) {
         <ScoreCard label="AEO" score={result.aeoScore} desc="AI 답변 출현 가능성이 있습니다." delay={100} />
         <ScoreCard label="GEO" score={result.geoScore} desc="브랜드 언급 및 인지 신호가 부족합니다." delay={150} />
 
-        {/* 4th cell: 전체 점수 + Lighthouse mini */}
+        {/* 4th cell: Lighthouse (desktop + mobile) */}
         <div
           className="rounded-2xl bg-gradient-to-br from-primary/5 via-card to-accent/5 border border-primary/20 shadow-card px-3 py-4 flex flex-col items-center text-center animate-fade-up"
           style={{ animationDelay: "200ms" }}
         >
-          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-foreground">전체 점수</p>
-          <div className="relative my-2 w-[110px] h-[110px] flex items-center justify-center">
-            <svg className="absolute inset-0 -rotate-90" width="110" height="110" viewBox="0 0 110 110">
-              <circle cx="55" cy="55" r="48" fill="none" stroke="hsl(var(--border))" strokeWidth="7" />
-              <circle
-                cx="55" cy="55" r="48" fill="none" strokeWidth="7" strokeLinecap="round"
-                stroke={`hsl(var(--${total >= 75 ? "score-excellent" : total >= 60 ? "score-good" : total >= 40 ? "score-warning" : "score-poor"}))`}
-                strokeDasharray={2 * Math.PI * 48}
-                strokeDashoffset={2 * Math.PI * 48 * (1 - total / 100)}
-                style={{ transition: "stroke-dashoffset 0.6s ease" }}
-              />
-            </svg>
-            <div className="flex flex-col items-center leading-none">
-              <span className={`text-[28px] font-black tabular-nums ${totalColor}`}>{total}</span>
-              <span className="text-[10px] text-muted-foreground mt-0.5">/100</span>
-            </div>
+          <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-foreground">Lighthouse</p>
+
+          <div className="flex items-center justify-center gap-3 my-3">
+            {lighthouseDesktop !== null && (
+              <div className="flex flex-col items-center">
+                <Monitor className="w-4 h-4 text-muted-foreground mb-1" />
+                <span className={`text-[26px] font-black tabular-nums leading-none ${getTotalColor(lighthouseDesktop)}`}>
+                  {lighthouseDesktop}
+                </span>
+                <span className="text-[9px] text-muted-foreground mt-1">Desktop</span>
+              </div>
+            )}
+            <div className="w-px h-12 bg-border/60" />
+            {lighthouseMobile !== null && (
+              <div className="flex flex-col items-center">
+                <Smartphone className="w-4 h-4 text-muted-foreground mb-1" />
+                <span className={`text-[26px] font-black tabular-nums leading-none ${getTotalColor(lighthouseMobile)}`}>
+                  {lighthouseMobile}
+                </span>
+                <span className="text-[9px] text-muted-foreground mt-1">Mobile</span>
+              </div>
+            )}
           </div>
 
-          {(lighthouseMobile !== null || lighthouseDesktop !== null) && (
-            <div className="w-full mt-1 pt-2 border-t border-border/60">
-              <p className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                Lighthouse
-              </p>
-              <div className="flex items-center justify-center gap-3">
-                {lighthouseDesktop !== null && (
-                  <div className="flex items-center gap-1">
-                    <Monitor className="w-3 h-3 text-muted-foreground" />
-                    <span className={`text-[12px] font-bold tabular-nums ${getTotalColor(lighthouseDesktop)}`}>
-                      {lighthouseDesktop}
-                    </span>
-                  </div>
-                )}
-                {lighthouseMobile !== null && (
-                  <div className="flex items-center gap-1">
-                    <Smartphone className="w-3 h-3 text-muted-foreground" />
-                    <span className={`text-[12px] font-bold tabular-nums ${getTotalColor(lighthouseMobile)}`}>
-                      {lighthouseMobile}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
+          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${lhBadge.cls}`}>
+            {lhBadge.text}
+          </span>
+
+          <p className="mt-2 text-[11px] text-muted-foreground leading-snug line-clamp-2 min-h-[28px]">
+            Google 성능·접근성·SEO 종합 점수입니다.
+          </p>
 
           <button
             type="button"
@@ -128,3 +119,4 @@ export default function ScoreSummary4Col({ result, mobile, desktop }: Props) {
     </section>
   );
 }
+
