@@ -88,6 +88,7 @@ const Index = () => {
   const [urlError, setUrlError] = useState("");
   const [normalizedUrl, setNormalizedUrl] = useState("");
   const [result, setResult] = useState<ExtendedDemoResult | null>(null);
+  const [answerShareOpen, setAnswerShareOpen] = useState(false);
 
   // Hero 입력창 placeholder 로테이션 (3.5초 간격, 빈 입력일 때만)
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
