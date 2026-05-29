@@ -318,10 +318,11 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                   / {measurable}
                 </span>
               </div>
-              <h3 className="text-[20px] sm:text-[26px] leading-[1.2] font-extrabold tracking-tight text-foreground">
-                <span className={toneClasses.text}>{aware}개 AI</span>
-                <span className="text-foreground">는 알고 있어요</span>
+              <h3 className="text-[20px] sm:text-[24px] lg:text-[26px] leading-[1.2] font-extrabold tracking-tight text-foreground">
+                <span className={`${toneClasses.text} whitespace-nowrap`}>{aware}개 AI</span>
+                <span className="text-foreground whitespace-nowrap">는 알고 있어요</span>
               </h3>
+
               <p className="text-[12px] sm:text-[13px] text-muted-foreground mt-1.5 leading-snug max-w-md">
                 {heroMessage.sub}
               </p>
@@ -336,18 +337,13 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               <button
                 type="button"
                 onClick={onAnswerShareClick}
-                aria-label="AI 응답 점유율 측정"
-                className="dial-cta group hidden sm:flex shrink-0 relative w-[280px] h-[116px] bg-gradient-to-br from-askai to-askai/85 hover:from-askai hover:to-askai border border-askai/40 rounded-2xl overflow-hidden flex-row items-center gap-4 px-5 shadow-[0_10px_30px_-10px_hsl(var(--askai)/0.55)] hover:shadow-[0_18px_44px_-12px_hsl(var(--askai)/0.7)] hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-askai/30"
+                aria-label="AI 응답 점유율 측정 — 베타 기간 무료"
+                className="dial-cta group hidden sm:flex shrink-0 relative w-[260px] lg:w-[284px] h-[120px] bg-gradient-to-br from-askai to-askai/85 hover:from-askai hover:to-askai border border-askai/40 rounded-2xl overflow-hidden flex-row items-center gap-3.5 pl-4 pr-5 shadow-[0_10px_30px_-10px_hsl(var(--askai)/0.55)] hover:shadow-[0_18px_44px_-12px_hsl(var(--askai)/0.7)] hover:-translate-y-0.5 transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-askai/30"
               >
                 {/* sheen sweep */}
                 <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-                {/* corner pulse dot */}
-                <span aria-hidden className="absolute top-2.5 right-3 flex w-2 h-2 items-center justify-center">
-                  <span className="absolute inline-flex w-full h-full rounded-full bg-white/80 animate-ping opacity-75" />
-                  <span className="relative inline-flex w-2 h-2 rounded-full bg-white" />
-                </span>
 
-                <div className="relative w-[88px] h-[52px] shrink-0">
+                <div className="relative w-[80px] h-[48px] shrink-0">
                   <svg viewBox="0 0 100 55" className="w-full h-full">
                     <g className="stroke-white/45 fill-none" strokeWidth="1.5">
                       {Array.from({ length: 11 }).map((_, i) => (
@@ -361,11 +357,20 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                     </g>
                   </svg>
                 </div>
+
                 <div className="flex flex-col items-start text-left flex-1 min-w-0">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/75">무료 · 30초</span>
-                  <span className="text-[16px] font-extrabold text-white leading-tight tracking-tight mt-0.5">AI 응답 점유율 측정</span>
-                  <span className="text-[11px] text-white/80 font-medium mt-1">ChatGPT · Perplexity · Gemini · Claude</span>
+                  <span className="inline-flex items-center gap-1 px-1.5 py-[2px] rounded-full bg-white/20 text-white text-[10px] font-bold tracking-wide whitespace-nowrap">
+                    <span className="w-1 h-1 rounded-full bg-white" />
+                    베타 기간 무료
+                  </span>
+                  <span className="text-[15px] lg:text-[16px] font-extrabold text-white leading-tight tracking-tight mt-1.5 whitespace-nowrap">
+                    AI 응답 점유율 측정
+                  </span>
+                  <span className="text-[11px] text-white/85 font-medium mt-1 whitespace-nowrap tabular-nums">
+                    4개 AI × 5개 질문 동시 측정
+                  </span>
                 </div>
+
                 <span className="text-white/90 group-hover:translate-x-1 transition-transform text-xl font-bold shrink-0">›</span>
               </button>
             )}
@@ -375,10 +380,11 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             <button
               type="button"
               onClick={onAnswerShareClick}
-              className="dial-cta group sm:hidden mt-5 w-full flex items-center gap-3 h-16 px-4 rounded-2xl bg-gradient-to-br from-askai to-askai/85 border border-askai/40 shadow-[0_8px_24px_-10px_hsl(var(--askai)/0.6)] active:scale-[0.98] transition-transform relative overflow-hidden"
+              aria-label="AI 응답 점유율 측정 — 베타 기간 무료"
+              className="dial-cta group sm:hidden mt-5 w-full flex items-center gap-3 min-h-[68px] py-2.5 px-3.5 rounded-2xl bg-gradient-to-br from-askai to-askai/85 border border-askai/40 shadow-[0_8px_24px_-10px_hsl(var(--askai)/0.6)] active:scale-[0.98] transition-transform relative overflow-hidden"
             >
               <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-              <div className="relative w-[60px] h-[34px] shrink-0">
+              <div className="relative w-[54px] h-[32px] shrink-0">
                 <svg viewBox="0 0 100 55" className="w-full h-full">
                   <g className="stroke-white/50 fill-none" strokeWidth="2">
                     {[0, 36, 72, 108, 144, 180].map((r) => (
@@ -392,13 +398,22 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                   </g>
                 </svg>
               </div>
-              <div className="flex flex-col items-start flex-1 text-left">
-                <span className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/80">무료 · 30초</span>
-                <span className="text-[15px] font-extrabold text-white leading-tight">AI 응답 점유율 측정하기</span>
+              <div className="flex flex-col items-start flex-1 text-left min-w-0">
+                <span className="inline-flex items-center gap-1 px-1.5 py-[1px] rounded-full bg-white/20 text-white text-[10px] font-bold tracking-wide whitespace-nowrap">
+                  <span className="w-1 h-1 rounded-full bg-white" />
+                  베타 기간 무료
+                </span>
+                <span className="text-[15px] font-extrabold text-white leading-tight mt-1 whitespace-nowrap">
+                  AI 응답 점유율 측정
+                </span>
+                <span className="text-[10.5px] text-white/85 font-medium mt-0.5 whitespace-nowrap tabular-nums">
+                  4개 AI × 5개 질문 동시 측정
+                </span>
               </div>
-              <span className="text-white text-xl font-bold">→</span>
+              <span className="text-white text-xl font-bold shrink-0">→</span>
             </button>
           )}
+
 
           <style>{`
             .dial-cta .dial-needle {
