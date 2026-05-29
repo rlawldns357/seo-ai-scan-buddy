@@ -35,7 +35,7 @@ const DesignTest = () => (
     </Helmet>
     <Navbar />
     <main className="flex-1 px-2 sm:px-4 pt-10 pb-40 sm:pt-16 sm:pb-44">
-      <div className="max-w-4xl mx-auto space-y-5">
+        <AIPerceptionCard url={DEMO_URL} onAnswerShareClick={() => alert("응답 점유율 측정 모달 (데모)")} />
         <h1 className="sr-only">Design System Test</h1>
         <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
         <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
