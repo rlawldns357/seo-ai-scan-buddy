@@ -334,71 +334,84 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             </div>
 
             {onAnswerShareClick && (
-              <button
-                type="button"
-                onClick={onAnswerShareClick}
-                aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
-                className="dial-cta group hidden sm:inline-flex shrink-0 relative items-center gap-3.5 h-[64px] pl-3 pr-4 rounded-xl bg-askai hover:bg-askai/95 border border-askai-deep/20 shadow-[0_6px_20px_-8px_hsl(var(--askai)/0.55)] hover:shadow-[0_12px_28px_-10px_hsl(var(--askai)/0.7)] hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-askai/25 overflow-hidden"
-              >
-                <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              <div className="hidden sm:flex flex-col items-end gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={onAnswerShareClick}
+                  aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
+                  className="dial-cta group relative inline-flex items-stretch h-[52px] rounded-xl bg-askai hover:bg-askai-deep border border-askai-deep/30 shadow-[0_4px_14px_-4px_hsl(var(--askai)/0.5)] hover:shadow-[0_10px_24px_-6px_hsl(var(--askai)/0.65)] hover:-translate-y-px transition-all focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-askai/25 overflow-hidden"
+                >
+                  <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-                {/* ×30 chip */}
-                <span className="relative flex items-baseline gap-[1px] px-2.5 h-[40px] rounded-lg bg-white/15 border border-white/25 text-white">
-                  <span className="text-[11px] font-bold leading-none pt-2 opacity-90">×</span>
-                  <span className="text-[24px] font-black leading-none tracking-tight tabular-nums">30</span>
-                </span>
-
-                {/* Title + sub */}
-                <span className="flex flex-col items-start leading-tight">
-                  <span className="text-white text-[15px] font-bold tracking-tight whitespace-nowrap">
-                    AI 응답 점유율 동시 측정
+                  {/* main label segment */}
+                  <span className="flex items-center gap-2 pl-4 pr-3.5 text-white">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="opacity-90">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                    <span className="text-[15px] font-bold tracking-tight whitespace-nowrap">AI 응답 점유율 측정</span>
                   </span>
-                  <span className="flex items-center gap-1.5 mt-0.5 text-[11px] text-white/80 font-medium whitespace-nowrap">
-                    <span className="inline-flex items-center gap-1">
-                      <span className="w-1 h-1 rounded-full bg-white/90 animate-pulse" />
-                      베타 무료
-                    </span>
-                    <span className="text-white/40">·</span>
-                    <span className="tabular-nums">4 AI × 5 질문</span>
-                  </span>
-                </span>
 
-                <span className="text-white/90 group-hover:translate-x-0.5 transition-transform text-[18px] font-semibold leading-none">›</span>
-              </button>
+                  {/* divider stub */}
+                  <span aria-hidden className="w-px bg-white/20 my-2" />
+
+                  {/* count stub */}
+                  <span className="flex items-baseline gap-[1px] px-3.5 bg-white/10 text-white">
+                    <span className="text-[11px] font-semibold leading-none self-center opacity-75">×</span>
+                    <span className="text-[18px] font-black leading-none tracking-tight tabular-nums self-center">30</span>
+                  </span>
+
+                  {/* arrow */}
+                  <span className="flex items-center pr-4 pl-2.5 text-white/95 group-hover:translate-x-0.5 transition-transform text-[16px] font-semibold">→</span>
+                </button>
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium pr-1">
+                  <span className="inline-flex items-center gap-1 text-score-excellent font-bold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-score-excellent animate-pulse" />
+                    베타 무료
+                  </span>
+                  <span className="text-border">·</span>
+                  <span className="tabular-nums">4 AI × 5 질문 동시</span>
+                </div>
+              </div>
             )}
           </div>
 
           {onAnswerShareClick && (
-            <button
-              type="button"
-              onClick={onAnswerShareClick}
-              aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
-              className="dial-cta group sm:hidden mt-5 w-full flex items-center gap-3 h-[60px] pl-3 pr-4 rounded-xl bg-askai border border-askai-deep/20 shadow-[0_6px_18px_-8px_hsl(var(--askai)/0.6)] active:scale-[0.98] transition-transform relative overflow-hidden"
-            >
-              <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+            <div className="sm:hidden mt-5 flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={onAnswerShareClick}
+                aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
+                className="dial-cta group relative w-full flex items-stretch h-[52px] rounded-xl bg-askai border border-askai-deep/30 shadow-[0_4px_14px_-4px_hsl(var(--askai)/0.55)] active:scale-[0.98] transition-transform overflow-hidden"
+              >
+                <span aria-hidden className="dial-sheen pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
 
-              <span className="relative flex items-baseline gap-[1px] px-2 h-[38px] rounded-lg bg-white/15 border border-white/25 text-white shrink-0">
-                <span className="text-[10px] font-bold leading-none pt-2 opacity-90">×</span>
-                <span className="text-[22px] font-black leading-none tracking-tight tabular-nums">30</span>
-              </span>
-
-              <span className="flex flex-col items-start leading-tight flex-1 min-w-0">
-                <span className="text-white text-[14px] font-bold tracking-tight whitespace-nowrap">
-                  AI 응답 점유율 동시 측정
+                <span className="flex items-center gap-2 pl-4 pr-3.5 text-white flex-1 min-w-0">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="opacity-90 shrink-0">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  <span className="text-[14px] font-bold tracking-tight whitespace-nowrap">AI 응답 점유율 측정</span>
                 </span>
-                <span className="flex items-center gap-1.5 mt-0.5 text-[10.5px] text-white/80 font-medium whitespace-nowrap">
-                  <span className="inline-flex items-center gap-1">
-                    <span className="w-1 h-1 rounded-full bg-white/90 animate-pulse" />
-                    베타 무료
-                  </span>
-                  <span className="text-white/40">·</span>
-                  <span className="tabular-nums">4 AI × 5 질문</span>
-                </span>
-              </span>
 
-              <span className="text-white/90 text-[18px] font-semibold leading-none shrink-0">›</span>
-            </button>
+                <span aria-hidden className="w-px bg-white/20 my-2" />
+
+                <span className="flex items-baseline gap-[1px] px-3 bg-white/10 text-white shrink-0">
+                  <span className="text-[11px] font-semibold leading-none self-center opacity-75">×</span>
+                  <span className="text-[18px] font-black leading-none tracking-tight tabular-nums self-center">30</span>
+                </span>
+
+                <span className="flex items-center pr-4 pl-2.5 text-white/95 text-[16px] font-semibold shrink-0">→</span>
+              </button>
+              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium px-1">
+                <span className="inline-flex items-center gap-1 text-score-excellent font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-score-excellent animate-pulse" />
+                  베타 무료
+                </span>
+                <span className="text-border">·</span>
+                <span className="tabular-nums">4 AI × 5 질문 동시</span>
+              </div>
+            </div>
           )}
+
 
           <style>{`
             .dial-cta .dial-needle {
