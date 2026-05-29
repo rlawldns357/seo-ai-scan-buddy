@@ -46,7 +46,9 @@ interface Props {
   url?: string;
   brand?: string;
   category?: string;
+  onAnswerShareClick?: () => void;
 }
+
 
 const BRAND_META: Record<BrandKey, { name: string; Logo: React.ComponentType<{ className?: string }>; brandColor: string }> = {
   chatgpt:    { name: "ChatGPT",        Logo: OpenAIMark,    brandColor: "#000000" },
@@ -101,7 +103,8 @@ const LOADING_STEPS = [
   { label: "응답을 분석하는 중", emoji: "🧩" },
 ];
 
-export default function AIPerceptionCard({ url, brand, category }: Props) {
+export default function AIPerceptionCard({ url, brand, category, onAnswerShareClick }: Props) {
+
   const [data, setData] = useState<ProbeResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -297,31 +300,67 @@ export default function AIPerceptionCard({ url, brand, category }: Props) {
         </div>
 
         {/* Hero — 숫자 + 메시지만 */}
+
         <div className="relative">
-          <div className="flex items-baseline gap-2 mb-2 flex-wrap">
-            <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
-              {aware}
-            </span>
-            <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground tabular-nums">
-              / {measurable}
-            </span>
-            <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
-              AI가 인지
-            </span>
-            {recommended > 0 && (
-              <span className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-score-excellent/10 text-score-excellent border border-score-excellent/20 text-[10px] sm:text-[11px] font-bold tabular-nums">
-                +{recommended} 추천
-              </span>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-baseline gap-2 mb-2 flex-wrap">
+                <span className={`text-[44px] sm:text-[56px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
+                  {aware}
+                </span>
+                <span className="text-[18px] sm:text-[22px] font-bold text-muted-foreground tabular-nums">
+                  / {measurable}
+                </span>
+                <span className="ml-1 text-[11px] sm:text-xs font-bold uppercase tracking-[0.14em] text-muted-foreground">
+                  AI가 인지
+                </span>
+                {recommended > 0 && (
+                  <span className="ml-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-score-excellent/10 text-score-excellent border border-score-excellent/20 text-[10px] sm:text-[11px] font-bold tabular-nums">
+                    +{recommended} 추천
+                  </span>
+                )}
+              </div>
+              <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
+                {heroMessage.title}
+              </h3>
+              <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug max-w-md">
+                {heroMessage.sub}
+              </p>
+            </div>
+            {onAnswerShareClick && (
+              <button
+                type="button"
+                onClick={onAnswerShareClick}
+                className="hidden sm:inline-flex shrink-0 flex-col items-center justify-center gap-1 px-4 py-3 rounded-2xl bg-gradient-to-br from-primary to-primary/80 text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all border border-primary/20 group"
+                aria-label="AI 응답 점유율 측정"
+              >
+                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/20">
+                  <Sparkles className="w-2.5 h-2.5" />
+                  NEW · 무료
+                </span>
+                <span className="text-[13px] font-bold leading-tight whitespace-nowrap">
+                  응답 점유율
+                </span>
+                <span className="text-[11px] font-semibold leading-tight whitespace-nowrap opacity-90">
+                  측정하기 →
+                </span>
+              </button>
             )}
           </div>
-          <h3 className={`text-[18px] sm:text-[22px] leading-[1.25] font-extrabold tracking-tight ${toneClasses.text}`}>
-            {heroMessage.title}
-          </h3>
-          <p className="text-[12px] sm:text-sm text-muted-foreground mt-1.5 leading-snug max-w-md">
-            {heroMessage.sub}
-          </p>
+          {onAnswerShareClick && (
+            <button
+              type="button"
+              onClick={onAnswerShareClick}
+              className="sm:hidden mt-4 w-full inline-flex items-center justify-center gap-2 h-11 rounded-full bg-gradient-to-r from-primary to-primary/85 text-primary-foreground text-sm font-bold shadow-md active:scale-[0.98] transition-transform"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-white/20">NEW</span>
+              AI 응답 점유율 측정하기
+            </button>
+          )}
         </div>
       </div>
+
 
       {/* Brand rows */}
       <div className="divide-y divide-border/60">

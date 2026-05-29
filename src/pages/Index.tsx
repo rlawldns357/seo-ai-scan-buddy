@@ -824,6 +824,10 @@ const Index = () => {
                     <AIPerceptionCard
                       url={normalizedUrl}
                       brand={result.storeContext.slug}
+                      onAnswerShareClick={() => {
+                        trackEvent("answer_share_button_click", { url: normalizedUrl });
+                        setAnswerShareOpen(true);
+                      }}
                     />
                   </div>
                 </>
@@ -836,9 +840,16 @@ const Index = () => {
 
               {result && !result.storeContext && askAIEnabled && (
                 <div id="ai-perception" className="scroll-mt-20">
-                  <AIPerceptionCard url={normalizedUrl} />
+                  <AIPerceptionCard
+                    url={normalizedUrl}
+                    onAnswerShareClick={() => {
+                      trackEvent("answer_share_button_click", { url: normalizedUrl });
+                      setAnswerShareOpen(true);
+                    }}
+                  />
                 </div>
               )}
+
 
               <Suspense fallback={null}>
                 <AnswerShareModal
@@ -859,36 +870,8 @@ const Index = () => {
                 />
               )}
 
-              {/* AI 응답 점유율 측정 — 점수 확인 직후 1클릭 심화 측정 (가장 눈에 띄게) */}
-              {result && normalizedUrl && (
-                <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 via-accent/5 to-primary/5 p-5 sm:p-6 shadow-lg animate-fade-up">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-4 justify-between">
-                    <div className="space-y-1.5 flex-1">
-                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/15 text-primary text-[11px] font-bold uppercase tracking-wide w-fit">
-                        <Sparkles className="w-3 h-3" />
-                        NEW · 무료 베타
-                      </div>
-                      <h3 className="text-base sm:text-lg font-bold text-foreground">
-                        AI 답변에서 내 브랜드 점유율은?
-                      </h3>
-                      <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                        ChatGPT·Perplexity·Gemini·Claude가 카테고리 질문에 답할 때 우리 브랜드를 얼마나 추천하는지, 경쟁사 대비 점유율은 어떤지 1분 안에 확인하세요.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        trackEvent("answer_share_button_click", { url: normalizedUrl });
-                        setAnswerShareOpen(true);
-                      }}
-                      className="shrink-0 inline-flex items-center justify-center gap-2 h-12 px-6 rounded-full bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/90 transition-all shadow-md hover:shadow-lg whitespace-nowrap"
-                    >
-                      <Sparkles className="w-4 h-4" />
-                      응답 점유율 측정하기
-                    </button>
-                  </div>
-                </div>
-              )}
+
+
 
 
               {/* 일반 사이트 전용 섹션: 스토어 결과일 땐 의미 없으므로 숨김 */}
