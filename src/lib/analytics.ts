@@ -19,7 +19,11 @@ type EventName =
   | "copy_prompt"
   | "ai_perception_shown"
   | "ai_perception_brand_clicked"
-  | "cause_analysis_opened";
+  | "cause_analysis_opened"
+  | "answer_share_button_click"
+  | "answer_share_measure_start"
+  | "answer_share_measure_done"
+  | "answer_share_measure_error";
 
 let sessionId: string | null = null;
 
