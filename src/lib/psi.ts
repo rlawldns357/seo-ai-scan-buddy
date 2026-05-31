@@ -49,8 +49,16 @@ async function fetchPsiOnce(url: string, strategy: PsiStrategy): Promise<{ data?
       return { error: { type: 'quota', message: 'Lighthouse API 요청 한도를 초과했어요. 잠시 후 다시 시도해 주세요.' } };
     }
 
+    // psi-proxy가 자체 타임아웃(90s)으로 끊은 경우 — 재시도 가능 타입으로 매핑.
+    if (status === 408) {
+      return { error: { type: 'timeout', message: '측정이 지연되고 있어요. 자동으로 다시 시도할게요.' } };
+    }
+
     if (status !== 200) {
       const errMsg = body?.error?.message || '';
+      if (errMsg === 'TIMEOUT' || errMsg.includes('timeout') || errMsg.includes('TIMEOUT')) {
+        return { error: { type: 'timeout', message: '측정이 지연되고 있어요. 자동으로 다시 시도할게요.' } };
+      }
       if (errMsg.includes('DNS_FAILURE') || errMsg.includes('FAILED_DOCUMENT_REQUEST')) {
         return { error: { type: 'unreachable', message: '해당 URL에 접근할 수 없어요. URL이 정확한지, 사이트가 정상 운영 중인지 확인해 주세요.' } };
       }
