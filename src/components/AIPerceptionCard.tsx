@@ -308,7 +308,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
 
         {/* Hero — 숫자 + 메시지 + 다이얼 CTA */}
         <div className="relative">
-          <div className="flex items-start justify-between gap-5">
+          <div className="flex items-center justify-between gap-5">
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 mb-2.5">
                 <span className={`text-[52px] sm:text-[64px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
@@ -334,11 +334,11 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             </div>
 
             {onAnswerShareClick && (
-              <div className="hidden sm:flex flex-col items-end shrink-0 gap-2">
+              <div className="hidden sm:flex flex-col items-end shrink-0 gap-2.5">
                 <button
                   type="button"
                   onClick={onAnswerShareClick}
-                  aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
+                  aria-label="AI 응답 점유율 30회 동시 측정 — 베타 기간 무료"
                   className="dial-cta group relative inline-flex items-center gap-3 h-[60px] pl-2 pr-6 rounded-full bg-foreground text-background transition-transform hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-foreground/15"
                 >
                   {/* ×30 flat impact chip */}
@@ -354,12 +354,12 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                   </span>
                 </button>
                 <p className="text-[11.5px] text-muted-foreground font-medium tabular-nums pr-2">
+                  <span className="font-bold text-foreground tabular-nums">30회 동시 측정</span>
+                  <span className="mx-1.5 text-border">·</span>
                   <span className="inline-flex items-center gap-1 text-score-excellent font-bold">
                     <span className="w-1.5 h-1.5 rounded-full bg-score-excellent animate-pulse" />
                     베타 무료
                   </span>
-                  <span className="mx-1.5 text-border">·</span>
-                  4 AI × 5 질문 동시
                 </p>
               </div>
             )}
@@ -370,7 +370,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               <button
                 type="button"
                 onClick={onAnswerShareClick}
-                aria-label="AI 응답 점유율 동시 측정 30회 — 베타 기간 무료"
+                aria-label="AI 응답 점유율 30회 동시 측정 — 베타 기간 무료"
                 className="dial-cta group relative inline-flex items-center gap-3 h-[60px] pl-2 pr-5 rounded-full bg-foreground text-background active:scale-[0.985] transition-transform"
               >
                 <span className="flex items-center justify-center h-11 px-3 rounded-full bg-askai text-white shrink-0">
@@ -383,13 +383,13 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                   AI 응답 점유율 측정
                 </span>
               </button>
-              <p className="text-[11.5px] text-muted-foreground font-medium tabular-nums px-1">
+              <p className="text-[11.5px] text-muted-foreground font-medium tabular-nums px-1 text-center">
+                <span className="font-bold text-foreground tabular-nums">30회 동시 측정</span>
+                <span className="mx-1.5 text-border">·</span>
                 <span className="inline-flex items-center gap-1 text-score-excellent font-bold">
                   <span className="w-1.5 h-1.5 rounded-full bg-score-excellent animate-pulse" />
                   베타 무료
                 </span>
-                <span className="mx-1.5 text-border">·</span>
-                4 AI × 5 질문 동시
               </p>
             </div>
           )}
