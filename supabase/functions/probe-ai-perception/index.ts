@@ -268,7 +268,7 @@ function aggregateRec(
 }
 
 // ── Gemini (Lovable AI Gateway, free) ─────────────────────────
-async function probeGemini(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probeGemini(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!KEY) {
     return { brand: "gemini", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "LOVABLE_API_KEY missing" };
@@ -305,14 +305,14 @@ async function probeGemini(url: string, host: string, brand: string, category: s
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const awarenessPrompt = buildAwarenessPrompt(url, brand);
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
 
     const [aw, ...recs] = await Promise.all([
       ask(awarenessPrompt),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand);
-    const agg = aggregateRec(recs, host, brand, awareness);
+    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt,
@@ -326,7 +326,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
 }
 
 // ── Perplexity (sonar, citations) ──────────────────────────────
-async function probePerplexity(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probePerplexity(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const KEY = Deno.env.get("PERPLEXITY_API_KEY");
   if (!KEY) {
     return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "PERPLEXITY_API_KEY missing" };
@@ -365,7 +365,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     };
 
     const awP = buildAwarenessPrompt(url, brand);
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
 
     const aw = await ask(awP);
     const recs: Array<{ text: string; citations: string[] }> = [];
@@ -373,9 +373,9 @@ async function probePerplexity(url: string, host: string, brand: string, categor
       await delay(450);
       recs.push(await ask(prompt));
     }
-    const { awareness } = detectAwareness(aw.text, host, brand);
+    const { awareness } = detectAwareness(aw.text, host, brand, aliases);
     const recTexts = recs.map((r) => r.text);
-    const agg = aggregateRec(recTexts, host, brand, awareness);
+    const agg = aggregateRec(recTexts, host, brand, aliases, awareness);
     // 호스트가 naver.com이면 citation 매칭은 의미 없음. awareness=no면 추천 매칭도 무효화.
     const isNaverHost = /(^|\.)naver\.com$/i.test(host);
     const allCitations = recs.flatMap((r) => r.citations || []);
@@ -414,7 +414,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
 }
 
 // ── ChatGPT / OpenAI model (Lovable AI Gateway 우선 → 폴백: OpenAI 직접) ────
-async function probeChatGPT(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probeChatGPT(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY");
   const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
   const hasDirect = !!OPENAI_KEY;
@@ -470,14 +470,14 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       logApiCost({ function_name: "probe-ai-perception", model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { direct: directUsed } });
       return j?.choices?.[0]?.message?.content ?? "";
     };
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
     const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand);
-    const agg = aggregateRec(recs, host, brand, awareness);
+    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
@@ -491,7 +491,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
 }
 
 // ── Claude (Anthropic) — 키 있을 때만 ─────────────────────────
-async function probeClaude(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probeClaude(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const KEY = Deno.env.get("ANTHROPIC_API_KEY");
   if (!KEY) {
     return { brand: "claude", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
@@ -528,14 +528,14 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       const blocks = j?.content ?? [];
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
     const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand);
-    const agg = aggregateRec(recs, host, brand, awareness);
+    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "claude", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
@@ -549,7 +549,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
 }
 
 // ── Naver HyperCLOVA X (CLOVA Studio) ─────────────────────────
-async function probeNaver(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probeNaver(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const KEY = Deno.env.get("CLOVASTUDIO_API_KEY");
   if (!KEY) {
     return { brand: "naver", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
@@ -602,14 +602,14 @@ async function probeNaver(url: string, host: string, brand: string, category: st
       });
       return j?.result?.message?.content ?? "";
     };
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
     const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand);
-    const agg = aggregateRec(recs, host, brand, awareness);
+    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "naver", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
@@ -665,7 +665,7 @@ Deno.serve(async (req) => {
       const r = cached.results as ProbeResult;
       // Backfill prompts for old cached entries that predate the prompt fields
       const awarenessPromptTpl = buildAwarenessPrompt(url, brand);
-      const recPromptsTpl = buildRecPrompts(brand, category);
+      const recPromptsTpl = buildRecPrompts(brand, category, regionHint);
       r.brands = (r.brands || []).map((b) => {
         if (b.status !== "ok") return b;
         return {
