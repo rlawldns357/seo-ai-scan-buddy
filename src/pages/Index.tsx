@@ -663,7 +663,8 @@ const Index = () => {
                       </span>
                     </button>
 
-                    {/* AI에게 물어보기 */}
+                    {/* AI에게 물어보기 — ×30 비용 이슈로 일시 OFF (블루프린트 보존) */}
+                    {ENABLE_X30 && (
                     <button
                       type="button"
                       onClick={() => setAskAIEnabled((v) => !v)}
@@ -674,7 +675,6 @@ const Index = () => {
                           : "border-border bg-card text-muted-foreground hover:border-askai/40 hover:text-foreground"
                       }`}
                     >
-                      {/* NEW 뱃지 — 우상단 살짝 튀어나오게 */}
                       <span
                         className="absolute -top-2 -right-1 flex items-center h-[18px] px-1.5 rounded-full text-primary-foreground text-[9px] font-black tracking-[0.08em] uppercase shadow-[0_3px_10px_-2px_hsl(var(--primary)/0.55)] ring-2 ring-background"
                         style={{ background: "var(--gradient-primary)" }}
@@ -693,6 +693,7 @@ const Index = () => {
                         ✓
                       </span>
                     </button>
+                    )}
 
                   </div>
                   <p className="text-xs text-muted-foreground mt-3 font-medium text-center">
