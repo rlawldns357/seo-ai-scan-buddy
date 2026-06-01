@@ -242,9 +242,10 @@ function aggregateRec(
   texts: string[],
   host: string,
   brand: string,
+  aliases: string[],
   awareness: "yes" | "partial" | "no" | null,
 ): { mentioned: boolean; competitors: string[]; total?: number; primaryText: string; primaryIdx: number; hitCount: number } {
-  const results = texts.map((t) => detectRecommendation(t, host, brand, awareness ?? undefined));
+  const results = texts.map((t) => detectRecommendation(t, host, brand, aliases, awareness ?? undefined));
   const hitCount = results.filter((r) => r.mentioned).length;
   const mentioned = hitCount > 0;
   const seen = new Set<string>();
@@ -260,7 +261,6 @@ function aggregateRec(
     }
     if (competitors.length >= 12) break;
   }
-  // 대표 응답: 브랜드를 언급한 첫 응답, 없으면 첫 응답
   const hitIdx = results.findIndex((r) => r.mentioned);
   const primaryIdx = hitIdx >= 0 ? hitIdx : 0;
   const primaryText = texts[primaryIdx] || "";
