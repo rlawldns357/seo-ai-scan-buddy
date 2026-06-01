@@ -165,72 +165,76 @@ function detectRecommendation(text: string, host: string, brand: string, aliases
 
 // ── 대화형 awareness 프롬프트 (사람들이 실제로 챗봇에 물어보듯) ──
 function buildAwarenessPrompt(url: string, brand: string): string {
-  return `혹시 ${url} (${brand}) 들어가본 적 있어? 여기 뭐 하는 곳인지 1~2문장으로만 알려줘. 잘 모르겠으면 "모릅니다"라고만 답해줘. 추측해서 지어내진 말고.`;
+  return `"${brand}" 또는 ${url} 라는 브랜드/사이트 알아? 안다면 무슨 서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 추측해서 지어내지 마.`;
 }
 
 // ── 카테고리 인텐트 감지 (제품/서비스/매장/콘텐츠) ──
 function detectCategoryIntent(category: string): "saas" | "shop" | "store" | "content" | "service" {
   const c = (category || "").toLowerCase();
   if (/saas|소프트웨어|software|툴|tool|플랫폼|app|앱|솔루션/.test(c)) return "saas";
-  if (/쇼핑몰|커머스|이커머스|온라인몰|스토어|쇼핑|판매/.test(c)) return "shop";
+  if (/쇼핑몰|커머스|이커머스|온라인몰|스토어|쇼핑|판매|브랜드/.test(c)) return "shop";
   if (/매장|음식점|식당|카페|레스토랑|병원|클리닉|로컬|지역/.test(c)) return "store";
   if (/블로그|미디어|뉴스|매거진|커뮤니티|콘텐츠/.test(c)) return "content";
   return "service";
 }
 
-// ── 다양한 인텐트의 대화형 추천 프롬프트 5종 (사람들이 실제로 챗봇/검색에 던지는 질문) ──
-function buildRecPrompts(brand: string, category: string): string[] {
+// ── 다양한 인텐트의 대화형 추천 프롬프트 5종 (글로벌 기본, 지역 신호는 자동 주입) ──
+function buildRecPrompts(brand: string, category: string, regionHint = ""): string[] {
   const cat = category || `${brand} 관련 분야`;
+  const region = regionHint ? `${regionHint} ` : ""; // 예: "한국 ", "일본 "
   const intent = detectCategoryIntent(category);
-
-  // 공통: 일반 추천 (모든 카테고리)
-  const general = `요즘 ${cat} 쪽에서 괜찮은 한국 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
-
-  // 인텐트별 맞춤 4종 (총 5종)
+  const general = `요즘 ${region}${cat} 쪽에서 괜찮은 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
   if (intent === "saas") {
     return [
       general,
-      `${cat} 한국에서 쓸 만한 SaaS Top 5 뽑아줘. 각각 어떤 게 강점인지 한 줄씩.`,
-      `${brand} 써볼까 고민 중인데, 비슷한 한국 ${cat} 대안 5개랑 ${brand}랑 비교해서 알려줘.`,
-      `${cat} 무료로 시작할 수 있는 한국 서비스 추천 5개. 유료 전환 시 가격대도 같이.`,
-      `실제 사용자 리뷰 좋은 한국 ${cat} 5곳 알려줘. 평점/후기 기준으로.`,
+      `${region}${cat} 쪽 쓸 만한 SaaS Top 5 뽑아줘. 각각 강점 한 줄씩.`,
+      `${brand} 써볼까 고민 중인데, 비슷한 ${region}${cat} 대안 5개랑 ${brand}랑 비교해서 알려줘.`,
+      `${region}${cat} 무료로 시작할 수 있는 서비스 5개. 유료 전환 시 가격대도 같이.`,
+      `실제 사용자 리뷰 좋은 ${region}${cat} 5곳 알려줘. 평점/후기 기준으로.`,
     ];
   }
   if (intent === "shop") {
     return [
       general,
-      `${cat} 살 때 한국에서 믿을 만한 쇼핑몰/브랜드 Top 5. 배송이나 AS 좋은 곳 위주로.`,
-      `${brand}에서 사봤는데, 비슷한 가격대 한국 ${cat} 브랜드 5개 더 추천해줘.`,
-      `요즘 ${cat} 가성비 좋은 한국 사이트 5곳. 후기 많은 순으로.`,
-      `${cat} 선물용으로 살 만한 한국 브랜드 5개 알려줘.`,
+      `${region}${cat} 살 때 믿을 만한 쇼핑몰/브랜드 Top 5. 배송이나 AS 좋은 곳 위주로.`,
+      `${brand}에서 사봤는데, 비슷한 가격대 ${region}${cat} 브랜드 5개 더 추천해줘.`,
+      `요즘 ${region}${cat} 가성비 좋은 사이트 5곳. 후기 많은 순으로.`,
+      `${region}${cat} 선물용으로 살 만한 브랜드 5개 알려줘.`,
     ];
   }
   if (intent === "store") {
     return [
       general,
-      `한국에서 ${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
-      `${brand} 말고 비슷한 한국 ${cat} 5곳 더 알려줘.`,
-      `${cat} 처음 가본다면 어디가 좋아? 한국 기준 5곳 번호로.`,
-      `리뷰/평점 좋은 한국 ${cat} 5곳. 사람들이 왜 좋다고 하는지도.`,
+      `${region}에서 ${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
+      `${brand} 말고 비슷한 ${region}${cat} 5곳 더 알려줘.`,
+      `${cat} 처음 가본다면 어디가 좋아? ${region}기준 5곳 번호로.`,
+      `리뷰/평점 좋은 ${region}${cat} 5곳. 사람들이 왜 좋다고 하는지도.`,
     ];
   }
   if (intent === "content") {
     return [
       general,
-      `${cat} 정보 얻기 좋은 한국 사이트/블로그 Top 5 추천해줘.`,
-      `${brand} 자주 보는데, 비슷한 톤의 한국 ${cat} 5곳 더 알려줘.`,
-      `${cat} 입문자가 보면 좋은 한국 콘텐츠 사이트 5개. 쉬운 곳 위주로.`,
-      `요즘 한국에서 ${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
+      `${region}${cat} 정보 얻기 좋은 사이트/블로그 Top 5 추천해줘.`,
+      `${brand} 자주 보는데, 비슷한 톤의 ${region}${cat} 5곳 더 알려줘.`,
+      `${region}${cat} 입문자가 보면 좋은 콘텐츠 사이트 5개. 쉬운 곳 위주로.`,
+      `요즘 ${region}${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
     ];
   }
-  // default: service
   return [
     general,
-    `${cat} 관련해서 한국에서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로.`,
-    `${brand} 써본 사람들이 비교하는 한국 ${cat} 5곳 알려줘.`,
-    `${cat} 처음 이용하려면 어디부터 봐야 해? 한국 기준 추천 5개.`,
-    `리뷰 좋은 한국 ${cat} Top 5. 왜 평이 좋은지도 한 줄씩.`,
+    `${region}${cat} 관련해서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로.`,
+    `${brand} 써본 사람들이 비교하는 ${region}${cat} 5곳 알려줘.`,
+    `${region}${cat} 처음 이용하려면 어디부터 봐야 해? 5개 추천.`,
+    `리뷰 좋은 ${region}${cat} Top 5. 왜 평이 좋은지도 한 줄씩.`,
   ];
+}
+
+// 호스트/언어로 지역 힌트 자동 추출 (.kr/.jp/.de 등)
+function detectRegionHint(host: string): string {
+  const tld = host.toLowerCase().split(".").pop() || "";
+  const map: Record<string, string> = { kr: "한국", jp: "일본", de: "독일", fr: "프랑스", cn: "중국", uk: "영국", tw: "대만" };
+  if (/(^|\.)naver\.com$|(^|\.)kakao\.com$|(^|\.)coupang\.com$/i.test(host)) return "한국";
+  return map[tld] || "";
 }
 
 
