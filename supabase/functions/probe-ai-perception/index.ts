@@ -324,7 +324,9 @@ async function probePerplexity(url: string, host: string, brand: string, categor
       status: "ok",
       awareness,
       awarenessAnswer: aw.text,
+      awarenessPrompt: awP,
       recommendationAnswer: agg.primaryText,
+      recommendationPrompt: recPrompts[agg.primaryIdx],
       recommendation: {
         mentioned: agg.mentioned || citationHit,
         total: uniqCitations.length || agg.total,
