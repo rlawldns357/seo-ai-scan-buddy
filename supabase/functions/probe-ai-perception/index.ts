@@ -232,17 +232,18 @@ async function probeGemini(url: string, host: string, brand: string, category: s
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const awarenessPrompt = `"${url}" 또는 "${brand}"이라는 브랜드/사이트가 무엇을 하는 곳인지 한국어로 1~2문장으로 알려주세요. 모르면 "모릅니다"라고만 답하세요. 추측 금지.`;
-    const recPrompt = category
-      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 1~5번 번호로 나열해 주세요. 잘 알려진 곳만.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열해 주세요.`;
+    const recPrompts = buildRecPrompts(brand, category);
 
-    const [aw, rec] = await Promise.all([ask(awarenessPrompt), ask(recPrompt)]);
+    const [aw, ...recs] = await Promise.all([
+      ask(awarenessPrompt),
+      ...recPrompts.map((p) => ask(p)),
+    ]);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand, awareness);
+    const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: rec,
-      recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
+      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
   } catch (e) {
