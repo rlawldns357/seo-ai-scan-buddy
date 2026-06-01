@@ -645,7 +645,7 @@ Deno.serve(async (req) => {
       .map((a: unknown) => String(a ?? "").trim())
       .filter((a: string) => a.length >= 2)
       .slice(0, 5);
-    const category = String(body?.category ?? "").trim();
+    let category = String(body?.category ?? "").trim();
     const regionHint = detectRegionHint(host);
 
     const sb = createClient(
@@ -660,19 +660,26 @@ Deno.serve(async (req) => {
       await sb.from("ai_perception_cache").delete().eq("url", url);
     }
 
-    // ⛔ 카테고리 미확인 가드 — AI가 카테고리를 추출하지 못하면 측정 자체가 무의미
+    // ⛔ 카테고리 미확인 가드 — 완화: brand가 있으면 brand 기반 soft category로 진행
+    // 정말 brand/category 둘 다 모를 때만 차단
+    const brandLooksValid = brand && brand.length >= 2 && !/^(www|m|shop|store|direct|app|api|blog)$/i.test(brand);
     if (!category) {
-      return new Response(JSON.stringify({
-        url,
-        brand,
-        category: "",
-        generated_at: new Date().toISOString(),
-        cached: false,
-        status: "category_unknown",
-        message: "AI가 사이트 콘텐츠에서 카테고리를 파악하지 못했어요. 기본 SEO(메타 태그·소개 문구·구조화 데이터)가 부족할 가능성이 큽니다. 아래 SEO·AEO·GEO 3축 점수부터 확인하고 수정해 주세요.",
-        brands: [],
-        summary: { measurable: 0, aware: 0, recommended: 0 },
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (brandLooksValid) {
+        // 브랜드는 잡혔지만 카테고리를 못 뽑은 경우: brand 기준으로 soft probe 진행
+        category = `${brand} 관련 분야`;
+      } else {
+        return new Response(JSON.stringify({
+          url,
+          brand,
+          category: "",
+          generated_at: new Date().toISOString(),
+          cached: false,
+          status: "category_unknown",
+          message: "AI가 사이트 콘텐츠에서 브랜드/카테고리를 파악하지 못했어요. 기본 SEO(메타 태그·소개 문구·구조화 데이터)가 부족할 가능성이 큽니다. 아래 SEO·AEO·GEO 3축 점수부터 확인하고 수정해 주세요.",
+          brands: [],
+          summary: { measurable: 0, aware: 0, recommended: 0 },
+        }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
     }
 
     // 캐시 hit
