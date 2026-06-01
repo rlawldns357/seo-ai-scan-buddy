@@ -600,6 +600,17 @@ Deno.serve(async (req) => {
 
     if (cached && new Date(cached.expires_at) > new Date()) {
       const r = cached.results as ProbeResult;
+      // Backfill prompts for old cached entries that predate the prompt fields
+      const awarenessPromptTpl = `"${url}" 또는 "${brand}"이라는 브랜드/사이트가 무엇을 하는 곳인지 한국어로 1~2문장으로 알려주세요. 모르면 "모릅니다"라고만 답하세요. 추측 금지.`;
+      const recPromptsTpl = buildRecPrompts(brand, category);
+      r.brands = (r.brands || []).map((b) => {
+        if (b.status !== "ok") return b;
+        return {
+          ...b,
+          awarenessPrompt: b.awarenessPrompt || awarenessPromptTpl,
+          recommendationPrompt: b.recommendationPrompt || recPromptsTpl[0],
+        };
+      });
       return new Response(JSON.stringify({ ...r, cached: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
