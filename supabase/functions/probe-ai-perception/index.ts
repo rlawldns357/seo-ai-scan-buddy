@@ -326,23 +326,31 @@ async function probePerplexity(url: string, host: string, brand: string, categor
   }
 }
 
-// ── ChatGPT / OpenAI model (Lovable AI Gateway) ───────────────
+// ── ChatGPT / OpenAI model (OpenAI 직접 우선 → 폴백: Lovable AI Gateway) ────
 async function probeChatGPT(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
-  const KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!KEY) {
-    return { brand: "chatgpt", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "LOVABLE_API_KEY missing" };
+  const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY");
+  const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const useDirect = !!OPENAI_KEY;
+  if (!useDirect && !LOVABLE_KEY) {
+    return { brand: "chatgpt", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "OPENAI_API_KEY/LOVABLE_API_KEY missing" };
   }
   try {
     const self = isSelfDomain(host);
-    const model = "openai/gpt-5-mini";
+    const model = useDirect ? "gpt-5-mini" : "openai/gpt-5-mini";
+    const endpoint = useDirect
+      ? "https://api.openai.com/v1/chat/completions"
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (useDirect) {
+      headers["Authorization"] = `Bearer ${OPENAI_KEY}`;
+    } else {
+      headers["Lovable-API-Key"] = LOVABLE_KEY!;
+      headers["X-Lovable-AIG-SDK"] = "vercel-ai-sdk";
+    }
     const ask = async (prompt: string) => {
-      const r = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      const r = await fetchWithRetry(endpoint, {
         method: "POST",
-        headers: {
-          "Lovable-API-Key": KEY,
-          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({
           model,
           messages: [
@@ -355,12 +363,12 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       });
       if (!r.ok) {
         const body = await r.text().catch(() => "");
-        console.error("Lovable AI OpenAI-model error", r.status, body.slice(0, 500));
+        console.error("OpenAI error", useDirect ? "(direct)" : "(gateway)", r.status, body.slice(0, 500));
         throw new Error(`openai-model ${r.status}: ${body.slice(0, 200)}`);
       }
       const j = await r.json();
       const u = extractUsage(j);
-      logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out });
+      logApiCost({ function_name: "probe-ai-perception", model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { direct: useDirect } });
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category);
