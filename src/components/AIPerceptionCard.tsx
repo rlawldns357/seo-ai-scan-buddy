@@ -25,8 +25,10 @@ interface BrandResult {
   status: "ok" | "unknown" | "unsupported" | "error";
   awareness: "yes" | "partial" | "no" | null;
   awarenessAnswer?: string;
+  awarenessPrompt?: string;
   recommendation: { mentioned: boolean; rank?: number; total?: number; competitors?: string[] };
   recommendationAnswer?: string;
+  recommendationPrompt?: string;
   model?: string;
   citations?: string[];
   errorMessage?: string;
