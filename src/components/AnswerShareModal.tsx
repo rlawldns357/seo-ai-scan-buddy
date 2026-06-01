@@ -53,6 +53,11 @@ function ScoreBar({ label, value, Icon, color }: { label: string; value: number;
   );
 }
 
+// 세션 내 캐시 — 같은 URL/브랜드/카테고리 조합은 모달을 다시 열어도 재측정하지 않음
+const sessionCache = new Map<string, AnswerShareData>();
+const cacheKey = (url?: string, brand?: string, category?: string) =>
+  `${url ?? ""}|${brand ?? ""}|${category ?? ""}`;
+
 export default function AnswerShareModal({ open, onOpenChange, url, brand, category }: Props) {
   const [stepIdx, setStepIdx] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -61,6 +66,17 @@ export default function AnswerShareModal({ open, onOpenChange, url, brand, categ
 
   useEffect(() => {
     if (!open || !url) return;
+    const key = cacheKey(url, brand, category);
+
+    // 캐시 히트 — 즉시 표시, 네트워크 호출 없음
+    const cached = sessionCache.get(key);
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     setData(null);
@@ -78,6 +94,7 @@ export default function AnswerShareModal({ open, onOpenChange, url, brand, categ
         trackEvent("answer_share_measure_error", { url, error: err });
         return;
       }
+      sessionCache.set(key, res);
       setData(res);
       setLoading(false);
       trackEvent("answer_share_measure_done", {
