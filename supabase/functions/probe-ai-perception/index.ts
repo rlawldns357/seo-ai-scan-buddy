@@ -540,15 +540,17 @@ async function probeNaver(url: string, host: string, brand: string, category: st
       return j?.result?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category);
+    const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`;
     const [aw, ...recs] = await Promise.all([
-      ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
+      ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
     const { awareness } = detectAwareness(aw, host, brand);
     const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "naver", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      awarenessAnswer: aw, awarenessPrompt: awP,
+      recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
       recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
