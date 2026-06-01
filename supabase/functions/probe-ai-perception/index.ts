@@ -156,22 +156,28 @@ function squash(s: string): string {
 
 // 단어경계 매칭 + 공백/기호 무시 매칭을 모두 시도한다.
 // 응답에 "**SearchTune OS**" 처럼 마크다운·공백이 끼어도 도메인 토큰 "searchtuneos" 가 잡힌다.
-function tokenMatches(text: string, tokens: string[]): boolean {
-  if (!text || tokens.length === 0) return false;
+// 반환: "strict" = 단어경계 정확매칭, "fuzzy" = squashed 매칭만 잡힘, "none" = 매칭없음
+function tokenMatchKind(text: string, tokens: string[]): "strict" | "fuzzy" | "none" {
+  if (!text || tokens.length === 0) return "none";
   const lower = text.toLowerCase();
   const squashed = squash(text);
-  return tokens.some((raw) => {
+  let fuzzy = false;
+  for (const raw of tokens) {
     const t = (raw || "").trim();
-    if (t.length < 2) return false;
+    if (t.length < 2) continue;
     const re = new RegExp(
       `(?:^|[^a-z0-9가-힣])${t.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`,
       "i",
     );
-    if (re.test(lower)) return true;
+    if (re.test(lower)) return "strict";
     const sq = squash(t);
-    if (sq.length >= 4 && squashed.includes(sq)) return true;
-    return false;
-  });
+    if (sq.length >= 4 && squashed.includes(sq)) fuzzy = true;
+  }
+  return fuzzy ? "fuzzy" : "none";
+}
+
+function tokenMatches(text: string, tokens: string[]): boolean {
+  return tokenMatchKind(text, tokens) !== "none";
 }
 
 function detectAwareness(text: string, host: string, brand: string, aliases: string[] = []): {
@@ -185,12 +191,14 @@ function detectAwareness(text: string, host: string, brand: string, aliases: str
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
   const hostMatch = !isNaverHost && lower.includes(host.toLowerCase());
   const tokens = [brand, ...aliases].map((s) => (s || "").trim()).filter((s) => s.length >= 2);
-  const tokenMatch = tokenMatches(text, tokens);
-  if (hostMatch) return { awareness: "yes" };
-  if (tokenMatch) return { awareness: "partial" };
-  if (text.trim().length >= 20) return { awareness: "yes" };
+  const matchKind = tokenMatchKind(text, tokens);
+  // 도메인 또는 브랜드명을 단어 경계로 정확히 언급 = yes (언급됨)
+  if (hostMatch || matchKind === "strict") return { awareness: "yes" };
+  // 공백/기호 제거 후에만 매칭되는 경우 = partial (모호한 언급)
+  if (matchKind === "fuzzy") return { awareness: "partial" };
   return { awareness: "no" };
 }
+
 
 function detectRecommendation(text: string, host: string, brand: string, aliases: string[] = [], awarenessHint?: "yes" | "partial" | "no"): {
   mentioned: boolean; rank?: number; total?: number; competitors: string[];
