@@ -202,28 +202,41 @@ async function askChatGPT(query: string): Promise<{ text: string; citations: str
   const useDirect = isLikelyOpenAIApiKey(OPENAI_KEY);
   if (!useDirect && !LOVABLE_KEY) return { text: "", citations: [], error: "no-key" };
   try {
-    const endpoint = useDirect
-      ? "https://api.openai.com/v1/chat/completions"
-      : "https://ai.gateway.lovable.dev/v1/chat/completions";
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (useDirect) headers["Authorization"] = `Bearer ${OPENAI_KEY}`;
-    else Object.assign(headers, lovableGatewayHeaders(LOVABLE_KEY!));
-    const model = useDirect ? "gpt-5-mini" : "openai/gpt-5-mini";
-    const r = await fetchTimeout(endpoint, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: "Answer naturally and objectively in Korean. Do not mention this is a test. Do not force any specific brand." },
-          { role: "user", content: query },
-        ],
-      }),
-    });
+    const callModel = async (direct: boolean) => {
+      const endpoint = direct
+        ? "https://api.openai.com/v1/chat/completions"
+        : "https://ai.gateway.lovable.dev/v1/chat/completions";
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (direct) headers["Authorization"] = `Bearer ${OPENAI_KEY}`;
+      else Object.assign(headers, lovableGatewayHeaders(LOVABLE_KEY!));
+      const model = direct ? "gpt-5-mini" : "openai/gpt-5-mini";
+      return await fetchTimeout(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: "Answer naturally and objectively in Korean. Do not mention this is a test. Do not force any specific brand." },
+            { role: "user", content: query },
+          ],
+        }),
+      });
+    };
+    let directUsed = useDirect;
+    let r = await callModel(directUsed);
+    if (!r.ok && directUsed && LOVABLE_KEY) {
+      console.warn("[chatgpt] direct OpenAI failed; falling back to Lovable AI Gateway", r.status);
+      directUsed = false;
+      r = await callModel(false);
+    }
+    if (!r.ok) {
+      const body = await r.text().catch(() => "");
+      return { text: "", citations: [], error: `chatgpt ${r.status}: ${body.slice(0, 120)}` };
+    }
     const j = await r.json();
     const text = j?.choices?.[0]?.message?.content ?? "";
     const u = extractUsage(j);
-    await logApiCost({ function_name: FN_NAME, model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { phase: "ask", engine: "chatgpt", direct: useDirect } });
+    await logApiCost({ function_name: FN_NAME, model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { phase: "ask", engine: "chatgpt", direct: directUsed } });
     return { text, citations: [] };
   } catch (e) {
     return { text: "", citations: [], error: String(e) };
