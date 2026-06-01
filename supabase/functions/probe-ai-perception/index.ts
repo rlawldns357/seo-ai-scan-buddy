@@ -353,18 +353,17 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out });
       return j?.choices?.[0]?.message?.content ?? "";
     };
-    const [aw, rec] = await Promise.all([
+    const recPrompts = buildRecPrompts(brand, category);
+    const [aw, ...recs] = await Promise.all([
       ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
-      ask(category
-      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`),
+      ...recPrompts.map((p) => ask(p)),
     ]);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand, awareness);
+    const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: rec,
-      recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
+      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
   } catch (e) {
