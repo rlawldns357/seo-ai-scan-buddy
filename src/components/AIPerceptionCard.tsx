@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ChevronDown, Lock, Loader2, AlertCircle, Sparkles, Zap, AlertTriangle, MehIcon, HelpCircle, Trophy, MessageCircleQuestion } from "lucide-react";
 import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
-import { ConsultationModal } from "@/components/ConsultationModal";
+import ConsultationModal from "@/components/ConsultationModal";
 
 // Official brand logos (inline SVG for OpenAI/Copilot — not in simple-icons free set)
 const OpenAIMark = ({ className }: { className?: string }) => (
