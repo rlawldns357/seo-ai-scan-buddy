@@ -71,7 +71,7 @@ function AwarenessBadge({ b }: { b: BrandResult }) {
   }
   if (b.status === "error") {
     return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-muted/60 text-muted-foreground border border-border">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-score-warning/10 text-score-warning border border-score-warning/20">
         측정 실패
       </span>
     );
@@ -220,8 +220,9 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
     ? `측정된 ${measurable}개 AI 중 ${aware}곳이 우리 사이트를 알고 있어요`
     : `측정된 ${measurable}개 AI 모두가 우리 사이트를 인지하고 있어요`;
 
-  // 측정 가능 / 미지원 분리
+  // 측정 가능 / 장애 / 미지원 분리
   const supportedBrands = sortedBrands.filter((b) => b.status !== "unsupported");
+  const errorBrands = sortedBrands.filter((b) => b.status === "error");
   const unsupportedBrands = sortedBrands.filter((b) => b.status === "unsupported");
 
   // 톤은 인지율 기준으로 결정 (추천은 보너스)
@@ -391,6 +392,11 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                       “{b.awarenessAnswer.replace(/\s+/g, " ").trim()}”
                     </p>
                   )}
+                  {b.status === "error" && b.errorMessage && (
+                    <p className="mt-1 text-[12px] sm:text-[13px] text-score-warning line-clamp-1">
+                      {b.errorMessage}
+                    </p>
+                  )}
                 </div>
 
                 {canExpand && (
@@ -430,6 +436,30 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             </div>
           );
         })}
+
+        {/* Error group */}
+        {errorBrands.length > 0 && (
+          <div className="px-4 sm:px-6 py-3 bg-score-warning/5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-score-warning mb-2">측정 실패 · API 키/잔액 확인 필요</p>
+            <div className="flex flex-wrap gap-2">
+              {errorBrands.map((b) => {
+                const meta = BRAND_META[b.brand];
+                return (
+                  <div key={b.brand} className="inline-flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-card border border-score-warning/20">
+                    <div
+                      className="w-5 h-5 rounded-full bg-card border border-score-warning/20 flex items-center justify-center opacity-80"
+                      style={{ color: meta.brandColor }}
+                    >
+                      <meta.Logo className="w-3 h-3" />
+                    </div>
+                    <span className="text-[11px] font-semibold text-score-warning">{meta.name}</span>
+                    <AlertCircle className="w-2.5 h-2.5 text-score-warning" />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Unsupported group */}
         {unsupportedBrands.length > 0 && (
