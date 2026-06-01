@@ -556,41 +556,43 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
         )}
       </div>
 
-      {/* 퍼널 CTA: 더 깊은 질문이 궁금하면 상담으로 */}
-      <div className="px-4 sm:px-6 py-4 border-t border-border bg-gradient-to-br from-primary/5 via-background to-primary/5">
-        <div className="flex items-start sm:items-center gap-3 flex-col sm:flex-row">
-          <div className="flex items-start gap-2.5 flex-1">
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
-              <MessageCircleQuestion className="w-4 h-4 text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-bold text-foreground leading-snug">
-                "그래서 어떻게 해야 ChatGPT가 우리를 알게 만들 수 있나요?"
-              </p>
-              <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
-                AI 인지도·추천 노출 개선 전략, 1:1 무료 상담으로 받아보세요.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              trackEvent("consultation_submit_success" as any, { source: "ai_perception_card" });
-              setConsultOpen(true);
-            }}
-            className="w-full sm:w-auto px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity flex-shrink-0"
-          >
-            무료 상담 받기 →
-          </button>
-        </div>
-      </div>
-
       {/* Footer */}
       <div className="px-5 sm:px-6 py-3 border-t border-border bg-muted/20 text-[11px] text-muted-foreground flex items-center gap-1.5">
         <span className="inline-block w-1 h-1 rounded-full bg-muted-foreground/40" />
         실제 AI에 같은 질문을 보내 받은 답변이에요. 24시간마다 캐시 갱신.
       </div>
-
-      <ConsultationModal open={consultOpen} onClose={() => setConsultOpen(false)} />
     </div>
+
+    {/* 퍼널 CTA: AI 카드 바깥, 별도 패널로 분리 (카드 height에 갇히지 않도록) */}
+    <div className="mt-3 rounded-2xl border border-border bg-muted/30 px-4 sm:px-6 py-4 animate-fade-up">
+      <div className="flex items-start sm:items-center gap-3 flex-col sm:flex-row">
+        <div className="flex items-start gap-2.5 flex-1">
+          <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
+            <MessageCircleQuestion className="w-4 h-4 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm font-bold text-foreground leading-snug">
+              "그래서 어떻게 해야 ChatGPT가 우리를 알게 만들 수 있나요?"
+            </p>
+            <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
+              AI 인지도·추천 노출 개선 전략, 1:1 무료 상담으로 받아보세요.
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={() => {
+            trackEvent("consultation_submit_success" as any, { source: "ai_perception_card" });
+            setConsultOpen(true);
+          }}
+          className="w-full sm:w-auto px-4 py-2 rounded-full bg-primary text-primary-foreground text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity flex-shrink-0"
+        >
+          무료 상담 받기 →
+        </button>
+      </div>
+    </div>
+
+    <ConsultationModal open={consultOpen} onClose={() => setConsultOpen(false)} />
+    </>
   );
 }
+
