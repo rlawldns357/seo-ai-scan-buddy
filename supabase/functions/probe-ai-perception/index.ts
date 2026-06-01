@@ -12,7 +12,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TIMEOUT_MS = 35000;
+const TIMEOUT_MS = 60000;
 const RETRY_DELAY_MS = 800;
 
 /** fetch with timeout + 1 retry on network/5xx errors. */
