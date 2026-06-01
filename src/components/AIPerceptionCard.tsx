@@ -48,6 +48,7 @@ interface ProbeResult {
 interface Props {
   url?: string;
   brand?: string;
+  aliases?: string[];
   category?: string;
   onAnswerShareClick?: () => void;
 }
@@ -107,11 +108,12 @@ const LOADING_STEPS = [
   { label: "응답을 분석하는 중", emoji: "🧩" },
 ];
 
-export default function AIPerceptionCard({ url, brand, category, onAnswerShareClick }: Props) {
+export default function AIPerceptionCard({ url, brand, aliases, category, onAnswerShareClick }: Props) {
 
   const [data, setData] = useState<ProbeResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categoryUnknown, setCategoryUnknown] = useState<string | null>(null);
   const [expandedBrand, setExpandedBrand] = useState<BrandKey | null>(null);
   const [consultOpen, setConsultOpen] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
@@ -123,6 +125,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setCategoryUnknown(null);
     setStepIdx(0);
 
     (async () => {
@@ -130,11 +133,16 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
         const adminPw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("admin_pw") : null;
         const purge = reloadKey > 0 && !!adminPw;
         const { data: resp, error: invErr } = await supabase.functions.invoke("probe-ai-perception", {
-          body: { url, brand, category, ...(purge ? { purge: true, adminPassword: adminPw } : {}) },
+          body: { url, brand, aliases, category, ...(purge ? { purge: true, adminPassword: adminPw } : {}) },
         });
         if (cancelled) return;
         if (invErr) throw invErr;
         if (resp?.error) throw new Error(resp.error);
+        if (resp?.status === "category_unknown") {
+          setCategoryUnknown(resp.message || "AI가 카테고리를 파악하지 못했어요.");
+          setData(null);
+          return;
+        }
         setData(resp as ProbeResult);
         trackEvent("ai_perception_shown", {
           url,
@@ -150,7 +158,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
     })();
 
     return () => { cancelled = true; };
-  }, [url, brand, category, reloadKey]);
+  }, [url, brand, JSON.stringify(aliases || []), category, reloadKey]);
 
   // Loading step ticker (advance every ~2.2s, hold on last)
   useEffect(() => {
@@ -195,6 +203,32 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
             );
           })}
         </ul>
+      </div>
+    );
+  }
+
+  // ── Category unknown: AI가 카테고리 파악 실패 → 측정 스킵 + 3축 점수로 유도
+  if (categoryUnknown) {
+    return (
+      <div className="rounded-2xl bg-card border border-score-warning/30 p-5 sm:p-6 animate-fade-up">
+        <div className="flex items-center gap-2 mb-3">
+          <AlertCircle className="w-4 h-4 text-score-warning" />
+          <h3 className="text-sm sm:text-base font-bold text-foreground">AI 인식 측정 불가 — 카테고리 미확인</h3>
+        </div>
+        <p className="text-[13px] sm:text-sm text-foreground leading-relaxed mb-3">
+          {categoryUnknown}
+        </p>
+        <div className="rounded-xl bg-muted/50 border border-border p-3 text-[12px] sm:text-[13px] text-muted-foreground leading-relaxed">
+          <span className="font-semibold text-foreground">왜 안 되나요?</span>{" "}
+          AI는 사이트 콘텐츠에서 "무엇을 다루는 곳인지"(카테고리)를 먼저 파악해야 추천 질의를 만들 수 있어요.
+          크롤링은 됐지만 메타 태그·소개 문구·구조화 데이터가 부족해 AI도 이 사이트를 분류하지 못한 상태예요.
+        </div>
+        <a
+          href="#score-dashboard"
+          className="mt-4 inline-flex items-center justify-center gap-1 px-3 py-2 rounded-full bg-foreground text-background text-[12px] font-semibold hover:opacity-90 transition-opacity"
+        >
+          ↓ 아래 3축 점수부터 확인하기
+        </a>
       </div>
     );
   }

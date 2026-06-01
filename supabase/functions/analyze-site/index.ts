@@ -40,6 +40,9 @@ Evaluate based on these sub-signals (each 0-100):
 
 **Output format (JSON only, no markdown):**
 {
+  "brand_name": "<공식 브랜드/사이트 이름. 예: '쿠팡', 'Notion', 'LG전자'. 콘텐츠·메타·로고·about에서 추론. URL 슬러그(예: 'direct','shop','m')는 절대 금지. 추출 불가 시 null>",
+  "brand_aliases": ["<영문/한글/약어 변형 1~5개. 예: ['LG전자','LG Electronics','LG']. 추출 불가 시 빈 배열>"],
+  "category": "<사이트의 제품/서비스 카테고리를 한국어로 8자 이내. 예: '생활용품 쇼핑몰', '프로젝트 관리 SaaS', '유제품 브랜드'. 일반어('웹사이트','회사 홈페이지','서비스') 금지. 추출 불가 시 null>",
   "seoScore": <0-100>,
   "aeoScore": <0-100>,
   "geoScore": <0-100>,
@@ -105,7 +108,8 @@ IMPORTANT:
 - Be specific to the actual website content - don't give generic advice
 - Score honestly based on what you actually see in the content
 - pointRange should be realistic improvement estimates
-- scoreCap should only be set when there's a hard blocker limiting the score`;
+- scoreCap should only be set when there's a hard blocker limiting the score
+- brand_name/brand_aliases/category는 콘텐츠에서 실제로 확인 가능할 때만 채우고, 추측·확신 부족 시 반드시 null(또는 빈 배열)로 반환하라. 슬러그/도메인 토큰 그대로 쓰지 마라.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {

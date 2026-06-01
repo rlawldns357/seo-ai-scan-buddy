@@ -120,39 +120,39 @@ function isDenialOnly(text: string): boolean {
   return false;
 }
 
-function detectAwareness(text: string, host: string, brand: string): {
+function detectAwareness(text: string, host: string, brand: string, aliases: string[] = []): {
   awareness: "yes" | "partial" | "no";
 } {
   if (!text) return { awareness: "no" };
   if (isDenialOnly(text)) return { awareness: "no" };
   const lower = text.toLowerCase();
   // 네이버 스토어처럼 host가 naver.com인 경우 'naver'만 언급돼도 yes로 판정되는
-  // false-positive를 막기 위해 host 매칭을 비활성화하고 brand(=슬러그/브랜드명)만 본다.
+  // false-positive를 막기 위해 host 매칭을 비활성화하고 brand/aliases만 본다.
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
   const hostMatch = !isNaverHost && lower.includes(host.toLowerCase());
-  // 짧은 brand 토큰(lge 등)은 "LG전자"의 LG와 부분일치할 수 있음 → 단어 경계 강제
-  const b = brand.toLowerCase();
-  const brandMatch = b.length >= 2 && new RegExp(`(?:^|[^a-z0-9])${b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9])`, "i").test(lower);
+  // brand + aliases 단어경계 매칭
+  const tokens = [brand, ...aliases].map((s) => (s || "").trim()).filter((s) => s.length >= 2);
+  const tokenMatch = tokens.some((t) =>
+    new RegExp(`(?:^|[^a-z0-9가-힣])${t.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`, "i").test(lower)
+  );
   if (hostMatch) return { awareness: "yes" };
-  if (brandMatch) return { awareness: "partial" };
-  // 슬러그/호스트 토큰 일치는 없지만 부정 단답도 아니고 실질 답변(>=20자)이면
-  // 모델이 사이트를 인지하고 답한 것 → "yes" (slug != 실제 브랜드명 케이스, 예: lge → "LG전자")
+  if (tokenMatch) return { awareness: "partial" };
   if (text.trim().length >= 20) return { awareness: "yes" };
   return { awareness: "no" };
 }
 
-function detectRecommendation(text: string, host: string, brand: string, awarenessHint?: "yes" | "partial" | "no"): {
+function detectRecommendation(text: string, host: string, brand: string, aliases: string[] = [], awarenessHint?: "yes" | "partial" | "no"): {
   mentioned: boolean; rank?: number; total?: number; competitors: string[];
 } {
   if (!text) return { mentioned: false, competitors: [] };
   const lower = text.toLowerCase();
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
-  const b = brand.toLowerCase();
-  const brandMatchStrict = b.length >= 2 && new RegExp(`(?:^|[^a-z0-9])${b.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9])`, "i").test(lower);
-  // 모델이 awareness에서 "모릅니다"라고 답했으면 추천 매칭은 노이즈로 간주 → false 강제
+  const tokens = [brand, ...aliases].map((s) => (s || "").trim()).filter((s) => s.length >= 2);
+  const tokenMatch = tokens.some((t) =>
+    new RegExp(`(?:^|[^a-z0-9가-힣])${t.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`, "i").test(lower)
+  );
   const denyForce = awarenessHint === "no";
-  const mentioned = !denyForce && ((!isNaverHost && lower.includes(host.toLowerCase())) || brandMatchStrict);
-  // 매우 단순한 경쟁사 추출: 1. ~ , 2. ~ 패턴
+  const mentioned = !denyForce && ((!isNaverHost && lower.includes(host.toLowerCase())) || tokenMatch);
   const competitors: string[] = [];
   const lines = text.split(/\r?\n/);
   for (const ln of lines) {
@@ -165,72 +165,76 @@ function detectRecommendation(text: string, host: string, brand: string, awarene
 
 // ── 대화형 awareness 프롬프트 (사람들이 실제로 챗봇에 물어보듯) ──
 function buildAwarenessPrompt(url: string, brand: string): string {
-  return `혹시 ${url} (${brand}) 들어가본 적 있어? 여기 뭐 하는 곳인지 1~2문장으로만 알려줘. 잘 모르겠으면 "모릅니다"라고만 답해줘. 추측해서 지어내진 말고.`;
+  return `"${brand}" 또는 ${url} 라는 브랜드/사이트 알아? 안다면 무슨 서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 추측해서 지어내지 마.`;
 }
 
 // ── 카테고리 인텐트 감지 (제품/서비스/매장/콘텐츠) ──
 function detectCategoryIntent(category: string): "saas" | "shop" | "store" | "content" | "service" {
   const c = (category || "").toLowerCase();
   if (/saas|소프트웨어|software|툴|tool|플랫폼|app|앱|솔루션/.test(c)) return "saas";
-  if (/쇼핑몰|커머스|이커머스|온라인몰|스토어|쇼핑|판매/.test(c)) return "shop";
+  if (/쇼핑몰|커머스|이커머스|온라인몰|스토어|쇼핑|판매|브랜드/.test(c)) return "shop";
   if (/매장|음식점|식당|카페|레스토랑|병원|클리닉|로컬|지역/.test(c)) return "store";
   if (/블로그|미디어|뉴스|매거진|커뮤니티|콘텐츠/.test(c)) return "content";
   return "service";
 }
 
-// ── 다양한 인텐트의 대화형 추천 프롬프트 5종 (사람들이 실제로 챗봇/검색에 던지는 질문) ──
-function buildRecPrompts(brand: string, category: string): string[] {
+// ── 다양한 인텐트의 대화형 추천 프롬프트 5종 (글로벌 기본, 지역 신호는 자동 주입) ──
+function buildRecPrompts(brand: string, category: string, regionHint = ""): string[] {
   const cat = category || `${brand} 관련 분야`;
+  const region = regionHint ? `${regionHint} ` : ""; // 예: "한국 ", "일본 "
   const intent = detectCategoryIntent(category);
-
-  // 공통: 일반 추천 (모든 카테고리)
-  const general = `요즘 ${cat} 쪽에서 괜찮은 한국 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
-
-  // 인텐트별 맞춤 4종 (총 5종)
+  const general = `요즘 ${region}${cat} 쪽에서 괜찮은 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
   if (intent === "saas") {
     return [
       general,
-      `${cat} 한국에서 쓸 만한 SaaS Top 5 뽑아줘. 각각 어떤 게 강점인지 한 줄씩.`,
-      `${brand} 써볼까 고민 중인데, 비슷한 한국 ${cat} 대안 5개랑 ${brand}랑 비교해서 알려줘.`,
-      `${cat} 무료로 시작할 수 있는 한국 서비스 추천 5개. 유료 전환 시 가격대도 같이.`,
-      `실제 사용자 리뷰 좋은 한국 ${cat} 5곳 알려줘. 평점/후기 기준으로.`,
+      `${region}${cat} 쪽 쓸 만한 SaaS Top 5 뽑아줘. 각각 강점 한 줄씩.`,
+      `${brand} 써볼까 고민 중인데, 비슷한 ${region}${cat} 대안 5개랑 ${brand}랑 비교해서 알려줘.`,
+      `${region}${cat} 무료로 시작할 수 있는 서비스 5개. 유료 전환 시 가격대도 같이.`,
+      `실제 사용자 리뷰 좋은 ${region}${cat} 5곳 알려줘. 평점/후기 기준으로.`,
     ];
   }
   if (intent === "shop") {
     return [
       general,
-      `${cat} 살 때 한국에서 믿을 만한 쇼핑몰/브랜드 Top 5. 배송이나 AS 좋은 곳 위주로.`,
-      `${brand}에서 사봤는데, 비슷한 가격대 한국 ${cat} 브랜드 5개 더 추천해줘.`,
-      `요즘 ${cat} 가성비 좋은 한국 사이트 5곳. 후기 많은 순으로.`,
-      `${cat} 선물용으로 살 만한 한국 브랜드 5개 알려줘.`,
+      `${region}${cat} 살 때 믿을 만한 쇼핑몰/브랜드 Top 5. 배송이나 AS 좋은 곳 위주로.`,
+      `${brand}에서 사봤는데, 비슷한 가격대 ${region}${cat} 브랜드 5개 더 추천해줘.`,
+      `요즘 ${region}${cat} 가성비 좋은 사이트 5곳. 후기 많은 순으로.`,
+      `${region}${cat} 선물용으로 살 만한 브랜드 5개 알려줘.`,
     ];
   }
   if (intent === "store") {
     return [
       general,
-      `한국에서 ${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
-      `${brand} 말고 비슷한 한국 ${cat} 5곳 더 알려줘.`,
-      `${cat} 처음 가본다면 어디가 좋아? 한국 기준 5곳 번호로.`,
-      `리뷰/평점 좋은 한국 ${cat} 5곳. 사람들이 왜 좋다고 하는지도.`,
+      `${region}에서 ${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
+      `${brand} 말고 비슷한 ${region}${cat} 5곳 더 알려줘.`,
+      `${cat} 처음 가본다면 어디가 좋아? ${region}기준 5곳 번호로.`,
+      `리뷰/평점 좋은 ${region}${cat} 5곳. 사람들이 왜 좋다고 하는지도.`,
     ];
   }
   if (intent === "content") {
     return [
       general,
-      `${cat} 정보 얻기 좋은 한국 사이트/블로그 Top 5 추천해줘.`,
-      `${brand} 자주 보는데, 비슷한 톤의 한국 ${cat} 5곳 더 알려줘.`,
-      `${cat} 입문자가 보면 좋은 한국 콘텐츠 사이트 5개. 쉬운 곳 위주로.`,
-      `요즘 한국에서 ${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
+      `${region}${cat} 정보 얻기 좋은 사이트/블로그 Top 5 추천해줘.`,
+      `${brand} 자주 보는데, 비슷한 톤의 ${region}${cat} 5곳 더 알려줘.`,
+      `${region}${cat} 입문자가 보면 좋은 콘텐츠 사이트 5개. 쉬운 곳 위주로.`,
+      `요즘 ${region}${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
     ];
   }
-  // default: service
   return [
     general,
-    `${cat} 관련해서 한국에서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로.`,
-    `${brand} 써본 사람들이 비교하는 한국 ${cat} 5곳 알려줘.`,
-    `${cat} 처음 이용하려면 어디부터 봐야 해? 한국 기준 추천 5개.`,
-    `리뷰 좋은 한국 ${cat} Top 5. 왜 평이 좋은지도 한 줄씩.`,
+    `${region}${cat} 관련해서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로.`,
+    `${brand} 써본 사람들이 비교하는 ${region}${cat} 5곳 알려줘.`,
+    `${region}${cat} 처음 이용하려면 어디부터 봐야 해? 5개 추천.`,
+    `리뷰 좋은 ${region}${cat} Top 5. 왜 평이 좋은지도 한 줄씩.`,
   ];
+}
+
+// 호스트/언어로 지역 힌트 자동 추출 (.kr/.jp/.de 등)
+function detectRegionHint(host: string): string {
+  const tld = host.toLowerCase().split(".").pop() || "";
+  const map: Record<string, string> = { kr: "한국", jp: "일본", de: "독일", fr: "프랑스", cn: "중국", uk: "영국", tw: "대만" };
+  if (/(^|\.)naver\.com$|(^|\.)kakao\.com$|(^|\.)coupang\.com$/i.test(host)) return "한국";
+  return map[tld] || "";
 }
 
 
@@ -238,9 +242,10 @@ function aggregateRec(
   texts: string[],
   host: string,
   brand: string,
+  aliases: string[],
   awareness: "yes" | "partial" | "no" | null,
 ): { mentioned: boolean; competitors: string[]; total?: number; primaryText: string; primaryIdx: number; hitCount: number } {
-  const results = texts.map((t) => detectRecommendation(t, host, brand, awareness ?? undefined));
+  const results = texts.map((t) => detectRecommendation(t, host, brand, aliases, awareness ?? undefined));
   const hitCount = results.filter((r) => r.mentioned).length;
   const mentioned = hitCount > 0;
   const seen = new Set<string>();
@@ -256,7 +261,6 @@ function aggregateRec(
     }
     if (competitors.length >= 12) break;
   }
-  // 대표 응답: 브랜드를 언급한 첫 응답, 없으면 첫 응답
   const hitIdx = results.findIndex((r) => r.mentioned);
   const primaryIdx = hitIdx >= 0 ? hitIdx : 0;
   const primaryText = texts[primaryIdx] || "";
@@ -264,7 +268,7 @@ function aggregateRec(
 }
 
 // ── Gemini (Lovable AI Gateway, free) ─────────────────────────
-async function probeGemini(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probeGemini(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!KEY) {
     return { brand: "gemini", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "LOVABLE_API_KEY missing" };
@@ -301,14 +305,14 @@ async function probeGemini(url: string, host: string, brand: string, category: s
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const awarenessPrompt = buildAwarenessPrompt(url, brand);
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
 
     const [aw, ...recs] = await Promise.all([
       ask(awarenessPrompt),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand);
-    const agg = aggregateRec(recs, host, brand, awareness);
+    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt,
@@ -322,7 +326,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
 }
 
 // ── Perplexity (sonar, citations) ──────────────────────────────
-async function probePerplexity(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probePerplexity(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const KEY = Deno.env.get("PERPLEXITY_API_KEY");
   if (!KEY) {
     return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "PERPLEXITY_API_KEY missing" };
@@ -361,7 +365,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     };
 
     const awP = buildAwarenessPrompt(url, brand);
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
 
     const aw = await ask(awP);
     const recs: Array<{ text: string; citations: string[] }> = [];
@@ -369,9 +373,9 @@ async function probePerplexity(url: string, host: string, brand: string, categor
       await delay(450);
       recs.push(await ask(prompt));
     }
-    const { awareness } = detectAwareness(aw.text, host, brand);
+    const { awareness } = detectAwareness(aw.text, host, brand, aliases);
     const recTexts = recs.map((r) => r.text);
-    const agg = aggregateRec(recTexts, host, brand, awareness);
+    const agg = aggregateRec(recTexts, host, brand, aliases, awareness);
     // 호스트가 naver.com이면 citation 매칭은 의미 없음. awareness=no면 추천 매칭도 무효화.
     const isNaverHost = /(^|\.)naver\.com$/i.test(host);
     const allCitations = recs.flatMap((r) => r.citations || []);
@@ -410,7 +414,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
 }
 
 // ── ChatGPT / OpenAI model (Lovable AI Gateway 우선 → 폴백: OpenAI 직접) ────
-async function probeChatGPT(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probeChatGPT(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY");
   const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
   const hasDirect = !!OPENAI_KEY;
@@ -466,14 +470,14 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       logApiCost({ function_name: "probe-ai-perception", model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { direct: directUsed } });
       return j?.choices?.[0]?.message?.content ?? "";
     };
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
     const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand);
-    const agg = aggregateRec(recs, host, brand, awareness);
+    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
@@ -487,7 +491,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
 }
 
 // ── Claude (Anthropic) — 키 있을 때만 ─────────────────────────
-async function probeClaude(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probeClaude(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const KEY = Deno.env.get("ANTHROPIC_API_KEY");
   if (!KEY) {
     return { brand: "claude", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
@@ -524,14 +528,14 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       const blocks = j?.content ?? [];
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
     const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand);
-    const agg = aggregateRec(recs, host, brand, awareness);
+    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "claude", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
@@ -545,7 +549,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
 }
 
 // ── Naver HyperCLOVA X (CLOVA Studio) ─────────────────────────
-async function probeNaver(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
+async function probeNaver(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
   const KEY = Deno.env.get("CLOVASTUDIO_API_KEY");
   if (!KEY) {
     return { brand: "naver", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 연결 대기" };
@@ -598,14 +602,14 @@ async function probeNaver(url: string, host: string, brand: string, category: st
       });
       return j?.result?.message?.content ?? "";
     };
-    const recPrompts = buildRecPrompts(brand, category);
+    const recPrompts = buildRecPrompts(brand, category, regionHint);
     const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand);
-    const agg = aggregateRec(recs, host, brand, awareness);
+    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "naver", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
@@ -636,7 +640,13 @@ Deno.serve(async (req) => {
     }
     const { url, host, brand: domainBrand } = normalizeUrl(rawUrl);
     const brand = String(body?.brand ?? "").trim() || domainBrand;
+    const rawAliases = Array.isArray(body?.aliases) ? body.aliases : [];
+    const aliases: string[] = rawAliases
+      .map((a: unknown) => String(a ?? "").trim())
+      .filter((a: string) => a.length >= 2)
+      .slice(0, 5);
     const category = String(body?.category ?? "").trim();
+    const regionHint = detectRegionHint(host);
 
     const sb = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -650,6 +660,21 @@ Deno.serve(async (req) => {
       await sb.from("ai_perception_cache").delete().eq("url", url);
     }
 
+    // ⛔ 카테고리 미확인 가드 — AI가 카테고리를 추출하지 못하면 측정 자체가 무의미
+    if (!category) {
+      return new Response(JSON.stringify({
+        url,
+        brand,
+        category: "",
+        generated_at: new Date().toISOString(),
+        cached: false,
+        status: "category_unknown",
+        message: "AI가 사이트 콘텐츠에서 카테고리를 파악하지 못했어요. 기본 SEO(메타 태그·소개 문구·구조화 데이터)가 부족할 가능성이 큽니다. 아래 SEO·AEO·GEO 3축 점수부터 확인하고 수정해 주세요.",
+        brands: [],
+        summary: { measurable: 0, aware: 0, recommended: 0 },
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // 캐시 hit
     const { data: cached } = purge ? { data: null as any } : await sb
       .from("ai_perception_cache")
@@ -659,9 +684,8 @@ Deno.serve(async (req) => {
 
     if (cached && new Date(cached.expires_at) > new Date()) {
       const r = cached.results as ProbeResult;
-      // Backfill prompts for old cached entries that predate the prompt fields
       const awarenessPromptTpl = buildAwarenessPrompt(url, brand);
-      const recPromptsTpl = buildRecPrompts(brand, category);
+      const recPromptsTpl = buildRecPrompts(brand, category, regionHint);
       r.brands = (r.brands || []).map((b) => {
         if (b.status !== "ok") return b;
         return {
@@ -677,11 +701,11 @@ Deno.serve(async (req) => {
 
     // 5모델 병렬 호출 (allSettled) — Naver(HyperCLOVA X) 추가
     const settled = await Promise.allSettled([
-      probeChatGPT(url, host, brand, category),
-      probeClaude(url, host, brand, category),
-      probeGemini(url, host, brand, category),
-      probePerplexity(url, host, brand, category),
-      probeNaver(url, host, brand, category),
+      probeChatGPT(url, host, brand, aliases, category, regionHint),
+      probeClaude(url, host, brand, aliases, category, regionHint),
+      probeGemini(url, host, brand, aliases, category, regionHint),
+      probePerplexity(url, host, brand, aliases, category, regionHint),
+      probeNaver(url, host, brand, aliases, category, regionHint),
     ]);
 
     const measured: BrandResult[] = settled.map((s, i) => {
