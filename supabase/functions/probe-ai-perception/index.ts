@@ -652,6 +652,12 @@ Deno.serve(async (req) => {
     let category = String(body?.category ?? "").trim();
     const regionHint = detectRegionHint(host);
 
+    // 자기 도메인이면 카테고리를 "AI 검색 최적화 진단 SaaS"로 강제 덮어쓰기.
+    // 이래야 추천 질문이 "관련 분야"가 아니라 또렷한 경쟁 카테고리로 나간다.
+    if (isSelfDomain(host)) {
+      category = SELF_CATEGORY;
+    }
+
     const sb = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
