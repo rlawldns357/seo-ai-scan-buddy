@@ -168,15 +168,68 @@ function buildAwarenessPrompt(url: string, brand: string): string {
   return `혹시 ${url} (${brand}) 들어가본 적 있어? 여기 뭐 하는 곳인지 1~2문장으로만 알려줘. 잘 모르겠으면 "모릅니다"라고만 답해줘. 추측해서 지어내진 말고.`;
 }
 
-// ── 30회 동시 측정용 추천 프롬프트 5종 (대화형) ──
+// ── 카테고리 인텐트 감지 (제품/서비스/매장/콘텐츠) ──
+function detectCategoryIntent(category: string): "saas" | "shop" | "store" | "content" | "service" {
+  const c = (category || "").toLowerCase();
+  if (/saas|소프트웨어|software|툴|tool|플랫폼|app|앱|솔루션/.test(c)) return "saas";
+  if (/쇼핑몰|커머스|이커머스|온라인몰|스토어|쇼핑|판매/.test(c)) return "shop";
+  if (/매장|음식점|식당|카페|레스토랑|병원|클리닉|로컬|지역/.test(c)) return "store";
+  if (/블로그|미디어|뉴스|매거진|커뮤니티|콘텐츠/.test(c)) return "content";
+  return "service";
+}
+
+// ── 다양한 인텐트의 대화형 추천 프롬프트 5종 (사람들이 실제로 챗봇/검색에 던지는 질문) ──
 function buildRecPrompts(brand: string, category: string): string[] {
   const cat = category || `${brand} 관련 분야`;
+  const intent = detectCategoryIntent(category);
+
+  // 공통: 일반 추천 (모든 카테고리)
+  const general = `요즘 ${cat} 쪽에서 괜찮은 한국 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
+
+  // 인텐트별 맞춤 4종 (총 5종)
+  if (intent === "saas") {
+    return [
+      general,
+      `${cat} 한국에서 쓸 만한 SaaS Top 5 뽑아줘. 각각 어떤 게 강점인지 한 줄씩.`,
+      `${brand} 써볼까 고민 중인데, 비슷한 한국 ${cat} 대안 5개랑 ${brand}랑 비교해서 알려줘.`,
+      `${cat} 무료로 시작할 수 있는 한국 서비스 추천 5개. 유료 전환 시 가격대도 같이.`,
+      `실제 사용자 리뷰 좋은 한국 ${cat} 5곳 알려줘. 평점/후기 기준으로.`,
+    ];
+  }
+  if (intent === "shop") {
+    return [
+      general,
+      `${cat} 살 때 한국에서 믿을 만한 쇼핑몰/브랜드 Top 5. 배송이나 AS 좋은 곳 위주로.`,
+      `${brand}에서 사봤는데, 비슷한 가격대 한국 ${cat} 브랜드 5개 더 추천해줘.`,
+      `요즘 ${cat} 가성비 좋은 한국 사이트 5곳. 후기 많은 순으로.`,
+      `${cat} 선물용으로 살 만한 한국 브랜드 5개 알려줘.`,
+    ];
+  }
+  if (intent === "store") {
+    return [
+      general,
+      `한국에서 ${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
+      `${brand} 말고 비슷한 한국 ${cat} 5곳 더 알려줘.`,
+      `${cat} 처음 가본다면 어디가 좋아? 한국 기준 5곳 번호로.`,
+      `리뷰/평점 좋은 한국 ${cat} 5곳. 사람들이 왜 좋다고 하는지도.`,
+    ];
+  }
+  if (intent === "content") {
+    return [
+      general,
+      `${cat} 정보 얻기 좋은 한국 사이트/블로그 Top 5 추천해줘.`,
+      `${brand} 자주 보는데, 비슷한 톤의 한국 ${cat} 5곳 더 알려줘.`,
+      `${cat} 입문자가 보면 좋은 한국 콘텐츠 사이트 5개. 쉬운 곳 위주로.`,
+      `요즘 한국에서 ${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
+    ];
+  }
+  // default: service
   return [
-    `요즘 ${cat} 쪽에서 괜찮은 한국 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`,
-    `${cat} 관련해서 한국에서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로 정리해줘.`,
-    `사람들이 ${cat} 관련해서 많이 추천하는 한국 사이트가 어디어디 있어? 5개만 번호로 알려줘.`,
-    `온라인에서 ${cat} 쓰거나 사려면 어디로 가야 해? 한국 기준 5개 번호로 추천 부탁해.`,
-    `${brand} 말고 비슷한 한국 ${cat} 서비스 뭐 있어? 5개만 번호로 골라줘.`,
+    general,
+    `${cat} 관련해서 한국에서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로.`,
+    `${brand} 써본 사람들이 비교하는 한국 ${cat} 5곳 알려줘.`,
+    `${cat} 처음 이용하려면 어디부터 봐야 해? 한국 기준 추천 5개.`,
+    `리뷰 좋은 한국 ${cat} Top 5. 왜 평이 좋은지도 한 줄씩.`,
   ];
 }
 
