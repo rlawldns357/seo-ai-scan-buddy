@@ -48,6 +48,7 @@ interface ProbeResult {
 interface Props {
   url?: string;
   brand?: string;
+  aliases?: string[];
   category?: string;
   onAnswerShareClick?: () => void;
 }
