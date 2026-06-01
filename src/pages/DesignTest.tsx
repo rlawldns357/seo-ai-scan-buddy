@@ -45,7 +45,13 @@ const DesignTest = () => {
           <h1 className="sr-only">Design System Test</h1>
           <ResultHeader psi={fakePsi} psiError={null} url={DEMO_URL} result={demoResult} />
           <LighthouseScores mobile={fakePsi} desktop={fakePsi} />
-          <AIPerceptionCard url={DEMO_URL} onAnswerShareClick={() => setAnswerShareOpen(true)} />
+          <AIPerceptionCard
+            url={DEMO_URL}
+            brand="Example"
+            aliases={["example"]}
+            category="데모 사이트"
+            onAnswerShareClick={() => setAnswerShareOpen(true)}
+          />
           <ScoreDashboard result={demoResult} url={DEMO_URL} />
           <VerificationLinks url={DEMO_URL} />
 

@@ -349,17 +349,33 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
         <div className="relative">
           <div className="flex items-center justify-between gap-5">
             <div className="flex-1 min-w-0">
-              <div className="flex items-baseline gap-2 mb-2.5">
-                <span className={`text-[52px] sm:text-[64px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
-                  {aware}
-                </span>
-                <span className="text-[20px] sm:text-[24px] font-bold text-muted-foreground/70 tabular-nums">
-                  / {measurable}
-                </span>
-              </div>
+              {measurable > 0 && (
+                <div className="flex items-baseline gap-2 mb-2.5">
+                  <span className={`text-[52px] sm:text-[64px] leading-none font-black tabular-nums tracking-tighter ${toneClasses.text}`}>
+                    {aware}
+                  </span>
+                  <span className="text-[20px] sm:text-[24px] font-bold text-muted-foreground/70 tabular-nums">
+                    / {measurable}
+                  </span>
+                </div>
+              )}
+              {measurable === 0 && (() => {
+                const HeroIcon = heroMessage.Icon;
+                return (
+                  <div className="mb-2.5">
+                    <HeroIcon className={`w-12 h-12 ${toneClasses.text}`} />
+                  </div>
+                );
+              })()}
               <h3 className="text-[20px] sm:text-[24px] lg:text-[26px] leading-[1.2] font-extrabold tracking-tight text-foreground">
-                <span className={`${toneClasses.text} whitespace-nowrap`}>{aware}개 AI</span>
-                <span className="text-foreground whitespace-nowrap">는 알고 있어요</span>
+                {measurable === 0 ? (
+                  <span className={`${toneClasses.text}`}>{heroMessage.title}</span>
+                ) : (
+                  <>
+                    <span className={`${toneClasses.text} whitespace-nowrap`}>{aware}개 AI</span>
+                    <span className="text-foreground whitespace-nowrap">는 알고 있어요</span>
+                  </>
+                )}
               </h3>
 
               <p className="text-[12px] sm:text-[13px] text-muted-foreground mt-1.5 leading-snug max-w-md">
