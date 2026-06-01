@@ -252,7 +252,8 @@ async function probeGemini(url: string, host: string, brand: string, category: s
     const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      awarenessAnswer: aw, awarenessPrompt,
+      recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
       recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
