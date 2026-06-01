@@ -691,9 +691,9 @@ Deno.serve(async (req) => {
       });
     }
     const { url, host, brand: domainBrand } = normalizeUrl(rawUrl);
-    const brand = String(body?.brand ?? "").trim() || domainBrand;
+    let brand = String(body?.brand ?? "").trim() || domainBrand;
     const rawAliases = Array.isArray(body?.aliases) ? body.aliases : [];
-    const aliases: string[] = rawAliases
+    let aliases: string[] = rawAliases
       .map((a: unknown) => String(a ?? "").trim())
       .filter((a: string) => a.length >= 2)
       .slice(0, 5);
@@ -701,9 +701,14 @@ Deno.serve(async (req) => {
     let category = normalizeCategory(String(body?.category ?? ""));
     const regionHint = detectRegionHint(host); // 항상 빈 문자열 (자동 주입 OFF)
 
-    // 자기 도메인이면 컴팩트한 경쟁 카테고리로 강제 덮어쓰기
+    // 자기 도메인이면 컴팩트한 경쟁 카테고리 + 공식 브랜드/별칭으로 강제 덮어쓰기.
+    // (AI 답변은 "SearchTune OS" 처럼 공백을 끼워 출력하므로 도메인 토큰 "searchtuneos" 만으로는
+    //  단어경계 매칭이 실패해서 '추천 미노출'로 잘못 잡혔다.)
     if (isSelfDomain(host)) {
       category = SELF_CATEGORY;
+      brand = "SearchTune OS";
+      const selfAliases = ["SearchTune", "SearchTuneOS", "서치튠 OS", "서치튠OS", "서치튠"];
+      aliases = Array.from(new Set([...selfAliases, ...aliases])).slice(0, 8);
     }
 
     const sb = createClient(
