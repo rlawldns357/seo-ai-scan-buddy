@@ -358,8 +358,14 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
                 </span>
               </div>
               <h3 className="text-[20px] sm:text-[24px] lg:text-[26px] leading-[1.2] font-extrabold tracking-tight text-foreground">
-                <span className={`${toneClasses.text} whitespace-nowrap`}>{aware}개 AI</span>
-                <span className="text-foreground whitespace-nowrap">는 알고 있어요</span>
+                {measurable === 0 ? (
+                  <span className={`${toneClasses.text}`}>{heroMessage.title}</span>
+                ) : (
+                  <>
+                    <span className={`${toneClasses.text} whitespace-nowrap`}>{aware}개 AI</span>
+                    <span className="text-foreground whitespace-nowrap">는 알고 있어요</span>
+                  </>
+                )}
               </h3>
 
               <p className="text-[12px] sm:text-[13px] text-muted-foreground mt-1.5 leading-snug max-w-md">
