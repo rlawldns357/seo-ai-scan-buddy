@@ -113,6 +113,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedBrand, setExpandedBrand] = useState<BrandKey | null>(null);
+  const [consultOpen, setConsultOpen] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
   const [reloadKey, setReloadKey] = useState(0);
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
