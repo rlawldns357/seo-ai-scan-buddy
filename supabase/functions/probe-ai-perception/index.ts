@@ -12,7 +12,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const TIMEOUT_MS = 25000;
+const TIMEOUT_MS = 35000;
 const RETRY_DELAY_MS = 800;
 
 /** fetch with timeout + 1 retry on network/5xx errors. */
@@ -274,7 +274,12 @@ async function probePerplexity(url: string, host: string, brand: string, categor
           ],
         }),
       });
-      if (!r.ok) throw new Error(`perplexity ${r.status}`);
+      if (!r.ok) {
+        const body = await r.text().catch(() => "");
+        const err: Error & { status?: number } = new Error(`perplexity ${r.status}: ${body.slice(0, 200)}`);
+        err.status = r.status;
+        throw err;
+      }
       const j = await r.json();
       const u = extractUsage(j);
       logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out, requests: 1 });
@@ -312,6 +317,11 @@ async function probePerplexity(url: string, host: string, brand: string, categor
       model,
     };
   } catch (e) {
+    const status = (e as { status?: number })?.status;
+    // 401 = invalid key / insufficient_quota → 사용자에게 '대기 중' UX로 노출
+    if (status === 401 || status === 402 || status === 403) {
+      return { brand: "perplexity", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 한도 소진 — 충전 대기 중" };
+    }
     return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
   }
 }
@@ -324,7 +334,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
   }
   try {
     const self = isSelfDomain(host);
-    const model = "openai/gpt-5-nano";
+    const model = "openai/gpt-5-mini";
     const ask = async (prompt: string) => {
       const r = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
