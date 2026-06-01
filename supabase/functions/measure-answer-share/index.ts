@@ -199,8 +199,9 @@ async function askGemini(query: string): Promise<{ text: string; citations: stri
 }
 
 async function askChatGPT(query: string): Promise<{ text: string; citations: string[]; error?: string }> {
-  const useDirect = isLikelyOpenAIApiKey(OPENAI_KEY);
-  if (!useDirect && !LOVABLE_KEY) return { text: "", citations: [], error: "no-key" };
+  const hasDirect = !!OPENAI_KEY;
+  const hasGateway = !!LOVABLE_KEY;
+  if (!hasDirect && !hasGateway) return { text: "", citations: [], error: "no-key" };
   try {
     const callModel = async (direct: boolean) => {
       const endpoint = direct
@@ -222,12 +223,13 @@ async function askChatGPT(query: string): Promise<{ text: string; citations: str
         }),
       });
     };
-    let directUsed = useDirect;
+    // 1차: Lovable AI Gateway 우선, 실패 시 OpenAI 직접 호출(Codex 키 포함) 폴백
+    let directUsed = !hasGateway;
     let r = await callModel(directUsed);
-    if (!r.ok && directUsed && LOVABLE_KEY) {
-      console.warn("[chatgpt] direct OpenAI failed; falling back to Lovable AI Gateway", r.status);
-      directUsed = false;
-      r = await callModel(false);
+    if (!r.ok && !directUsed && hasDirect) {
+      console.warn("[chatgpt] Lovable Gateway failed; falling back to direct OpenAI", r.status);
+      directUsed = true;
+      r = await callModel(true);
     }
     if (!r.ok) {
       const body = await r.text().catch(() => "");
