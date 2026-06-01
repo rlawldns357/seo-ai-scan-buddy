@@ -206,19 +206,23 @@ function detectCategoryIntent(category: string): "saas" | "shop" | "store" | "co
   return "service";
 }
 
-// ── 다양한 인텐트의 대화형 추천 프롬프트 5종 (글로벌 기본, 지역 신호는 자동 주입) ──
+// ── 다양한 인텐트의 대화형 추천 프롬프트 5종 ──
+// 가드레일:
+// 1) "요즘" 같은 시간 한정 표현 금지 (신생 브랜드 자동 배제됨)
+// 2) region은 호출자가 명시할 때만 붙음 (자동 주입 OFF)
+// 3) 카테고리 한 단어로 또렷하게 묻기
 function buildRecPrompts(brand: string, category: string, regionHint = ""): string[] {
   const cat = category || `${brand} 관련 분야`;
-  const region = regionHint ? `${regionHint} ` : ""; // 예: "한국 ", "일본 "
+  const region = regionHint ? `${regionHint} ` : "";
   const intent = detectCategoryIntent(category);
-  const general = `요즘 ${region}${cat} 쪽에서 괜찮은 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
+  const general = `${region}${cat} 중에서 괜찮은 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
   if (intent === "saas") {
     return [
       general,
       `${region}${cat} 쪽 쓸 만한 SaaS Top 5 뽑아줘. 각각 강점 한 줄씩.`,
       `${brand} 써볼까 고민 중인데, 비슷한 ${region}${cat} 대안 5개랑 ${brand}랑 비교해서 알려줘.`,
       `${region}${cat} 무료로 시작할 수 있는 서비스 5개. 유료 전환 시 가격대도 같이.`,
-      `실제 사용자 리뷰 좋은 ${region}${cat} 5곳 알려줘. 평점/후기 기준으로.`,
+      `사용자 리뷰 좋은 ${region}${cat} 5곳 알려줘. 평점/후기 기준으로.`,
     ];
   }
   if (intent === "shop") {
@@ -226,16 +230,16 @@ function buildRecPrompts(brand: string, category: string, regionHint = ""): stri
       general,
       `${region}${cat} 살 때 믿을 만한 쇼핑몰/브랜드 Top 5. 배송이나 AS 좋은 곳 위주로.`,
       `${brand}에서 사봤는데, 비슷한 가격대 ${region}${cat} 브랜드 5개 더 추천해줘.`,
-      `요즘 ${region}${cat} 가성비 좋은 사이트 5곳. 후기 많은 순으로.`,
+      `${region}${cat} 가성비 좋은 사이트 5곳. 후기 많은 순으로.`,
       `${region}${cat} 선물용으로 살 만한 브랜드 5개 알려줘.`,
     ];
   }
   if (intent === "store") {
     return [
       general,
-      `${region}에서 ${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
+      `${region}${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
       `${brand} 말고 비슷한 ${region}${cat} 5곳 더 알려줘.`,
-      `${cat} 처음 가본다면 어디가 좋아? ${region}기준 5곳 번호로.`,
+      `${cat} 처음 가본다면 어디가 좋아? 5곳 번호로.`,
       `리뷰/평점 좋은 ${region}${cat} 5곳. 사람들이 왜 좋다고 하는지도.`,
     ];
   }
@@ -245,7 +249,7 @@ function buildRecPrompts(brand: string, category: string, regionHint = ""): stri
       `${region}${cat} 정보 얻기 좋은 사이트/블로그 Top 5 추천해줘.`,
       `${brand} 자주 보는데, 비슷한 톤의 ${region}${cat} 5곳 더 알려줘.`,
       `${region}${cat} 입문자가 보면 좋은 콘텐츠 사이트 5개. 쉬운 곳 위주로.`,
-      `요즘 ${region}${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
+      `${region}${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
     ];
   }
   return [
