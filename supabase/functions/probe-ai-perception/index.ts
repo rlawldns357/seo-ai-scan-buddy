@@ -94,6 +94,11 @@ function withTimeout<T>(p: Promise<T>, ms = TIMEOUT_MS): Promise<T> {
   ]);
 }
 
+function isLikelyOpenAIApiKey(key?: string | null): key is string {
+  const trimmed = key?.trim() ?? "";
+  return /^sk-(proj-)?[A-Za-z0-9_-]{40,}$/.test(trimmed);
+}
+
 /** 응답이 "모름" 단답인지 판정 — 짧고 부정 패턴만 있으면 true */
 function isDenialOnly(text: string): boolean {
   const t = (text || "").trim();
@@ -330,7 +335,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
 async function probeChatGPT(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
   const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY");
   const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
-  const useDirect = !!OPENAI_KEY;
+  const useDirect = isLikelyOpenAIApiKey(OPENAI_KEY);
   if (!useDirect && !LOVABLE_KEY) {
     return { brand: "chatgpt", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "OPENAI_API_KEY/LOVABLE_API_KEY missing" };
   }
