@@ -293,7 +293,9 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
   const ratioPct = measurable > 0 ? Math.round((aware / measurable) * 100) : 0;
 
   return (
+    <>
     <div className="rounded-3xl bg-card border border-border overflow-hidden animate-fade-up shadow-card">
+
 
       <div className="relative px-5 sm:px-8 pt-6 pb-7 sm:pt-7 sm:pb-8 border-b border-border bg-card overflow-hidden">
         <div className={`absolute top-0 left-0 right-0 h-[3px] ${toneClasses.text.replace("text-", "bg-")}`} />
