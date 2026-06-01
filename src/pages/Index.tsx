@@ -636,7 +636,7 @@ const Index = () => {
               const fastChecked = forced || skipLighthouse;
               return (
                 <>
-                  <div className={`mt-3 sm:mt-3 grid ${ENABLE_X30 ? "grid-cols-2" : "grid-cols-1"} gap-2 sm:gap-3 max-w-md mx-auto`}>
+                  <div className="mt-3 sm:mt-3 grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
 
                     {/* 빠른 분석 — Amber/Yellow */}
                     <button
@@ -663,8 +663,7 @@ const Index = () => {
                       </span>
                     </button>
 
-                    {/* AI에게 물어보기 — ×30 비용 이슈로 일시 OFF (블루프린트 보존) */}
-                    {ENABLE_X30 && (
+                    {/* AI에게 직접 물어보기 — 토글 복구. ×30 일괄 측정(AskAITeaser/배지)은 유료화 검토 위해 숨김 */}
                     <button
                       type="button"
                       onClick={() => setAskAIEnabled((v) => !v)}
@@ -675,13 +674,6 @@ const Index = () => {
                           : "border-border bg-card text-muted-foreground hover:border-askai/40 hover:text-foreground"
                       }`}
                     >
-                      <span
-                        className="absolute -top-2 -right-1 flex items-center h-[18px] px-1.5 rounded-full text-primary-foreground text-[9px] font-black tracking-[0.08em] uppercase shadow-[0_3px_10px_-2px_hsl(var(--primary)/0.55)] ring-2 ring-background"
-                        style={{ background: "var(--gradient-primary)" }}
-                        aria-label="신규 기능"
-                      >
-                        <span className="text-[8px] opacity-90 mr-[1px]">×</span>30 New
-                      </span>
                       <Sparkles className={`w-3.5 h-3.5 ${askAIEnabled ? "text-askai" : ""}`} />
                       <span className="leading-none">AI에게 직접 물어보기</span>
                       <span
@@ -693,7 +685,6 @@ const Index = () => {
                         ✓
                       </span>
                     </button>
-                    )}
 
                   </div>
                   <p className="text-xs text-muted-foreground mt-3 font-medium text-center">
@@ -819,7 +810,7 @@ const Index = () => {
               )}
 
               {/* 스토어: 3축 채점이 무의미하니, AI가 이 브랜드를 어떻게 인식하는지를 핵심 가치로 먼저 보여줌 */}
-              {ENABLE_X30 && result?.storeContext && (
+              {result?.storeContext && (
                 <>
                   <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
                     <p className="text-xs sm:text-sm text-foreground leading-relaxed">
@@ -850,7 +841,7 @@ const Index = () => {
                 <NaverStoreInsights context={result.storeContext} />
               )}
 
-              {ENABLE_X30 && result && !result.storeContext && askAIEnabled && (
+              {result && !result.storeContext && askAIEnabled && (
                 <div id="ai-perception" className="scroll-mt-20">
                   <AIPerceptionCard
                     url={normalizedUrl}
