@@ -25,8 +25,10 @@ interface BrandResult {
   status: "ok" | "unknown" | "unsupported" | "error";
   awareness: "yes" | "partial" | "no" | null;
   awarenessAnswer?: string;
+  awarenessPrompt?: string;
   recommendation: { mentioned: boolean; rank?: number; total?: number; competitors?: string[] };
   recommendationAnswer?: string;
+  recommendationPrompt?: string;
   model?: string;
   citations?: string[];
   errorMessage?: string;
@@ -409,13 +411,27 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
                   {b.awarenessAnswer && (
                     <div className="rounded-lg bg-card/60 p-3 border border-border/40">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">인지도 응답</p>
-                      <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.awarenessAnswer}</p>
+                      {b.awarenessPrompt && (
+                        <p className="text-[11px] text-muted-foreground mb-2 pl-2 border-l-2 border-border/60">
+                          <span className="font-semibold text-foreground/70">Q. </span>{b.awarenessPrompt}
+                        </p>
+                      )}
+                      <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">
+                        <span className="font-semibold text-foreground/70">A. </span>{b.awarenessAnswer}
+                      </p>
                     </div>
                   )}
                   {b.recommendationAnswer && (
                     <div className="rounded-lg bg-card/60 p-3 border border-border/40">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">추천 질의 응답</p>
-                      <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">{b.recommendationAnswer}</p>
+                      {b.recommendationPrompt && (
+                        <p className="text-[11px] text-muted-foreground mb-2 pl-2 border-l-2 border-border/60">
+                          <span className="font-semibold text-foreground/70">Q. </span>{b.recommendationPrompt}
+                        </p>
+                      )}
+                      <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">
+                        <span className="font-semibold text-foreground/70">A. </span>{b.recommendationAnswer}
+                      </p>
                     </div>
                   )}
                   {b.citations && b.citations.length > 0 && (

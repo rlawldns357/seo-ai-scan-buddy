@@ -61,8 +61,10 @@ interface BrandResult {
   status: "ok" | "unknown" | "unsupported" | "error";
   awareness: "yes" | "partial" | "no" | null;
   awarenessAnswer?: string;
+  awarenessPrompt?: string;
   recommendation: { mentioned: boolean; rank?: number; total?: number; competitors?: string[] };
   recommendationAnswer?: string;
+  recommendationPrompt?: string;
   model?: string;
   citations?: string[];
   errorMessage?: string;
@@ -178,7 +180,7 @@ function aggregateRec(
   host: string,
   brand: string,
   awareness: "yes" | "partial" | "no" | null,
-): { mentioned: boolean; competitors: string[]; total?: number; primaryText: string; hitCount: number } {
+): { mentioned: boolean; competitors: string[]; total?: number; primaryText: string; primaryIdx: number; hitCount: number } {
   const results = texts.map((t) => detectRecommendation(t, host, brand, awareness ?? undefined));
   const hitCount = results.filter((r) => r.mentioned).length;
   const mentioned = hitCount > 0;
@@ -196,9 +198,10 @@ function aggregateRec(
     if (competitors.length >= 12) break;
   }
   // 대표 응답: 브랜드를 언급한 첫 응답, 없으면 첫 응답
-  const repIdx = results.findIndex((r) => r.mentioned);
-  const primaryText = texts[repIdx >= 0 ? repIdx : 0] || "";
-  return { mentioned, competitors, total: competitors.length || undefined, primaryText, hitCount };
+  const hitIdx = results.findIndex((r) => r.mentioned);
+  const primaryIdx = hitIdx >= 0 ? hitIdx : 0;
+  const primaryText = texts[primaryIdx] || "";
+  return { mentioned, competitors, total: competitors.length || undefined, primaryText, primaryIdx, hitCount };
 }
 
 // ── Gemini (Lovable AI Gateway, free) ─────────────────────────
@@ -249,7 +252,8 @@ async function probeGemini(url: string, host: string, brand: string, category: s
     const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      awarenessAnswer: aw, awarenessPrompt,
+      recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
       recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
@@ -320,7 +324,9 @@ async function probePerplexity(url: string, host: string, brand: string, categor
       status: "ok",
       awareness,
       awarenessAnswer: aw.text,
+      awarenessPrompt: awP,
       recommendationAnswer: agg.primaryText,
+      recommendationPrompt: recPrompts[agg.primaryIdx],
       recommendation: {
         mentioned: agg.mentioned || citationHit,
         total: uniqCitations.length || agg.total,
@@ -402,15 +408,17 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category);
+    const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`;
     const [aw, ...recs] = await Promise.all([
-      ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
+      ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
     const { awareness } = detectAwareness(aw, host, brand);
     const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      awarenessAnswer: aw, awarenessPrompt: awP,
+      recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
       recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model: lastDirectUsed ? "gpt-5-mini" : "openai/gpt-5-mini",
     };
@@ -458,15 +466,17 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
     const recPrompts = buildRecPrompts(brand, category);
+    const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`;
     const [aw, ...recs] = await Promise.all([
-      ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
+      ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
     const { awareness } = detectAwareness(aw, host, brand);
     const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "claude", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      awarenessAnswer: aw, awarenessPrompt: awP,
+      recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
       recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
@@ -530,15 +540,17 @@ async function probeNaver(url: string, host: string, brand: string, category: st
       return j?.result?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category);
+    const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`;
     const [aw, ...recs] = await Promise.all([
-      ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
+      ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
     const { awareness } = detectAwareness(aw, host, brand);
     const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "naver", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      awarenessAnswer: aw, awarenessPrompt: awP,
+      recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
       recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
