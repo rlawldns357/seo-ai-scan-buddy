@@ -21,6 +21,7 @@ import { type RateLimitStatus } from "@/lib/rateLimit";
 import { BRAND_LABEL, getStoredVipBrand, subscribeVipBrand, type VipBrand } from "@/lib/vipBrand";
 import type { AnalysisPhase } from "@/components/LoadingScreen";
 import type { IndexingResult } from "@/lib/checkIndexing";
+import { ENABLE_X30 } from "@/lib/featureFlags";
 
 // Lazy-load heavy components only needed for loading/result screens
 const ScoreDashboard = lazy(() => import("@/components/ScoreDashboard"));
@@ -108,8 +109,8 @@ const Index = () => {
 
   // Skip Lighthouse toggle
   const [skipLighthouse, setSkipLighthouse] = useState(false);
-  // Ask AI toggle (default ON — premium signature feature)
-  const [askAIEnabled, setAskAIEnabled] = useState(true);
+  // Ask AI toggle — ×30 기능 일시 OFF (블루프린트 보존). featureFlags.ts 참조.
+  const [askAIEnabled, setAskAIEnabled] = useState(false);
   // Naver Store mode (teaser 클릭으로 활성화 — 검색창 초록 띠)
   const [naverMode, setNaverMode] = useState(false);
   // 네이버 티저 클릭 → 입력창 강조. 다른 곳 클릭 시 원복.
@@ -635,7 +636,7 @@ const Index = () => {
               const fastChecked = forced || skipLighthouse;
               return (
                 <>
-                  <div className="mt-3 sm:mt-3 grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
+                  <div className={`mt-3 sm:mt-3 grid ${ENABLE_X30 ? "grid-cols-2" : "grid-cols-1"} gap-2 sm:gap-3 max-w-md mx-auto`}>
 
                     {/* 빠른 분석 — Amber/Yellow */}
                     <button
@@ -662,7 +663,8 @@ const Index = () => {
                       </span>
                     </button>
 
-                    {/* AI에게 물어보기 */}
+                    {/* AI에게 물어보기 — ×30 비용 이슈로 일시 OFF (블루프린트 보존) */}
+                    {ENABLE_X30 && (
                     <button
                       type="button"
                       onClick={() => setAskAIEnabled((v) => !v)}
@@ -673,7 +675,6 @@ const Index = () => {
                           : "border-border bg-card text-muted-foreground hover:border-askai/40 hover:text-foreground"
                       }`}
                     >
-                      {/* NEW 뱃지 — 우상단 살짝 튀어나오게 */}
                       <span
                         className="absolute -top-2 -right-1 flex items-center h-[18px] px-1.5 rounded-full text-primary-foreground text-[9px] font-black tracking-[0.08em] uppercase shadow-[0_3px_10px_-2px_hsl(var(--primary)/0.55)] ring-2 ring-background"
                         style={{ background: "var(--gradient-primary)" }}
@@ -692,6 +693,7 @@ const Index = () => {
                         ✓
                       </span>
                     </button>
+                    )}
 
                   </div>
                   <p className="text-xs text-muted-foreground mt-3 font-medium text-center">
@@ -734,7 +736,7 @@ const Index = () => {
                   }}
                 />
               )}
-              <AskAITeaser active={askAIEnabled} onActivate={() => setAskAIEnabled((v) => !v)} />
+              {ENABLE_X30 && <AskAITeaser active={askAIEnabled} onActivate={() => setAskAIEnabled((v) => !v)} />}
               <NaverStoreTeaser onActivate={() => setNaverMode(true)} />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
@@ -817,7 +819,7 @@ const Index = () => {
               )}
 
               {/* 스토어: 3축 채점이 무의미하니, AI가 이 브랜드를 어떻게 인식하는지를 핵심 가치로 먼저 보여줌 */}
-              {result?.storeContext && (
+              {ENABLE_X30 && result?.storeContext && (
                 <>
                   <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
                     <p className="text-xs sm:text-sm text-foreground leading-relaxed">
@@ -848,7 +850,7 @@ const Index = () => {
                 <NaverStoreInsights context={result.storeContext} />
               )}
 
-              {result && !result.storeContext && askAIEnabled && (
+              {ENABLE_X30 && result && !result.storeContext && askAIEnabled && (
                 <div id="ai-perception" className="scroll-mt-20">
                   <AIPerceptionCard
                     url={normalizedUrl}
@@ -859,6 +861,7 @@ const Index = () => {
                   />
                 </div>
               )}
+
 
 
               <Suspense fallback={null}>
