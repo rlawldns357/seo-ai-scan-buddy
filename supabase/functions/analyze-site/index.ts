@@ -108,7 +108,8 @@ IMPORTANT:
 - Be specific to the actual website content - don't give generic advice
 - Score honestly based on what you actually see in the content
 - pointRange should be realistic improvement estimates
-- scoreCap should only be set when there's a hard blocker limiting the score`;
+- scoreCap should only be set when there's a hard blocker limiting the score
+- brand_name/brand_aliases/category는 콘텐츠에서 실제로 확인 가능할 때만 채우고, 추측·확신 부족 시 반드시 null(또는 빈 배열)로 반환하라. 슬러그/도메인 토큰 그대로 쓰지 마라.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
