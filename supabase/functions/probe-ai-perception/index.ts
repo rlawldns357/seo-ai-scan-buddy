@@ -154,6 +154,46 @@ function detectRecommendation(text: string, host: string, brand: string, awarene
   return { mentioned, total: competitors.length || undefined, competitors };
 }
 
+// ── 30회 동시 측정용 추천 프롬프트 5종 (모델당 1 awareness + 5 rec = 6, 5모델 × 6 = 30) ──
+function buildRecPrompts(brand: string, category: string): string[] {
+  const cat = category || `${brand} 관련 분야`;
+  return [
+    `"${cat}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 1~5번 번호로 나열해 주세요. 잘 알려진 곳만.`,
+    `한국에서 가장 신뢰받는 "${cat}" 관련 브랜드/사이트 5곳을 번호로 나열해 주세요.`,
+    `"${cat}" 관련해 사람들이 가장 자주 추천하는 한국 사이트 5개를 번호로 나열해 주세요.`,
+    `온라인에서 "${cat}"을(를) 이용하거나 구매할 때 추천되는 한국 브랜드/플랫폼 5개를 번호로 나열해 주세요.`,
+    `"${brand}" 대신 사용할 수 있는 한국 "${cat}" 분야 대안 사이트/브랜드 5개를 번호로 나열해 주세요.`,
+  ];
+}
+
+function aggregateRec(
+  texts: string[],
+  host: string,
+  brand: string,
+  awareness: "yes" | "partial" | "no" | null,
+): { mentioned: boolean; competitors: string[]; total?: number; primaryText: string; hitCount: number } {
+  const results = texts.map((t) => detectRecommendation(t, host, brand, awareness ?? undefined));
+  const hitCount = results.filter((r) => r.mentioned).length;
+  const mentioned = hitCount > 0;
+  const seen = new Set<string>();
+  const competitors: string[] = [];
+  for (const r of results) {
+    for (const c of (r.competitors || [])) {
+      const key = c.toLowerCase().trim();
+      if (key && !seen.has(key)) {
+        seen.add(key);
+        competitors.push(c);
+        if (competitors.length >= 12) break;
+      }
+    }
+    if (competitors.length >= 12) break;
+  }
+  // 대표 응답: 브랜드를 언급한 첫 응답, 없으면 첫 응답
+  const repIdx = results.findIndex((r) => r.mentioned);
+  const primaryText = texts[repIdx >= 0 ? repIdx : 0] || "";
+  return { mentioned, competitors, total: competitors.length || undefined, primaryText, hitCount };
+}
+
 // ── Gemini (Lovable AI Gateway, free) ─────────────────────────
 async function probeGemini(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
   const KEY = Deno.env.get("LOVABLE_API_KEY");
@@ -192,17 +232,18 @@ async function probeGemini(url: string, host: string, brand: string, category: s
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const awarenessPrompt = `"${url}" 또는 "${brand}"이라는 브랜드/사이트가 무엇을 하는 곳인지 한국어로 1~2문장으로 알려주세요. 모르면 "모릅니다"라고만 답하세요. 추측 금지.`;
-    const recPrompt = category
-      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 1~5번 번호로 나열해 주세요. 잘 알려진 곳만.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열해 주세요.`;
+    const recPrompts = buildRecPrompts(brand, category);
 
-    const [aw, rec] = await Promise.all([ask(awarenessPrompt), ask(recPrompt)]);
+    const [aw, ...recs] = await Promise.all([
+      ask(awarenessPrompt),
+      ...recPrompts.map((p) => ask(p)),
+    ]);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand, awareness);
+    const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: rec,
-      recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
+      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
   } catch (e) {
@@ -244,29 +285,30 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     };
 
     const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"라고만 답하세요.`;
-    const recP = category
-      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`;
+    const recPrompts = buildRecPrompts(brand, category);
 
-    const [aw, rec] = await Promise.all([ask(awP), ask(recP)]);
+    const [aw, ...recs] = await Promise.all([ask(awP), ...recPrompts.map((p) => ask(p))]);
     const { awareness } = detectAwareness(aw.text, host, brand);
-    const r = detectRecommendation(rec.text, host, brand, awareness);
+    const recTexts = recs.map((r) => r.text);
+    const agg = aggregateRec(recTexts, host, brand, awareness);
     // 호스트가 naver.com이면 citation 매칭은 의미 없음. awareness=no면 추천 매칭도 무효화.
     const isNaverHost = /(^|\.)naver\.com$/i.test(host);
+    const allCitations = recs.flatMap((r) => r.citations || []);
+    const uniqCitations = Array.from(new Set(allCitations));
     const citationHit = !isNaverHost && awareness !== "no" &&
-      (rec.citations || []).some((c) => c?.toLowerCase().includes(host.toLowerCase()));
+      uniqCitations.some((c) => c?.toLowerCase().includes(host.toLowerCase()));
     return {
       brand: "perplexity",
       status: "ok",
       awareness,
       awarenessAnswer: aw.text,
-      recommendationAnswer: rec.text,
+      recommendationAnswer: agg.primaryText,
       recommendation: {
-        mentioned: r.mentioned || citationHit,
-        total: rec.citations?.length || r.total,
-        competitors: r.competitors,
+        mentioned: agg.mentioned || citationHit,
+        total: uniqCitations.length || agg.total,
+        competitors: agg.competitors,
       },
-      citations: rec.citations,
+      citations: uniqCitations,
       model,
     };
   } catch (e) {
@@ -311,18 +353,17 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out });
       return j?.choices?.[0]?.message?.content ?? "";
     };
-    const [aw, rec] = await Promise.all([
+    const recPrompts = buildRecPrompts(brand, category);
+    const [aw, ...recs] = await Promise.all([
       ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
-      ask(category
-      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`),
+      ...recPrompts.map((p) => ask(p)),
     ]);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand, awareness);
+    const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: rec,
-      recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
+      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
   } catch (e) {
@@ -368,18 +409,17 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       const blocks = j?.content ?? [];
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
-    const [aw, rec] = await Promise.all([
+    const recPrompts = buildRecPrompts(brand, category);
+    const [aw, ...recs] = await Promise.all([
       ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
-      ask(category
-        ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
-        : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`),
+      ...recPrompts.map((p) => ask(p)),
     ]);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand, awareness);
+    const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "claude", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: rec,
-      recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
+      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
   } catch (e) {
@@ -441,16 +481,17 @@ async function probeNaver(url: string, host: string, brand: string, category: st
       });
       return j?.result?.message?.content ?? "";
     };
-    const aw = await ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`);
-    const rec = await ask(category
-      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`);
+    const recPrompts = buildRecPrompts(brand, category);
+    const [aw, ...recs] = await Promise.all([
+      ask(`"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`),
+      ...recPrompts.map((p) => ask(p)),
+    ]);
     const { awareness } = detectAwareness(aw, host, brand);
-    const r = detectRecommendation(rec, host, brand, awareness);
+    const agg = aggregateRec(recs, host, brand, awareness);
     return {
       brand: "naver", status: "ok", awareness,
-      awarenessAnswer: aw, recommendationAnswer: rec,
-      recommendation: { mentioned: r.mentioned, total: r.total, competitors: r.competitors },
+      awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
       model,
     };
   } catch (e) {
