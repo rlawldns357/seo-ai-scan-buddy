@@ -109,8 +109,8 @@ const Index = () => {
 
   // Skip Lighthouse toggle
   const [skipLighthouse, setSkipLighthouse] = useState(false);
-  // Ask AI toggle (default ON — premium signature feature)
-  const [askAIEnabled, setAskAIEnabled] = useState(true);
+  // Ask AI toggle — ×30 기능 일시 OFF (블루프린트 보존). featureFlags.ts 참조.
+  const [askAIEnabled, setAskAIEnabled] = useState(false);
   // Naver Store mode (teaser 클릭으로 활성화 — 검색창 초록 띠)
   const [naverMode, setNaverMode] = useState(false);
   // 네이버 티저 클릭 → 입력창 강조. 다른 곳 클릭 시 원복.
