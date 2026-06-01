@@ -819,7 +819,7 @@ const Index = () => {
               )}
 
               {/* 스토어: 3축 채점이 무의미하니, AI가 이 브랜드를 어떻게 인식하는지를 핵심 가치로 먼저 보여줌 */}
-              {result?.storeContext && (
+              {ENABLE_X30 && result?.storeContext && (
                 <>
                   <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
                     <p className="text-xs sm:text-sm text-foreground leading-relaxed">
@@ -850,7 +850,7 @@ const Index = () => {
                 <NaverStoreInsights context={result.storeContext} />
               )}
 
-              {result && !result.storeContext && askAIEnabled && (
+              {ENABLE_X30 && result && !result.storeContext && askAIEnabled && (
                 <div id="ai-perception" className="scroll-mt-20">
                   <AIPerceptionCard
                     url={normalizedUrl}
@@ -861,6 +861,7 @@ const Index = () => {
                   />
                 </div>
               )}
+
 
 
               <Suspense fallback={null}>
