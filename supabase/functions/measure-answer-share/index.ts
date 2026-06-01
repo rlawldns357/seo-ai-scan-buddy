@@ -21,6 +21,19 @@ const ANTHROPIC_KEY = Deno.env.get("ANTHROPIC_API_KEY");
 
 type EngineKey = "perplexity" | "chatgpt" | "gemini" | "claude";
 
+function isLikelyOpenAIApiKey(key?: string | null): key is string {
+  const trimmed = key?.trim() ?? "";
+  return /^sk-(proj-)?[A-Za-z0-9_-]{40,}$/.test(trimmed);
+}
+
+function lovableGatewayHeaders(key: string): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    "Lovable-API-Key": key,
+    "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+  };
+}
+
 interface MeasureInput {
   url: string;
   brand?: string;
@@ -94,7 +107,7 @@ async function autoExtractContext(input: MeasureInput, host: string, domainCore:
   try {
     const r = await fetchTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_KEY}` },
+      headers: lovableGatewayHeaders(LOVABLE_KEY),
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
@@ -166,7 +179,7 @@ async function askGemini(query: string): Promise<{ text: string; citations: stri
   try {
     const r = await fetchTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_KEY}`, "Content-Type": "application/json" },
+      headers: lovableGatewayHeaders(LOVABLE_KEY),
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
@@ -186,7 +199,7 @@ async function askGemini(query: string): Promise<{ text: string; citations: stri
 }
 
 async function askChatGPT(query: string): Promise<{ text: string; citations: string[]; error?: string }> {
-  const useDirect = !!OPENAI_KEY;
+  const useDirect = isLikelyOpenAIApiKey(OPENAI_KEY);
   if (!useDirect && !LOVABLE_KEY) return { text: "", citations: [], error: "no-key" };
   try {
     const endpoint = useDirect
@@ -194,7 +207,7 @@ async function askChatGPT(query: string): Promise<{ text: string; citations: str
       : "https://ai.gateway.lovable.dev/v1/chat/completions";
     const headers: Record<string, string> = { "Content-Type": "application/json" };
     if (useDirect) headers["Authorization"] = `Bearer ${OPENAI_KEY}`;
-    else headers["Authorization"] = `Bearer ${LOVABLE_KEY}`;
+    else Object.assign(headers, lovableGatewayHeaders(LOVABLE_KEY!));
     const model = useDirect ? "gpt-5-mini" : "openai/gpt-5-mini";
     const r = await fetchTimeout(endpoint, {
       method: "POST",
@@ -289,7 +302,7 @@ ${responseText.slice(0, 4000)}
   try {
     const r = await fetchTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${LOVABLE_KEY}` },
+      headers: lovableGatewayHeaders(LOVABLE_KEY),
       body: JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
