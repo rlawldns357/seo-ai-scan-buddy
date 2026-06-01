@@ -148,6 +148,32 @@ function isDenialOnly(text: string): boolean {
   return false;
 }
 
+// 공백·기호 무시 정규화 — "SearchTune OS" / "Search-Tune.OS" / "SearchTuneOS" 모두
+// "searchtuneos" 로 비교 (한글은 보존).
+function squash(s: string): string {
+  return (s || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
+}
+
+// 단어경계 매칭 + 공백/기호 무시 매칭을 모두 시도한다.
+// 응답에 "**SearchTune OS**" 처럼 마크다운·공백이 끼어도 도메인 토큰 "searchtuneos" 가 잡힌다.
+function tokenMatches(text: string, tokens: string[]): boolean {
+  if (!text || tokens.length === 0) return false;
+  const lower = text.toLowerCase();
+  const squashed = squash(text);
+  return tokens.some((raw) => {
+    const t = (raw || "").trim();
+    if (t.length < 2) return false;
+    const re = new RegExp(
+      `(?:^|[^a-z0-9가-힣])${t.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`,
+      "i",
+    );
+    if (re.test(lower)) return true;
+    const sq = squash(t);
+    if (sq.length >= 4 && squashed.includes(sq)) return true;
+    return false;
+  });
+}
+
 function detectAwareness(text: string, host: string, brand: string, aliases: string[] = []): {
   awareness: "yes" | "partial" | "no";
 } {
@@ -158,11 +184,8 @@ function detectAwareness(text: string, host: string, brand: string, aliases: str
   // false-positive를 막기 위해 host 매칭을 비활성화하고 brand/aliases만 본다.
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
   const hostMatch = !isNaverHost && lower.includes(host.toLowerCase());
-  // brand + aliases 단어경계 매칭
   const tokens = [brand, ...aliases].map((s) => (s || "").trim()).filter((s) => s.length >= 2);
-  const tokenMatch = tokens.some((t) =>
-    new RegExp(`(?:^|[^a-z0-9가-힣])${t.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`, "i").test(lower)
-  );
+  const tokenMatch = tokenMatches(text, tokens);
   if (hostMatch) return { awareness: "yes" };
   if (tokenMatch) return { awareness: "partial" };
   if (text.trim().length >= 20) return { awareness: "yes" };
@@ -176,9 +199,7 @@ function detectRecommendation(text: string, host: string, brand: string, aliases
   const lower = text.toLowerCase();
   const isNaverHost = /(^|\.)naver\.com$/i.test(host);
   const tokens = [brand, ...aliases].map((s) => (s || "").trim()).filter((s) => s.length >= 2);
-  const tokenMatch = tokens.some((t) =>
-    new RegExp(`(?:^|[^a-z0-9가-힣])${t.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`, "i").test(lower)
-  );
+  const tokenMatch = tokenMatches(text, tokens);
   const denyForce = awarenessHint === "no";
   const mentioned = !denyForce && ((!isNaverHost && lower.includes(host.toLowerCase())) || tokenMatch);
   const competitors: string[] = [];
@@ -670,9 +691,9 @@ Deno.serve(async (req) => {
       });
     }
     const { url, host, brand: domainBrand } = normalizeUrl(rawUrl);
-    const brand = String(body?.brand ?? "").trim() || domainBrand;
+    let brand = String(body?.brand ?? "").trim() || domainBrand;
     const rawAliases = Array.isArray(body?.aliases) ? body.aliases : [];
-    const aliases: string[] = rawAliases
+    let aliases: string[] = rawAliases
       .map((a: unknown) => String(a ?? "").trim())
       .filter((a: string) => a.length >= 2)
       .slice(0, 5);
@@ -680,9 +701,14 @@ Deno.serve(async (req) => {
     let category = normalizeCategory(String(body?.category ?? ""));
     const regionHint = detectRegionHint(host); // 항상 빈 문자열 (자동 주입 OFF)
 
-    // 자기 도메인이면 컴팩트한 경쟁 카테고리로 강제 덮어쓰기
+    // 자기 도메인이면 컴팩트한 경쟁 카테고리 + 공식 브랜드/별칭으로 강제 덮어쓰기.
+    // (AI 답변은 "SearchTune OS" 처럼 공백을 끼워 출력하므로 도메인 토큰 "searchtuneos" 만으로는
+    //  단어경계 매칭이 실패해서 '추천 미노출'로 잘못 잡혔다.)
     if (isSelfDomain(host)) {
       category = SELF_CATEGORY;
+      brand = "SearchTune OS";
+      const selfAliases = ["SearchTune", "SearchTuneOS", "서치튠 OS", "서치튠OS", "서치튠"];
+      aliases = Array.from(new Set([...selfAliases, ...aliases])).slice(0, 8);
     }
 
     const sb = createClient(
