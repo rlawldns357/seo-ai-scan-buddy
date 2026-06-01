@@ -636,7 +636,7 @@ const Index = () => {
               const fastChecked = forced || skipLighthouse;
               return (
                 <>
-                  <div className="mt-3 sm:mt-3 grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
+                  <div className={`mt-3 sm:mt-3 grid ${ENABLE_X30 ? "grid-cols-2" : "grid-cols-1"} gap-2 sm:gap-3 max-w-md mx-auto`}>
 
                     {/* 빠른 분석 — Amber/Yellow */}
                     <button
