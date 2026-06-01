@@ -186,13 +186,21 @@ async function askGemini(query: string): Promise<{ text: string; citations: stri
 }
 
 async function askChatGPT(query: string): Promise<{ text: string; citations: string[]; error?: string }> {
-  if (!LOVABLE_KEY) return { text: "", citations: [], error: "no-key" };
+  const useDirect = !!OPENAI_KEY;
+  if (!useDirect && !LOVABLE_KEY) return { text: "", citations: [], error: "no-key" };
   try {
-    const r = await fetchTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    const endpoint = useDirect
+      ? "https://api.openai.com/v1/chat/completions"
+      : "https://ai.gateway.lovable.dev/v1/chat/completions";
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (useDirect) headers["Authorization"] = `Bearer ${OPENAI_KEY}`;
+    else headers["Authorization"] = `Bearer ${LOVABLE_KEY}`;
+    const model = useDirect ? "gpt-5-mini" : "openai/gpt-5-mini";
+    const r = await fetchTimeout(endpoint, {
       method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_KEY}`, "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({
-        model: "openai/gpt-5-mini",
+        model,
         messages: [
           { role: "system", content: "Answer naturally and objectively in Korean. Do not mention this is a test. Do not force any specific brand." },
           { role: "user", content: query },
@@ -202,7 +210,7 @@ async function askChatGPT(query: string): Promise<{ text: string; citations: str
     const j = await r.json();
     const text = j?.choices?.[0]?.message?.content ?? "";
     const u = extractUsage(j);
-    await logApiCost({ function_name: FN_NAME, model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { phase: "ask", engine: "chatgpt" } });
+    await logApiCost({ function_name: FN_NAME, model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { phase: "ask", engine: "chatgpt", direct: useDirect } });
     return { text, citations: [] };
   } catch (e) {
     return { text: "", citations: [], error: String(e) };
