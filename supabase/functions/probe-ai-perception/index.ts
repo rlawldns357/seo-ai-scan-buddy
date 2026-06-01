@@ -323,9 +323,8 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     };
   } catch (e) {
     const status = (e as { status?: number })?.status;
-    // 401 = invalid key / insufficient_quota → 사용자에게 '대기 중' UX로 노출
     if (status === 401 || status === 402 || status === 403) {
-      return { brand: "perplexity", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "API 한도 소진 — 충전 대기 중" };
+      return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "Perplexity API 키/잔액 확인 필요" };
     }
     return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
   }
@@ -612,15 +611,18 @@ Deno.serve(async (req) => {
       summary: { measurable, aware, recommended },
     };
 
-    // 캐시 저장 (upsert)
-    await sb.from("ai_perception_cache").upsert({
-      url,
-      brand,
-      category,
-      results: result,
-      created_at: new Date().toISOString(),
-      expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
-    }, { onConflict: "url" });
+    // 캐시 저장 (upsert) — 외부 API 일시 오류/잔액 이슈는 캐시에 고정하지 않음
+    const cacheable = measured.every((b) => b.status === "ok");
+    if (cacheable) {
+      await sb.from("ai_perception_cache").upsert({
+        url,
+        brand,
+        category,
+        results: result,
+        created_at: new Date().toISOString(),
+        expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      }, { onConflict: "url" });
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
