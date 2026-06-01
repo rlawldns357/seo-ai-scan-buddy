@@ -163,17 +163,23 @@ function detectRecommendation(text: string, host: string, brand: string, awarene
   return { mentioned, total: competitors.length || undefined, competitors };
 }
 
-// ── 30회 동시 측정용 추천 프롬프트 5종 (모델당 1 awareness + 5 rec = 6, 5모델 × 6 = 30) ──
+// ── 대화형 awareness 프롬프트 (사람들이 실제로 챗봇에 물어보듯) ──
+function buildAwarenessPrompt(url: string, brand: string): string {
+  return `혹시 ${url} (${brand}) 들어가본 적 있어? 여기 뭐 하는 곳인지 1~2문장으로만 알려줘. 잘 모르겠으면 "모릅니다"라고만 답해줘. 추측해서 지어내진 말고.`;
+}
+
+// ── 30회 동시 측정용 추천 프롬프트 5종 (대화형) ──
 function buildRecPrompts(brand: string, category: string): string[] {
   const cat = category || `${brand} 관련 분야`;
   return [
-    `"${cat}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 1~5번 번호로 나열해 주세요. 잘 알려진 곳만.`,
-    `한국에서 가장 신뢰받는 "${cat}" 관련 브랜드/사이트 5곳을 번호로 나열해 주세요.`,
-    `"${cat}" 관련해 사람들이 가장 자주 추천하는 한국 사이트 5개를 번호로 나열해 주세요.`,
-    `온라인에서 "${cat}"을(를) 이용하거나 구매할 때 추천되는 한국 브랜드/플랫폼 5개를 번호로 나열해 주세요.`,
-    `"${brand}" 대신 사용할 수 있는 한국 "${cat}" 분야 대안 사이트/브랜드 5개를 번호로 나열해 주세요.`,
+    `요즘 ${cat} 쪽에서 괜찮은 한국 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`,
+    `${cat} 관련해서 한국에서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로 정리해줘.`,
+    `사람들이 ${cat} 관련해서 많이 추천하는 한국 사이트가 어디어디 있어? 5개만 번호로 알려줘.`,
+    `온라인에서 ${cat} 쓰거나 사려면 어디로 가야 해? 한국 기준 5개 번호로 추천 부탁해.`,
+    `${brand} 말고 비슷한 한국 ${cat} 서비스 뭐 있어? 5개만 번호로 골라줘.`,
   ];
 }
+
 
 function aggregateRec(
   texts: string[],
