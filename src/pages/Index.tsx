@@ -843,6 +843,9 @@ const Index = () => {
                 <div id="ai-perception" className="scroll-mt-20">
                   <AIPerceptionCard
                     url={normalizedUrl}
+                    brand={(result as any).brand_name || undefined}
+                    aliases={(result as any).brand_aliases || undefined}
+                    category={(result as any).category || undefined}
                     onAnswerShareClick={() => {
                       trackEvent("answer_share_button_click", { url: normalizedUrl });
                       setAnswerShareOpen(true);
