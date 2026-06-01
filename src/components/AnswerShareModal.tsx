@@ -53,10 +53,34 @@ function ScoreBar({ label, value, Icon, color }: { label: string; value: number;
   );
 }
 
-// 세션 내 캐시 — 같은 URL/브랜드/카테고리 조합은 모달을 다시 열어도 재측정하지 않음
-const sessionCache = new Map<string, AnswerShareData>();
+// 24시간 캐시 — localStorage 사용. 같은 URL/브랜드/카테고리 조합은 하루 동안 재측정하지 않음
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const CACHE_PREFIX = "answerShare:v1:";
 const cacheKey = (url?: string, brand?: string, category?: string) =>
-  `${url ?? ""}|${brand ?? ""}|${category ?? ""}`;
+  `${CACHE_PREFIX}${url ?? ""}|${brand ?? ""}|${category ?? ""}`;
+
+function readCache(key: string): AnswerShareData | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const { savedAt, data } = JSON.parse(raw) as { savedAt: number; data: AnswerShareData };
+    if (Date.now() - savedAt > CACHE_TTL_MS) {
+      localStorage.removeItem(key);
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(key: string, data: AnswerShareData) {
+  try {
+    localStorage.setItem(key, JSON.stringify({ savedAt: Date.now(), data }));
+  } catch {
+    // quota exceeded 등 — 무시
+  }
+}
 
 export default function AnswerShareModal({ open, onOpenChange, url, brand, category }: Props) {
   const [stepIdx, setStepIdx] = useState(0);
@@ -69,7 +93,7 @@ export default function AnswerShareModal({ open, onOpenChange, url, brand, categ
     const key = cacheKey(url, brand, category);
 
     // 캐시 히트 — 즉시 표시, 네트워크 호출 없음
-    const cached = sessionCache.get(key);
+    const cached = readCache(key);
     if (cached) {
       setData(cached);
       setLoading(false);
@@ -94,7 +118,7 @@ export default function AnswerShareModal({ open, onOpenChange, url, brand, categ
         trackEvent("answer_share_measure_error", { url, error: err });
         return;
       }
-      sessionCache.set(key, res);
+      writeCache(key, res);
       setData(res);
       setLoading(false);
       trackEvent("answer_share_measure_done", {
@@ -104,6 +128,7 @@ export default function AnswerShareModal({ open, onOpenChange, url, brand, categ
         first_mention_share: res.firstMentionShare,
       });
     })();
+
 
     return () => {
       cancelled = true;
