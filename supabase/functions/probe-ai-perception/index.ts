@@ -285,29 +285,30 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     };
 
     const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"라고만 답하세요.`;
-    const recP = category
-      ? `"${category}" 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`
-      : `"${brand}"과 비슷한 분야에서 추천할 만한 한국 브랜드/사이트 5개를 번호로 나열.`;
+    const recPrompts = buildRecPrompts(brand, category);
 
-    const [aw, rec] = await Promise.all([ask(awP), ask(recP)]);
+    const [aw, ...recs] = await Promise.all([ask(awP), ...recPrompts.map((p) => ask(p))]);
     const { awareness } = detectAwareness(aw.text, host, brand);
-    const r = detectRecommendation(rec.text, host, brand, awareness);
+    const recTexts = recs.map((r) => r.text);
+    const agg = aggregateRec(recTexts, host, brand, awareness);
     // 호스트가 naver.com이면 citation 매칭은 의미 없음. awareness=no면 추천 매칭도 무효화.
     const isNaverHost = /(^|\.)naver\.com$/i.test(host);
+    const allCitations = recs.flatMap((r) => r.citations || []);
+    const uniqCitations = Array.from(new Set(allCitations));
     const citationHit = !isNaverHost && awareness !== "no" &&
-      (rec.citations || []).some((c) => c?.toLowerCase().includes(host.toLowerCase()));
+      uniqCitations.some((c) => c?.toLowerCase().includes(host.toLowerCase()));
     return {
       brand: "perplexity",
       status: "ok",
       awareness,
       awarenessAnswer: aw.text,
-      recommendationAnswer: rec.text,
+      recommendationAnswer: agg.primaryText,
       recommendation: {
-        mentioned: r.mentioned || citationHit,
-        total: rec.citations?.length || r.total,
-        competitors: r.competitors,
+        mentioned: agg.mentioned || citationHit,
+        total: uniqCitations.length || agg.total,
+        competitors: agg.competitors,
       },
-      citations: rec.citations,
+      citations: uniqCitations,
       model,
     };
   } catch (e) {
