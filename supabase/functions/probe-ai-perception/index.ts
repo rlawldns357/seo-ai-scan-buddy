@@ -672,11 +672,11 @@ Deno.serve(async (req) => {
       .map((a: unknown) => String(a ?? "").trim())
       .filter((a: string) => a.length >= 2)
       .slice(0, 5);
-    let category = String(body?.category ?? "").trim();
-    const regionHint = detectRegionHint(host);
+    // 모든 사이트에 동일 적용: 들어온 category를 컴팩트 명사구로 정규화
+    let category = normalizeCategory(String(body?.category ?? ""));
+    const regionHint = detectRegionHint(host); // 항상 빈 문자열 (자동 주입 OFF)
 
-    // 자기 도메인이면 카테고리를 "AI 검색 최적화 진단 SaaS"로 강제 덮어쓰기.
-    // 이래야 추천 질문이 "관련 분야"가 아니라 또렷한 경쟁 카테고리로 나간다.
+    // 자기 도메인이면 컴팩트한 경쟁 카테고리로 강제 덮어쓰기
     if (isSelfDomain(host)) {
       category = SELF_CATEGORY;
     }
