@@ -21,6 +21,7 @@ import { type RateLimitStatus } from "@/lib/rateLimit";
 import { BRAND_LABEL, getStoredVipBrand, subscribeVipBrand, type VipBrand } from "@/lib/vipBrand";
 import type { AnalysisPhase } from "@/components/LoadingScreen";
 import type { IndexingResult } from "@/lib/checkIndexing";
+import { ENABLE_X30 } from "@/lib/featureFlags";
 
 // Lazy-load heavy components only needed for loading/result screens
 const ScoreDashboard = lazy(() => import("@/components/ScoreDashboard"));
