@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronDown, ChevronsRight, Lock, Loader2, AlertCircle, Sparkles, Zap, AlertTriangle, MehIcon, HelpCircle, Trophy } from "lucide-react";
+import { ChevronDown, Lock, Loader2, AlertCircle, Sparkles, Zap, AlertTriangle, MehIcon, HelpCircle, Trophy } from "lucide-react";
 import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
 
