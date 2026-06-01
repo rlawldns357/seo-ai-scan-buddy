@@ -15,6 +15,8 @@ const corsHeaders = {
 const TIMEOUT_MS = 60000;
 const RETRY_DELAY_MS = 800;
 
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 /** fetch with timeout + 1 retry on network/5xx errors. */
 async function fetchWithRetry(url: string, init: RequestInit, ms = TIMEOUT_MS): Promise<Response> {
   const attempt = async () => {
@@ -281,6 +283,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
       });
       if (!r.ok) {
         const body = await r.text().catch(() => "");
+        console.warn("[perplexity] request failed", r.status, body.slice(0, 500));
         const err: Error & { status?: number } = new Error(`perplexity ${r.status}: ${body.slice(0, 200)}`);
         err.status = r.status;
         throw err;
@@ -297,7 +300,12 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"라고만 답하세요.`;
     const recPrompts = buildRecPrompts(brand, category);
 
-    const [aw, ...recs] = await Promise.all([ask(awP), ...recPrompts.map((p) => ask(p))]);
+    const aw = await ask(awP);
+    const recs: Array<{ text: string; citations: string[] }> = [];
+    for (const prompt of recPrompts) {
+      await delay(450);
+      recs.push(await ask(prompt));
+    }
     const { awareness } = detectAwareness(aw.text, host, brand);
     const recTexts = recs.map((r) => r.text);
     const agg = aggregateRec(recTexts, host, brand, awareness);
@@ -323,8 +331,14 @@ async function probePerplexity(url: string, host: string, brand: string, categor
     };
   } catch (e) {
     const status = (e as { status?: number })?.status;
-    if (status === 401 || status === 402 || status === 403) {
-      return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "Perplexity API 키/잔액 확인 필요" };
+    if (status === 401 || status === 403) {
+      return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "Perplexity API 키 권한 확인 필요" };
+    }
+    if (status === 402) {
+      return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "Perplexity 결제 상태 확인 필요" };
+    }
+    if (status === 429) {
+      return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: "Perplexity 요청 제한 — 잠시 후 재측정 필요" };
     }
     return { brand: "perplexity", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
   }
