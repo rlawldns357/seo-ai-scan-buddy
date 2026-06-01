@@ -841,7 +841,7 @@ const Index = () => {
                 <NaverStoreInsights context={result.storeContext} />
               )}
 
-              {ENABLE_X30 && result && !result.storeContext && askAIEnabled && (
+              {result && !result.storeContext && askAIEnabled && (
                 <div id="ai-perception" className="scroll-mt-20">
                   <AIPerceptionCard
                     url={normalizedUrl}
