@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { ChevronDown, ChevronsRight, Lock, Loader2, AlertCircle, Sparkles, Zap, AlertTriangle, MehIcon, HelpCircle, Trophy } from "lucide-react";
+import { ChevronDown, Lock, Loader2, AlertCircle, Sparkles, Zap, AlertTriangle, MehIcon, HelpCircle, Trophy } from "lucide-react";
 import { SiClaude, SiGooglegemini, SiPerplexity, SiNaver } from "@icons-pack/react-simple-icons";
 import { trackEvent } from "@/lib/analytics";
 
@@ -333,121 +333,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
               )}
             </div>
 
-            {onAnswerShareClick && (
-              <div className="hidden sm:flex flex-col items-end shrink-0 gap-3">
-                <button
-                  type="button"
-                  onClick={onAnswerShareClick}
-                  aria-label="AI 응답 점유율 30회 동시 측정 — 베타 기간 무료"
-                  className="x30-cta group relative flex items-center w-[400px] h-[76px] bg-card rounded-2xl border border-border/80 shadow-[0_8px_30px_-10px_hsl(var(--primary)/0.18)] overflow-hidden transition-all duration-300 hover:shadow-[0_20px_40px_-12px_hsl(var(--primary)/0.28)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/15"
-                >
-                  {/* Side gradient block — Capacity ×30 */}
-                  <div
-                    className="relative flex flex-col items-center justify-center w-28 h-full text-primary-foreground shrink-0 overflow-hidden"
-                    style={{ background: "var(--gradient-primary)" }}
-                  >
-                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,hsl(var(--primary-foreground)/0.22),transparent_60%)]" />
-                    <span className="relative flex flex-col items-center leading-none">
-                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] opacity-70 mb-1">Capacity</span>
-                      <span className="flex items-baseline font-black tracking-tighter">
-                        <span className="text-[14px] self-start mt-1 mr-[1px] opacity-90">×</span>
-                        <span className="text-[26px] tabular-nums">30</span>
-                      </span>
-                    </span>
-                    {/* shimmer sweep */}
-                    <div className="x30-sheen absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-                  </div>
-
-                  {/* Label area */}
-                  <div className="flex-1 flex items-center justify-between px-5 bg-card">
-                    <div className="flex flex-col items-start text-left">
-                      <span className="text-[16px] font-extrabold text-foreground tracking-tight group-hover:text-primary transition-colors duration-300">
-                        AI 응답 점유율 측정
-                      </span>
-                      <span className="text-[11.5px] text-muted-foreground font-medium">실시간 엔진별 분석</span>
-                    </div>
-                    <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-muted/60 border border-border group-hover:bg-primary/10 group-hover:border-primary/20 transition-all duration-300">
-                      <ChevronsRight className="w-[18px] h-[18px] text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all duration-300" />
-                    </div>
-                  </div>
-
-                  {/* bottom progress accent */}
-                  <div className="absolute bottom-0 left-0 h-[3px] w-full bg-primary/10">
-                    <div className="h-full w-0 bg-primary group-hover:w-full transition-all duration-700 ease-out" />
-                  </div>
-                </button>
-                <div className="flex items-center gap-3 pr-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-score-excellent animate-pulse" />
-                    <span className="text-[12px] font-bold text-foreground tabular-nums">30회 동시 측정</span>
-                  </div>
-                  <span className="w-px h-3 bg-border" />
-                  <span className="px-2 py-0.5 rounded-md bg-primary/10 text-[10.5px] font-black text-primary tracking-[0.12em] uppercase border border-primary/15">
-                    Free Beta
-                  </span>
-                </div>
-              </div>
-            )}
           </div>
-
-          {onAnswerShareClick && (
-            <div className="sm:hidden mt-5 flex flex-col items-stretch gap-2.5">
-              <button
-                type="button"
-                onClick={onAnswerShareClick}
-                aria-label="AI 응답 점유율 30회 동시 측정 — 베타 기간 무료"
-                className="x30-cta group relative flex items-center w-full h-[72px] bg-card rounded-2xl border border-border/80 shadow-[0_8px_24px_-10px_hsl(var(--primary)/0.18)] overflow-hidden active:scale-[0.99] transition-all"
-              >
-                <div
-                  className="relative flex flex-col items-center justify-center w-[88px] h-full text-primary-foreground shrink-0 overflow-hidden"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_15%,hsl(var(--primary-foreground)/0.22),transparent_60%)]" />
-                  <span className="relative flex flex-col items-center leading-none">
-                    <span className="text-[9px] font-bold uppercase tracking-[0.15em] opacity-70 mb-0.5">Capacity</span>
-                    <span className="flex items-baseline font-black tracking-tighter">
-                      <span className="text-[12px] self-start mt-1 mr-[1px] opacity-90">×</span>
-                      <span className="text-[24px] tabular-nums">30</span>
-                    </span>
-                  </span>
-                </div>
-                <div className="flex-1 flex items-center justify-between px-4 bg-card">
-                  <div className="flex flex-col items-start text-left">
-                    <span className="text-[15px] font-extrabold text-foreground tracking-tight">
-                      AI 응답 점유율 측정
-                    </span>
-                    <span className="text-[11px] text-muted-foreground font-medium">실시간 엔진별 분석</span>
-                  </div>
-                  <ChevronsRight className="w-5 h-5 text-muted-foreground shrink-0" />
-                </div>
-                <div className="absolute bottom-0 left-0 h-[2px] w-full bg-primary/10">
-                  <div className="h-full w-0 bg-primary group-hover:w-full transition-all duration-700 ease-out" />
-                </div>
-              </button>
-              <div className="flex items-center justify-center gap-3">
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-score-excellent animate-pulse" />
-                  <span className="text-[12px] font-bold text-foreground tabular-nums">30회 동시 측정</span>
-                </div>
-                <span className="w-px h-3 bg-border" />
-                <span className="px-2 py-0.5 rounded-md bg-primary/10 text-[10.5px] font-black text-primary tracking-[0.12em] uppercase border border-primary/15">
-                  Free Beta
-                </span>
-              </div>
-            </div>
-          )}
-
-
-          <style>{`
-            .x30-cta .x30-sheen {
-              transition: transform 1s ease;
-            }
-            .x30-cta:hover .x30-sheen {
-              transform: translateX(100%);
-            }
-          `}</style>
-
-
         </div>
       </div>
 
