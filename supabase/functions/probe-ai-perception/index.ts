@@ -613,8 +613,8 @@ Deno.serve(async (req) => {
         if (b.status !== "ok") return b;
         return {
           ...b,
-          awarenessPrompt: b.awarenessPrompt || awarenessPromptTpl,
-          recommendationPrompt: b.recommendationPrompt || recPromptsTpl[0],
+          awarenessPrompt: awarenessPromptTpl,
+          recommendationPrompt: recPromptsTpl[0],
         };
       });
       return new Response(JSON.stringify({ ...r, cached: true }), {
