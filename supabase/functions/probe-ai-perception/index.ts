@@ -247,7 +247,7 @@ async function probeGemini(url: string, host: string, brand: string, category: s
       logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out });
       return j?.choices?.[0]?.message?.content ?? "";
     };
-    const awarenessPrompt = `"${url}" 또는 "${brand}"이라는 브랜드/사이트가 무엇을 하는 곳인지 한국어로 1~2문장으로 알려주세요. 모르면 "모릅니다"라고만 답하세요. 추측 금지.`;
+    const awarenessPrompt = buildAwarenessPrompt(url, brand);
     const recPrompts = buildRecPrompts(brand, category);
 
     const [aw, ...recs] = await Promise.all([
@@ -307,7 +307,7 @@ async function probePerplexity(url: string, host: string, brand: string, categor
       };
     };
 
-    const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"라고만 답하세요.`;
+    const awP = buildAwarenessPrompt(url, brand);
     const recPrompts = buildRecPrompts(brand, category);
 
     const aw = await ask(awP);
@@ -414,7 +414,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category);
-    const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`;
+    const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -472,7 +472,7 @@ async function probeClaude(url: string, host: string, brand: string, category: s
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
     const recPrompts = buildRecPrompts(brand, category);
-    const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`;
+    const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -546,7 +546,7 @@ async function probeNaver(url: string, host: string, brand: string, category: st
       return j?.result?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category);
-    const awP = `"${url}" 사이트는 무엇을 하는 곳인가요? 한국어 1~2문장. 모르면 "모릅니다"만.`;
+    const awP = buildAwarenessPrompt(url, brand);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -607,7 +607,7 @@ Deno.serve(async (req) => {
     if (cached && new Date(cached.expires_at) > new Date()) {
       const r = cached.results as ProbeResult;
       // Backfill prompts for old cached entries that predate the prompt fields
-      const awarenessPromptTpl = `"${url}" 또는 "${brand}"이라는 브랜드/사이트가 무엇을 하는 곳인지 한국어로 1~2문장으로 알려주세요. 모르면 "모릅니다"라고만 답하세요. 추측 금지.`;
+      const awarenessPromptTpl = buildAwarenessPrompt(url, brand);
       const recPromptsTpl = buildRecPrompts(brand, category);
       r.brands = (r.brands || []).map((b) => {
         if (b.status !== "ok") return b;
