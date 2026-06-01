@@ -563,7 +563,7 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-xs sm:text-sm font-bold text-foreground leading-snug">
-                "그래서 어떻게 해야 ChatGPT가 우리를 알게 만들 수 있어?"
+                "그래서 어떻게 해야 ChatGPT가 우리를 알게 만들 수 있나요?"
               </p>
               <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5">
                 AI 인지도·추천 노출 개선 전략, 1:1 무료 상담으로 받아보세요.
