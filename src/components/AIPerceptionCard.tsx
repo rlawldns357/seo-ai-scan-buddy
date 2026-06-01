@@ -108,11 +108,12 @@ const LOADING_STEPS = [
   { label: "응답을 분석하는 중", emoji: "🧩" },
 ];
 
-export default function AIPerceptionCard({ url, brand, category, onAnswerShareClick }: Props) {
+export default function AIPerceptionCard({ url, brand, aliases, category, onAnswerShareClick }: Props) {
 
   const [data, setData] = useState<ProbeResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categoryUnknown, setCategoryUnknown] = useState<string | null>(null);
   const [expandedBrand, setExpandedBrand] = useState<BrandKey | null>(null);
   const [consultOpen, setConsultOpen] = useState(false);
   const [stepIdx, setStepIdx] = useState(0);
@@ -124,6 +125,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
     let cancelled = false;
     setLoading(true);
     setError(null);
+    setCategoryUnknown(null);
     setStepIdx(0);
 
     (async () => {
@@ -131,11 +133,16 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
         const adminPw = typeof sessionStorage !== "undefined" ? sessionStorage.getItem("admin_pw") : null;
         const purge = reloadKey > 0 && !!adminPw;
         const { data: resp, error: invErr } = await supabase.functions.invoke("probe-ai-perception", {
-          body: { url, brand, category, ...(purge ? { purge: true, adminPassword: adminPw } : {}) },
+          body: { url, brand, aliases, category, ...(purge ? { purge: true, adminPassword: adminPw } : {}) },
         });
         if (cancelled) return;
         if (invErr) throw invErr;
         if (resp?.error) throw new Error(resp.error);
+        if (resp?.status === "category_unknown") {
+          setCategoryUnknown(resp.message || "AI가 카테고리를 파악하지 못했어요.");
+          setData(null);
+          return;
+        }
         setData(resp as ProbeResult);
         trackEvent("ai_perception_shown", {
           url,
@@ -151,7 +158,7 @@ export default function AIPerceptionCard({ url, brand, category, onAnswerShareCl
     })();
 
     return () => { cancelled = true; };
-  }, [url, brand, category, reloadKey]);
+  }, [url, brand, JSON.stringify(aliases || []), category, reloadKey]);
 
   // Loading step ticker (advance every ~2.2s, hold on last)
   useEffect(() => {
