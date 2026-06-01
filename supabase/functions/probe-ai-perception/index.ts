@@ -640,7 +640,13 @@ Deno.serve(async (req) => {
     }
     const { url, host, brand: domainBrand } = normalizeUrl(rawUrl);
     const brand = String(body?.brand ?? "").trim() || domainBrand;
+    const rawAliases = Array.isArray(body?.aliases) ? body.aliases : [];
+    const aliases: string[] = rawAliases
+      .map((a: unknown) => String(a ?? "").trim())
+      .filter((a: string) => a.length >= 2)
+      .slice(0, 5);
     const category = String(body?.category ?? "").trim();
+    const regionHint = detectRegionHint(host);
 
     const sb = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -654,6 +660,21 @@ Deno.serve(async (req) => {
       await sb.from("ai_perception_cache").delete().eq("url", url);
     }
 
+    // ⛔ 카테고리 미확인 가드 — AI가 카테고리를 추출하지 못하면 측정 자체가 무의미
+    if (!category) {
+      return new Response(JSON.stringify({
+        url,
+        brand,
+        category: "",
+        generated_at: new Date().toISOString(),
+        cached: false,
+        status: "category_unknown",
+        message: "AI가 사이트 콘텐츠에서 카테고리를 파악하지 못했어요. 기본 SEO(메타 태그·소개 문구·구조화 데이터)가 부족할 가능성이 큽니다. 아래 SEO·AEO·GEO 3축 점수부터 확인하고 수정해 주세요.",
+        brands: [],
+        summary: { measurable: 0, aware: 0, recommended: 0 },
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // 캐시 hit
     const { data: cached } = purge ? { data: null as any } : await sb
       .from("ai_perception_cache")
@@ -663,7 +684,6 @@ Deno.serve(async (req) => {
 
     if (cached && new Date(cached.expires_at) > new Date()) {
       const r = cached.results as ProbeResult;
-      // Backfill prompts for old cached entries that predate the prompt fields
       const awarenessPromptTpl = buildAwarenessPrompt(url, brand);
       const recPromptsTpl = buildRecPrompts(brand, category, regionHint);
       r.brands = (r.brands || []).map((b) => {
@@ -681,11 +701,11 @@ Deno.serve(async (req) => {
 
     // 5모델 병렬 호출 (allSettled) — Naver(HyperCLOVA X) 추가
     const settled = await Promise.allSettled([
-      probeChatGPT(url, host, brand, category),
-      probeClaude(url, host, brand, category),
-      probeGemini(url, host, brand, category),
-      probePerplexity(url, host, brand, category),
-      probeNaver(url, host, brand, category),
+      probeChatGPT(url, host, brand, aliases, category, regionHint),
+      probeClaude(url, host, brand, aliases, category, regionHint),
+      probeGemini(url, host, brand, aliases, category, regionHint),
+      probePerplexity(url, host, brand, aliases, category, regionHint),
+      probeNaver(url, host, brand, aliases, category, regionHint),
     ]);
 
     const measured: BrandResult[] = settled.map((s, i) => {
