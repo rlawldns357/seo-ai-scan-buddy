@@ -109,7 +109,7 @@ IMPORTANT:
 - Score honestly based on what you actually see in the content
 - pointRange should be realistic improvement estimates
 - scoreCap should only be set when there's a hard blocker limiting the score
-- brand_name/brand_aliases/category는 콘텐츠에서 실제로 확인 가능할 때만 채우고, 추측·확신 부족 시 반드시 null(또는 빈 배열)로 반환하라. 슬러그/도메인 토큰 그대로 쓰지 마라.`;
+- brand_name/category는 best-effort로 채워라. title/description/H1/메타에서 합리적으로 추론 가능하면 반드시 추출하라. 완전히 비어 추출 불가능한 경우에만 null. brand_aliases는 확신이 없으면 빈 배열. URL 슬러그/도메인 토큰을 그대로 brand_name에 쓰지 마라.
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
