@@ -40,9 +40,9 @@ Evaluate based on these sub-signals (each 0-100):
 
 **Output format (JSON only, no markdown):**
 {
-  "brand_name": "<공식 브랜드/사이트 이름. 예: '쿠팡', 'Notion', 'LG전자'. 콘텐츠·메타·로고·about에서 추론. URL 슬러그(예: 'direct','shop','m')는 절대 금지. 추출 불가 시 null>",
+  "brand_name": "<공식 브랜드/사이트 이름. 예: '쿠팡', 'Notion', 'LG전자', 'SearchTune OS'. 콘텐츠·메타·로고·title·about에서 추론. URL 슬러그(예: 'direct','shop','m')는 절대 금지. title 태그가 '브랜드명 | 설명' 형식이면 앞부분이 브랜드. 추출 불가 시에만 null>",
   "brand_aliases": ["<영문/한글/약어 변형 1~5개. 예: ['LG전자','LG Electronics','LG']. 추출 불가 시 빈 배열>"],
-  "category": "<사이트의 제품/서비스 카테고리를 한국어로 8자 이내. 예: '생활용품 쇼핑몰', '프로젝트 관리 SaaS', '유제품 브랜드'. 일반어('웹사이트','회사 홈페이지','서비스') 금지. 추출 불가 시 null>",
+  "category": "<사이트의 제품/서비스 카테고리를 한국어로 4~12자. 예: '생활용품 쇼핑몰', 'SEO 진단 SaaS', '프로젝트 관리 SaaS', '유제품 브랜드', 'AI 검색 최적화 도구'. 가능한 한 채워라 — title/description/H1/콘텐츠 어디에서든 주제가 보이면 추출하라. '웹사이트','회사 홈페이지' 같은 완전 일반어만 금지. 정말로 콘텐츠가 비어 추출 불가능할 때만 null>",
   "seoScore": <0-100>,
   "aeoScore": <0-100>,
   "geoScore": <0-100>,
@@ -109,7 +109,7 @@ IMPORTANT:
 - Score honestly based on what you actually see in the content
 - pointRange should be realistic improvement estimates
 - scoreCap should only be set when there's a hard blocker limiting the score
-- brand_name/brand_aliases/category는 콘텐츠에서 실제로 확인 가능할 때만 채우고, 추측·확신 부족 시 반드시 null(또는 빈 배열)로 반환하라. 슬러그/도메인 토큰 그대로 쓰지 마라.`;
+- brand_name/category는 best-effort로 채워라. title/description/H1/메타에서 합리적으로 추론 가능하면 반드시 추출하라. 완전히 비어 추출 불가능한 경우에만 null. brand_aliases는 확신이 없으면 빈 배열. URL 슬러그/도메인 토큰을 그대로 brand_name에 쓰지 마라.`;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
