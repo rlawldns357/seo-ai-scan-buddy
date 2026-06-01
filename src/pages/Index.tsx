@@ -635,31 +635,6 @@ const Index = () => {
               const fastChecked = forced || skipLighthouse;
               return (
                 <>
-                  {/* NEW: AI 응답 점유율 ×30 출시 뱃지 */}
-                  <div className="mt-5 sm:mt-4 flex justify-center">
-                    <button
-                      type="button"
-                      onClick={() => setAskAIEnabled(true)}
-                      className="group inline-flex items-center gap-2 h-8 pl-1 pr-3 rounded-full bg-card border border-primary/20 shadow-[0_4px_14px_-6px_hsl(var(--primary)/0.25)] hover:border-primary/40 hover:shadow-[0_6px_18px_-6px_hsl(var(--primary)/0.4)] transition-all"
-                      aria-label="신규 기능: AI 응답 점유율 30회 동시 측정 — 클릭하여 활성화"
-                    >
-                      <span
-                        className="flex items-center justify-center h-6 px-2 rounded-full text-primary-foreground text-[11px] font-black tracking-tighter"
-                        style={{ background: "var(--gradient-primary)" }}
-                      >
-                        <span className="text-[9px] opacity-90 mr-[1px]">×</span>30
-                      </span>
-                      <span className="text-[11px] font-black text-primary tracking-[0.12em] uppercase">New</span>
-                      <span className="w-px h-3 bg-border" />
-                      <span className="text-[12px] font-bold text-foreground tracking-tight">
-                        AI 응답 점유율 측정
-                      </span>
-                      <span className="text-[11px] text-muted-foreground font-medium hidden sm:inline">출시</span>
-                      <span className="text-[10px] text-primary/70 font-bold opacity-0 group-hover:opacity-100 transition-opacity hidden sm:inline">
-                        켜기 →
-                      </span>
-                    </button>
-                  </div>
                   <div className="mt-3 sm:mt-3 grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
 
                     {/* 빠른 분석 — Amber/Yellow */}
