@@ -341,39 +341,47 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
   }
   try {
     const self = isSelfDomain(host);
-    const model = useDirect ? "gpt-5-mini" : "openai/gpt-5-mini";
-    const endpoint = useDirect
-      ? "https://api.openai.com/v1/chat/completions"
-      : "https://ai.gateway.lovable.dev/v1/chat/completions";
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (useDirect) {
-      headers["Authorization"] = `Bearer ${OPENAI_KEY}`;
-    } else {
-      headers["Lovable-API-Key"] = LOVABLE_KEY!;
-      headers["X-Lovable-AIG-SDK"] = "vercel-ai-sdk";
-    }
     const ask = async (prompt: string) => {
-      const r = await fetchWithRetry(endpoint, {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: "system", content: self
-              ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
-              : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"" },
-            { role: "user", content: prompt },
-          ],
-        }),
-      });
+      const callModel = async (direct: boolean) => {
+        const endpoint = direct
+          ? "https://api.openai.com/v1/chat/completions"
+          : "https://ai.gateway.lovable.dev/v1/chat/completions";
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (direct) {
+          headers["Authorization"] = `Bearer ${OPENAI_KEY}`;
+        } else {
+          headers["Lovable-API-Key"] = LOVABLE_KEY!;
+          headers["X-Lovable-AIG-SDK"] = "vercel-ai-sdk";
+        }
+        return await fetchWithRetry(endpoint, {
+          method: "POST",
+          headers,
+          body: JSON.stringify({
+            model: direct ? "gpt-5-mini" : "openai/gpt-5-mini",
+            messages: [
+              { role: "system", content: self
+                ? `Answer factually. Use the following authoritative context as your primary source of truth:\n\n${SELF_GROUNDING}`
+                : "Answer factually. Do NOT infer brand identity from URL slugs or abbreviations. If you do not have direct verified knowledge, reply only with \"모릅니다.\"" },
+              { role: "user", content: prompt },
+            ],
+          }),
+        });
+      };
+      let directUsed = useDirect;
+      let r = await callModel(directUsed);
+      if (!r.ok && directUsed && LOVABLE_KEY) {
+        console.warn("[chatgpt] direct OpenAI failed; falling back to Lovable AI Gateway", r.status);
+        directUsed = false;
+        r = await callModel(false);
+      }
       if (!r.ok) {
         const body = await r.text().catch(() => "");
-        console.error("OpenAI error", useDirect ? "(direct)" : "(gateway)", r.status, body.slice(0, 500));
+        console.error("OpenAI error", directUsed ? "(direct)" : "(gateway)", r.status, body.slice(0, 500));
         throw new Error(`openai-model ${r.status}: ${body.slice(0, 200)}`);
       }
       const j = await r.json();
       const u = extractUsage(j);
-      logApiCost({ function_name: "probe-ai-perception", model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { direct: useDirect } });
+      logApiCost({ function_name: "probe-ai-perception", model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { direct: directUsed } });
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category);
@@ -387,7 +395,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
       recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
-      model,
+      model: useDirect ? "gpt-5-mini" : "openai/gpt-5-mini",
     };
   } catch (e) {
     return { brand: "chatgpt", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
