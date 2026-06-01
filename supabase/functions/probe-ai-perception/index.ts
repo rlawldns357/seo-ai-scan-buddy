@@ -257,12 +257,11 @@ function buildRecPrompts(brand: string, category: string, regionHint = ""): stri
   ];
 }
 
-// 호스트/언어로 지역 힌트 자동 추출 (.kr/.jp/.de 등)
-function detectRegionHint(host: string): string {
-  const tld = host.toLowerCase().split(".").pop() || "";
-  const map: Record<string, string> = { kr: "한국", jp: "일본", de: "독일", fr: "프랑스", cn: "중국", uk: "영국", tw: "대만" };
-  if (/(^|\.)naver\.com$|(^|\.)kakao\.com$|(^|\.)coupang\.com$/i.test(host)) return "한국";
-  return map[tld] || "";
+// 지역 자동 주입은 비활성화: 한국 사이트라도 "한국" 키워드가 자꾸 들어가면
+// AI가 글로벌 경쟁자를 빼고 답해서 노이즈가 커진다. 카테고리만으로 충분.
+// 향후 사용자가 명시적으로 region을 보낼 때만 사용하도록 둔다.
+function detectRegionHint(_host: string): string {
+  return "";
 }
 
 
