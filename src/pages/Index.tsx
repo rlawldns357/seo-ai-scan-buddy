@@ -736,7 +736,7 @@ const Index = () => {
                   }}
                 />
               )}
-              <AskAITeaser active={askAIEnabled} onActivate={() => setAskAIEnabled((v) => !v)} />
+              {ENABLE_X30 && <AskAITeaser active={askAIEnabled} onActivate={() => setAskAIEnabled((v) => !v)} />}
               <NaverStoreTeaser onActivate={() => setNaverMode(true)} />
             </div>
             <section className="mt-12 sm:mt-10 max-w-2xl mx-auto text-left">
