@@ -331,16 +331,18 @@ async function probePerplexity(url: string, host: string, brand: string, categor
   }
 }
 
-// ── ChatGPT / OpenAI model (OpenAI 직접 우선 → 폴백: Lovable AI Gateway) ────
+// ── ChatGPT / OpenAI model (Lovable AI Gateway 우선 → 폴백: OpenAI 직접) ────
 async function probeChatGPT(url: string, host: string, brand: string, category: string): Promise<BrandResult> {
   const OPENAI_KEY = Deno.env.get("OPENAI_API_KEY");
   const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
-  const useDirect = isLikelyOpenAIApiKey(OPENAI_KEY);
-  if (!useDirect && !LOVABLE_KEY) {
+  const hasDirect = !!OPENAI_KEY;
+  const hasGateway = !!LOVABLE_KEY;
+  if (!hasDirect && !hasGateway) {
     return { brand: "chatgpt", status: "unsupported", awareness: null, recommendation: { mentioned: false }, errorMessage: "OPENAI_API_KEY/LOVABLE_API_KEY missing" };
   }
   try {
     const self = isSelfDomain(host);
+    let lastDirectUsed = !hasGateway;
     const ask = async (prompt: string) => {
       const callModel = async (direct: boolean) => {
         const endpoint = direct
@@ -367,12 +369,13 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
           }),
         });
       };
-      let directUsed = useDirect;
+      // 1차: Lovable AI Gateway 우선, 실패 시 OpenAI 직접 호출(Codex 키 포함) 폴백
+      let directUsed = !hasGateway;
       let r = await callModel(directUsed);
-      if (!r.ok && directUsed && LOVABLE_KEY) {
-        console.warn("[chatgpt] direct OpenAI failed; falling back to Lovable AI Gateway", r.status);
-        directUsed = false;
-        r = await callModel(false);
+      if (!r.ok && !directUsed && hasDirect) {
+        console.warn("[chatgpt] Lovable Gateway failed; falling back to direct OpenAI", r.status);
+        directUsed = true;
+        r = await callModel(true);
       }
       if (!r.ok) {
         const body = await r.text().catch(() => "");
@@ -381,6 +384,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       }
       const j = await r.json();
       const u = extractUsage(j);
+      lastDirectUsed = directUsed;
       logApiCost({ function_name: "probe-ai-perception", model: "openai/gpt-5-mini", tokens_in: u.tokens_in, tokens_out: u.tokens_out, metadata: { direct: directUsed } });
       return j?.choices?.[0]?.message?.content ?? "";
     };
@@ -395,7 +399,7 @@ async function probeChatGPT(url: string, host: string, brand: string, category: 
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, recommendationAnswer: agg.primaryText,
       recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
-      model: useDirect ? "gpt-5-mini" : "openai/gpt-5-mini",
+      model: lastDirectUsed ? "gpt-5-mini" : "openai/gpt-5-mini",
     };
   } catch (e) {
     return { brand: "chatgpt", status: "error", awareness: null, recommendation: { mentioned: false }, errorMessage: String(e) };
