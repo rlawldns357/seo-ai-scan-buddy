@@ -78,6 +78,47 @@ function normalizeCategory(raw: string): string {
   return c.length >= 2 ? c : "";
 }
 
+/**
+ * 카테고리 추출 실패 폴백 — Lovable AI Gemini로 brand/host에서 4~12자 한국어 카테고리 추론.
+ * (analyze-site가 카테고리를 못 뽑은 경우만 사용. 잘 알려진 브랜드는 Gemini가 학습 지식으로 답해줌.)
+ * 실패 시 빈 문자열 반환.
+ */
+async function inferCategoryFromBrand(brand: string, host: string): Promise<string> {
+  const KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!KEY || !brand) return "";
+  try {
+    const prompt = `다음 브랜드/사이트의 제품·서비스 카테고리를 한국어로 정확히 4~12자의 명사구 한 줄로만 답해라. 모르면 "모름"이라고만 답해라. 추측 금지.
+
+브랜드: ${brand}
+도메인: ${host}
+
+예시 출력: "패션 쇼핑몰", "생활용품 쇼핑몰", "프로젝트 관리 SaaS", "유제품 브랜드"
+출력 형식: 카테고리만, 따옴표/설명/접두사 없이.`;
+    const r = await fetchWithRetry("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Lovable-API-Key": KEY,
+        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [{ role: "user", content: prompt }],
+      }),
+    }, 15000);
+    if (!r.ok) return "";
+    const j = await r.json();
+    const u = extractUsage(j);
+    logApiCost({ function_name: "probe-ai-perception", model: "google/gemini-3-flash-preview", tokens_in: u.tokens_in, tokens_out: u.tokens_out });
+    let text = String(j?.choices?.[0]?.message?.content ?? "").trim();
+    text = text.replace(/^["'`]+|["'`]+$/g, "").split("\n")[0].trim();
+    if (!text || /모름|모릅|unknown/i.test(text)) return "";
+    return normalizeCategory(text);
+  } catch {
+    return "";
+  }
+}
+
 function isSelfDomain(host: string): boolean {
   return SELF_HOSTS.includes(host.toLowerCase());
 }
@@ -736,8 +777,9 @@ Deno.serve(async (req) => {
     const brandLooksValid = brand && brand.length >= 2 && !/^(www|m|shop|store|direct|app|api|blog)$/i.test(brand);
     if (!category) {
       if (brandLooksValid) {
-        // 브랜드는 잡혔지만 카테고리를 못 뽑은 경우: brand 기준으로 soft probe 진행
-        category = `${brand} 관련 분야`;
+        // 1차 폴백: AI에 brand/host 기반 카테고리 추론 요청
+        const inferred = await inferCategoryFromBrand(brand, host);
+        category = inferred || `${brand} 관련 분야`;
       } else {
         return new Response(JSON.stringify({
           url,
