@@ -464,7 +464,10 @@ async function probeGemini(url: string, host: string, brand: string, aliases: st
       brand: "gemini", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt,
       recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
-      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors, hits: agg.hitCount, queryCount: recPrompts.length },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       model,
     };
   } catch (e) {
@@ -541,7 +544,12 @@ async function probePerplexity(url: string, host: string, brand: string, aliases
         mentioned: agg.mentioned || citationHit,
         total: uniqCitations.length || agg.total,
         competitors: agg.competitors,
+        hits: agg.hitCount + (citationHit && !agg.mentioned ? 1 : 0),
+        queryCount: recPrompts.length,
       },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       citations: uniqCitations,
       model,
     };
@@ -629,7 +637,10 @@ async function probeChatGPT(url: string, host: string, brand: string, aliases: s
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
       recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
-      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors, hits: agg.hitCount, queryCount: recPrompts.length },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       model: lastDirectUsed ? "gpt-5-mini" : "openai/gpt-5-mini",
     };
   } catch (e) {
@@ -687,7 +698,10 @@ async function probeClaude(url: string, host: string, brand: string, aliases: st
       brand: "claude", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
       recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
-      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors, hits: agg.hitCount, queryCount: recPrompts.length },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       model,
     };
   } catch (e) {
@@ -761,7 +775,10 @@ async function probeNaver(url: string, host: string, brand: string, aliases: str
       brand: "naver", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
       recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
-      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors, hits: agg.hitCount, queryCount: recPrompts.length },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       model,
     };
   } catch (e) {
