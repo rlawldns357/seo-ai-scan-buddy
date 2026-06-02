@@ -55,6 +55,8 @@ export default function Admin() {
   const [togglingId, setTogglingId] = useState<string | null>(null);
   const [engineConfig, setEngineConfig] = useState<{ version: number; updated_at: string } | null>(null);
   const [engineLogs, setEngineLogs] = useState<{ version: number; changes_summary: string; trends_found: any; status: string; created_at: string }[]>([]);
+  // v10/v11은 v10.5 통합 마일스톤으로 표기 통일
+  const formatEngineVersion = (v: number) => (v === 10 || v === 11 ? "10.5" : String(v));
   const [engineUpdating, setEngineUpdating] = useState(false);
   const [failedPosts, setFailedPosts] = useState<{ id: string; title: string; slug: string; category: string; author: string; failure_reason: string; failure_attempts: number; created_at: string; contentLength: number }[]>([]);
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
@@ -466,7 +468,7 @@ export default function Admin() {
                     분석 엔진 상태
                     {engineConfig && (
                       <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full font-mono">
-                        v{engineConfig.version}
+                        v{formatEngineVersion(engineConfig.version)}
                       </span>
                     )}
                   </CardTitle>
@@ -496,7 +498,7 @@ export default function Admin() {
                       <div key={i} className="border border-border rounded-lg p-3 space-y-1.5">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-xs font-bold text-foreground">v{log.version}</span>
+                            <span className="font-mono text-xs font-bold text-foreground">v{formatEngineVersion(log.version)}</span>
                             <span className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                               log.status === "success"
                                 ? "bg-score-excellent/10 text-score-excellent"
