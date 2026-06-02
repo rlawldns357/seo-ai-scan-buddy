@@ -11,6 +11,35 @@ const corsHeaders = {
 
 const FALLBACK_ANALYSIS_PROMPT = `You are an expert SEO/AEO/GEO analyst. Analyze the following website content and produce a JSON analysis.
 
+## GOOGLE_OFFICIAL_BASELINE_START (2026 — 절대 삭제·변경 금지, 모든 채점의 베이스)
+
+본 채점기는 Google Search Central 공식 가이드(2025-2026)와 정합되어야 합니다. 다음 원칙을 절대 위반하지 마세요:
+
+1) **llms.txt / AI 전용 마크업 / 콘텐츠 청킹 / AI용 키워드 재작성은 "필수 아님"**.
+   - 있으면 가점(+소폭), 없다고 감점하지 말 것. SEO/AEO/GEO 어느 축에서도 부재만으로 점수를 깎지 마세요.
+   - 관련 issues/fixes에 "llms.txt 추가 필요" 류 문구를 priorityFix로 올리지 마세요 (선택 보강 항목으로만 표기 가능).
+
+2) **AI 검색의 근간은 기존 SEO(RAG + Query Fan-out)**.
+   - 신뢰 시그널(저자/조직 정보, 출처 인용, 업데이트 일자, HTTPS, 명확한 메타)을 SEO·GEO 양쪽 가중에서 우선 평가.
+   - Query Fan-out 대응 = "한 주제를 다층(개요·비교·실행·사례·FAQ)으로 충실히 다루는 콘텐츠" 가점.
+
+3) **People-first / Non-commodity 콘텐츠 우대**:
+   - 1인칭 경험·실측 수치·고유 사례·전문가 견해가 있는 페이지를 우대 (+5~+10 GEO/AEO).
+   - 일반론·AI 양산형·동어반복 콘텐츠는 GEO/AEO 상한 80으로 제한.
+
+4) **E-E-A-T 명시 평가**:
+   - 저자 정보(Person/Author schema 또는 본문 byline), 조직 정보(Organization), 연락처/About 페이지 존재 여부를 GEO Authority 신호와 SEO 인덱싱 준비도에 반영.
+
+5) **AEO 청킹·Q&A 강제 완화**:
+   - FAQ/Q&A 구조가 없어도 "직접 답변 명확성"이 높으면 감점 최소화.
+   - "FAQPage 스키마 필수"로 priorityFix 올리지 말 것. 가점 항목으로만 권고.
+
+6) **scoreRationale 작성 규칙**:
+   - 각 축의 scoreRationale 끝에 "구글 공식 가이드: <짧은 근거 1문장>"을 1줄 추가.
+
+## GOOGLE_OFFICIAL_BASELINE_END
+
+
 **Scoring Criteria:**
 
 ## SEO (Search Engine Optimization) - 검색엔진 최적화

@@ -170,6 +170,42 @@ export default function About() {
             </div>
           </section>
 
+          <section className="mt-12 rounded-2xl border border-border/60 bg-card/60 p-5 sm:p-7">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-bold text-foreground tracking-tight">
+                Google 공식 가이드와의 정합성
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-3">
+              서치튠OS의 점수 산정 로직은 <strong className="text-foreground">Google Search Central의 공식 AI 검색 가이드(2025–2026)</strong>와 정합되어 운영됩니다.
+              업계에서 떠도는 비공식 팁("llms.txt 필수", "콘텐츠 청킹 강제", "AI용 키워드 재작성")으로 점수를 깎지 않습니다.
+            </p>
+            <ul className="text-sm text-muted-foreground space-y-1.5 list-disc pl-5">
+              <li>llms.txt·AI 전용 마크업은 <strong className="text-foreground">가점 항목</strong>으로만 반영 (부재해도 감점 없음)</li>
+              <li>People-first · Non-commodity (고유 경험·1차 자료) 콘텐츠 우대</li>
+              <li>RAG·Query Fan-out 시대의 핵심 = E-E-A-T(저자·조직·신뢰) 시그널 가중</li>
+              <li>FAQPage 스키마는 권고 가점, 강제 감점 사유 아님</li>
+            </ul>
+          </section>
+
+          <section className="mt-8 rounded-2xl border border-border/60 bg-card/60 p-5 sm:p-7">
+            <h2 className="text-sm font-bold text-foreground tracking-tight mb-3">
+              누가 만들고 운영하나요? (E-E-A-T)
+            </h2>
+            <div className="text-sm text-muted-foreground leading-relaxed space-y-2">
+              <p>
+                <strong className="text-foreground">SearchTune OS</strong>는 한국어 검색·콘텐츠 마케팅 현장 출신 팀이 운영하는 AI 검색 진단 도구입니다.
+                Google PSI 실측 + Gemini 기반 콘텐츠 분석 + 네이버 웹마스터 공식 룰북을 결합해, 실제 사이트 운영자에게 즉시 적용 가능한 개선안을 제시합니다.
+              </p>
+              <p>
+                분석 엔진은 매 2주마다 최신 Google Search Central 공식 가이드 및 산업 트렌드를 검토하여 자동 업데이트되며,
+                업데이트 이력은 <Link to="/blog" className="text-primary underline-offset-2 hover:underline">블로그</Link>에서 공개됩니다.
+                문의는 상단 메뉴의 문의하기로 직접 받습니다.
+              </p>
+            </div>
+          </section>
+
           <div className="mt-8 mb-8 flex flex-col items-center text-center">
             <p className="text-sm text-muted-foreground mb-3">지금 바로 내 사이트를 점검해 보세요</p>
             <a
