@@ -59,7 +59,7 @@ export default function Navbar() {
                   SearchTune <span className="font-extrabold">OS</span>
                 </span>
                 <span className="text-[9px] text-muted-foreground font-medium tracking-wide whitespace-nowrap leading-none">
-                  v0.20.0-beta{engineVersion !== null && ` · Engine v${engineVersion}`}
+                  v0.21.0-beta{engineVersion !== null && ` · Engine v${engineVersion}`}
                 </span>
               </div>
             </Link>
