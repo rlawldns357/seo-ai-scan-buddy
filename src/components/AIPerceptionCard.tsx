@@ -27,12 +27,28 @@ interface BrandResult {
   awareness: "yes" | "partial" | "no" | null;
   awarenessAnswer?: string;
   awarenessPrompt?: string;
-  recommendation: { mentioned: boolean; rank?: number; total?: number; competitors?: string[] };
+  recommendation: {
+    mentioned: boolean;
+    rank?: number;
+    total?: number;
+    competitors?: string[];
+    hits?: number;
+    queryCount?: number;
+  };
   recommendationAnswer?: string;
   recommendationPrompt?: string;
+  fanoutPrompts?: string[];
   model?: string;
   citations?: string[];
   errorMessage?: string;
+}
+
+interface FanoutSummary {
+  totalSlots: number;
+  mentions: number;
+  sharePct: number;
+  topCompetitors: Array<{ name: string; count: number }>;
+  prompts: string[];
 }
 
 interface ProbeResult {
@@ -42,8 +58,9 @@ interface ProbeResult {
   generated_at: string;
   cached: boolean;
   brands: BrandResult[];
-  summary: { measurable: number; aware: number; recommended: number };
+  summary: { measurable: number; aware: number; recommended: number; fanout?: FanoutSummary };
 }
+
 
 interface Props {
   url?: string;
