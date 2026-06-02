@@ -777,8 +777,9 @@ Deno.serve(async (req) => {
     const brandLooksValid = brand && brand.length >= 2 && !/^(www|m|shop|store|direct|app|api|blog)$/i.test(brand);
     if (!category) {
       if (brandLooksValid) {
-        // 브랜드는 잡혔지만 카테고리를 못 뽑은 경우: brand 기준으로 soft probe 진행
-        category = `${brand} 관련 분야`;
+        // 1차 폴백: AI에 brand/host 기반 카테고리 추론 요청
+        const inferred = await inferCategoryFromBrand(brand, host);
+        category = inferred || `${brand} 관련 분야`;
       } else {
         return new Response(JSON.stringify({
           url,
