@@ -294,7 +294,7 @@ function buildAwarenessPrompt(url: string, brand: string): string {
   return `"${brand}" 또는 ${url} 라는 브랜드/사이트 알아? 안다면 무슨 서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 추측해서 지어내지 마.`;
 }
 
-// ── 카테고리 인텐트 감지 (제품/서비스/매장/콘텐츠) ──
+// ── 카테고리 인텐트 감지 (현재 미사용 — 모든 질의를 자연 통일 패턴으로) ──
 function detectCategoryIntent(category: string): "saas" | "shop" | "store" | "content" | "service" {
   const c = (category || "").toLowerCase();
   if (/saas|소프트웨어|software|툴|tool|플랫폼|app|앱|솔루션/.test(c)) return "saas";
@@ -305,54 +305,20 @@ function detectCategoryIntent(category: string): "saas" | "shop" | "store" | "co
 }
 
 // ── 🔥 Query Fan-out: 100% 브랜드명 미포함 자연 질의 (4개) ──
-// 실사용자가 ChatGPT/Claude에 "이거 사고 싶은데"라고 던질 법한 질문.
-// 브랜드명을 절대 노출하지 않아야 진짜 "노출 점유율"을 측정할 수 있다.
+// 모든 질의를 "괜찮은 X 5개 추천" 톤으로 통일.
+// (이전 intent 분기는 "가성비/30-40대/선물용" 같은 인위적 한정사로 노이즈만 키워서 폐기.)
 // 가드레일:
 // 1) ${brand} 절대 사용 금지 — 카테고리만으로 자연스럽게
-// 2) "요즘" 같은 시간 한정 표현 금지 (신생 브랜드 자동 배제됨)
+// 2) "요즘"은 자연 톤 유지를 위해 1개에만 허용
 // 3) region은 호출자가 명시할 때만 붙음 (자동 주입 OFF)
 function buildRecPrompts(_brand: string, category: string, regionHint = ""): string[] {
   const cat = category || "관련 분야";
   const region = regionHint ? `${regionHint} ` : "";
-  const intent = detectCategoryIntent(category);
-  const general = `${region}${cat} 중에서 괜찮은 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
-  if (intent === "saas") {
-    return [
-      general,
-      `${region}${cat} 쪽 쓸 만한 SaaS Top 5 뽑아줘. 각각 강점 한 줄씩.`,
-      `${region}${cat} 무료로 시작할 수 있는 서비스 5개. 유료 전환 시 가격대도 같이.`,
-      `사용자 리뷰 좋은 ${region}${cat} 5곳 알려줘. 평점/후기 기준으로.`,
-    ];
-  }
-  if (intent === "shop") {
-    return [
-      `${region}${cat} 살 때 믿을 만한 쇼핑몰/브랜드 Top 5. 배송이나 AS 좋은 곳 위주로.`,
-      `${region}${cat} 가성비 좋은 사이트 5곳. 후기 많은 순으로.`,
-      `30~40대가 자주 찾는 ${region}${cat} 브랜드 5개 알려줘.`,
-      `${region}${cat} 선물용으로 살 만한 브랜드 5개 알려줘.`,
-    ];
-  }
-  if (intent === "store") {
-    return [
-      `${region}${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
-      `${region}${cat} 처음 가본다면 어디가 좋아? 5곳 번호로.`,
-      `리뷰/평점 좋은 ${region}${cat} 5곳. 사람들이 왜 좋다고 하는지도.`,
-      `${region}${cat} 중 분위기 좋은 곳 5군데 알려줘.`,
-    ];
-  }
-  if (intent === "content") {
-    return [
-      `${region}${cat} 정보 얻기 좋은 사이트/블로그 Top 5 추천해줘.`,
-      `${region}${cat} 입문자가 보면 좋은 콘텐츠 사이트 5개. 쉬운 곳 위주로.`,
-      `${region}${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
-      `${region}${cat} 깊이 있게 다루는 전문 매체 5개 추천.`,
-    ];
-  }
   return [
-    general,
-    `${region}${cat} 관련해서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로.`,
-    `${region}${cat} 처음 이용하려면 어디부터 봐야 해? 5개 추천.`,
-    `${region}${cat} 사용자들이 자주 비교하는 5곳 알려줘.`,
+    `${region}${cat} 중에서 괜찮은 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`,
+    `${region}${cat} 추천 좀 해줘. 잘하는 곳 5개만 골라서 번호로.`,
+    `요즘 사람들이 많이 찾는 ${region}${cat} Top 5 알려줘. 1~5번으로.`,
+    `${region}${cat} 중에 평가 좋은 곳 5곳만 뽑아줘. 번호 매겨서 짧게.`,
   ];
 }
 
