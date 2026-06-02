@@ -546,16 +546,19 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
                 )}
               </button>
 
-              {isExpanded && b.status === "ok" && (
+              {isExpanded && b.status === "ok" && (() => {
+                // 🎭 컴팩트 위장 Q. 텍스트 — 실제 raw prompt(URL 포함, 긴 가드레일 문구)은 노출하지 않음.
+                // "AI에 실제로 이렇게 자연스럽게 물어본 것처럼" 보이게 정리.
+                const compactAwarenessQ = `"${data.brand}" 이런 브랜드/사이트 알아요?`;
+                const compactRecQ = `"${data.category}" 중에 추천할 만한 곳 5개만 알려주세요.`;
+                return (
                 <div className="px-4 sm:px-6 pb-4 pt-1 space-y-3 bg-muted/20 animate-fade-up border-t border-border/40">
                   {b.awarenessAnswer && (
                     <div className="rounded-lg bg-card/60 p-3 border border-border/40">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">인지도 응답</p>
-                      {b.awarenessPrompt && (
-                        <p className="text-[11px] text-muted-foreground mb-2 pl-2 border-l-2 border-border/60">
-                          <span className="font-semibold text-foreground/70">Q. </span>{b.awarenessPrompt}
-                        </p>
-                      )}
+                      <p className="text-[11px] text-muted-foreground mb-2 pl-2 border-l-2 border-border/60">
+                        <span className="font-semibold text-foreground/70">Q. </span>{compactAwarenessQ}
+                      </p>
                       <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">
                         <span className="font-semibold text-foreground/70">A. </span>{b.awarenessAnswer}
                       </p>
@@ -564,11 +567,9 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
                   {b.recommendationAnswer && (
                     <div className="rounded-lg bg-card/60 p-3 border border-border/40">
                       <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">추천 질의 응답</p>
-                      {b.recommendationPrompt && (
-                        <p className="text-[11px] text-muted-foreground mb-2 pl-2 border-l-2 border-border/60">
-                          <span className="font-semibold text-foreground/70">Q. </span>{b.recommendationPrompt}
-                        </p>
-                      )}
+                      <p className="text-[11px] text-muted-foreground mb-2 pl-2 border-l-2 border-border/60">
+                        <span className="font-semibold text-foreground/70">Q. </span>{compactRecQ}
+                      </p>
                       <p className="text-[12px] text-foreground leading-relaxed whitespace-pre-line">
                         <span className="font-semibold text-foreground/70">A. </span>{b.recommendationAnswer}
                       </p>
@@ -588,7 +589,8 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
                   )}
                   {b.model && <p className="text-[10px] text-muted-foreground">모델: {b.model}</p>}
                 </div>
-              )}
+                );
+              })()}
             </div>
           );
         })}
