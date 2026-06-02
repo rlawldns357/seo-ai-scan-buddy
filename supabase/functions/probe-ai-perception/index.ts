@@ -131,12 +131,39 @@ interface BrandResult {
   awareness: "yes" | "partial" | "no" | null;
   awarenessAnswer?: string;
   awarenessPrompt?: string;
-  recommendation: { mentioned: boolean; rank?: number; total?: number; competitors?: string[] };
+  recommendation: {
+    mentioned: boolean;
+    rank?: number;
+    total?: number;
+    competitors?: string[];
+    /** 팬아웃 N개 질의 중 브랜드가 등장한 횟수 */
+    hits?: number;
+    /** 팬아웃 질의 개수 */
+    queryCount?: number;
+  };
   recommendationAnswer?: string;
   recommendationPrompt?: string;
+  /** 사용된 팬아웃 질의 전체 (브랜드명 미포함 자연 질의) */
+  fanoutPrompts?: string[];
+  /** 핸들러 집계용 — UI 무시 */
+  competitorsFreq?: Array<{ name: string; count: number }>;
   model?: string;
   citations?: string[];
   errorMessage?: string;
+}
+
+
+interface FanoutSummary {
+  /** 측정한 슬롯 총합 = (성공한 AI 수) × (AI별 질의 수) */
+  totalSlots: number;
+  /** 브랜드가 등장한 슬롯 수 */
+  mentions: number;
+  /** 점유율 % (0-100) */
+  sharePct: number;
+  /** 모든 AI 답변에 자주 등장한 경쟁 브랜드 TOP (빈도순) */
+  topCompetitors: Array<{ name: string; count: number }>;
+  /** 사용된 팬아웃 질의 (대표 1세트) */
+  prompts: string[];
 }
 
 interface ProbeResult {
@@ -146,8 +173,9 @@ interface ProbeResult {
   generated_at: string;
   cached: boolean;
   brands: BrandResult[];
-  summary: { measurable: number; aware: number; recommended: number };
+  summary: { measurable: number; aware: number; recommended: number; fanout?: FanoutSummary };
 }
+
 
 function normalizeUrl(input: string): { url: string; host: string; brand: string } {
   let raw = (input || "").trim();
@@ -276,13 +304,15 @@ function detectCategoryIntent(category: string): "saas" | "shop" | "store" | "co
   return "service";
 }
 
-// ── 다양한 인텐트의 대화형 추천 프롬프트 5종 ──
+// ── 🔥 Query Fan-out: 100% 브랜드명 미포함 자연 질의 (4개) ──
+// 실사용자가 ChatGPT/Claude에 "이거 사고 싶은데"라고 던질 법한 질문.
+// 브랜드명을 절대 노출하지 않아야 진짜 "노출 점유율"을 측정할 수 있다.
 // 가드레일:
-// 1) "요즘" 같은 시간 한정 표현 금지 (신생 브랜드 자동 배제됨)
-// 2) region은 호출자가 명시할 때만 붙음 (자동 주입 OFF)
-// 3) 카테고리 한 단어로 또렷하게 묻기
-function buildRecPrompts(brand: string, category: string, regionHint = ""): string[] {
-  const cat = category || `${brand} 관련 분야`;
+// 1) ${brand} 절대 사용 금지 — 카테고리만으로 자연스럽게
+// 2) "요즘" 같은 시간 한정 표현 금지 (신생 브랜드 자동 배제됨)
+// 3) region은 호출자가 명시할 때만 붙음 (자동 주입 OFF)
+function buildRecPrompts(_brand: string, category: string, regionHint = ""): string[] {
+  const cat = category || "관련 분야";
   const region = regionHint ? `${regionHint} ` : "";
   const intent = detectCategoryIntent(category);
   const general = `${region}${cat} 중에서 괜찮은 브랜드/사이트 5개만 추천해줘. 1~5번으로 번호 매겨서.`;
@@ -290,46 +320,42 @@ function buildRecPrompts(brand: string, category: string, regionHint = ""): stri
     return [
       general,
       `${region}${cat} 쪽 쓸 만한 SaaS Top 5 뽑아줘. 각각 강점 한 줄씩.`,
-      `${brand} 써볼까 고민 중인데, 비슷한 ${region}${cat} 대안 5개랑 ${brand}랑 비교해서 알려줘.`,
       `${region}${cat} 무료로 시작할 수 있는 서비스 5개. 유료 전환 시 가격대도 같이.`,
       `사용자 리뷰 좋은 ${region}${cat} 5곳 알려줘. 평점/후기 기준으로.`,
     ];
   }
   if (intent === "shop") {
     return [
-      general,
       `${region}${cat} 살 때 믿을 만한 쇼핑몰/브랜드 Top 5. 배송이나 AS 좋은 곳 위주로.`,
-      `${brand}에서 사봤는데, 비슷한 가격대 ${region}${cat} 브랜드 5개 더 추천해줘.`,
       `${region}${cat} 가성비 좋은 사이트 5곳. 후기 많은 순으로.`,
+      `30~40대가 자주 찾는 ${region}${cat} 브랜드 5개 알려줘.`,
       `${region}${cat} 선물용으로 살 만한 브랜드 5개 알려줘.`,
     ];
   }
   if (intent === "store") {
     return [
-      general,
       `${region}${cat} 잘하는 곳 5군데만 추천해줘. 위치랑 특징도.`,
-      `${brand} 말고 비슷한 ${region}${cat} 5곳 더 알려줘.`,
-      `${cat} 처음 가본다면 어디가 좋아? 5곳 번호로.`,
+      `${region}${cat} 처음 가본다면 어디가 좋아? 5곳 번호로.`,
       `리뷰/평점 좋은 ${region}${cat} 5곳. 사람들이 왜 좋다고 하는지도.`,
+      `${region}${cat} 중 분위기 좋은 곳 5군데 알려줘.`,
     ];
   }
   if (intent === "content") {
     return [
-      general,
       `${region}${cat} 정보 얻기 좋은 사이트/블로그 Top 5 추천해줘.`,
-      `${brand} 자주 보는데, 비슷한 톤의 ${region}${cat} 5곳 더 알려줘.`,
       `${region}${cat} 입문자가 보면 좋은 콘텐츠 사이트 5개. 쉬운 곳 위주로.`,
       `${region}${cat} 트렌드 잘 다루는 사이트 5곳 알려줘.`,
+      `${region}${cat} 깊이 있게 다루는 전문 매체 5개 추천.`,
     ];
   }
   return [
     general,
     `${region}${cat} 관련해서 제일 믿을 만한 곳 어디야? 5군데만 골라서 번호로.`,
-    `${brand} 써본 사람들이 비교하는 ${region}${cat} 5곳 알려줘.`,
     `${region}${cat} 처음 이용하려면 어디부터 봐야 해? 5개 추천.`,
-    `리뷰 좋은 ${region}${cat} Top 5. 왜 평이 좋은지도 한 줄씩.`,
+    `${region}${cat} 사용자들이 자주 비교하는 5곳 알려줘.`,
   ];
 }
+
 
 // 지역 자동 주입은 비활성화: 한국 사이트라도 "한국" 키워드가 자꾸 들어가면
 // AI가 글로벌 경쟁자를 빼고 답해서 노이즈가 커진다. 카테고리만으로 충분.
@@ -345,28 +371,48 @@ function aggregateRec(
   brand: string,
   aliases: string[],
   awareness: "yes" | "partial" | "no" | null,
-): { mentioned: boolean; competitors: string[]; total?: number; primaryText: string; primaryIdx: number; hitCount: number } {
+): {
+  mentioned: boolean;
+  competitors: string[];
+  /** 경쟁사 빈도 맵 (전체 핸들러에서 TOP5 집계용) */
+  competitorsFreq: Array<{ name: string; count: number }>;
+  total?: number;
+  primaryText: string;
+  primaryIdx: number;
+  hitCount: number;
+} {
   const results = texts.map((t) => detectRecommendation(t, host, brand, aliases, awareness ?? undefined));
   const hitCount = results.filter((r) => r.mentioned).length;
   const mentioned = hitCount > 0;
   const seen = new Set<string>();
   const competitors: string[] = [];
+  // 빈도 집계 (대소문자 무시 키, 원본 이름 보존)
+  const freqMap = new Map<string, { name: string; count: number }>();
   for (const r of results) {
     for (const c of (r.competitors || [])) {
       const key = c.toLowerCase().trim();
-      if (key && !seen.has(key)) {
+      if (!key) continue;
+      // 노이즈 필터: 너무 짧거나 일반명사로 보이는 항목 제외
+      if (key.length < 2 || /^(추천|순위|장점|특징|기타)/.test(key)) continue;
+      const existing = freqMap.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        freqMap.set(key, { name: c.trim().replace(/[*_`]+/g, "").slice(0, 40), count: 1 });
+      }
+      if (!seen.has(key)) {
         seen.add(key);
         competitors.push(c);
-        if (competitors.length >= 12) break;
       }
     }
-    if (competitors.length >= 12) break;
   }
   const hitIdx = results.findIndex((r) => r.mentioned);
   const primaryIdx = hitIdx >= 0 ? hitIdx : 0;
   const primaryText = texts[primaryIdx] || "";
-  return { mentioned, competitors, total: competitors.length || undefined, primaryText, primaryIdx, hitCount };
+  const competitorsFreq = Array.from(freqMap.values()).sort((a, b) => b.count - a.count);
+  return { mentioned, competitors: competitors.slice(0, 12), competitorsFreq, total: competitors.length || undefined, primaryText, primaryIdx, hitCount };
 }
+
 
 // ── Gemini (Lovable AI Gateway, free) ─────────────────────────
 async function probeGemini(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
@@ -418,7 +464,10 @@ async function probeGemini(url: string, host: string, brand: string, aliases: st
       brand: "gemini", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt,
       recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
-      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors, hits: agg.hitCount, queryCount: recPrompts.length },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       model,
     };
   } catch (e) {
@@ -495,7 +544,12 @@ async function probePerplexity(url: string, host: string, brand: string, aliases
         mentioned: agg.mentioned || citationHit,
         total: uniqCitations.length || agg.total,
         competitors: agg.competitors,
+        hits: agg.hitCount + (citationHit && !agg.mentioned ? 1 : 0),
+        queryCount: recPrompts.length,
       },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       citations: uniqCitations,
       model,
     };
@@ -583,7 +637,10 @@ async function probeChatGPT(url: string, host: string, brand: string, aliases: s
       brand: "chatgpt", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
       recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
-      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors, hits: agg.hitCount, queryCount: recPrompts.length },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       model: lastDirectUsed ? "gpt-5-mini" : "openai/gpt-5-mini",
     };
   } catch (e) {
@@ -641,7 +698,10 @@ async function probeClaude(url: string, host: string, brand: string, aliases: st
       brand: "claude", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
       recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
-      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors, hits: agg.hitCount, queryCount: recPrompts.length },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       model,
     };
   } catch (e) {
@@ -715,7 +775,10 @@ async function probeNaver(url: string, host: string, brand: string, aliases: str
       brand: "naver", status: "ok", awareness,
       awarenessAnswer: aw, awarenessPrompt: awP,
       recommendationAnswer: agg.primaryText, recommendationPrompt: recPrompts[agg.primaryIdx],
-      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors },
+      recommendation: { mentioned: agg.mentioned, total: agg.total, competitors: agg.competitors, hits: agg.hitCount, queryCount: recPrompts.length },
+      fanoutPrompts: recPrompts,
+      competitorsFreq: agg.competitorsFreq,
+
       model,
     };
   } catch (e) {
@@ -843,13 +906,58 @@ Deno.serve(async (req) => {
     const aware = all.filter((b) => b.awareness === "yes" || b.awareness === "partial").length;
     const recommended = all.filter((b) => b.recommendation.mentioned).length;
 
+    // ── 🔥 Query Fan-out 점유율 집계 ──
+    // 측정 슬롯 = (성공한 AI 수) × (AI당 질의 수). 멘션 = 각 AI의 hits 합.
+    // 경쟁사 TOP은 모든 AI의 competitorsFreq를 (이름 정규화 후) 합산해 빈도순 정렬.
+    const okBrands = measured.filter((b) => b.status === "ok");
+    const totalSlots = okBrands.reduce((acc, b) => acc + (b.recommendation.queryCount ?? 0), 0);
+    const mentions = okBrands.reduce((acc, b) => acc + (b.recommendation.hits ?? 0), 0);
+    const sharePct = totalSlots > 0 ? Math.round((mentions / totalSlots) * 100) : 0;
+
+    // 본인 브랜드를 경쟁사 리스트에서 제외
+    const selfTokens = [brand, ...aliases, host.split(".")[0]]
+      .map((s) => squash(String(s || "")))
+      .filter((s) => s.length >= 2);
+    const isSelf = (name: string) => {
+      const sq = squash(name);
+      return selfTokens.some((t) => sq.includes(t) || t.includes(sq));
+    };
+
+    const compMerge = new Map<string, { name: string; count: number }>();
+    for (const b of okBrands) {
+      for (const c of (b.competitorsFreq || [])) {
+        if (isSelf(c.name)) continue;
+        const key = c.name.toLowerCase().trim();
+        const ex = compMerge.get(key);
+        if (ex) ex.count += c.count;
+        else compMerge.set(key, { name: c.name, count: c.count });
+      }
+    }
+    const topCompetitors = Array.from(compMerge.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // 클라이언트에 보낼 때는 내부용 competitorsFreq 제거
+    const sanitizedAll: BrandResult[] = all.map(({ competitorsFreq: _f, ...rest }) => rest);
+
+    const samplePrompts = okBrands.find((b) => b.fanoutPrompts?.length)?.fanoutPrompts ?? [];
+
+    const fanout: FanoutSummary = {
+      totalSlots,
+      mentions,
+      sharePct,
+      topCompetitors,
+      prompts: samplePrompts,
+    };
+
     const result: ProbeResult = {
       url, brand, category,
       generated_at: new Date().toISOString(),
       cached: false,
-      brands: all,
-      summary: { measurable, aware, recommended },
+      brands: sanitizedAll,
+      summary: { measurable, aware, recommended, fanout },
     };
+
 
     // 캐시 저장 (upsert) — 외부 API 일시 오류/잔액 이슈는 캐시에 고정하지 않음
     const cacheable = measured.every((b) => b.status === "ok");

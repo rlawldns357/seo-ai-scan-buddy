@@ -27,12 +27,28 @@ interface BrandResult {
   awareness: "yes" | "partial" | "no" | null;
   awarenessAnswer?: string;
   awarenessPrompt?: string;
-  recommendation: { mentioned: boolean; rank?: number; total?: number; competitors?: string[] };
+  recommendation: {
+    mentioned: boolean;
+    rank?: number;
+    total?: number;
+    competitors?: string[];
+    hits?: number;
+    queryCount?: number;
+  };
   recommendationAnswer?: string;
   recommendationPrompt?: string;
+  fanoutPrompts?: string[];
   model?: string;
   citations?: string[];
   errorMessage?: string;
+}
+
+interface FanoutSummary {
+  totalSlots: number;
+  mentions: number;
+  sharePct: number;
+  topCompetitors: Array<{ name: string; count: number }>;
+  prompts: string[];
 }
 
 interface ProbeResult {
@@ -42,8 +58,9 @@ interface ProbeResult {
   generated_at: string;
   cached: boolean;
   brands: BrandResult[];
-  summary: { measurable: number; aware: number; recommended: number };
+  summary: { measurable: number; aware: number; recommended: number; fanout?: FanoutSummary };
 }
+
 
 interface Props {
   url?: string;
@@ -394,9 +411,78 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
         </div>
       </div>
 
+      {/* 🔥 Query Fan-out 점유율 — 실사용자가 자연스럽게 물어봤을 때의 노출 점유율 */}
+      {summary.fanout && summary.fanout.totalSlots > 0 && (
+        <div className="px-5 sm:px-8 py-5 sm:py-6 border-b border-border bg-muted/20">
+          <div className="flex items-start justify-between gap-4 mb-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 mb-1">
+                <MessageCircleQuestion className="w-3.5 h-3.5 text-askai" />
+                <span className="text-[10px] font-bold uppercase tracking-wider text-askai">Query Fan-out · 자연 질의 점유율</span>
+              </div>
+              <p className="text-[12px] sm:text-[13px] text-muted-foreground leading-snug">
+                브랜드명 없이 <span className="font-semibold text-foreground">"{data.category}"</span> 카테고리로만 물어봤을 때 우리 사이트가 얼마나 언급되는지
+              </p>
+            </div>
+            <div className="text-right shrink-0">
+              <div className="flex items-baseline gap-1">
+                <span className={`text-[34px] sm:text-[42px] leading-none font-black tabular-nums tracking-tighter ${
+                  summary.fanout.sharePct >= 30 ? "text-score-excellent" :
+                  summary.fanout.sharePct >= 10 ? "text-score-warning" : "text-score-poor"
+                }`}>
+                  {summary.fanout.sharePct}
+                </span>
+                <span className="text-[14px] sm:text-[16px] font-bold text-muted-foreground">%</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground tabular-nums mt-0.5">
+                {summary.fanout.mentions} / {summary.fanout.totalSlots}회 등장
+              </p>
+            </div>
+          </div>
 
+          {/* 경쟁 브랜드 TOP5 */}
+          {summary.fanout.topCompetitors.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-border/60">
+              <p className="text-[11px] font-semibold text-muted-foreground mb-2">
+                같은 질문에서 자주 등장한 경쟁 브랜드 TOP{summary.fanout.topCompetitors.length}
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {summary.fanout.topCompetitors.map((c, i) => (
+                  <span
+                    key={c.name + i}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-card border border-border text-[11px] font-medium text-foreground"
+                  >
+                    <span className="text-[10px] font-bold text-muted-foreground tabular-nums">{i + 1}</span>
+                    <span className="truncate max-w-[180px]">{c.name}</span>
+                    <span className="text-[10px] text-muted-foreground tabular-nums">×{c.count}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* 사용된 질의 예시 (접힘) */}
+          {summary.fanout.prompts.length > 0 && (
+            <details className="mt-3 group">
+              <summary className="text-[11px] text-muted-foreground hover:text-foreground cursor-pointer select-none inline-flex items-center gap-1">
+                <ChevronDown className="w-3 h-3 transition-transform group-open:rotate-180" />
+                실제 던진 질문 {summary.fanout.prompts.length}개 보기
+              </summary>
+              <ul className="mt-2 space-y-1 text-[11px] text-muted-foreground leading-relaxed">
+                {summary.fanout.prompts.map((p, i) => (
+                  <li key={i} className="flex gap-2">
+                    <span className="text-muted-foreground/60 tabular-nums shrink-0">{i + 1}.</span>
+                    <span>"{p}"</span>
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
+      )}
 
       {/* Brand rows */}
+
       <div className="divide-y divide-border/60">
         {supportedBrands.map((b) => {
           const meta = BRAND_META[b.brand];
