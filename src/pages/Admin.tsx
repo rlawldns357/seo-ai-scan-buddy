@@ -511,12 +511,31 @@ export default function Admin() {
                         </div>
                         <p className="text-sm text-foreground">{log.changes_summary}</p>
                         {Array.isArray(log.trends_found) && log.trends_found.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {(log.trends_found as string[]).map((trend, j) => (
-                              <span key={j} className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded">
-                                {trend}
-                              </span>
-                            ))}
+                          <div className="flex flex-wrap gap-1 pt-1">
+                            {(log.trends_found as string[]).map((trend, j) => {
+                              const isUrl = /^https?:\/\//i.test(trend);
+                              if (isUrl) {
+                                let host = trend;
+                                try { host = new URL(trend).hostname.replace(/^www\./, ""); } catch {}
+                                return (
+                                  <a
+                                    key={j}
+                                    href={trend}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-[10px] bg-primary/10 text-primary hover:bg-primary/20 px-1.5 py-0.5 rounded font-mono underline-offset-2 hover:underline"
+                                    title={trend}
+                                  >
+                                    {host}
+                                  </a>
+                                );
+                              }
+                              return (
+                                <span key={j} className="text-[10px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded">
+                                  {trend}
+                                </span>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
