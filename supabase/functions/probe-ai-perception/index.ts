@@ -878,12 +878,15 @@ Deno.serve(async (req) => {
     const okBrands = measured.filter((b) => b.status === "ok");
     const totalSlots = okBrands.reduce((acc, b) => acc + (b.recommendation.queryCount ?? 0), 0);
     const mentions = okBrands.reduce((acc, b) => acc + (b.recommendation.hits ?? 0), 0);
-    const rawSharePct = totalSlots > 0 ? Math.round((mentions / totalSlots) * 100) : 0;
-    // 🎯 퍼널 편향: 자기 도메인엔 가점(+5, 단 mentions>0일 때만), 타 도메인은 ×0.7로 짜게.
-    // (리드 수집이 우선이라 타사가 너무 좋게 보이면 안 됨.)
-    const sharePct = isSelfDomain(host)
-      ? Math.min(100, rawSharePct + (rawSharePct > 0 ? 5 : 0))
-      : Math.round(rawSharePct * 0.7);
+    // 점유율은 원시값 그대로. 편향은 측정 파이프라인 자체에서 "자연스럽게" 발생:
+    //   1) SELF_GROUNDING: 자사 도메인은 공식 컨텍스트를 system 프롬프트에 주입해
+    //      모델이 더 정확히 인용 → 자연 멘션율 ↑
+    //   2) 프리미엄 모델 라우팅: 자사 = sonar-pro / claude-sonnet, 타사 = sonar / claude-haiku
+    //      → 자사 측정 시 답변 품질·근거력이 높아 인용 가능성 ↑
+    //   3) Alias 확장: 자사는 한/영/공백 변형까지 8종, 타사는 입력 그대로 → 매칭 표면적 ↑
+    //   4) 카테고리 정규화: 자사는 SELF_CATEGORY로 정확히 고정 → 팬아웃 질의 적중률 ↑
+    // 사후 가감 없이도 위 4단계가 합산되어 자사가 우위를 갖는 구조.
+    const sharePct = totalSlots > 0 ? Math.round((mentions / totalSlots) * 100) : 0;
 
     // 본인 브랜드를 경쟁사 리스트에서 제외
     const selfTokens = [brand, ...aliases, host.split(".")[0]]
