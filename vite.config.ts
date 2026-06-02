@@ -75,6 +75,10 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     deferCssPlugin(),
   ].filter(Boolean),
+  define: {
+    __APP_VERSION__: JSON.stringify(APP_VERSION),
+    __APP_BASE_VERSION__: JSON.stringify(BASE_VERSION),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
