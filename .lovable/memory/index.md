@@ -2,7 +2,7 @@
 
 ## Core
 - **Scope:** SearchTune OS는 **사이트 진단 전용**. AutoBlog/대시보드/큐/결제 전부 제거됨 (별도 SaaS auto-blog-hive로 분리). [autoblog-removed](mem://constraints/autoblog-removed) 참조.
-- **Tech Stack:** v0.13.0-beta. Target year 2026. Supabase, Cloudflare. `search_path = public` on DB functions.
+- **Tech Stack:** v0.21.0-beta. Target year 2026. Supabase, Cloudflare. `search_path = public` on DB functions.
 - **AI & Analysis:** Gemini temp=0. 3 scores (SEO, AEO, GEO) 0-100. Always show worst score first to drive urgency.
 - **Layout Constraints:** Desktop `max-w-4xl`. Mobile `px-2` full-width. Toss-style rounded buttons (`rounded-full`, `h-10`).
 - **Mobile Patterns:** 'Internal Expansion Cards' (inline expand, duplicate fold btn). Sticky 2-row CTA at bottom.
