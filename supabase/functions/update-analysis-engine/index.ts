@@ -156,7 +156,8 @@ IMPORTANT RULES:
 - Keep all Korean text labels consistent
 - Maintain the GEO scoring conservative strategy (score lower to emphasize improvement needs)
 - Any new sub-signals must have appropriate weights that sum to 100 within each axis
-- **NAVER WEBMASTER RULEBOOK IS IMMUTABLE BASELINE**: A separate config key 'naver_webmaster_rulebook' contains official Naver guidelines (Yeti crawler, robots.txt, semantic HTML, JSON-LD, alt text, etc.). You MUST NOT propose any change that contradicts or weakens those rules. New trends are added as supplementary signals only — never replace the rulebook foundation.`;
+- **NAVER WEBMASTER RULEBOOK IS IMMUTABLE BASELINE**: A separate config key 'naver_webmaster_rulebook' contains official Naver guidelines (Yeti crawler, robots.txt, semantic HTML, JSON-LD, alt text, etc.). You MUST NOT propose any change that contradicts or weakens those rules. New trends are added as supplementary signals only — never replace the rulebook foundation.
+- **GOOGLE OFFICIAL BASELINE IS IMMUTABLE**: The block between '## GOOGLE_OFFICIAL_BASELINE_START' and '## GOOGLE_OFFICIAL_BASELINE_END' in the current prompt is the official Google Search Central guidance (2025-2026). You MUST preserve this entire block verbatim in updated_prompt. Do NOT remove, reword, weaken, or re-order any rule inside it. Do NOT propose changes that contradict it (e.g. do NOT add llms.txt as a required signal, do NOT enforce content chunking, do NOT mandate FAQPage schema as priorityFix). New trends must only be added OUTSIDE this block as supplementary signals.`;
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

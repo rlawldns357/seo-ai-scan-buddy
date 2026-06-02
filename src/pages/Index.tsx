@@ -508,9 +508,15 @@ const Index = () => {
                 제대로 이해<span className="font-light text-muted-foreground">하고 있을까?</span>
               </span>
             </h1>
-            <p className="text-muted-foreground text-base sm:text-lg mb-10 sm:mb-16 leading-relaxed">
+            <p className="text-muted-foreground text-base sm:text-lg mb-4 sm:mb-6 leading-relaxed">
               URL만 입력하면 SEO·GEO·AEO 최적화 기본 상태와<br className="hidden sm:block" /> AI 검색 준비도를 빠르게 확인할 수 있어요.
             </p>
+            <div className="mb-10 sm:mb-16 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-medium text-muted-foreground/80 px-3 py-1.5 rounded-full bg-muted/40 border border-border/50">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                Google Search Central 공식 AI 검색 가이드(2026) 정합
+              </span>
+            </div>
             <div className="relative max-w-xl mx-auto group">
               {/* Soft glow halo — focus 시 강화 */}
               <div
