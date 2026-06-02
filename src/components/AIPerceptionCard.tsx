@@ -589,7 +589,8 @@ export default function AIPerceptionCard({ url, brand, aliases, category, onAnsw
                   )}
                   {b.model && <p className="text-[10px] text-muted-foreground">모델: {b.model}</p>}
                 </div>
-              )}
+                );
+              })()}
             </div>
           );
         })}
