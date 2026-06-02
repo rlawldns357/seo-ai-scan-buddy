@@ -906,13 +906,58 @@ Deno.serve(async (req) => {
     const aware = all.filter((b) => b.awareness === "yes" || b.awareness === "partial").length;
     const recommended = all.filter((b) => b.recommendation.mentioned).length;
 
+    // ── 🔥 Query Fan-out 점유율 집계 ──
+    // 측정 슬롯 = (성공한 AI 수) × (AI당 질의 수). 멘션 = 각 AI의 hits 합.
+    // 경쟁사 TOP은 모든 AI의 competitorsFreq를 (이름 정규화 후) 합산해 빈도순 정렬.
+    const okBrands = measured.filter((b) => b.status === "ok");
+    const totalSlots = okBrands.reduce((acc, b) => acc + (b.recommendation.queryCount ?? 0), 0);
+    const mentions = okBrands.reduce((acc, b) => acc + (b.recommendation.hits ?? 0), 0);
+    const sharePct = totalSlots > 0 ? Math.round((mentions / totalSlots) * 100) : 0;
+
+    // 본인 브랜드를 경쟁사 리스트에서 제외
+    const selfTokens = [brand, ...aliases, host.split(".")[0]]
+      .map((s) => squash(String(s || "")))
+      .filter((s) => s.length >= 2);
+    const isSelf = (name: string) => {
+      const sq = squash(name);
+      return selfTokens.some((t) => sq.includes(t) || t.includes(sq));
+    };
+
+    const compMerge = new Map<string, { name: string; count: number }>();
+    for (const b of okBrands) {
+      for (const c of (b.competitorsFreq || [])) {
+        if (isSelf(c.name)) continue;
+        const key = c.name.toLowerCase().trim();
+        const ex = compMerge.get(key);
+        if (ex) ex.count += c.count;
+        else compMerge.set(key, { name: c.name, count: c.count });
+      }
+    }
+    const topCompetitors = Array.from(compMerge.values())
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    // 클라이언트에 보낼 때는 내부용 competitorsFreq 제거
+    const sanitizedAll: BrandResult[] = all.map(({ competitorsFreq: _f, ...rest }) => rest);
+
+    const samplePrompts = okBrands.find((b) => b.fanoutPrompts?.length)?.fanoutPrompts ?? [];
+
+    const fanout: FanoutSummary = {
+      totalSlots,
+      mentions,
+      sharePct,
+      topCompetitors,
+      prompts: samplePrompts,
+    };
+
     const result: ProbeResult = {
       url, brand, category,
       generated_at: new Date().toISOString(),
       cached: false,
-      brands: all,
-      summary: { measurable, aware, recommended },
+      brands: sanitizedAll,
+      summary: { measurable, aware, recommended, fanout },
     };
+
 
     // 캐시 저장 (upsert) — 외부 API 일시 오류/잔액 이슈는 캐시에 고정하지 않음
     const cacheable = measured.every((b) => b.status === "ok");
