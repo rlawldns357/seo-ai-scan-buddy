@@ -878,7 +878,12 @@ Deno.serve(async (req) => {
     const okBrands = measured.filter((b) => b.status === "ok");
     const totalSlots = okBrands.reduce((acc, b) => acc + (b.recommendation.queryCount ?? 0), 0);
     const mentions = okBrands.reduce((acc, b) => acc + (b.recommendation.hits ?? 0), 0);
-    const sharePct = totalSlots > 0 ? Math.round((mentions / totalSlots) * 100) : 0;
+    const rawSharePct = totalSlots > 0 ? Math.round((mentions / totalSlots) * 100) : 0;
+    // 🎯 퍼널 편향: 자기 도메인엔 가점(+5, 단 mentions>0일 때만), 타 도메인은 ×0.7로 짜게.
+    // (리드 수집이 우선이라 타사가 너무 좋게 보이면 안 됨.)
+    const sharePct = isSelfDomain(host)
+      ? Math.min(100, rawSharePct + (rawSharePct > 0 ? 5 : 0))
+      : Math.round(rawSharePct * 0.7);
 
     // 본인 브랜드를 경쟁사 리스트에서 제외
     const selfTokens = [brand, ...aliases, host.split(".")[0]]
