@@ -9,7 +9,7 @@ import { componentTagger } from "lovable-tagger";
  * BASE_VERSION을 올리면 major/minor, 빌드 시점마다 자동으로 build tag가 붙어
  * 퍼블리시할 때마다 자동 증가합니다. (예: 0.21.0-beta+260602.1733)
  */
-const BASE_VERSION = "0.21.0-beta";
+const BASE_VERSION = "0.21.1-beta";
 function resolveBuildVersion(): string {
   try {
     const d = new Date();
