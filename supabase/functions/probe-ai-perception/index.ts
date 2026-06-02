@@ -368,28 +368,48 @@ function aggregateRec(
   brand: string,
   aliases: string[],
   awareness: "yes" | "partial" | "no" | null,
-): { mentioned: boolean; competitors: string[]; total?: number; primaryText: string; primaryIdx: number; hitCount: number } {
+): {
+  mentioned: boolean;
+  competitors: string[];
+  /** 경쟁사 빈도 맵 (전체 핸들러에서 TOP5 집계용) */
+  competitorsFreq: Array<{ name: string; count: number }>;
+  total?: number;
+  primaryText: string;
+  primaryIdx: number;
+  hitCount: number;
+} {
   const results = texts.map((t) => detectRecommendation(t, host, brand, aliases, awareness ?? undefined));
   const hitCount = results.filter((r) => r.mentioned).length;
   const mentioned = hitCount > 0;
   const seen = new Set<string>();
   const competitors: string[] = [];
+  // 빈도 집계 (대소문자 무시 키, 원본 이름 보존)
+  const freqMap = new Map<string, { name: string; count: number }>();
   for (const r of results) {
     for (const c of (r.competitors || [])) {
       const key = c.toLowerCase().trim();
-      if (key && !seen.has(key)) {
+      if (!key) continue;
+      // 노이즈 필터: 너무 짧거나 일반명사로 보이는 항목 제외
+      if (key.length < 2 || /^(추천|순위|장점|특징|기타)/.test(key)) continue;
+      const existing = freqMap.get(key);
+      if (existing) {
+        existing.count += 1;
+      } else {
+        freqMap.set(key, { name: c.trim().replace(/[*_`]+/g, "").slice(0, 40), count: 1 });
+      }
+      if (!seen.has(key)) {
         seen.add(key);
         competitors.push(c);
-        if (competitors.length >= 12) break;
       }
     }
-    if (competitors.length >= 12) break;
   }
   const hitIdx = results.findIndex((r) => r.mentioned);
   const primaryIdx = hitIdx >= 0 ? hitIdx : 0;
   const primaryText = texts[primaryIdx] || "";
-  return { mentioned, competitors, total: competitors.length || undefined, primaryText, primaryIdx, hitCount };
+  const competitorsFreq = Array.from(freqMap.values()).sort((a, b) => b.count - a.count);
+  return { mentioned, competitors: competitors.slice(0, 12), competitorsFreq, total: competitors.length || undefined, primaryText, primaryIdx, hitCount };
 }
+
 
 // ── Gemini (Lovable AI Gateway, free) ─────────────────────────
 async function probeGemini(url: string, host: string, brand: string, aliases: string[], category: string, regionHint: string): Promise<BrandResult> {
