@@ -145,10 +145,13 @@ interface BrandResult {
   recommendationPrompt?: string;
   /** 사용된 팬아웃 질의 전체 (브랜드명 미포함 자연 질의) */
   fanoutPrompts?: string[];
+  /** 핸들러 집계용 — UI 무시 */
+  competitorsFreq?: Array<{ name: string; count: number }>;
   model?: string;
   citations?: string[];
   errorMessage?: string;
 }
+
 
 interface FanoutSummary {
   /** 측정한 슬롯 총합 = (성공한 AI 수) × (AI별 질의 수) */
