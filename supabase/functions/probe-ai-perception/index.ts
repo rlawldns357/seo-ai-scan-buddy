@@ -119,6 +119,120 @@ async function inferCategoryFromBrand(brand: string, host: string): Promise<stri
   }
 }
 
+/**
+ * 🛡️ A. Firecrawl 기반 카테고리 강검증
+ * analyze-site가 카테고리를 잘못 추출(예: 여성의류 사이트인데 "밀폐용기")한 경우를 방어.
+ * 메인페이지를 다시 스크랩해서 Gemini로 "실제 카테고리"를 재추론하고, 입력값과 다르면 덮어쓴다.
+ *
+ * - 입력 카테고리가 정확하면 그대로 유지 (false positive 최소화 위해 "동일" 신호 명시)
+ * - Firecrawl/Gemini 어느 한 쪽이라도 실패하면 입력 카테고리 그대로 폴백
+ * - 결과는 상위 함수의 ai_perception_cache(24h)에 자연 포함되어 반복 비용 없음
+ */
+async function verifyCategoryFromPage(
+  url: string,
+  brand: string,
+  host: string,
+  inputCategory: string,
+): Promise<{ category: string; source: "input" | "page" | "input_kept"; pageCategory?: string }> {
+  const FIRECRAWL_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+  const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
+  if (!FIRECRAWL_KEY || !LOVABLE_KEY) {
+    return { category: inputCategory, source: "input" };
+  }
+
+  // 1) Firecrawl: 메인페이지 markdown + summary
+  let pageText = "";
+  try {
+    const fr = await fetchWithRetry(
+      "https://api.firecrawl.dev/v2/scrape",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${FIRECRAWL_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url,
+          formats: ["markdown", "summary"],
+          onlyMainContent: true,
+        }),
+      },
+      12000,
+    );
+    if (!fr.ok) return { category: inputCategory, source: "input" };
+    const fj = await fr.json();
+    const md = String(fj?.data?.markdown ?? fj?.markdown ?? "");
+    const sm = String(fj?.data?.summary ?? fj?.summary ?? "");
+    pageText = `${sm}\n\n---\n${md}`.slice(0, 6000).trim();
+  } catch {
+    return { category: inputCategory, source: "input" };
+  }
+  if (!pageText) return { category: inputCategory, source: "input" };
+
+  // 2) Gemini: 페이지 컨텍스트 위에서 카테고리 재추론
+  try {
+    const prompt = `다음은 한 웹사이트의 메인페이지 콘텐츠(요약+본문 일부)다.
+
+브랜드: ${brand || "(미상)"}
+도메인: ${host}
+analyze-site가 추출한 카테고리(검증 대상): "${inputCategory || "(없음)"}"
+
+[페이지 콘텐츠]
+${pageText}
+
+작업: 이 사이트가 '실제로 판매·제공하는 핵심 제품/서비스'의 카테고리를 한국어 4~12자 명사구 1개로 답하라.
+- 메인 내비게이션·상품 리스트·title·H1을 우선으로 판단.
+- 블로그/공지/리뷰 본문에 한 번 등장한 단어는 절대 카테고리로 채택 금지(예: 본문 중 '밀폐용기'가 1회 등장해도 사이트가 의류몰이면 '여성 의류 쇼핑몰').
+- 검증 대상 카테고리가 사이트의 실체와 일치하면 정확히 동일한 문자열로 다시 답하라.
+- 도저히 추출 불가능하면 "모름".
+- 출력은 카테고리 명사구 한 줄만. 따옴표/설명/접두사 금지.`;
+    const r = await fetchWithRetry(
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Lovable-API-Key": LOVABLE_KEY,
+          "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-3-flash-preview",
+          messages: [{ role: "user", content: prompt }],
+        }),
+      },
+      15000,
+    );
+    if (!r.ok) return { category: inputCategory, source: "input" };
+    const j = await r.json();
+    const u = extractUsage(j);
+    logApiCost({
+      function_name: "probe-ai-perception",
+      model: "google/gemini-3-flash-preview",
+      tokens_in: u.tokens_in,
+      tokens_out: u.tokens_out,
+      metadata: { stage: "verify_category" },
+    });
+    let text = String(j?.choices?.[0]?.message?.content ?? "").trim();
+    text = text.replace(/^["'`]+|["'`]+$/g, "").split("\n")[0].trim();
+    if (!text || /모름|모릅|unknown/i.test(text)) {
+      return { category: inputCategory, source: "input" };
+    }
+    const pageCat = normalizeCategory(text);
+    if (!pageCat) return { category: inputCategory, source: "input" };
+
+    // 동일하거나 부분 포함이면 입력값 유지
+    const a = inputCategory.replace(/\s+/g, "").toLowerCase();
+    const b = pageCat.replace(/\s+/g, "").toLowerCase();
+    if (a && (a === b || a.includes(b) || b.includes(a))) {
+      return { category: inputCategory, source: "input_kept", pageCategory: pageCat };
+    }
+    // 다르면 페이지 기반 결과로 덮어쓰기
+    return { category: pageCat, source: "page", pageCategory: pageCat };
+  } catch {
+    return { category: inputCategory, source: "input" };
+  }
+}
+
 function isSelfDomain(host: string): boolean {
   return SELF_HOSTS.includes(host.toLowerCase());
 }
