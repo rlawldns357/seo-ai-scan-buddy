@@ -938,6 +938,16 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 🛡️ A. 페이지 기반 카테고리 강검증 — analyze-site 오추출 방어
+    // (자기 도메인은 SELF_CATEGORY 고정이라 검증 skip)
+    if (!isSelfDomain(host) && category) {
+      const v = await verifyCategoryFromPage(url, brand, host, category);
+      if (v.source === "page" && v.category && v.category !== category) {
+        console.log(`[probe] category override: "${category}" → "${v.category}" (host=${host})`);
+        category = v.category;
+      }
+    }
+
     // 캐시 hit
     const { data: cached } = purge ? { data: null as any } : await sb
       .from("ai_perception_cache")
