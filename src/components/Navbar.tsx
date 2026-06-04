@@ -53,8 +53,8 @@ export default function Navbar() {
         <div className="container flex items-center justify-between h-16 gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Link to="/" className="flex items-center gap-2 min-w-0">
-              <div className="gradient-primary rounded-xl p-2 shrink-0">
-                <Search className="w-4 h-4 text-primary-foreground" />
+              <div className="rounded-xl shrink-0 overflow-hidden w-9 h-9 ring-1 ring-border/40 shadow-sm">
+                <img src={logoMark.url} alt="SearchTune OS 로고" className="w-full h-full object-cover" width={36} height={36} loading="eager" decoding="async" />
               </div>
               <div className="flex flex-col min-w-0 gap-1 sm:gap-0.5 sm:leading-none">
                 <span className="text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap leading-none">
