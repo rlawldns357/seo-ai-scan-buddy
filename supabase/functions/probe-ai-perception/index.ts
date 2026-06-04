@@ -573,7 +573,7 @@ async function probeGemini(url: string, host: string, brand: string, aliases: st
       ask(awarenessPrompt),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const { awareness } = detectAwareness(aw, host, brand, aliases, category);
     const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
@@ -638,7 +638,7 @@ async function probePerplexity(url: string, host: string, brand: string, aliases
       await delay(450);
       recs.push(await ask(prompt));
     }
-    const { awareness } = detectAwareness(aw.text, host, brand, aliases);
+    const { awareness } = detectAwareness(aw.text, host, brand, aliases, category);
     const recTexts = recs.map((r) => r.text);
     const agg = aggregateRec(recTexts, host, brand, aliases, awareness);
     // 호스트가 naver.com이면 citation 매칭은 의미 없음. awareness=no면 추천 매칭도 무효화.
@@ -746,7 +746,7 @@ async function probeChatGPT(url: string, host: string, brand: string, aliases: s
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const { awareness } = detectAwareness(aw, host, brand, aliases, category);
     const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
@@ -807,7 +807,7 @@ async function probeClaude(url: string, host: string, brand: string, aliases: st
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const { awareness } = detectAwareness(aw, host, brand, aliases, category);
     const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "claude", status: "ok", awareness,
@@ -884,7 +884,7 @@ async function probeNaver(url: string, host: string, brand: string, aliases: str
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const { awareness } = detectAwareness(aw, host, brand, aliases, category);
     const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "naver", status: "ok", awareness,
