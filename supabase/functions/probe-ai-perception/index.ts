@@ -5,6 +5,8 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
+import { loadOrResolveIdentity, logAudit, normalizeHost } from "../_shared/identity-match.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
