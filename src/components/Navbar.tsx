@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
 import ConsultationModal from "@/components/ConsultationModal";
 import LeadModal from "@/components/LeadModal";
+import { formatEngineVersion } from "@/lib/engineVersion";
 
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
@@ -59,7 +60,7 @@ export default function Navbar() {
                   SearchTune <span className="font-extrabold">OS</span>
                 </span>
                 <span className="text-[9px] text-muted-foreground font-medium tracking-wide whitespace-nowrap leading-none">
-                  v{__APP_VERSION__}{engineVersion !== null && ` · Engine v${engineVersion}`}
+                  v{__APP_VERSION__}{engineVersion !== null && ` · Engine v${formatEngineVersion(engineVersion)}`}
                 </span>
               </div>
             </Link>
