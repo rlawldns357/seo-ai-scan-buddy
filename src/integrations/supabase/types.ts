@@ -757,6 +757,48 @@ export type Database = {
         }
         Relationships: []
       }
+      identity_audit_log: {
+        Row: {
+          after_state: Json
+          before_state: Json
+          confidence: number | null
+          created_at: string
+          function_name: string | null
+          host: string
+          id: string
+          metadata: Json
+          reason: string | null
+          source: string | null
+          stage: string
+        }
+        Insert: {
+          after_state?: Json
+          before_state?: Json
+          confidence?: number | null
+          created_at?: string
+          function_name?: string | null
+          host: string
+          id?: string
+          metadata?: Json
+          reason?: string | null
+          source?: string | null
+          stage: string
+        }
+        Update: {
+          after_state?: Json
+          before_state?: Json
+          confidence?: number | null
+          created_at?: string
+          function_name?: string | null
+          host?: string
+          id?: string
+          metadata?: Json
+          reason?: string | null
+          source?: string | null
+          stage?: string
+        }
+        Relationships: []
+      }
       indexing_queue: {
         Row: {
           created_at: string
@@ -1101,6 +1143,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      site_identity: {
+        Row: {
+          aliases: string[]
+          brand: string | null
+          category: string | null
+          confidence: number
+          created_at: string
+          description_short: string | null
+          expires_at: string
+          host: string
+          refreshed_at: string
+          signals: Json
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          aliases?: string[]
+          brand?: string | null
+          category?: string | null
+          confidence?: number
+          created_at?: string
+          description_short?: string | null
+          expires_at?: string
+          host: string
+          refreshed_at?: string
+          signals?: Json
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          aliases?: string[]
+          brand?: string | null
+          category?: string | null
+          confidence?: number
+          created_at?: string
+          description_short?: string | null
+          expires_at?: string
+          host?: string
+          refreshed_at?: string
+          signals?: Json
+          source?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       site_post_views: {
         Row: {
