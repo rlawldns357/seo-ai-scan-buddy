@@ -48,8 +48,8 @@ Deno.test("scenario#1: Korean particles keep strict match", () => {
   for (const text of cases) {
     assertEquals(brandMentioned(text, ident), "strict", `should be strict: "${text}"`);
   }
-  // 조사 없이 다른 단어와 붙으면 strict 아님
-  assertEquals(brandMentioned("에바빈브랜드몰", ident), "fuzzy");
+  // 조사 없이 다른 단어와 붙으면 strict 아님 (3자 한글 → fuzzy 임계 미달)
+  assertEquals(brandMentioned("에바빈브랜드몰", ident), "none");
 });
 
 // ── #2: 영어 답변 + 한국어 브랜드 → 영문 alias 매칭 ──────────────
