@@ -175,11 +175,24 @@ serve(async (req) => {
       }
     }
 
-    // 4) 저장
-    await upsertIdentity(supabase, {
-      ...identity,
-      signals: { has_firecrawl: true, voter_used: voterUsed, metadata_title: metadata?.title ?? null },
-    });
+    // 4) 저장 가드:
+    //    a) brand=null && confidence<0.4 → 캐시 오염 방지로 저장 안 함
+    //    b) 멀티테넌트 호스트 → 캐시 키 충돌 위험으로 저장 안 함 (호출측이 매번 resolve)
+    //    c) Race guard: 저장 직전 캐시 재확인. 이미 더 높은 confidence가 있으면 덮어쓰지 않음
+    const skipSavePoorSignal = !identity.brand && identity.confidence < 0.4;
+    const skipSaveMultiTenant = multiTenant;
+    let saved = false;
+    if (!skipSavePoorSignal && !skipSaveMultiTenant) {
+      const { identity: existing } = await loadIdentity(supabase, host);
+      const shouldWrite = !existing || existing.confidence <= identity.confidence + 0.05;
+      if (shouldWrite) {
+        await upsertIdentity(supabase, {
+          ...identity,
+          signals: { has_firecrawl: true, voter_used: voterUsed, metadata_title: metadata?.title ?? null },
+        });
+        saved = true;
+      }
+    }
     await logAudit(supabase, {
       host,
       stage: "resolve",
@@ -187,10 +200,16 @@ serve(async (req) => {
       after_state: identityToState(identity),
       confidence: identity.confidence,
       source: identity.source,
-      reason: voterUsed ? "voter consulted" : "primary only",
+      reason: skipSavePoorSignal
+        ? "skipped (brand=null, low confidence)"
+        : skipSaveMultiTenant
+          ? "skipped (multi-tenant host)"
+          : saved
+            ? (voterUsed ? "voter consulted, saved" : "primary only, saved")
+            : "skipped (lower confidence than cached)",
     });
 
-    return json({ success: true, identity, cached: false });
+    return json({ success: true, identity, cached: false, saved });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[resolve-site-identity] error", msg);
