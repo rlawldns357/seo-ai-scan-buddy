@@ -363,7 +363,27 @@ function tokenMatches(text: string, tokens: string[]): boolean {
   return tokenMatchKind(text, tokens) !== "none";
 }
 
-function detectAwareness(text: string, host: string, brand: string, aliases: string[] = []): {
+// 카테고리에서 "쇼핑몰/서비스" 같은 generic 토큰을 제외하고 의미 있는 토큰만 추출.
+// 예: "여성 의류 쇼핑몰" → ["여성","의류"], "프로젝트 관리 SaaS" → ["프로젝트","관리","SaaS"]
+const CATEGORY_STOPWORDS = new Set([
+  "쇼핑몰","스토어","사이트","브랜드","서비스","플랫폼","회사","웹사이트",
+  "페이지","앱","툴","솔루션","제품","상품","업체","기업","공식","온라인",
+]);
+function meaningfulCategoryTokens(category: string): string[] {
+  if (!category) return [];
+  return category
+    .split(/[\s,/·\-_]+/)
+    .map((t) => t.trim())
+    .filter((t) => t.length >= 2 && !CATEGORY_STOPWORDS.has(t));
+}
+
+function detectAwareness(
+  text: string,
+  host: string,
+  brand: string,
+  aliases: string[] = [],
+  category: string = "",
+): {
   awareness: "yes" | "partial" | "no";
 } {
   if (!text) return { awareness: "no" };
@@ -379,6 +399,21 @@ function detectAwareness(text: string, host: string, brand: string, aliases: str
   if (hostMatch || matchKind === "strict") return { awareness: "yes" };
   // 공백/기호 제거 후에만 매칭되는 경우 = partial (모호한 언급)
   if (matchKind === "fuzzy") return { awareness: "partial" };
+
+  // 🛡️ 의미 정합성 폴백: 브랜드명을 직접 언급 안 했어도, 답변이 우리가 판단한
+  // 실제 카테고리와 일치하면 "AI가 무슨 사이트인지는 알았다"고 본다.
+  // (evabin 케이스: Gemini가 "여성 의류와 잡화를 판매하는 패션 쇼핑몰"이라
+  //  카테고리만 정확히 답한 경우 → 미포함이 아니라 yes 격상)
+  const catTokens = meaningfulCategoryTokens(category);
+  if (catTokens.length > 0 && text.trim().length >= 12) {
+    const squashedText = squash(text);
+    const hitCount = catTokens.reduce(
+      (n, t) => (squashedText.includes(squash(t)) ? n + 1 : n),
+      0,
+    );
+    // 의미 토큰 중 1개 이상이면 의미상 일치 → "yes" (브랜드명은 모르지만 정체는 인지)
+    if (hitCount >= 1) return { awareness: "yes" };
+  }
   return { awareness: "no" };
 }
 
@@ -538,7 +573,7 @@ async function probeGemini(url: string, host: string, brand: string, aliases: st
       ask(awarenessPrompt),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const { awareness } = detectAwareness(aw, host, brand, aliases, category);
     const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "gemini", status: "ok", awareness,
@@ -603,7 +638,7 @@ async function probePerplexity(url: string, host: string, brand: string, aliases
       await delay(450);
       recs.push(await ask(prompt));
     }
-    const { awareness } = detectAwareness(aw.text, host, brand, aliases);
+    const { awareness } = detectAwareness(aw.text, host, brand, aliases, category);
     const recTexts = recs.map((r) => r.text);
     const agg = aggregateRec(recTexts, host, brand, aliases, awareness);
     // 호스트가 naver.com이면 citation 매칭은 의미 없음. awareness=no면 추천 매칭도 무효화.
@@ -711,7 +746,7 @@ async function probeChatGPT(url: string, host: string, brand: string, aliases: s
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const { awareness } = detectAwareness(aw, host, brand, aliases, category);
     const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "chatgpt", status: "ok", awareness,
@@ -772,7 +807,7 @@ async function probeClaude(url: string, host: string, brand: string, aliases: st
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const { awareness } = detectAwareness(aw, host, brand, aliases, category);
     const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "claude", status: "ok", awareness,
@@ -849,7 +884,7 @@ async function probeNaver(url: string, host: string, brand: string, aliases: str
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
     ]);
-    const { awareness } = detectAwareness(aw, host, brand, aliases);
+    const { awareness } = detectAwareness(aw, host, brand, aliases, category);
     const agg = aggregateRec(recs, host, brand, aliases, awareness);
     return {
       brand: "naver", status: "ok", awareness,
