@@ -1031,15 +1031,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 🛡️ A. 페이지 기반 카테고리 강검증 — analyze-site 오추출 방어
-    // (자기 도메인은 SELF_CATEGORY 고정이라 검증 skip, 캐시 miss 시에만 1회 비용 발생)
-    if (!isSelfDomain(host) && category) {
+    // 🛡️ 카테고리 검증: SoT(site_identity)가 이미 권위값을 줬으면 skip.
+    // 그렇지 않을 때만 페이지 재스크랩 검증 (레거시 폴백).
+    if (!identityUsed && !isSelfDomain(host) && category) {
       const v = await verifyCategoryFromPage(url, brand, host, category);
       if (v.source === "page" && v.category && v.category !== category) {
         console.log(`[probe] category override: "${category}" → "${v.category}" (host=${host})`);
         category = v.category;
       }
     }
+
 
     // 5모델 병렬 호출 (allSettled) — Naver(HyperCLOVA X) 추가
     const settled = await Promise.allSettled([
