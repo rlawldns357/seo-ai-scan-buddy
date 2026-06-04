@@ -5,6 +5,7 @@ import { trackEvent } from "@/lib/analytics";
 import { type DemoResult } from "@/data/demoResults";
 import { supabase } from "@/integrations/supabase/client";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { formatEngineVersion } from "@/lib/engineVersion";
 
 interface ResultHeaderProps {
   psi: PsiResult | null;
