@@ -14,8 +14,20 @@ import {
   upsertIdentity,
   logAudit,
   describesSameEntity,
+  isMultiTenantHost,
   type SiteIdentity,
 } from "../_shared/identity-match.ts";
+
+const FETCH_TIMEOUT_MS = 18000;
+async function fetchWithTimeout(url: string, init: RequestInit, ms = FETCH_TIMEOUT_MS): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
