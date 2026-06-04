@@ -64,8 +64,9 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // 0) 캐시 (force가 아니면)
-    if (!force) {
+    // 0) 캐시 (force가 아니면) — 멀티테넌트는 캐시 우회
+    const multiTenant = isMultiTenantHost(host);
+    if (!force && !multiTenant) {
       const { identity, stale } = await loadIdentity(supabase, host);
       if (identity && !stale) {
         await logAudit(supabase, {
@@ -81,25 +82,26 @@ serve(async (req) => {
       }
     }
 
-    // 1) Firecrawl: main page + summary (about는 비용 절감 위해 skip — 필요 시 확장)
+    // 1) Firecrawl: 항상 루트 호스트(`https://${host}/`)를 스크랩
+    //    (사용자가 딥 페이지 URL을 줘도 블로그 글 기반 추출 방지)
     const FIRECRAWL_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!FIRECRAWL_KEY || !LOVABLE_KEY) {
       return json({ success: false, error: "missing API keys" }, 500);
     }
 
-    let formatted = url.trim();
-    if (!/^https?:\/\//i.test(formatted)) formatted = `https://${formatted}`;
+    const rootUrl = `https://${host}/`;
 
-    const fr = await fetch("https://api.firecrawl.dev/v2/scrape", {
+    const fr = await fetchWithTimeout("https://api.firecrawl.dev/v2/scrape", {
       method: "POST",
       headers: { Authorization: `Bearer ${FIRECRAWL_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        url: formatted,
+        url: rootUrl,
         formats: ["markdown", "summary"],
         onlyMainContent: true,
+        waitFor: 1500,
       }),
-    });
+    }, 20000);
     if (!fr.ok) {
       const errText = await fr.text().catch(() => "");
       console.error("[resolve] firecrawl failed", fr.status, errText.slice(0, 300));
