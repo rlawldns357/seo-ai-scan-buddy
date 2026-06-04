@@ -339,6 +339,17 @@ function squash(s: string): string {
   return (s || "").toLowerCase().replace(/[^a-z0-9가-힣]/g, "");
 }
 
+// 한국어 조사 허용: "에바빈은", "쿠팡이", "네이버에서" → 정확 매칭으로 인정.
+const KO_PARTICLES_PROBE = [
+  "은","는","이","가","을","를","의","에","도","만","와","과","로","으로",
+  "에서","에게","한테","께","부터","까지","처럼","보다","마저","조차",
+  "이라","라는","이라는","라","이라고","라고","랑","이랑",
+].sort((a, b) => b.length - a.length).join("|");
+const COMMON_WORD_BRANDS_PROBE = new Set([
+  "apple","amazon","origin","square","notion","slack","stripe","target",
+  "best","shop","store","mall","home","work","cloud","mint","one","plus",
+]);
+
 // 단어경계 매칭 + 공백/기호 무시 매칭을 모두 시도한다.
 // 응답에 "**SearchTune OS**" 처럼 마크다운·공백이 끼어도 도메인 토큰 "searchtuneos" 가 잡힌다.
 // 반환: "strict" = 단어경계 정확매칭, "fuzzy" = squashed 매칭만 잡힘, "none" = 매칭없음
@@ -350,11 +361,27 @@ function tokenMatchKind(text: string, tokens: string[]): "strict" | "fuzzy" | "n
   for (const raw of tokens) {
     const t = (raw || "").trim();
     if (t.length < 2) continue;
-    const re = new RegExp(
-      `(?:^|[^a-z0-9가-힣])${t.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`,
-      "i",
-    );
-    if (re.test(lower)) return "strict";
+    const lo = t.toLowerCase();
+    const isHangul = /[가-힣]/.test(lo);
+    const escaped = lo.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const re = isHangul
+      ? new RegExp(`(?:^|[^a-z0-9가-힣])${escaped}(?:${KO_PARTICLES_PROBE})?(?:$|[^a-z0-9가-힣])`, "i")
+      : new RegExp(`(?:^|[^a-z0-9가-힣])${escaped}(?:$|[^a-z0-9가-힣])`, "i");
+    if (re.test(lower)) {
+      // 일반 영단어 브랜드: 다른 토큰 동반 매칭이 있어야 strict 인정
+      if (!isHangul && COMMON_WORD_BRANDS_PROBE.has(lo)) {
+        const otherHit = tokens.some((other) => {
+          const o = (other || "").trim().toLowerCase();
+          if (!o || o === lo || o.length < 2) return false;
+          return new RegExp(`(?:^|[^a-z0-9가-힣])${o.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`, "i").test(lower);
+        });
+        if (!otherHit) {
+          fuzzy = true;
+          continue;
+        }
+      }
+      return "strict";
+    }
     const sq = squash(t);
     if (sq.length >= 4 && squashed.includes(sq)) fuzzy = true;
   }
