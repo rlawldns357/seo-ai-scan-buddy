@@ -53,9 +53,8 @@ export default function Navbar() {
         <div className="container flex items-center justify-between h-16 gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <Link to="/" className="flex items-center gap-2 min-w-0">
-              <div className="gradient-primary rounded-xl p-2 shrink-0">
-                <Search className="w-4 h-4 text-primary-foreground" />
-              </div>
+              <img src={logoUrl} alt="SearchTune OS" className="w-8 h-8 rounded-xl shrink-0 object-contain" />
+
               <div className="flex flex-col min-w-0 gap-1 sm:gap-0.5 sm:leading-none">
                 <span className="text-base sm:text-lg font-bold text-foreground tracking-tight whitespace-nowrap leading-none">
                   SearchTune <span className="font-extrabold">OS</span>
