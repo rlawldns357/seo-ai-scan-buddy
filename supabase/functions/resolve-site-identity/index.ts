@@ -292,14 +292,14 @@ async function extractWithGPT(
   host: string,
   pageContext: string,
 ): Promise<{ identity: ExtractedIdentity; confidence: number }> {
-  const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const r = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { "Lovable-API-Key": key, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "openai/gpt-5-mini",
       messages: [{ role: "user", content: EXTRACTION_PROMPT(host, pageContext) }],
     }),
-  });
+  }, 18000);
   if (!r.ok) throw new Error(`gpt-5-mini ${r.status}`);
   const j = await r.json();
   const u = extractUsage(j);
