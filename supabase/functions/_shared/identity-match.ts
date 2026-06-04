@@ -287,14 +287,16 @@ export async function loadOrResolveIdentity(
 ): Promise<SiteIdentity | null> {
   const host = normalizeHost(url);
   if (!host) return null;
+  // 멀티테넌트 호스트는 캐시 키 충돌 → 매번 resolve, 캐시 우회
+  if (isMultiTenantHost(host)) {
+    return await invokeResolve(url);
+  }
   const { identity, stale } = await loadIdentity(supabase, host);
   if (identity && !stale) return identity;
   if (identity && stale && options?.allowStale) {
-    // stale-while-revalidate: 즉시 stale 반환, 백그라운드 갱신은 호출측 결정
     void invokeResolve(url).catch(() => undefined);
     return identity;
   }
-  // miss 또는 stale → 동기 호출
   const resolved = await invokeResolve(url);
   return resolved ?? identity ?? null;
 }
@@ -304,11 +306,15 @@ async function invokeResolve(url: string): Promise<SiteIdentity | null> {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) return null;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 45000);
     const r = await fetch(`${supabaseUrl}/functions/v1/resolve-site-identity`, {
       method: "POST",
       headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
+      signal: ctrl.signal,
     });
+    clearTimeout(timer);
     if (!r.ok) return null;
     const j = await r.json();
     return (j?.identity as SiteIdentity) ?? null;
