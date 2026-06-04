@@ -945,6 +945,38 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // 🛡️ SoT 우선: site_identity 캐시(7d)에서 권위 brand/aliases/category를 가져와 덮어쓰기.
+    // analyze-site가 같은 호스트를 분석했다면 거의 항상 캐시 hit이라 추가 비용 0.
+    // 캐시 miss + 자기 도메인 아님이면 resolve-site-identity를 한 번 호출 (Firecrawl+Gemini).
+    let identityUsed = false;
+    if (!isSelfDomain(host)) {
+      try {
+        const identity = await loadOrResolveIdentity(sb, url, { allowStale: true });
+        if (identity && identity.confidence >= 0.55) {
+          const before = { brand, aliases, category };
+          if (identity.brand) brand = identity.brand;
+          if (identity.aliases?.length) {
+            aliases = Array.from(new Set([...aliases, ...identity.aliases])).slice(0, 8);
+          }
+          if (identity.category) category = normalizeCategory(identity.category);
+          identityUsed = true;
+          await logAudit(sb, {
+            host: normalizeHost(url),
+            stage: "probe_match",
+            function_name: "probe-ai-perception",
+            before_state: before,
+            after_state: { brand, aliases, category, identity_source: identity.source, identity_conf: identity.confidence },
+            confidence: identity.confidence,
+            source: "cache",
+            reason: "applied SoT identity",
+          });
+        }
+      } catch (e) {
+        console.warn("[probe] identity load failed (non-blocking):", e);
+      }
+    }
+
+
     // 어드민 캐시 강제 삭제 (admin password 필요)
     const adminPw = String(body?.adminPassword ?? "");
     const purge = Boolean(body?.purge) && adminPw.length > 0 && adminPw === Deno.env.get("ADMIN_PASSWORD");
