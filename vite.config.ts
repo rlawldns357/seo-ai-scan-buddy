@@ -5,17 +5,18 @@ import { execSync } from "child_process";
 import { componentTagger } from "lovable-tagger";
 
 /**
- * Build-time version: BASE_VERSION + auto build tag.
- * BASE_VERSION을 올리면 major/minor, 빌드 시점마다 자동으로 build tag가 붙어
- * 퍼블리시할 때마다 자동 증가합니다. (예: 0.21.0-beta+260602.1733)
+ * Build-time version 포맷: MAJOR.MINOR.YYMMDD.<5자리 태그>-beta
+ * 예) 0.22.260604.03371-beta
+ *   - MAJOR_MINOR: 수동으로 올리는 베이스 (0.22)
+ *   - YYMMDD: 빌드 날짜(UTC)
+ *   - 5자리 태그: git 커밋수(5자리 패딩) → 없으면 HHMMSS 앞 5자리로 폴백
  */
-const BASE_VERSION = "0.21.1-beta";
+const MAJOR_MINOR = "0.22";
 function resolveBuildVersion(): string {
   try {
     const d = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
+    const pad = (n: number, w = 2) => String(n).padStart(w, "0");
     const datePart = `${String(d.getUTCFullYear()).slice(2)}${pad(d.getUTCMonth() + 1)}${pad(d.getUTCDate())}`;
-    const timePart = `${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}`;
     let commitCount = "";
     try {
       commitCount = execSync("git rev-list --count HEAD", { stdio: ["ignore", "pipe", "ignore"] })
@@ -24,10 +25,12 @@ function resolveBuildVersion(): string {
     } catch {
       // git unavailable in some build envs — skip silently
     }
-    const buildTag = commitCount ? `${datePart}.${commitCount}` : `${datePart}.${timePart}`;
-    return `${BASE_VERSION}+${buildTag}`;
+    const tag5 = commitCount
+      ? pad(Number(commitCount), 5)
+      : `${pad(d.getUTCHours())}${pad(d.getUTCMinutes())}${pad(d.getUTCSeconds())}`.slice(0, 5);
+    return `${MAJOR_MINOR}.${datePart}.${tag5}-beta`;
   } catch {
-    return BASE_VERSION;
+    return `${MAJOR_MINOR}.0.00000-beta`;
   }
 }
 const APP_VERSION = resolveBuildVersion();
