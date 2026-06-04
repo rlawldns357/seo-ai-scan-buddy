@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Search, ShieldCheck, Bell, MessageSquare, Briefcase } from "lucide-react";
+import { ShieldCheck, Bell, MessageSquare, Briefcase } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
 import ConsultationModal from "@/components/ConsultationModal";
 import LeadModal from "@/components/LeadModal";
 import { formatEngineVersion } from "@/lib/engineVersion";
+import logoMark from "@/assets/logo-mark.png.asset.json";
 
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
