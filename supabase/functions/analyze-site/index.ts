@@ -2,6 +2,8 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
 import { loadNaverRulebook, isKoreanSite } from "../_shared/naver-rulebook.ts";
 import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
+import { normalizeHost, upsertIdentity, logAudit, loadIdentity } from "../_shared/identity-match.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -380,10 +382,54 @@ ${links.slice(0, 20).join("\n")}
       geo: analysis.geoScore,
     });
 
+    // ── SoT 동기화: analyze가 추출한 brand/category를 site_identity 캐시에 권위 저장 ──
+    // probe-ai-perception / generate-blog-post 등 다른 함수가 이 캐시를 그대로 쓰게 한다.
+    // 이미 Firecrawl·Gemini를 돌렸으므로 추가 API 호출 없음.
+    try {
+      const host = normalizeHost(formattedUrl);
+      if (host && (analysis.brand_name || analysis.category)) {
+        const supabase = createClient(
+          Deno.env.get("SUPABASE_URL")!,
+          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+        );
+        const { identity: prev } = await loadIdentity(supabase, host);
+        // confidence: brand_name이 있고 메타가 명확하면 0.85, 일부만 있으면 0.65
+        const conf =
+          analysis.brand_name && analysis.category && (metadata?.title || jsonLdBlocks.length > 0)
+            ? 0.85
+            : analysis.brand_name || analysis.category
+              ? 0.65
+              : 0.4;
+        const next = {
+          host,
+          brand: analysis.brand_name ?? prev?.brand ?? null,
+          aliases: Array.isArray(analysis.brand_aliases) ? analysis.brand_aliases.slice(0, 5) : (prev?.aliases ?? []),
+          category: analysis.category ?? prev?.category ?? null,
+          description_short: metadata?.description ? String(metadata.description).slice(0, 120) : (prev?.description_short ?? null),
+          confidence: conf,
+          source: "page_signal" as const,
+        };
+        await upsertIdentity(supabase, { ...next, signals: { from: "analyze-site", jsonLdCount: jsonLdBlocks.length, hasMetaTitle: !!metadata?.title } });
+        await logAudit(supabase, {
+          host,
+          stage: "gate",
+          function_name: "analyze-site",
+          before_state: prev ? { brand: prev.brand, category: prev.category, confidence: prev.confidence } : {},
+          after_state: { brand: next.brand, category: next.category, confidence: next.confidence },
+          confidence: conf,
+          source: "page_signal",
+          reason: prev ? `update (was ${prev.source}, conf ${prev.confidence})` : "first analysis",
+        });
+      }
+    } catch (e) {
+      console.warn("[analyze-site] SoT sync failed (non-blocking):", e);
+    }
+
     return new Response(
       JSON.stringify({ success: true, data: analysis }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("analyze-site error:", message);

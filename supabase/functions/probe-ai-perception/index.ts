@@ -5,6 +5,8 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { logApiCost, extractUsage } from "../_shared/cost-logger.ts";
+import { loadOrResolveIdentity, logAudit, normalizeHost } from "../_shared/identity-match.ts";
+
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -943,6 +945,38 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
+    // 🛡️ SoT 우선: site_identity 캐시(7d)에서 권위 brand/aliases/category를 가져와 덮어쓰기.
+    // analyze-site가 같은 호스트를 분석했다면 거의 항상 캐시 hit이라 추가 비용 0.
+    // 캐시 miss + 자기 도메인 아님이면 resolve-site-identity를 한 번 호출 (Firecrawl+Gemini).
+    let identityUsed = false;
+    if (!isSelfDomain(host)) {
+      try {
+        const identity = await loadOrResolveIdentity(sb, url, { allowStale: true });
+        if (identity && identity.confidence >= 0.55) {
+          const before = { brand, aliases, category };
+          if (identity.brand) brand = identity.brand;
+          if (identity.aliases?.length) {
+            aliases = Array.from(new Set([...aliases, ...identity.aliases])).slice(0, 8);
+          }
+          if (identity.category) category = normalizeCategory(identity.category);
+          identityUsed = true;
+          await logAudit(sb, {
+            host: normalizeHost(url),
+            stage: "probe_match",
+            function_name: "probe-ai-perception",
+            before_state: before,
+            after_state: { brand, aliases, category, identity_source: identity.source, identity_conf: identity.confidence },
+            confidence: identity.confidence,
+            source: "cache",
+            reason: "applied SoT identity",
+          });
+        }
+      } catch (e) {
+        console.warn("[probe] identity load failed (non-blocking):", e);
+      }
+    }
+
+
     // 어드민 캐시 강제 삭제 (admin password 필요)
     const adminPw = String(body?.adminPassword ?? "");
     const purge = Boolean(body?.purge) && adminPw.length > 0 && adminPw === Deno.env.get("ADMIN_PASSWORD");
@@ -997,15 +1031,16 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 🛡️ A. 페이지 기반 카테고리 강검증 — analyze-site 오추출 방어
-    // (자기 도메인은 SELF_CATEGORY 고정이라 검증 skip, 캐시 miss 시에만 1회 비용 발생)
-    if (!isSelfDomain(host) && category) {
+    // 🛡️ 카테고리 검증: SoT(site_identity)가 이미 권위값을 줬으면 skip.
+    // 그렇지 않을 때만 페이지 재스크랩 검증 (레거시 폴백).
+    if (!identityUsed && !isSelfDomain(host) && category) {
       const v = await verifyCategoryFromPage(url, brand, host, category);
       if (v.source === "page" && v.category && v.category !== category) {
         console.log(`[probe] category override: "${category}" → "${v.category}" (host=${host})`);
         category = v.category;
       }
     }
+
 
     // 5모델 병렬 호출 (allSettled) — Naver(HyperCLOVA X) 추가
     const settled = await Promise.allSettled([
