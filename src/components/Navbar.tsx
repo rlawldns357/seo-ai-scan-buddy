@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import ContactModal from "@/components/ContactModal";
 import ConsultationModal from "@/components/ConsultationModal";
 import LeadModal from "@/components/LeadModal";
+import { formatEngineVersion } from "@/lib/engineVersion";
 
 export default function Navbar() {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
