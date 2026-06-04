@@ -14,8 +14,20 @@ import {
   upsertIdentity,
   logAudit,
   describesSameEntity,
+  isMultiTenantHost,
   type SiteIdentity,
 } from "../_shared/identity-match.ts";
+
+const FETCH_TIMEOUT_MS = 18000;
+async function fetchWithTimeout(url: string, init: RequestInit, ms = FETCH_TIMEOUT_MS): Promise<Response> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -52,8 +64,9 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // 0) 캐시 (force가 아니면)
-    if (!force) {
+    // 0) 캐시 (force가 아니면) — 멀티테넌트는 캐시 우회
+    const multiTenant = isMultiTenantHost(host);
+    if (!force && !multiTenant) {
       const { identity, stale } = await loadIdentity(supabase, host);
       if (identity && !stale) {
         await logAudit(supabase, {
@@ -69,25 +82,26 @@ serve(async (req) => {
       }
     }
 
-    // 1) Firecrawl: main page + summary (about는 비용 절감 위해 skip — 필요 시 확장)
+    // 1) Firecrawl: 항상 루트 호스트(`https://${host}/`)를 스크랩
+    //    (사용자가 딥 페이지 URL을 줘도 블로그 글 기반 추출 방지)
     const FIRECRAWL_KEY = Deno.env.get("FIRECRAWL_API_KEY");
     const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!FIRECRAWL_KEY || !LOVABLE_KEY) {
       return json({ success: false, error: "missing API keys" }, 500);
     }
 
-    let formatted = url.trim();
-    if (!/^https?:\/\//i.test(formatted)) formatted = `https://${formatted}`;
+    const rootUrl = `https://${host}/`;
 
-    const fr = await fetch("https://api.firecrawl.dev/v2/scrape", {
+    const fr = await fetchWithTimeout("https://api.firecrawl.dev/v2/scrape", {
       method: "POST",
       headers: { Authorization: `Bearer ${FIRECRAWL_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
-        url: formatted,
+        url: rootUrl,
         formats: ["markdown", "summary"],
         onlyMainContent: true,
+        waitFor: 1500,
       }),
-    });
+    }, 20000);
     if (!fr.ok) {
       const errText = await fr.text().catch(() => "");
       console.error("[resolve] firecrawl failed", fr.status, errText.slice(0, 300));
@@ -161,11 +175,24 @@ serve(async (req) => {
       }
     }
 
-    // 4) 저장
-    await upsertIdentity(supabase, {
-      ...identity,
-      signals: { has_firecrawl: true, voter_used: voterUsed, metadata_title: metadata?.title ?? null },
-    });
+    // 4) 저장 가드:
+    //    a) brand=null && confidence<0.4 → 캐시 오염 방지로 저장 안 함
+    //    b) 멀티테넌트 호스트 → 캐시 키 충돌 위험으로 저장 안 함 (호출측이 매번 resolve)
+    //    c) Race guard: 저장 직전 캐시 재확인. 이미 더 높은 confidence가 있으면 덮어쓰지 않음
+    const skipSavePoorSignal = !identity.brand && identity.confidence < 0.4;
+    const skipSaveMultiTenant = multiTenant;
+    let saved = false;
+    if (!skipSavePoorSignal && !skipSaveMultiTenant) {
+      const { identity: existing } = await loadIdentity(supabase, host);
+      const shouldWrite = !existing || existing.confidence <= identity.confidence + 0.05;
+      if (shouldWrite) {
+        await upsertIdentity(supabase, {
+          ...identity,
+          signals: { has_firecrawl: true, voter_used: voterUsed, metadata_title: metadata?.title ?? null },
+        });
+        saved = true;
+      }
+    }
     await logAudit(supabase, {
       host,
       stage: "resolve",
@@ -173,10 +200,16 @@ serve(async (req) => {
       after_state: identityToState(identity),
       confidence: identity.confidence,
       source: identity.source,
-      reason: voterUsed ? "voter consulted" : "primary only",
+      reason: skipSavePoorSignal
+        ? "skipped (brand=null, low confidence)"
+        : skipSaveMultiTenant
+          ? "skipped (multi-tenant host)"
+          : saved
+            ? (voterUsed ? "voter consulted, saved" : "primary only, saved")
+            : "skipped (lower confidence than cached)",
     });
 
-    return json({ success: true, identity, cached: false });
+    return json({ success: true, identity, cached: false, saved });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("[resolve-site-identity] error", msg);
@@ -211,24 +244,28 @@ ${pageContext}
 
 작업:
 1) **brand**: 공식 브랜드/사이트 이름. title의 "브랜드 | 설명"이면 앞부분. URL 슬러그(direct,shop,m 등) 금지. 추출 불가 시 null.
-2) **aliases**: 영문/한글/약어 변형 1~5개. 추출 불가 시 [].
+2) **aliases**: 영문/한글/약어 변형 **최소 2개 이상**. 매우 중요한 규칙:
+   - 브랜드가 한글이면 **반드시 로마자/영문 표기를 1개 이상 포함** (예: brand="에바빈" → aliases=["Evabin","evabin"], brand="쿠팡" → aliases=["Coupang","coupang"]).
+   - 브랜드가 영문이면 **반드시 한글 음차 표기를 1개 이상 포함** (예: brand="Notion" → aliases=["노션"], brand="Coupang" → aliases=["쿠팡"]).
+   - 일반 영단어(apple, origin, square, notion 등)와 같은 브랜드라면 host 토큰("notion.so"의 "notion.so" 등) 또는 도메인 변형을 alias에 추가.
+   - 추출 불가 시 [].
 3) **category**: 한국어 4~12자 명사구로 사이트가 실제 판매·제공하는 것. 메인 title/H1/내비/상품 리스트 우선. 블로그 본문에 우연히 등장한 단어는 절대 금지. 카테고리 다수 시 빈도 높은 1개.
 4) **description_short**: 한국어 1문장(40자 내) 한 줄 설명.
 5) **confidence**: 0~1 추출 자신도. 신호 풍부도 기반.
    - 0.9~1.0: title·메타·H1·내비가 일관되게 같은 정체를 가리킴
    - 0.7~0.89: 본문/요약에서 명확
    - 0.5~0.69: 추론 필요
-   - <0.5: 신호 부족
+   - <0.5: 신호 부족 (페이지가 비어있거나 JS 렌더링 등)
 
 JSON만 반환. 마크다운 금지:
-{"brand":"...","aliases":["..."],"category":"...","description_short":"...","confidence":0.85}`;
+{"brand":"...","aliases":["...","..."],"category":"...","description_short":"...","confidence":0.85}`;
 
 async function extractWithGemini(
   key: string,
   host: string,
   pageContext: string,
 ): Promise<{ identity: ExtractedIdentity; confidence: number }> {
-  const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const r = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { "Lovable-API-Key": key, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -236,7 +273,7 @@ async function extractWithGemini(
       temperature: 0,
       messages: [{ role: "user", content: EXTRACTION_PROMPT(host, pageContext) }],
     }),
-  });
+  }, 18000);
   if (!r.ok) throw new Error(`gemini ${r.status}`);
   const j = await r.json();
   const u = extractUsage(j);
@@ -255,14 +292,14 @@ async function extractWithGPT(
   host: string,
   pageContext: string,
 ): Promise<{ identity: ExtractedIdentity; confidence: number }> {
-  const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const r = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { "Lovable-API-Key": key, "Content-Type": "application/json" },
     body: JSON.stringify({
       model: "openai/gpt-5-mini",
       messages: [{ role: "user", content: EXTRACTION_PROMPT(host, pageContext) }],
     }),
-  });
+  }, 18000);
   if (!r.ok) throw new Error(`gpt-5-mini ${r.status}`);
   const j = await r.json();
   const u = extractUsage(j);

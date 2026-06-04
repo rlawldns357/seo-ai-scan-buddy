@@ -60,6 +60,21 @@ export function isDenialOnly(text: string): boolean {
 // ── 브랜드 언급 매칭 ─────────────────────────────────────────────
 export type BrandMatchKind = "strict" | "fuzzy" | "none";
 
+// 한국어 조사: 브랜드 토큰 뒤에 붙어도 "정확 언급"으로 인정.
+// 예: "에바빈은", "쿠팡이", "네이버에서" → strict 매칭 유지.
+const KO_PARTICLES = [
+  "은","는","이","가","을","를","의","에","도","만","와","과","로","으로",
+  "에서","에게","한테","께","부터","까지","처럼","보다","마저","조차",
+  "이라","라는","이라는","라","이라고","라고","랑","이랑",
+].sort((a, b) => b.length - a.length).join("|");
+
+// 일반 영단어와 충돌하는 브랜드: strict 매칭 시 host 또는 다른 alias도 함께
+// 보여야 진짜 언급으로 본다. (false-positive 방지)
+const COMMON_WORD_BRANDS = new Set([
+  "apple","amazon","origin","square","notion","slack","stripe","target",
+  "best","shop","store","mall","home","work","cloud","mint","one","plus",
+]);
+
 /** brand/aliases 토큰이 텍스트에 단어경계 매칭(strict) 또는 squash 매칭(fuzzy)되는지 */
 export function brandMentioned(
   text: string,
@@ -80,15 +95,44 @@ export function brandMentioned(
   let fuzzy = false;
   for (const raw of tokens) {
     const t = raw.toLowerCase();
-    const re = new RegExp(
-      `(?:^|[^a-z0-9가-힣])${t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`,
-      "i",
-    );
-    if (re.test(lower)) return "strict";
+    const isHangul = /[가-힣]/.test(t);
+    const escaped = t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // 한글 브랜드는 토큰 뒤 조사 허용
+    const re = isHangul
+      ? new RegExp(`(?:^|[^a-z0-9가-힣])${escaped}(?:${KO_PARTICLES})?(?:$|[^a-z0-9가-힣])`, "i")
+      : new RegExp(`(?:^|[^a-z0-9가-힣])${escaped}(?:$|[^a-z0-9가-힣])`, "i");
+    if (re.test(lower)) {
+      // 일반 영단어 브랜드는 다른 alias가 함께 보여야 strict 인정
+      if (!isHangul && COMMON_WORD_BRANDS.has(t)) {
+        const otherHit = tokens.some((other) => {
+          const o = other.toLowerCase();
+          if (o === t) return false;
+          return new RegExp(`(?:^|[^a-z0-9가-힣])${o.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?:$|[^a-z0-9가-힣])`, "i").test(lower);
+        });
+        if (!otherHit) {
+          fuzzy = true;
+          continue;
+        }
+      }
+      return "strict";
+    }
     const sq = squash(raw);
     if (sq.length >= 4 && squashed.includes(sq)) fuzzy = true;
   }
   return fuzzy ? "fuzzy" : "none";
+}
+
+// ── 멀티테넌트 호스트 (host만으로 정체성 단정 불가) ─────────────
+const MULTI_TENANT_HOSTS = [
+  "smartstore.naver.com","shopping.naver.com","brand.naver.com",
+  "blog.naver.com","cafe.naver.com","post.naver.com","m.blog.naver.com",
+  "cafe24.com","imweb.me","modoo.at","tistory.com",
+  "brunch.co.kr","medium.com","wixsite.com","webflow.io","github.io",
+  "notion.site","framer.website","carrd.co",
+];
+export function isMultiTenantHost(host: string): boolean {
+  const h = (host || "").toLowerCase();
+  return MULTI_TENANT_HOSTS.some((mt) => h === mt || h.endsWith(`.${mt}`));
 }
 
 // ── 카테고리 의미 매칭 ───────────────────────────────────────────
@@ -243,14 +287,16 @@ export async function loadOrResolveIdentity(
 ): Promise<SiteIdentity | null> {
   const host = normalizeHost(url);
   if (!host) return null;
+  // 멀티테넌트 호스트는 캐시 키 충돌 → 매번 resolve, 캐시 우회
+  if (isMultiTenantHost(host)) {
+    return await invokeResolve(url);
+  }
   const { identity, stale } = await loadIdentity(supabase, host);
   if (identity && !stale) return identity;
   if (identity && stale && options?.allowStale) {
-    // stale-while-revalidate: 즉시 stale 반환, 백그라운드 갱신은 호출측 결정
     void invokeResolve(url).catch(() => undefined);
     return identity;
   }
-  // miss 또는 stale → 동기 호출
   const resolved = await invokeResolve(url);
   return resolved ?? identity ?? null;
 }
@@ -260,11 +306,15 @@ async function invokeResolve(url: string): Promise<SiteIdentity | null> {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!supabaseUrl || !serviceKey) return null;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 45000);
     const r = await fetch(`${supabaseUrl}/functions/v1/resolve-site-identity`, {
       method: "POST",
       headers: { Authorization: `Bearer ${serviceKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({ url }),
+      signal: ctrl.signal,
     });
+    clearTimeout(timer);
     if (!r.ok) return null;
     const j = await r.json();
     return (j?.identity as SiteIdentity) ?? null;
