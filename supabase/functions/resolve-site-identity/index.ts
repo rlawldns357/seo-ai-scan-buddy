@@ -244,24 +244,28 @@ ${pageContext}
 
 작업:
 1) **brand**: 공식 브랜드/사이트 이름. title의 "브랜드 | 설명"이면 앞부분. URL 슬러그(direct,shop,m 등) 금지. 추출 불가 시 null.
-2) **aliases**: 영문/한글/약어 변형 1~5개. 추출 불가 시 [].
+2) **aliases**: 영문/한글/약어 변형 **최소 2개 이상**. 매우 중요한 규칙:
+   - 브랜드가 한글이면 **반드시 로마자/영문 표기를 1개 이상 포함** (예: brand="에바빈" → aliases=["Evabin","evabin"], brand="쿠팡" → aliases=["Coupang","coupang"]).
+   - 브랜드가 영문이면 **반드시 한글 음차 표기를 1개 이상 포함** (예: brand="Notion" → aliases=["노션"], brand="Coupang" → aliases=["쿠팡"]).
+   - 일반 영단어(apple, origin, square, notion 등)와 같은 브랜드라면 host 토큰("notion.so"의 "notion.so" 등) 또는 도메인 변형을 alias에 추가.
+   - 추출 불가 시 [].
 3) **category**: 한국어 4~12자 명사구로 사이트가 실제 판매·제공하는 것. 메인 title/H1/내비/상품 리스트 우선. 블로그 본문에 우연히 등장한 단어는 절대 금지. 카테고리 다수 시 빈도 높은 1개.
 4) **description_short**: 한국어 1문장(40자 내) 한 줄 설명.
 5) **confidence**: 0~1 추출 자신도. 신호 풍부도 기반.
    - 0.9~1.0: title·메타·H1·내비가 일관되게 같은 정체를 가리킴
    - 0.7~0.89: 본문/요약에서 명확
    - 0.5~0.69: 추론 필요
-   - <0.5: 신호 부족
+   - <0.5: 신호 부족 (페이지가 비어있거나 JS 렌더링 등)
 
 JSON만 반환. 마크다운 금지:
-{"brand":"...","aliases":["..."],"category":"...","description_short":"...","confidence":0.85}`;
+{"brand":"...","aliases":["...","..."],"category":"...","description_short":"...","confidence":0.85}`;
 
 async function extractWithGemini(
   key: string,
   host: string,
   pageContext: string,
 ): Promise<{ identity: ExtractedIdentity; confidence: number }> {
-  const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+  const r = await fetchWithTimeout("https://ai.gateway.lovable.dev/v1/chat/completions", {
     method: "POST",
     headers: { "Lovable-API-Key": key, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -269,7 +273,7 @@ async function extractWithGemini(
       temperature: 0,
       messages: [{ role: "user", content: EXTRACTION_PROMPT(host, pageContext) }],
     }),
-  });
+  }, 18000);
   if (!r.ok) throw new Error(`gemini ${r.status}`);
   const j = await r.json();
   const u = extractUsage(j);
