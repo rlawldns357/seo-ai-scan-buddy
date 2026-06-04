@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Public can read recent results by url" ON public.answer_share_results;
