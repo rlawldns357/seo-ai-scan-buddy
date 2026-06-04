@@ -80,7 +80,7 @@ export default defineConfig(({ mode }) => ({
   ].filter(Boolean),
   define: {
     __APP_VERSION__: JSON.stringify(APP_VERSION),
-    __APP_BASE_VERSION__: JSON.stringify(BASE_VERSION),
+    __APP_BASE_VERSION__: JSON.stringify(`${MAJOR_MINOR}-beta`),
   },
   resolve: {
     alias: {
