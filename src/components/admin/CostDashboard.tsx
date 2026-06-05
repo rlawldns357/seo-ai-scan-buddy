@@ -371,20 +371,20 @@ export default function CostDashboard() {
 
               <div>
                 <p className="text-sm font-semibold mb-2 text-foreground">공급자별 (이번 달)</p>
-                <div className="text-xs">
-                  <div className="grid grid-cols-12 gap-2 px-2 py-1.5 font-medium text-muted-foreground border-b">
-                    <div className="col-span-4">공급자</div>
+                <div className="text-[11px] md:text-xs">
+                  <div className="grid grid-cols-12 gap-1 md:gap-2 px-1.5 md:px-2 py-1 md:py-1.5 font-medium text-muted-foreground border-b">
+                    <div className="col-span-5 md:col-span-4">공급자</div>
                     <div className="col-span-3 text-right">비용</div>
-                    <div className="col-span-2 text-right">요청수</div>
-                    <div className="col-span-3 text-right">토큰 (입/출)</div>
+                    <div className="col-span-2 text-right">요청</div>
+                    <div className="col-span-2 md:col-span-3 text-right">토큰 (입/출)</div>
                   </div>
                   {data.by_provider.map((p) => (
-                    <div key={p.provider} className="grid grid-cols-12 gap-2 px-2 py-1.5 border-b last:border-b-0">
-                      <div className="col-span-4 text-foreground">{PROVIDER_LABEL[p.provider] || p.provider}</div>
+                    <div key={p.provider} className="grid grid-cols-12 gap-1 md:gap-2 px-1.5 md:px-2 py-1 md:py-1.5 border-b last:border-b-0">
+                      <div className="col-span-5 md:col-span-4 text-foreground truncate">{PROVIDER_LABEL[p.provider] || p.provider}</div>
                       <div className="col-span-3 text-right tabular-nums text-foreground">{won(p.cost_krw)}</div>
                       <div className="col-span-2 text-right tabular-nums text-muted-foreground">{p.requests.toLocaleString()}</div>
-                      <div className="col-span-3 text-right tabular-nums text-muted-foreground">
-                        {(p.tokens_in / 1000).toFixed(1)}k / {(p.tokens_out / 1000).toFixed(1)}k
+                      <div className="col-span-2 md:col-span-3 text-right tabular-nums text-muted-foreground">
+                        {(p.tokens_in / 1000).toFixed(1)}k/{(p.tokens_out / 1000).toFixed(1)}k
                       </div>
                     </div>
                   ))}
@@ -393,16 +393,17 @@ export default function CostDashboard() {
 
               <div>
                 <p className="text-sm font-semibold mb-2 text-foreground">함수별 (이번 달)</p>
-                <div className="text-xs">
+                <div className="text-[11px] md:text-xs">
                   {data.by_function.slice(0, 10).map((f) => (
-                    <div key={f.function_name} className="grid grid-cols-12 gap-2 px-2 py-1.5 border-b last:border-b-0">
-                      <div className="col-span-7 text-foreground font-mono">{f.function_name}</div>
-                      <div className="col-span-3 text-right tabular-nums text-foreground">{won(f.cost_krw)}</div>
+                    <div key={f.function_name} className="grid grid-cols-12 gap-1 md:gap-2 px-1.5 md:px-2 py-1 md:py-1.5 border-b last:border-b-0">
+                      <div className="col-span-6 md:col-span-7 text-foreground font-mono truncate">{f.function_name}</div>
+                      <div className="col-span-4 md:col-span-3 text-right tabular-nums text-foreground">{won(f.cost_krw)}</div>
                       <div className="col-span-2 text-right tabular-nums text-muted-foreground">{f.requests}회</div>
                     </div>
                   ))}
                 </div>
               </div>
+
 
               <div className="rounded-lg border-2 border-dashed border-primary/30 bg-primary/5 p-3">
                 <div className="flex items-center justify-between mb-2">
