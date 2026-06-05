@@ -1399,6 +1399,104 @@ export type Database = {
         }
         Relationships: []
       }
+      social_accounts: {
+        Row: {
+          access_token: string
+          created_at: string
+          id: string
+          platform: string
+          status: string
+          threads_user_id: string | null
+          token_expires_at: string | null
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          access_token: string
+          created_at?: string
+          id?: string
+          platform?: string
+          status?: string
+          threads_user_id?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          id?: string
+          platform?: string
+          status?: string
+          threads_user_id?: string | null
+          token_expires_at?: string | null
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
+      }
+      social_publish_queue: {
+        Row: {
+          account_id: string | null
+          body: string
+          created_at: string
+          error_message: string | null
+          id: string
+          media_type: string
+          media_url: string | null
+          platform: string
+          publish_at: string
+          published_url: string | null
+          retry_count: number
+          status: string
+          threads_creation_id: string | null
+          threads_post_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_id?: string | null
+          body: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          platform?: string
+          publish_at?: string
+          published_url?: string | null
+          retry_count?: number
+          status?: string
+          threads_creation_id?: string | null
+          threads_post_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_id?: string | null
+          body?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          platform?: string
+          publish_at?: string
+          published_url?: string | null
+          retry_count?: number
+          status?: string
+          threads_creation_id?: string | null
+          threads_post_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_publish_queue_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "social_accounts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           canceled_at: string | null
