@@ -25,6 +25,7 @@ const Credits = lazy(() => import("./pages/admin/Credits.tsx"));
 const OpsReadonly = lazy(() => import("./pages/admin/OpsReadonly.tsx"));
 const SeoOps = lazy(() => import("./pages/admin/SeoOps.tsx"));
 const QaStatus = lazy(() => import("./pages/admin/QaStatus.tsx"));
+const Threads = lazy(() => import("./pages/admin/Threads.tsx"));
 
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
