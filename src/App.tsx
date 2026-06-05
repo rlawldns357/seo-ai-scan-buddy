@@ -25,6 +25,7 @@ const Credits = lazy(() => import("./pages/admin/Credits.tsx"));
 const OpsReadonly = lazy(() => import("./pages/admin/OpsReadonly.tsx"));
 const SeoOps = lazy(() => import("./pages/admin/SeoOps.tsx"));
 const QaStatus = lazy(() => import("./pages/admin/QaStatus.tsx"));
+const Threads = lazy(() => import("./pages/admin/Threads.tsx"));
 
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
@@ -73,6 +74,7 @@ const App = () => (
               <Route path="/admin/qa-status" element={<QaStatus />} />
               
               <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
+              <Route path="/admin/threads" element={<Threads />} />
               <Route path="/admin/credits" element={<Credits />} />
             </Route>
             {/* 읽기 전용 자동 점검(Hermes 등) — 토큰 기반, 관리자 비번 무관 */}

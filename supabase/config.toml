@@ -17,3 +17,7 @@ project_id = "dmnrbmarbvirtymhszww"
     verify_jwt = false
   [functions.ops-readonly]
     verify_jwt = false
+  [functions.publish-threads]
+    verify_jwt = false
+  [functions.admin-threads]
+    verify_jwt = false
