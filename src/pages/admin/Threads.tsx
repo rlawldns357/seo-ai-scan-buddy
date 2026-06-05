@@ -3,6 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+
+const Badge = ({ className, children }: { className?: string; children: React.ReactNode }) => (
+  <span className={cn("inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide", className)}>{children}</span>
+);
+const Textarea = (props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) => (
+  <textarea {...props} className={cn("flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", props.className)} />
+);
 import { Send, RefreshCw, PlayCircle, Trash2, Image as ImageIcon, Loader2 } from "lucide-react";
 import { adminInvoke } from "./_lib";
 import { supabase } from "@/integrations/supabase/client";
