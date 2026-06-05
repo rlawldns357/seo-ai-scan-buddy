@@ -23,12 +23,15 @@ export default function AdminLayout() {
   const [authed, setAuthed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [navOpen, setNavOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     if (sessionStorage.getItem("admin_pw")) setAuthed(true);
   }, []);
+
+  useEffect(() => { setNavOpen(false); }, [location.pathname]);
 
   useEffect(() => {
     if (authed && location.pathname === "/admin") navigate("/admin/insights", { replace: true });
