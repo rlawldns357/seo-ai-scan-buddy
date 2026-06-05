@@ -243,24 +243,25 @@ export default function Admin() {
   const s = data?.summary;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 md:space-y-6">
       <Helmet>
         <title>인사이트 대시보드 – 서치튠OS 관리자</title>
         <meta name="description" content="서치튠OS 관리자 인사이트 대시보드 — 서비스 핵심 지표와 운영 현황을 확인합니다." />
         <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href="https://searchtuneos.com/admin" />
       </Helmet>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">📊 인사이트</h1>
-            <p className="text-sm text-muted-foreground">서비스 핵심 지표 대시보드</p>
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className="text-lg md:text-2xl font-bold text-foreground">📊 인사이트</h1>
+            <p className="hidden md:block text-sm text-muted-foreground">서비스 핵심 지표 대시보드</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1 md:gap-2 shrink-0">
             {[7, 14, 30].map((d) => (
               <Button
                 key={d}
                 variant={days === d ? "default" : "outline"}
                 size="sm"
+                className="h-8 px-2.5 text-xs md:h-9 md:px-3 md:text-sm"
                 onClick={() => setDays(d)}
               >
                 {d}일
@@ -271,16 +272,16 @@ export default function Admin() {
 
         {/* 별도 운영 화면 진입 */}
         <Card className="border-primary/30 bg-primary/5">
-          <CardContent className="pt-4 pb-4 flex flex-wrap items-center justify-between gap-3">
+          <CardContent className="p-3 md:pt-4 md:pb-4 md:px-6 flex flex-col md:flex-row md:flex-wrap md:items-center md:justify-between gap-2 md:gap-3">
             <div>
-              <p className="text-sm font-bold text-foreground">🧭 운영 콘솔 바로가기</p>
-              <p className="text-xs text-muted-foreground">키워드 · 색인 · 성장 루프 · 크레딧 비용은 전용 화면에서 관리합니다.</p>
+              <p className="text-xs md:text-sm font-bold text-foreground">🧭 운영 콘솔 바로가기</p>
+              <p className="hidden md:block text-xs text-muted-foreground">키워드 · 색인 · 성장 루프 · 크레딧 비용은 전용 화면에서 관리합니다.</p>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <a href="/admin/credits"><Button size="sm">💰 크레딧 / 비용 →</Button></a>
-              <a href="/admin/seo-monitor"><Button size="sm" variant="outline">SEO 모니터 →</Button></a>
-              <a href="/admin/indexing-queue"><Button size="sm" variant="outline">색인 큐 →</Button></a>
-              <a href="/admin/ai-growth-loop"><Button size="sm" variant="outline">AI 성장 루프 →</Button></a>
+            <div className="grid grid-cols-2 md:flex gap-1.5 md:gap-2 md:flex-wrap">
+              <a href="/admin/credits"><Button size="sm" className="w-full md:w-auto h-8 text-xs md:h-9 md:text-sm">💰 크레딧</Button></a>
+              <a href="/admin/seo-monitor"><Button size="sm" variant="outline" className="w-full md:w-auto h-8 text-xs md:h-9 md:text-sm">SEO 모니터</Button></a>
+              <a href="/admin/indexing-queue"><Button size="sm" variant="outline" className="w-full md:w-auto h-8 text-xs md:h-9 md:text-sm">색인 큐</Button></a>
+              <a href="/admin/ai-growth-loop"><Button size="sm" variant="outline" className="w-full md:w-auto h-8 text-xs md:h-9 md:text-sm">성장 루프</Button></a>
             </div>
           </CardContent>
         </Card>
@@ -290,7 +291,7 @@ export default function Admin() {
         ) : data && s ? (
           <>
             {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
               <StatCard icon={Users} label="총 세션" value={s.totalSessions} />
               <StatCard icon={Clock} label="평균 체류" value={formatDuration(s.avgDurationSec)} />
               <StatCard icon={Zap} label="분석 실행" value={s.totalAnalyses} sub={`완료율 ${s.analysisConversion}%`} />
@@ -299,11 +300,11 @@ export default function Admin() {
 
             {/* Daily Chart */}
             <Card>
-              <CardHeader>
-                <CardTitle className="text-base">일별 추이</CardTitle>
+              <CardHeader className="p-3 md:p-6 md:pb-2">
+                <CardTitle className="text-sm md:text-base">일별 추이</CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-[280px] w-full">
+              <CardContent className="p-2 md:p-6 md:pt-0">
+                <ChartContainer config={chartConfig} className="h-[200px] md:h-[280px] w-full">
                   <BarChart data={data.dailyData}>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
                     <XAxis
@@ -311,7 +312,7 @@ export default function Admin() {
                       tickFormatter={(v) => v.substring(5)}
                       className="text-xs"
                     />
-                    <YAxis className="text-xs" />
+                    <YAxis className="text-xs" width={28} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="sessions" fill="var(--color-sessions)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="analyses" fill="var(--color-analyses)" radius={[4, 4, 0, 0]} />
@@ -973,15 +974,15 @@ function StatCard({
 }) {
   return (
     <Card>
-      <CardContent className="pt-5 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Icon className="w-4 h-4 text-primary" />
+      <CardContent className="p-3 md:pt-5 md:pb-4 md:px-6">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-xl font-bold text-foreground leading-tight">{value}</p>
-            {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+            <p className="text-[10px] md:text-xs text-muted-foreground truncate">{label}</p>
+            <p className="text-base md:text-xl font-bold text-foreground leading-tight">{value}</p>
+            {sub && <p className="text-[10px] md:text-xs text-muted-foreground truncate">{sub}</p>}
           </div>
         </div>
       </CardContent>
