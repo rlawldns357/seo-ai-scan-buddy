@@ -612,21 +612,22 @@ export default function Admin() {
                             const pct = Math.min(100, Math.round((r.usage / r.cap) * 100));
                             const atLimit = r.usage >= r.cap;
                             return (
-                              <div key={r.ip + r.updated_at} className="flex items-center gap-3 text-xs">
-                                <span className="font-mono w-32 truncate">{r.ip}</span>
-                                <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                              <div key={r.ip + r.updated_at} className="flex items-center gap-1.5 md:gap-3 text-[11px] md:text-xs">
+                                <span className="font-mono w-24 md:w-32 truncate">{r.ip}</span>
+                                <div className="flex-1 h-1.5 md:h-2 rounded-full bg-muted overflow-hidden">
                                   <div
                                     className={`h-full ${atLimit ? "bg-destructive" : "bg-primary"}`}
                                     style={{ width: `${pct}%` }}
                                   />
                                 </div>
-                                <span className={`font-mono tabular-nums w-16 text-right ${atLimit ? "text-destructive font-semibold" : ""}`}>
+                                <span className={`font-mono tabular-nums w-12 md:w-16 text-right ${atLimit ? "text-destructive font-semibold" : ""}`}>
                                   {r.usage}/{r.cap}
                                 </span>
                                 {r.email_unlocked && (
-                                  <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">📧</span>
+                                  <span className="text-[10px] text-emerald-600 bg-emerald-50 px-1 md:px-1.5 py-0.5 rounded">📧</span>
                                 )}
                               </div>
+
                             );
                           })}
                         </div>
@@ -892,17 +893,17 @@ export default function Admin() {
                   매일 06:00 KST 자동 실행 · 등록 키워드 {serpKeywords.length}개 · 노출 {serpLatest.filter(r => r.our_exposed).length}/{serpLatest.length}건
                 </p>
               </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-xs">
+              <CardContent className="p-2 md:p-6">
+                <div className="overflow-x-auto -mx-2 md:mx-0">
+                  <table className="w-full text-[11px] md:text-xs">
                     <thead className="text-muted-foreground border-b">
                       <tr className="text-left">
-                        <th className="py-2 pr-3">키워드</th>
-                        <th className="py-2 pr-3">엔진</th>
-                        <th className="py-2 pr-3">우리 순위</th>
-                        <th className="py-2 pr-3">매칭 URL</th>
-                        <th className="py-2 pr-3">Top 도메인</th>
-                        <th className="py-2 pr-3">시각</th>
+                        <th className="py-1 md:py-2 px-1 md:pr-3">키워드</th>
+                        <th className="py-1 md:py-2 px-1 md:pr-3">엔진</th>
+                        <th className="py-1 md:py-2 px-1 md:pr-3">순위</th>
+                        <th className="py-1 md:py-2 px-1 md:pr-3 hidden md:table-cell">매칭 URL</th>
+                        <th className="py-1 md:py-2 px-1 md:pr-3 hidden md:table-cell">Top 도메인</th>
+                        <th className="py-1 md:py-2 px-1 md:pr-3">시각</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -911,22 +912,22 @@ export default function Admin() {
                         .sort((a, b) => Number(a.our_exposed) - Number(b.our_exposed) || (a.our_rank ?? 999) - (b.our_rank ?? 999))
                         .map((r, i) => (
                           <tr key={i} className="border-b last:border-b-0">
-                            <td className="py-2 pr-3 font-medium">{r.keyword}</td>
-                            <td className="py-2 pr-3">
-                              <span className={`px-1.5 py-0.5 rounded text-[10px] ${r.engine === "naver" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
-                                {r.engine === "naver" ? "Naver" : "Google"}
+                            <td className="py-1 md:py-2 px-1 md:pr-3 font-medium max-w-[120px] md:max-w-none truncate">{r.keyword}</td>
+                            <td className="py-1 md:py-2 px-1 md:pr-3">
+                              <span className={`px-1 md:px-1.5 py-0.5 rounded text-[9px] md:text-[10px] ${r.engine === "naver" ? "bg-emerald-100 text-emerald-700" : "bg-blue-100 text-blue-700"}`}>
+                                {r.engine === "naver" ? "N" : "G"}
                               </span>
                             </td>
-                            <td className="py-2 pr-3">
+                            <td className="py-1 md:py-2 px-1 md:pr-3">
                               {r.error ? (
                                 <span className="text-destructive" title={r.error}>오류</span>
                               ) : r.our_exposed ? (
                                 <span className="font-bold text-primary">#{r.our_rank}</span>
                               ) : (
-                                <span className="text-muted-foreground">미노출</span>
+                                <span className="text-muted-foreground">—</span>
                               )}
                             </td>
-                            <td className="py-2 pr-3">
+                            <td className="py-1 md:py-2 px-1 md:pr-3 hidden md:table-cell">
                               {r.our_url ? (
                                 <a href={r.our_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate inline-block max-w-[220px] align-middle">
                                   {r.our_url.replace(/^https?:\/\//, "")}
@@ -935,14 +936,14 @@ export default function Admin() {
                                 <span className="text-muted-foreground">—</span>
                               )}
                             </td>
-                            <td className="py-2 pr-3 max-w-[280px]">
+                            <td className="py-1 md:py-2 px-1 md:pr-3 max-w-[280px] hidden md:table-cell">
                               <div className="flex flex-wrap gap-1">
                                 {(r.top_domains || []).slice(0, 5).map((d, j) => (
                                   <span key={j} className="text-[10px] bg-muted px-1.5 py-0.5 rounded">{d}</span>
                                 ))}
                               </div>
                             </td>
-                            <td className="py-2 pr-3 text-muted-foreground whitespace-nowrap">
+                            <td className="py-1 md:py-2 px-1 md:pr-3 text-muted-foreground whitespace-nowrap">
                               {new Date(r.checked_at).toLocaleString("ko-KR", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
                             </td>
                           </tr>
@@ -954,6 +955,7 @@ export default function Admin() {
                   </table>
                 </div>
               </CardContent>
+
             </Card>
           </>
         ) : null}
