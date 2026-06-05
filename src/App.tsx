@@ -74,6 +74,7 @@ const App = () => (
               <Route path="/admin/qa-status" element={<QaStatus />} />
               
               <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
+              <Route path="/admin/threads" element={<Threads />} />
               <Route path="/admin/credits" element={<Credits />} />
             </Route>
             {/* 읽기 전용 자동 점검(Hermes 등) — 토큰 기반, 관리자 비번 무관 */}
