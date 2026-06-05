@@ -974,15 +974,15 @@ function StatCard({
 }) {
   return (
     <Card>
-      <CardContent className="pt-5 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Icon className="w-4 h-4 text-primary" />
+      <CardContent className="p-3 md:pt-5 md:pb-4 md:px-6">
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg md:rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+            <Icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="text-xl font-bold text-foreground leading-tight">{value}</p>
-            {sub && <p className="text-xs text-muted-foreground">{sub}</p>}
+            <p className="text-[10px] md:text-xs text-muted-foreground truncate">{label}</p>
+            <p className="text-base md:text-xl font-bold text-foreground leading-tight">{value}</p>
+            {sub && <p className="text-[10px] md:text-xs text-muted-foreground truncate">{sub}</p>}
           </div>
         </div>
       </CardContent>
