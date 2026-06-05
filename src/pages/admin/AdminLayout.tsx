@@ -75,9 +75,72 @@ export default function AdminLayout() {
     );
   }
 
+  const currentLabel = NAV.find(n => location.pathname.startsWith(n.to))?.label ?? "관리자";
+
   return (
-    <div className="min-h-screen bg-background flex">
-      <aside className="w-56 shrink-0 border-r border-border bg-card sticky top-0 h-screen flex flex-col">
+    <div className="min-h-screen bg-background md:flex">
+      {/* Mobile top bar */}
+      <div className="md:hidden sticky top-0 z-40 flex items-center justify-between gap-2 px-3 h-12 border-b border-border bg-card/95 backdrop-blur">
+        <button
+          onClick={() => setNavOpen(true)}
+          className="p-2 -ml-2 rounded-lg hover:bg-muted"
+          aria-label="메뉴 열기"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <p className="text-sm font-semibold truncate">{currentLabel}</p>
+        <div className="w-9" />
+      </div>
+
+      {/* Mobile drawer */}
+      {navOpen && (
+        <div className="md:hidden fixed inset-0 z-50">
+          <div className="absolute inset-0 bg-black/50" onClick={() => setNavOpen(false)} />
+          <aside className="absolute left-0 top-0 bottom-0 w-64 bg-card border-r border-border flex flex-col animate-in slide-in-from-left">
+            <div className="px-4 py-4 border-b border-border flex items-center justify-between">
+              <div>
+                <p className="text-xs text-muted-foreground">SearchTune OS</p>
+                <p className="text-sm font-bold text-foreground">관리자 콘솔</p>
+              </div>
+              <button onClick={() => setNavOpen(false)} className="p-2 rounded-lg hover:bg-muted" aria-label="닫기">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+              {NAV.map(({ to, label, icon: Icon }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={({ isActive }) =>
+                    cn(
+                      "flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm transition-colors",
+                      isActive
+                        ? "bg-primary/10 text-primary font-semibold"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )
+                  }
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </NavLink>
+              ))}
+            </nav>
+            <div className="p-3 border-t border-border">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full text-xs text-muted-foreground"
+                onClick={() => { sessionStorage.removeItem("admin_pw"); setAuthed(false); }}
+              >
+                로그아웃
+              </Button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-56 shrink-0 border-r border-border bg-card sticky top-0 h-screen flex-col">
         <div className="px-4 py-5 border-b border-border">
           <p className="text-xs text-muted-foreground">SearchTune OS</p>
           <p className="text-sm font-bold text-foreground">관리자 콘솔</p>
@@ -113,7 +176,7 @@ export default function AdminLayout() {
         </div>
       </aside>
       <main className="flex-1 min-w-0">
-        <div className="container py-8 max-w-7xl">
+        <div className="container py-4 md:py-8 max-w-7xl px-3 md:px-6">
           <Outlet />
         </div>
       </main>
