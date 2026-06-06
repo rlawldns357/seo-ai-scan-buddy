@@ -527,79 +527,141 @@ const Index = () => {
                 <div className="absolute right-1/4 top-1/2 translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full bg-accent/25 blur-3xl group-focus-within:bg-accent/40 transition-colors duration-500" />
               </div>
 
-              <div className="relative flex flex-col sm:flex-row gap-3 sm:gap-3 my-2 sm:my-0">
-                <div className="relative w-full sm:flex-1">
-                  {/* Naver mode 활성화 시: 부드러운 초록 글로우 헤일로 */}
-                  {naverMode && (
-                    <div
-                      aria-hidden
-                      className="pointer-events-none absolute -inset-3 rounded-[1.75rem] animate-naver-glow"
-                      style={{
-                        background:
-                          "radial-gradient(60% 80% at 50% 50%, hsl(var(--naver) / 0.35), hsl(var(--naver) / 0) 70%)",
-                      }}
-                    />
-                  )}
-                  <Search
-                    className={`absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none transition-colors z-10 ${
-                      naverMode ? "text-naver" : "text-muted-foreground group-focus-within:text-primary"
-                    }`}
-                    strokeWidth={2.5}
-                  />
-                  <input
-                    type="url"
-                    value={url}
-                    onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
-                    onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
-                    placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
-                    className={`relative w-full h-14 sm:h-14 pl-12 sm:pl-13 pr-4 sm:pr-5 rounded-2xl border bg-card/90 backdrop-blur text-foreground placeholder:text-muted-foreground focus:outline-none text-base sm:text-lg shadow-sm focus:shadow-lg transition-all ${
+              {/* VIP 이스터에그 말풍선 */}
+              {effectiveBrand && (
+                <div
+                  className={`pointer-events-none absolute left-1/2 -translate-x-1/2 -top-2 -translate-y-full whitespace-nowrap z-20 transition-all duration-500 ease-out ${
+                    vipBubble !== 0 ? "opacity-100 translate-y-[-100%]" : "opacity-0 translate-y-[-90%]"
+                  }`}
+                  aria-hidden="true"
+                >
+                  <div className={`relative px-3 py-1.5 rounded-xl text-white text-xs font-semibold shadow-lg ${
+                    effectiveBrand === "progressmedia" ? "bg-blue-600" : "bg-emerald-600"
+                  }`}>
+                    {vipBubble === 1
+                      ? `Hello 👋 ${BRAND_LABEL[effectiveBrand]}`
+                      : "무제한으로 바뀌었어요 ✨"}
+                    <span className={`absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 ${
+                      effectiveBrand === "progressmedia" ? "bg-blue-600" : "bg-emerald-600"
+                    }`} />
+                  </div>
+                </div>
+              )}
+
+              {(() => {
+                const trimmed = url.trim();
+                const storeInfoForCheckbox = trimmed
+                  ? parseNaverStoreUrl(/^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`)
+                  : null;
+                const forced = !!storeInfoForCheckbox;
+                const fastChecked = forced || skipLighthouse;
+
+                return (
+                  <div
+                    className={`relative rounded-[28px] border bg-card/95 backdrop-blur-xl transition-all duration-300 overflow-hidden ${
                       naverMode
-                        ? "border-naver/50 focus:border-naver focus:ring-2 focus:ring-naver/30 shadow-[0_0_0_4px_hsl(var(--naver)/0.10)]"
-                        : "border-input focus:ring-2 focus:ring-primary/40 focus:border-primary"
+                        ? "border-naver/50 shadow-[0_8px_32px_-12px_hsl(var(--naver)/0.35),0_0_0_4px_hsl(var(--naver)/0.08)] focus-within:shadow-[0_12px_40px_-12px_hsl(var(--naver)/0.45),0_0_0_4px_hsl(var(--naver)/0.15)]"
+                        : "border-border/80 shadow-[0_8px_32px_-12px_hsl(var(--primary)/0.25)] focus-within:border-primary/50 focus-within:shadow-[0_12px_40px_-12px_hsl(var(--primary)/0.4),0_0_0_4px_hsl(var(--primary)/0.12)]"
                     }`}
-                    style={{ paddingLeft: "3rem" }}
-                  />
-                </div>
-                <div className="relative">
-                  {/* 이스터에그 말풍선: VIP 브랜드(GrowthBridge/ProgressMedia) 첫 진입 시 2단계 노출 */}
-                  {effectiveBrand && (
-                    <div
-                      className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-2 whitespace-nowrap z-10 transition-all duration-500 ease-out ${
-                        vipBubble !== 0 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-1"
-                      }`}
-                      aria-hidden="true"
-                    >
-                      <div className={`relative px-3 py-1.5 rounded-xl text-white text-xs font-semibold shadow-lg ${
-                        effectiveBrand === "progressmedia" ? "bg-blue-600" : "bg-emerald-600"
-                      }`}>
-                        {vipBubble === 1
-                          ? `Hello 👋 ${BRAND_LABEL[effectiveBrand]}`
-                          : "무제한으로 바뀌었어요 ✨"}
-                        <span className={`absolute left-1/2 -translate-x-1/2 -bottom-1 w-2 h-2 rotate-45 ${
-                          effectiveBrand === "progressmedia" ? "bg-blue-600" : "bg-emerald-600"
-                        }`} />
-                      </div>
-                    </div>
-                  )}
-                  <button
-                    onClick={handleAnalyze}
-                    disabled={isAnalyzing}
-                    aria-busy={isAnalyzing}
-                    className="h-14 sm:h-14 px-6 sm:px-8 rounded-2xl gradient-primary text-primary-foreground font-bold text-base sm:text-lg whitespace-nowrap shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/40 hover:brightness-105 active:scale-[0.97] active:shadow-sm active:brightness-95 transition-all duration-150 ease-out will-change-transform select-none disabled:opacity-95 disabled:cursor-wait inline-flex items-center justify-center gap-2"
                   >
-                    {isAnalyzing ? (
-                      <>
-                        <Loader2 className="w-5 h-5 animate-spin" />
-                        <span>분석 시작 중…</span>
-                      </>
-                    ) : effectiveBrand ? (
-                      "무제한 분석하기"
-                    ) : (
-                      "무료로 분석하기"
+                    {/* Naver mode 글로우 */}
+                    {naverMode && (
+                      <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 animate-naver-glow"
+                        style={{
+                          background:
+                            "radial-gradient(60% 80% at 50% 50%, hsl(var(--naver) / 0.10), hsl(var(--naver) / 0) 70%)",
+                        }}
+                      />
                     )}
-                  </button>
-                </div>
-              </div>
+
+                    {/* URL Input row */}
+                    <div className="relative flex items-center">
+                      <Search
+                        className={`absolute left-5 sm:left-6 w-5 h-5 pointer-events-none transition-colors ${
+                          naverMode ? "text-naver" : "text-muted-foreground group-focus-within:text-primary"
+                        }`}
+                        strokeWidth={2.5}
+                      />
+                      <input
+                        type="url"
+                        value={url}
+                        onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
+                        onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
+                        placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
+                        className="relative w-full h-16 sm:h-[68px] pl-13 sm:pl-14 pr-5 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-base sm:text-lg font-medium"
+                        style={{ paddingLeft: "3.25rem" }}
+                      />
+                    </div>
+
+                    {/* Divider */}
+                    <div className="mx-4 sm:mx-5 h-px bg-border/60" />
+
+                    {/* Footer: toggles + submit */}
+                    <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-3">
+                      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                        {/* 빠른 분석 */}
+                        <button
+                          type="button"
+                          onClick={() => !forced && setSkipLighthouse((v) => !v)}
+                          disabled={forced}
+                          aria-pressed={fastChecked}
+                          title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
+                          className={`h-9 rounded-full border px-2.5 sm:px-3 inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold transition-all whitespace-nowrap ${
+                            fastChecked
+                              ? "border-score-warning/60 bg-score-warning/10 text-score-warning"
+                              : "border-border bg-card text-muted-foreground hover:border-score-warning/40 hover:text-foreground"
+                          } ${forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"}`}
+                        >
+                          <Zap className="w-3.5 h-3.5" />
+                          <span className="leading-none">빠른 분석</span>
+                          {fastChecked && <span className="text-[10px]">✓</span>}
+                        </button>
+
+                        {/* AI 물어보기 */}
+                        <button
+                          type="button"
+                          onClick={() => setAskAIEnabled((v) => !v)}
+                          aria-pressed={askAIEnabled}
+                          className={`h-9 rounded-full border px-2.5 sm:px-3 inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold transition-all whitespace-nowrap ${
+                            askAIEnabled
+                              ? "border-askai/60 bg-askai/10 text-askai"
+                              : "border-border bg-card text-muted-foreground hover:border-askai/40 hover:text-foreground"
+                          }`}
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span className="leading-none hidden xs:inline sm:inline">AI에게 물어보기</span>
+                          <span className="leading-none xs:hidden sm:hidden">AI</span>
+                          {askAIEnabled && <span className="text-[10px]">✓</span>}
+                        </button>
+                      </div>
+
+                      {/* Submit pill */}
+                      <button
+                        onClick={handleAnalyze}
+                        disabled={isAnalyzing}
+                        aria-busy={isAnalyzing}
+                        className="shrink-0 h-11 sm:h-12 px-4 sm:px-5 rounded-full gradient-primary text-primary-foreground font-bold text-sm sm:text-[15px] shadow-[0_6px_20px_-6px_hsl(var(--primary)/0.6)] hover:shadow-[0_8px_24px_-6px_hsl(var(--primary)/0.75)] hover:brightness-105 active:scale-[0.97] transition-all duration-150 ease-out will-change-transform select-none disabled:opacity-95 disabled:cursor-wait inline-flex items-center justify-center gap-1.5"
+                      >
+                        {isAnalyzing ? (
+                          <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            <span>분석 중…</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>{effectiveBrand ? "무제한 분석" : "무료 분석"}</span>
+                            <ArrowRight className="w-4 h-4" />
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* 하단 메타: 스토어 배너 / 예시 칩 */}
               {(() => {
                 const trimmed = url.trim();
                 const storeInfo = trimmed
@@ -614,7 +676,7 @@ const Index = () => {
                 }
                 if (!url) {
                   return (
-                    <div className="relative flex flex-wrap items-center justify-center gap-1.5 mt-3.5 animate-fade-in">
+                    <div className="relative flex flex-wrap items-center justify-center gap-1.5 mt-4 animate-fade-in">
                       <span className="text-[11px] text-muted-foreground mr-0.5">예시</span>
                       {EXAMPLE_URLS.map((ex) => (
                         <button
@@ -640,65 +702,13 @@ const Index = () => {
               const forced = !!storeInfoForCheckbox;
               const fastChecked = forced || skipLighthouse;
               return (
-                <>
-                  <div className="mt-5 sm:mt-4 grid grid-cols-2 gap-2 sm:gap-3 max-w-md mx-auto">
-
-                    {/* 빠른 분석 — Amber/Yellow */}
-                    <button
-                      type="button"
-                      onClick={() => !forced && setSkipLighthouse((v) => !v)}
-                      disabled={forced}
-                      aria-pressed={fastChecked}
-                      title={forced ? "네이버 스토어는 Lighthouse 측정이 의미 없어 자동으로 건너뜁니다" : undefined}
-                      className={`group relative h-11 rounded-full border px-3 flex items-center justify-center gap-2 text-xs font-semibold transition-all ${
-                        fastChecked
-                          ? "border-score-warning/60 bg-score-warning/10 text-score-warning shadow-sm"
-                          : "border-border bg-card text-muted-foreground hover:border-score-warning/40 hover:text-foreground"
-                      } ${forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"}`}
-                    >
-                      <Zap className={`w-3.5 h-3.5 ${fastChecked ? "text-score-warning" : ""}`} />
-                      <span className="leading-none">빠른 분석</span>
-                      <span
-                        className={`ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border text-[9px] font-black ${
-                          fastChecked ? "bg-score-warning border-score-warning text-white" : "border-muted-foreground/30 text-transparent"
-                        }`}
-                        aria-hidden
-                      >
-                        ✓
-                      </span>
-                    </button>
-
-                    {/* AI에게 물어보기 */}
-                    <button
-                      type="button"
-                      onClick={() => setAskAIEnabled((v) => !v)}
-                      aria-pressed={askAIEnabled}
-                      className={`group relative h-11 rounded-full border px-3 flex items-center justify-center gap-2 text-xs font-semibold transition-all ${
-                        askAIEnabled
-                          ? "border-askai/60 bg-askai/10 text-askai shadow-sm"
-                          : "border-border bg-card text-muted-foreground hover:border-askai/40 hover:text-foreground"
-                      }`}
-                    >
-                      <Sparkles className={`w-3.5 h-3.5 ${askAIEnabled ? "text-askai" : ""}`} />
-                      <span className="leading-none">AI에게 직접 물어보기</span>
-                      <span
-                        className={`ml-0.5 inline-flex items-center justify-center w-3.5 h-3.5 rounded-full border text-[9px] font-black ${
-                          askAIEnabled ? "bg-askai border-askai text-askai-foreground" : "border-muted-foreground/30 text-transparent"
-                        }`}
-                        aria-hidden
-                      >
-                        ✓
-                      </span>
-                    </button>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-3 font-medium text-center">
-                    {forced
-                      ? "네이버 스토어 전용 진단 · 약 10초"
-                      : fastChecked
-                      ? `AI 분석만 실행 · 30초 이내${askAIEnabled ? " · ChatGPT·Claude·Gemini·Perplexity 동시 질문" : ""}`
-                      : `모바일 + 데스크톱 동시 측정 · 평균 10~30초${askAIEnabled ? " · AI 인식까지 함께" : ""}`}
-                  </p>
-                </>
+                <p className="text-xs text-muted-foreground mt-4 font-medium text-center max-w-xl mx-auto">
+                  {forced
+                    ? "네이버 스토어 전용 진단 · 약 10초"
+                    : fastChecked
+                    ? `AI 분석만 실행 · 30초 이내${askAIEnabled ? " · ChatGPT·Claude·Gemini·Perplexity 동시 질문" : ""}`
+                    : `모바일 + 데스크톱 동시 측정 · 평균 10~30초${askAIEnabled ? " · AI 인식까지 함께" : ""}`}
+                </p>
               );
             })()}
             {urlError && (
