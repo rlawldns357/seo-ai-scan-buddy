@@ -129,26 +129,44 @@ ${cfg.pending_rules ? `[대기 중인 변경안]\n${cfg.pending_rules}\n` : ""}
       const m = aiText.match(/PROPOSED_RULES:\s*\n([\s\S]*?)\nEND_RULES/);
       if (m) proposed = m[1].trim();
 
-      const newMinor = cfg.version_minor + 1;
-      const newVersion = `v${cfg.version_major}.${newMinor}`;
+      // 변경안이 있으면 즉시 적용 (메이저 +1), 없으면 마이너 +1
+      let newMajor = cfg.version_major;
+      let newMinor = cfg.version_minor + 1;
+      const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+      if (proposed) {
+        newMajor = cfg.version_major + 1;
+        newMinor = 0;
+        update.rules = proposed;
+        update.pending_rules = null;
+        update.version_major = newMajor;
+        update.version_minor = 0;
+      } else {
+        update.version_minor = newMinor;
+      }
+
+      const versionAfter = `v${newMajor}.${newMinor}`;
 
       await supabase.from("threads_engine_chat").insert([
         { role: "user", content: message, version_at: versionStr },
-        { role: "assistant", content: aiText, version_at: newVersion },
+        { role: "assistant", content: aiText, version_at: versionAfter },
       ]);
-
-      const update: Record<string, unknown> = {
-        version_minor: newMinor,
-        updated_at: new Date().toISOString(),
-      };
-      if (proposed) update.pending_rules = proposed;
 
       await supabase.from("threads_engine_config").update(update).eq("config_key", "threads_engine");
 
+      if (proposed) {
+        const charName = cfg.character_name || "쓰레디";
+        await supabase.from("threads_engine_chat").insert({
+          role: "system",
+          content: `🚀 ${charName} ${versionAfter} 자동 배포! 새 룰이 다음 자동 생성부터 적용됩니다.`,
+          version_at: versionAfter,
+        });
+      }
+
       return json({
         reply: aiText,
-        proposed_rules: proposed,
-        version: { major: cfg.version_major, minor: newMinor },
+        applied_rules: proposed,
+        version: { major: newMajor, minor: newMinor },
       });
     }
 
