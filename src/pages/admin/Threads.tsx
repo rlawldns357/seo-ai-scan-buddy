@@ -238,22 +238,21 @@ export default function Threads() {
       {/* 상단 3열: 자동 생성 | 수동 게시 | 룰 엔진 챗 */}
       <div className="grid gap-4 lg:grid-cols-3">
         {/* 섹션 A: 자동 생성 */}
-        <Card className="border-primary/30 flex flex-col">
+        <Card className="border-primary/30">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
               자동 생성
-              <Badge className="bg-primary/10 text-primary font-mono">엔진 {versionStr}</Badge>
+              <Badge className="bg-primary/10 text-primary font-mono">{versionStr}</Badge>
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3 flex-1 flex flex-col">
-            <p className="text-xs text-muted-foreground flex-1">
-              최근 30일 내 미사용 블로그 글에서 자동으로 3건을 골라 훅을 생성하고 큐에 적재합니다.
-              현재 룰 엔진({versionStr})의 카피 스타일이 적용됩니다.
+          <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">
+              최근 30일 내 미사용 블로그 글에서 자동으로 3건을 골라 훅을 생성하고 큐에 적재합니다. 현재 룰 엔진({versionStr})의 카피 스타일이 적용됩니다.
             </p>
-            <Button onClick={generateFromBlog} disabled={generating} className="w-full">
+            <Button onClick={generateFromBlog} disabled={generating} size="sm">
               {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-              ✨ 블로그→Threads 3건 생성
+              블로그→Threads 3건 생성
             </Button>
           </CardContent>
         </Card>
