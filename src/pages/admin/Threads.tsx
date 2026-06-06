@@ -238,7 +238,7 @@ export default function Threads() {
       {/* 상단 3열: 자동 생성 | 수동 게시 | 룰 엔진 챗 */}
       <div className="grid gap-4 lg:grid-cols-3 items-start">
         {/* 섹션 A: 자동 생성 */}
-        <Card className="border-primary/30 self-start">
+        <Card className="border-primary/30 self-start h-auto max-h-[220px] overflow-hidden">
 
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
