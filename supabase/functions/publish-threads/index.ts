@@ -65,12 +65,13 @@ Deno.serve(async (req) => {
     );
 
     // 1) 처리 대상 조회
-    // force=true (관리자가 "지금 발행" 클릭): publish_at 무시하고 ready 전체 처리
+    // force=true (관리자가 "지금 발행" 클릭): publish_at 무시 + draft까지 포함
+    const statuses = force ? ["ready", "draft"] : ["ready"];
     let query = supabase
       .from("social_publish_queue")
       .select("*")
       .eq("platform", "threads")
-      .eq("status", "ready")
+      .in("status", statuses)
       .order("publish_at", { ascending: true })
       .limit(10);
 
@@ -83,7 +84,7 @@ Deno.serve(async (req) => {
         .from("social_publish_queue")
         .select("*")
         .eq("id", queueId)
-        .in("status", ["ready", "failed"])
+        .in("status", ["ready", "failed", "draft"])
         .limit(1);
     }
 
