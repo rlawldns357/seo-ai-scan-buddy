@@ -137,6 +137,19 @@ export default function Threads() {
     failed: items.filter(i => i.status === "failed"),
   };
 
+  const generateFromBlog = async () => {
+    const password = sessionStorage.getItem("admin_pw");
+    const { data, error } = await supabase.functions.invoke("generate-threads-from-blog", {
+      body: { password, count: 3 },
+    });
+    if (error || (data as any)?.error) {
+      toast({ title: "생성 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
+    } else {
+      toast({ title: "블로그 글에서 생성 완료", description: `${(data as any)?.inserted ?? 0}건 큐에 추가됨` });
+      load();
+    }
+  };
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -144,9 +157,12 @@ export default function Threads() {
           <h1 className="text-lg md:text-2xl font-bold">Threads 자동 발행</h1>
           <p className="hidden md:block text-sm text-muted-foreground">Meta Threads API 직접 연동 MVP</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> 새로고침
+          </Button>
+          <Button variant="secondary" size="sm" onClick={generateFromBlog}>
+            ✨ 블로그→Threads 3건 생성
           </Button>
           <Button size="sm" onClick={runWorker} disabled={running}>
             {running ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <PlayCircle className="w-4 h-4 mr-1" />}
@@ -154,6 +170,7 @@ export default function Threads() {
           </Button>
         </div>
       </div>
+
 
       {/* 계정 상태 */}
       <Card>
