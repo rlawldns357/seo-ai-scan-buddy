@@ -144,7 +144,7 @@ export default function Threads() {
   const runWorker = async () => {
     setRunning(true);
     const password = sessionStorage.getItem("admin_pw");
-    const { data, error } = await supabase.functions.invoke("publish-threads", { body: { password } });
+    const { data, error } = await supabase.functions.invoke("publish-threads", { body: { password, force: true } });
     setRunning(false);
     if (error || (data as any)?.error) toast({ title: "발행 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
     else toast({ title: `처리 완료`, description: `${(data as any)?.processed ?? 0}건 처리됨` });
