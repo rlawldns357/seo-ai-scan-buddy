@@ -129,14 +129,20 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (accErr || !account) throw new Error("활성 Threads 계정이 없습니다");
 
-    // 1-b) 룰 엔진 설정 로드
+    // 1-b) 룰 엔진 설정 로드 (캐릭터·API 지식 포함)
     const { data: engineCfg } = await supabase
       .from("threads_engine_config")
-      .select("rules, version_major, version_minor")
+      .select("rules, version_major, version_minor, character_name, character_tagline, character_voice, api_knowledge")
       .eq("config_key", "threads_engine")
       .maybeSingle();
     const engineRules = engineCfg?.rules || "한국어 120자 이내, 이모지 1~2개, 끝에 👉";
     const engineVersion = engineCfg ? `v${engineCfg.version_major}.${engineCfg.version_minor}` : "v1.0";
+    const persona = {
+      name: engineCfg?.character_name || "쓰레디",
+      tagline: engineCfg?.character_tagline || "Threads 발행 전문가",
+      voice: engineCfg?.character_voice || "친근한 마케터 톤, 반말, 결론 먼저.",
+      apiKnowledge: engineCfg?.api_knowledge || "",
+    };
 
     const count = Math.min(Math.max(requestedCount ?? KST_SLOTS.length, 1), KST_SLOTS.length);
 
