@@ -44,8 +44,25 @@ function kstSlotToUtcIso(hourKst: number, baseDate = new Date()): string {
   return utcTarget.toISOString();
 }
 
-async function generateHook(title: string, excerpt: string, category: string, apiKey: string, engineRules: string, engineVersion: string): Promise<string> {
-  const prompt = `너는 한국어 Threads 카피라이터다. 아래 블로그 글을 클릭하게 만드는 훅 1줄을 작성해라.
+type Persona = {
+  name: string;
+  tagline: string;
+  voice: string;
+  apiKnowledge: string;
+};
+
+async function generateHook(
+  title: string, excerpt: string, category: string,
+  apiKey: string, engineRules: string, engineVersion: string,
+  persona: Persona,
+): Promise<string> {
+  const prompt = `너는 '${persona.name}' — ${persona.tagline}. 아래 블로그 글을 클릭하게 만드는 Threads 훅 1줄을 너의 말투로 작성해라.
+
+[너의 말투]
+${persona.voice}
+
+[Meta Threads Graph API 지식 — 반드시 준수]
+${persona.apiKnowledge || "(없음)"}
 
 [룰 엔진 ${engineVersion}]
 ${engineRules}
@@ -55,7 +72,7 @@ ${engineRules}
 카테고리: ${category}
 요약: ${excerpt}
 
-훅만 출력해라.`;
+훅만 출력해라. 첫 줄 80자 이내 권장.`;
 
   const res = await fetch(GATEWAY_URL, {
     method: "POST",
