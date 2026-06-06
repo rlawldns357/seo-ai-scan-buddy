@@ -288,7 +288,7 @@ export default function Threads() {
 
             <Dialog open={rulesOpen} onOpenChange={setRulesOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="flex-1 min-w-0">
+                <Button size="sm" className="flex-1 min-w-0 order-1">
                   <ScrollText className="w-4 h-4 mr-1" /> 현재 룰
                 </Button>
               </DialogTrigger>
