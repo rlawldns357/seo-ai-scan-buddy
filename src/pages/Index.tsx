@@ -651,7 +651,7 @@ const Index = () => {
                           }`}
                         >
                           <Sparkles className="w-3.5 h-3.5" />
-                          <span className="leading-none hidden xs:inline sm:inline">AI에게 물어보기</span>
+                          <span className="leading-none hidden xs:inline sm:inline">AI에게 직접 물어보기</span>
                           <span className="leading-none xs:hidden sm:hidden">AI</span>
                           {askAIEnabled && <span className="text-[10px]">✓</span>}
                         </button>
