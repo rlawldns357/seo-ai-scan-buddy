@@ -244,7 +244,7 @@ export default function Threads() {
               <DialogTrigger asChild>
                 <Button size="sm" variant="outline" className="flex-1 min-w-0 order-2">
                   <MessageCircle className="w-4 h-4 mr-1" />
-                  {characterName}랑 대화
+                  대화로 룰 수정하기
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0">
