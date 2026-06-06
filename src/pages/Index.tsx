@@ -635,7 +635,7 @@ const Index = () => {
                           } ${forced ? "cursor-not-allowed opacity-80" : "cursor-pointer"}`}
                         >
                           <Zap className="w-3.5 h-3.5" />
-                          <span className="leading-none">빠른 분석</span>
+                          <span className="leading-none">빠른 분석만 하기</span>
                           {fastChecked && <span className="text-[10px]">✓</span>}
                         </button>
 
