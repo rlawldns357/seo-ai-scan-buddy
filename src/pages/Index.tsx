@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, lazy, Suspense } from "react";
 import { Helmet } from "react-helmet-async";
-import { Zap, Loader2, Search, Sparkles } from "lucide-react";
+import { Zap, Loader2, Search, Sparkles, ArrowRight } from "lucide-react";
 
 import Navbar from "@/components/Navbar";
 import StickyBottomCTA from "@/components/StickyBottomCTA";
