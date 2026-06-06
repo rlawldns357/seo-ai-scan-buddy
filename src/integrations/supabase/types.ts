@@ -1598,6 +1598,11 @@ export type Database = {
       }
       threads_engine_config: {
         Row: {
+          api_knowledge: string
+          api_knowledge_updated_at: string | null
+          character_name: string
+          character_tagline: string
+          character_voice: string
           config_key: string
           pending_rules: string | null
           rules: string
@@ -1606,6 +1611,11 @@ export type Database = {
           version_minor: number
         }
         Insert: {
+          api_knowledge?: string
+          api_knowledge_updated_at?: string | null
+          character_name?: string
+          character_tagline?: string
+          character_voice?: string
           config_key?: string
           pending_rules?: string | null
           rules?: string
@@ -1614,6 +1624,11 @@ export type Database = {
           version_minor?: number
         }
         Update: {
+          api_knowledge?: string
+          api_knowledge_updated_at?: string | null
+          character_name?: string
+          character_tagline?: string
+          character_voice?: string
           config_key?: string
           pending_rules?: string | null
           rules?: string

@@ -1,9 +1,9 @@
-// Threads 룰 엔진 — 대화로 룰을 다듬고 버전을 올린다
+// Threads 룰 엔진 — 캐릭터 '쓰레디'가 대화로 룰을 다듬는다
 // actions:
-//   - state:  현재 config + 최근 대화 50개 반환
-//   - chat:   유저 메시지를 받아 AI 응답 생성, 둘 다 저장, minor 버전 +1
-//             AI가 룰 변경을 제안하면 pending_rules에 저장 (구조: "PROPOSED_RULES:\n...")
-//   - apply:  pending_rules(또는 직접 전달된 rules)를 확정 → rules 교체, major +1, minor=0
+//   - state:  현재 config(캐릭터 포함) + 최근 대화 100개 반환
+//   - chat:   유저 메시지를 받아 쓰레디(페르소나)로 응답, 둘 다 저장, minor 버전 +1
+//             AI가 룰 변경을 제안하면 PROPOSED_RULES 블록 → pending_rules에 저장
+//   - apply:  pending_rules 확정 → rules 교체, major +1, minor=0
 //   - reset:  pending_rules 폐기
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -33,7 +33,7 @@ async function callAI(systemPrompt: string, history: Array<{ role: string; conte
     body: JSON.stringify({
       model: "google/gemini-2.5-flash",
       messages,
-      temperature: 0.4,
+      temperature: 0.5,
     }),
   });
   if (!res.ok) {
@@ -51,9 +51,7 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const { password, action } = body as { password?: string; action?: string };
     const adminPassword = Deno.env.get("ADMIN_PASSWORD");
-    if (!adminPassword || password !== adminPassword) {
-      return json({ error: "인증 실패" }, 401);
-    }
+    if (!adminPassword || password !== adminPassword) return json({ error: "인증 실패" }, 401);
 
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -86,7 +84,6 @@ Deno.serve(async (req) => {
       const lovableKey = Deno.env.get("LOVABLE_API_KEY");
       if (!lovableKey) throw new Error("LOVABLE_API_KEY 없음");
 
-      // 최근 대화 16개 가져오기 (컨텍스트)
       const { data: recent } = await supabase
         .from("threads_engine_chat")
         .select("role, content")
@@ -95,20 +92,31 @@ Deno.serve(async (req) => {
       const history = (recent || []).reverse();
 
       const versionStr = `v${cfg.version_major}.${cfg.version_minor}`;
-      const sysPrompt = `너는 'Threads 룰 엔진'이다. 사용자는 Threads 자동 발행 훅 카피의 규칙을 너와 대화하며 다듬는다.
+      const characterName = cfg.character_name || "쓰레디";
+      const characterTagline = cfg.character_tagline || "Threads 발행 전문가";
+      const characterVoice = cfg.character_voice || "친근한 마케터 톤, 반말, 결론 먼저.";
+      const apiKnowledge = cfg.api_knowledge || "";
+
+      const sysPrompt = `너는 '${characterName}' — ${characterTagline}다. SearchTune OS의 Threads 자동 발행을 책임지는 룰 엔진 캐릭터.
+
+[너의 말투]
+${characterVoice}
+
+[Meta Threads Graph API 지식 베이스]
+${apiKnowledge || "(아직 학습되지 않음)"}
 
 [현재 룰 (${versionStr})]
 ${cfg.rules}
 
 ${cfg.pending_rules ? `[대기 중인 변경안]\n${cfg.pending_rules}\n` : ""}
 [너의 역할]
-- 사용자가 구체적인 변경(예: "이모지 빼", "더 짧게", "질문형으로 통일")을 요청하면, 새로운 전체 룰 텍스트를 다음 형식으로 응답에 포함:
+- 위 API 지식과 너의 말투를 항상 고려해서 답변한다 (예: 500자 한도, 첫 줄 80자, 해시태그 1개 등)
+- 사용자가 구체적인 룰 변경(예: "이모지 빼", "더 짧게", "질문형으로 통일")을 요청하면, 새로운 전체 룰 텍스트를 다음 형식으로 응답 끝에 포함:
   PROPOSED_RULES:
   <변경된 전체 룰 텍스트(불릿 포함)>
   END_RULES
 - 단순 질문/논의면 PROPOSED_RULES 블록을 넣지 말 것
-- 응답은 한국어, 친근하고 간결한 톤
-- 답변 본문은 2~3문장 + (필요시) PROPOSED_RULES 블록`;
+- 답변 본문은 너의 말투로 2~3문장 + (필요시) PROPOSED_RULES 블록`;
 
       let aiText = "";
       try {
@@ -117,16 +125,13 @@ ${cfg.pending_rules ? `[대기 중인 변경안]\n${cfg.pending_rules}\n` : ""}
         aiText = `(AI 호출 실패: ${e instanceof Error ? e.message : String(e)})`;
       }
 
-      // PROPOSED_RULES 추출
       let proposed: string | null = null;
       const m = aiText.match(/PROPOSED_RULES:\s*\n([\s\S]*?)\nEND_RULES/);
       if (m) proposed = m[1].trim();
 
-      // 버전 minor +1
       const newMinor = cfg.version_minor + 1;
       const newVersion = `v${cfg.version_major}.${newMinor}`;
 
-      // 저장 (사용자 메시지 + AI 응답)
       await supabase.from("threads_engine_chat").insert([
         { role: "user", content: message, version_at: versionStr },
         { role: "assistant", content: aiText, version_at: newVersion },
@@ -138,10 +143,7 @@ ${cfg.pending_rules ? `[대기 중인 변경안]\n${cfg.pending_rules}\n` : ""}
       };
       if (proposed) update.pending_rules = proposed;
 
-      await supabase
-        .from("threads_engine_config")
-        .update(update)
-        .eq("config_key", "threads_engine");
+      await supabase.from("threads_engine_config").update(update).eq("config_key", "threads_engine");
 
       return json({
         reply: aiText,
@@ -158,6 +160,7 @@ ${cfg.pending_rules ? `[대기 중인 변경안]\n${cfg.pending_rules}\n` : ""}
 
       const newMajor = cfg.version_major + 1;
       const versionStr = `v${newMajor}.0`;
+      const characterName = cfg.character_name || "쓰레디";
 
       await supabase
         .from("threads_engine_config")
@@ -172,15 +175,11 @@ ${cfg.pending_rules ? `[대기 중인 변경안]\n${cfg.pending_rules}\n` : ""}
 
       await supabase.from("threads_engine_chat").insert({
         role: "system",
-        content: `🚀 엔진 ${versionStr} 배포! 새 룰이 다음 자동 생성부터 적용됩니다.`,
+        content: `🚀 ${characterName} ${versionStr} 배포! 새 룰이 다음 자동 생성부터 적용됩니다.`,
         version_at: versionStr,
       });
 
-      return json({
-        success: true,
-        version: { major: newMajor, minor: 0 },
-        rules: newRules,
-      });
+      return json({ success: true, version: { major: newMajor, minor: 0 }, rules: newRules });
     }
 
     // --- reset ---
