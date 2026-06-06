@@ -210,9 +210,6 @@ export default function Threads() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-sm md:text-base">{characterName}</span>
                 <Badge className="bg-primary/10 text-primary font-mono normal-case">{versionStr}</Badge>
-                {engine?.pending_rules && (
-                  <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400">⏳ 변경안</Badge>
-                )}
               </div>
               <p className="text-[11px] md:text-xs text-muted-foreground">{characterTagline}</p>
               {characterVoiceShort && (
