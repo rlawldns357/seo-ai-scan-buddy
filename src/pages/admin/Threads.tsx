@@ -309,7 +309,7 @@ export default function Threads() {
                     onClick={() => setRulesTab("api")}
                     className={cn("flex-1 px-3 py-2 text-xs font-semibold border-b-2 transition",
                       rulesTab === "api" ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>
-                    API 지식
+                    학습된 지식
                   </button>
                 </div>
 
@@ -340,19 +340,54 @@ export default function Threads() {
                     </>
                   ) : (
                     <>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-[10px] text-muted-foreground">
-                          마지막 갱신: <span className="font-mono">{timeAgo(engine?.api_knowledge_updated_at ?? null)}</span>
-                        </p>
-                        <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={refreshApiKnowledge} disabled={refreshingKnowledge}>
-                          {refreshingKnowledge ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
-                          지금 갱신
-                        </Button>
+                      {/* 학습 루프 상태 패널 */}
+                      {(() => {
+                        const updatedAt = engine?.api_knowledge_updated_at ? new Date(engine.api_knowledge_updated_at) : null;
+                        const nextAt = updatedAt ? new Date(updatedAt.getTime() + 30 * 86400000) : null;
+                        const daysLeft = nextAt ? Math.max(0, Math.ceil((nextAt.getTime() - Date.now()) / 86400000)) : null;
+                        const isHealthy = updatedAt && (Date.now() - updatedAt.getTime()) < 35 * 86400000;
+                        return (
+                          <div className="rounded-lg border border-border bg-gradient-to-br from-primary/5 to-background p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("w-1.5 h-1.5 rounded-full", isHealthy ? "bg-emerald-500 animate-pulse" : "bg-amber-500")} />
+                                <p className="text-[11px] font-bold">🔄 학습 루프</p>
+                                <Badge className={cn("text-[9px]", isHealthy ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 text-amber-600 dark:text-amber-400")}>
+                                  {isHealthy ? "정상" : updatedAt ? "갱신 권장" : "미학습"}
+                                </Badge>
+                              </div>
+                              <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={refreshApiKnowledge} disabled={refreshingKnowledge}>
+                                {refreshingKnowledge ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+                                지금 갱신
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-[10px]">
+                              <div>
+                                <p className="text-muted-foreground">마지막</p>
+                                <p className="font-mono font-semibold">{timeAgo(engine?.api_knowledge_updated_at ?? null)}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">다음 예정</p>
+                                <p className="font-mono font-semibold">{daysLeft !== null ? `${daysLeft}일 후` : "—"}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground">주기</p>
+                                <p className="font-mono font-semibold">월 1회</p>
+                              </div>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground leading-relaxed pt-1 border-t border-border/50">
+                              출처: Meta Threads Graph API 공식 문서 (Perplexity sonar-pro) → {characterName}의 모든 답변·자동 발행에 자동 주입
+                            </p>
+                          </div>
+                        );
+                      })()}
+
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">학습 내용</p>
+                        <pre className="text-xs whitespace-pre-wrap bg-muted/50 rounded p-3 font-mono leading-relaxed">
+                          {engine?.api_knowledge || "(아직 학습되지 않음 — 위 [지금 갱신]을 눌러 Meta Threads Graph API 스펙을 학습시키세요)"}
+                        </pre>
                       </div>
-                      <pre className="text-xs whitespace-pre-wrap bg-muted/50 rounded p-3 font-mono leading-relaxed">
-                        {engine?.api_knowledge || "(아직 학습되지 않음 — 위 [지금 갱신]을 눌러 Meta Threads Graph API 스펙을 학습시키세요)"}
-                      </pre>
-                      <p className="text-[10px] text-muted-foreground">월 1회 자동 갱신 + 수동 트리거 지원. 이 지식은 {characterName}의 모든 답변·자동 발행에 주입됩니다.</p>
                     </>
                   )}
                 </div>
