@@ -235,152 +235,146 @@ export default function Threads() {
         </div>
       </div>
 
-      {/* 메인 2열 레이아웃 */}
+      {/* 상단 3열: 자동 생성 | 수동 게시 | 룰 엔진 챗 */}
       <div className="grid gap-4 lg:grid-cols-3">
-        {/* === LEFT (2/3) === */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* 섹션 A: 자동 생성 */}
-          <Card className="border-primary/30">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-primary" />
-                블로그 → Threads 자동 생성
-                <Badge className="bg-primary/10 text-primary font-mono">엔진 {versionStr}</Badge>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="text-xs text-muted-foreground">
-                최근 30일 내 미사용 블로그 글에서 자동으로 3건을 골라 훅을 생성하고 큐에 적재합니다.
-                현재 룰 엔진({versionStr})의 카피 스타일이 적용됩니다.
-              </p>
-              <Button onClick={generateFromBlog} disabled={generating} className="w-full sm:w-auto">
-                {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
-                ✨ 블로그→Threads 3건 생성
+        {/* 섹션 A: 자동 생성 */}
+        <Card className="border-primary/30 flex flex-col">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              자동 생성
+              <Badge className="bg-primary/10 text-primary font-mono">엔진 {versionStr}</Badge>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 flex-1 flex flex-col">
+            <p className="text-xs text-muted-foreground flex-1">
+              최근 30일 내 미사용 블로그 글에서 자동으로 3건을 골라 훅을 생성하고 큐에 적재합니다.
+              현재 룰 엔진({versionStr})의 카피 스타일이 적용됩니다.
+            </p>
+            <Button onClick={generateFromBlog} disabled={generating} className="w-full">
+              {generating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2" />}
+              ✨ 블로그→Threads 3건 생성
+            </Button>
+          </CardContent>
+        </Card>
+
+        {/* 섹션 B: 수동 게시 */}
+        <Card className="flex flex-col">
+          <CardHeader className="pb-2"><CardTitle className="text-base">수동 게시 (테스트)</CardTitle></CardHeader>
+          <CardContent className="space-y-3 flex-1">
+            {accounts.length === 0 ? (
+              <p className="text-xs text-muted-foreground">연결된 Threads 계정이 없습니다.</p>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {accounts.map(a => (
+                  <button key={a.id} onClick={() => setAccountId(a.id)}
+                    className={cn("rounded-full border px-3 py-1 text-xs", accountId === a.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground")}>
+                    @{a.username || "?"} <span className="ml-1 opacity-60">{a.status}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button type="button" size="sm" variant={mediaType === "TEXT" ? "default" : "outline"} onClick={() => setMediaType("TEXT")}>텍스트</Button>
+              <Button type="button" size="sm" variant={mediaType === "IMAGE" ? "default" : "outline"} onClick={() => setMediaType("IMAGE")}>
+                <ImageIcon className="w-4 h-4 mr-1" /> 이미지
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+            <Textarea placeholder="본문 (최대 500자)" value={body} onChange={e => setBody(e.target.value)} rows={3} maxLength={500} />
+            {mediaType === "IMAGE" && (
+              <Input placeholder="이미지 URL (https://...)" value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} />
+            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <Input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} className="w-auto" />
+              <div className="flex-1" />
+              <Button onClick={create} disabled={!accountId} size="sm">
+                <Send className="w-4 h-4 mr-1" /> 큐에 추가
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-          {/* 섹션 B: 수동 게시 + 큐 */}
-          <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-base">수동 게시 (테스트)</CardTitle></CardHeader>
-            <CardContent className="space-y-3">
-              {accounts.length === 0 ? (
-                <p className="text-xs text-muted-foreground">연결된 Threads 계정이 없습니다.</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {accounts.map(a => (
-                    <button key={a.id} onClick={() => setAccountId(a.id)}
-                      className={cn("rounded-full border px-3 py-1 text-xs", accountId === a.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground")}>
-                      @{a.username || "?"} <span className="ml-1 opacity-60">{a.status}</span>
-                    </button>
-                  ))}
+        {/* 섹션 C: 룰 엔진 + 챗 */}
+        <Card className="flex flex-col overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center justify-between">
+              <span className="flex items-center gap-2">💬 룰 엔진</span>
+              <span className="font-mono text-xs text-muted-foreground">{versionStr}</span>
+            </CardTitle>
+            <p className="text-[11px] text-muted-foreground">대화 1회 = 마이너 +1 · 적용 = 메이저 +1</p>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col gap-3">
+            {/* 픽셀 엔진 */}
+            <div className="flex items-center justify-center py-2">
+              <PixelEngine major={engine?.version_major ?? 1} minor={engine?.version_minor ?? 0} size={96} />
+            </div>
+
+            {/* 대기 중인 변경안 */}
+            {engine?.pending_rules && (
+              <div className="space-y-2 rounded-lg border-2 border-dashed border-amber-500/50 p-2.5 bg-amber-500/5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400">⏳ 대기 중인 변경안</p>
+                  <span className="text-[10px] font-mono text-muted-foreground">→ v{(engine.version_major) + 1}.0</span>
+                </div>
+                <pre className="text-[11px] whitespace-pre-wrap bg-background/50 rounded p-2 max-h-20 overflow-y-auto font-mono">{engine.pending_rules}</pre>
+                <div className="flex gap-1.5">
+                  <Button size="sm" className="flex-1 h-8 text-xs" onClick={applyPending}>
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> 적용
+                  </Button>
+                  <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={resetPending}>
+                    <X className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* 챗 영역 */}
+            <div ref={chatBoxRef} className="flex-1 min-h-[180px] max-h-[280px] overflow-y-auto space-y-2 rounded-md bg-muted/30 p-2.5">
+              {chat.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-6">
+                  엔진에게 룰 변경을 제안해보세요.<br />
+                  <span className="opacity-60">예: "이모지 빼", "질문형으로 통일"</span>
+                </p>
+              )}
+              {chat.map(m => <ChatBubble key={m.id} msg={m} />)}
+              {chatBusy && (
+                <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
+                  <Loader2 className="w-3 h-3 animate-spin" /> 엔진이 생각하는 중...
                 </div>
               )}
-              <div className="flex gap-2">
-                <Button type="button" size="sm" variant={mediaType === "TEXT" ? "default" : "outline"} onClick={() => setMediaType("TEXT")}>텍스트</Button>
-                <Button type="button" size="sm" variant={mediaType === "IMAGE" ? "default" : "outline"} onClick={() => setMediaType("IMAGE")}>
-                  <ImageIcon className="w-4 h-4 mr-1" /> 이미지
-                </Button>
-              </div>
-              <Textarea placeholder="본문 (최대 500자)" value={body} onChange={e => setBody(e.target.value)} rows={3} maxLength={500} />
-              {mediaType === "IMAGE" && (
-                <Input placeholder="이미지 URL (https://...)" value={mediaUrl} onChange={e => setMediaUrl(e.target.value)} />
-              )}
-              <div className="flex items-center gap-2 flex-wrap">
-                <Input type="datetime-local" value={scheduledAt} onChange={e => setScheduledAt(e.target.value)} className="w-auto" />
-                <div className="flex-1" />
-                <Button onClick={create} disabled={!accountId} size="sm">
-                  <Send className="w-4 h-4 mr-1" /> 큐에 추가
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          {/* 큐 목록 */}
-          <div className="grid gap-3 md:grid-cols-3">
-            <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} />
-            <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} />
-            <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} />
-          </div>
-        </div>
+            {/* 현재 룰 (접힌 형태) */}
+            <details className="text-[11px]">
+              <summary className="cursor-pointer text-muted-foreground font-semibold uppercase tracking-wide">현재 룰 보기</summary>
+              <pre className="mt-1.5 whitespace-pre-wrap bg-muted/50 rounded p-2 max-h-32 overflow-y-auto font-mono">
+                {engine?.rules || "(없음)"}
+              </pre>
+            </details>
 
-        {/* === RIGHT (1/3): 픽셀 엔진 + 룰 챗 === */}
-        <div className="space-y-4">
-          {/* Pixel Engine 카드 */}
-          <Card className="overflow-hidden bg-gradient-to-br from-primary/5 via-background to-accent/5">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base flex items-center justify-between">
-                <span>룰 엔진</span>
-                <span className="font-mono text-xs text-muted-foreground">{versionStr}</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex flex-col items-center gap-4 pb-6">
-              <div className="py-4">
-                <PixelEngine major={engine?.version_major ?? 1} minor={engine?.version_minor ?? 0} size={160} />
-              </div>
-              <div className="w-full space-y-2">
-                <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">현재 룰</p>
-                <pre className="text-[11px] whitespace-pre-wrap bg-muted/50 rounded p-2 max-h-32 overflow-y-auto font-mono">
-                  {engine?.rules || "(없음)"}
-                </pre>
-              </div>
-              {engine?.pending_rules && (
-                <div className="w-full space-y-2 rounded-lg border-2 border-dashed border-amber-500/50 p-2.5 bg-amber-500/5">
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400">⏳ 대기 중인 변경안</p>
-                    <span className="text-[10px] font-mono text-muted-foreground">→ v{(engine.version_major) + 1}.0</span>
-                  </div>
-                  <pre className="text-[11px] whitespace-pre-wrap bg-background/50 rounded p-2 max-h-24 overflow-y-auto font-mono">{engine.pending_rules}</pre>
-                  <div className="flex gap-1.5">
-                    <Button size="sm" className="flex-1 h-8 text-xs" onClick={applyPending}>
-                      <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> 적용 (메이저 업)
-                    </Button>
-                    <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={resetPending}>
-                      <X className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            {/* 입력 */}
+            <div className="flex gap-1.5">
+              <Input
+                value={chatInput}
+                onChange={e => setChatInput(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
+                placeholder="룰을 어떻게 바꿀까요?"
+                disabled={chatBusy}
+                className="h-9 text-sm"
+              />
+              <Button size="sm" onClick={sendChat} disabled={chatBusy || !chatInput.trim()} className="h-9">
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          {/* Rule Chat */}
-          <Card className="flex flex-col" style={{ minHeight: 420 }}>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base">💬 룰 엔진 대화</CardTitle>
-              <p className="text-[11px] text-muted-foreground">대화 1회 = 마이너 +1 · 적용 = 메이저 +1</p>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col gap-2">
-              <div ref={chatBoxRef} className="flex-1 min-h-[200px] max-h-[320px] overflow-y-auto space-y-2 rounded-md bg-muted/30 p-2.5">
-                {chat.length === 0 && (
-                  <p className="text-xs text-muted-foreground text-center py-8">
-                    엔진에게 룰 변경을 제안해보세요.<br />
-                    <span className="opacity-60">예: "이모지 빼", "질문형으로 통일", "100자로 짧게"</span>
-                  </p>
-                )}
-                {chat.map(m => <ChatBubble key={m.id} msg={m} />)}
-                {chatBusy && (
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
-                    <Loader2 className="w-3 h-3 animate-spin" /> 엔진이 생각하는 중...
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-1.5">
-                <Input
-                  value={chatInput}
-                  onChange={e => setChatInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); } }}
-                  placeholder="룰을 어떻게 바꿀까요?"
-                  disabled={chatBusy}
-                  className="h-9 text-sm"
-                />
-                <Button size="sm" onClick={sendChat} disabled={chatBusy || !chatInput.trim()} className="h-9">
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+      {/* 큐 목록 (하단 전체 너비) */}
+      <div className="grid gap-3 md:grid-cols-3">
+        <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} />
+        <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} />
+        <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} />
       </div>
     </div>
   );
