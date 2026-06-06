@@ -44,15 +44,11 @@ function kstSlotToUtcIso(hourKst: number, baseDate = new Date()): string {
   return utcTarget.toISOString();
 }
 
-async function generateHook(title: string, excerpt: string, category: string, apiKey: string): Promise<string> {
+async function generateHook(title: string, excerpt: string, category: string, apiKey: string, engineRules: string, engineVersion: string): Promise<string> {
   const prompt = `너는 한국어 Threads 카피라이터다. 아래 블로그 글을 클릭하게 만드는 훅 1줄을 작성해라.
 
-[규칙]
-- 한국어, 120자 이내 (이모지 1~2개 허용)
-- 클릭 욕구를 만드는 후크: 통계/반전/질문/손실회피 중 하나 사용
-- 해시태그 금지, 링크 금지 (링크는 내가 따로 붙임)
-- 글 제목을 그대로 복사하지 말 것 (재가공)
-- 끝에 줄바꿈 후 "👉" 한 줄 추가 (이 줄까지 포함)
+[룰 엔진 ${engineVersion}]
+${engineRules}
 
 [블로그 글]
 제목: ${title}
