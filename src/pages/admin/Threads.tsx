@@ -303,23 +303,6 @@ export default function Threads() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   {rulesTab === "rules" ? (
                     <>
-                      {engine?.pending_rules && (
-                        <div className="space-y-2 rounded-lg border-2 border-dashed border-amber-500/50 p-2.5 bg-amber-500/5">
-                          <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400">⏳ 대기 중인 변경안</p>
-                            <span className="text-[10px] font-mono text-muted-foreground">→ v{engine.version_major + 1}.0</span>
-                          </div>
-                          <pre className="text-[11px] whitespace-pre-wrap bg-background/50 rounded p-2 max-h-32 overflow-y-auto font-mono">{engine.pending_rules}</pre>
-                          <div className="flex gap-1.5">
-                            <Button size="sm" className="flex-1 h-8 text-xs" onClick={applyPending}>
-                              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> 적용 (v{engine.version_major + 1}.0)
-                            </Button>
-                            <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={resetPending}>
-                              <X className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      )}
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">현재 적용 중 ({versionStr})</p>
                         <pre className="text-xs whitespace-pre-wrap bg-muted/50 rounded p-3 font-mono leading-relaxed">{engine?.rules || "(없음)"}</pre>
