@@ -1572,6 +1572,57 @@ export type Database = {
         }
         Relationships: []
       }
+      threads_engine_chat: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          version_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          version_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          version_at?: string | null
+        }
+        Relationships: []
+      }
+      threads_engine_config: {
+        Row: {
+          config_key: string
+          pending_rules: string | null
+          rules: string
+          updated_at: string
+          version_major: number
+          version_minor: number
+        }
+        Insert: {
+          config_key?: string
+          pending_rules?: string | null
+          rules?: string
+          updated_at?: string
+          version_major?: number
+          version_minor?: number
+        }
+        Update: {
+          config_key?: string
+          pending_rules?: string | null
+          rules?: string
+          updated_at?: string
+          version_major?: number
+          version_minor?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           expires_at: string | null

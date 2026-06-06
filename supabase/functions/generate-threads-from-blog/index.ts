@@ -44,15 +44,11 @@ function kstSlotToUtcIso(hourKst: number, baseDate = new Date()): string {
   return utcTarget.toISOString();
 }
 
-async function generateHook(title: string, excerpt: string, category: string, apiKey: string): Promise<string> {
+async function generateHook(title: string, excerpt: string, category: string, apiKey: string, engineRules: string, engineVersion: string): Promise<string> {
   const prompt = `너는 한국어 Threads 카피라이터다. 아래 블로그 글을 클릭하게 만드는 훅 1줄을 작성해라.
 
-[규칙]
-- 한국어, 120자 이내 (이모지 1~2개 허용)
-- 클릭 욕구를 만드는 후크: 통계/반전/질문/손실회피 중 하나 사용
-- 해시태그 금지, 링크 금지 (링크는 내가 따로 붙임)
-- 글 제목을 그대로 복사하지 말 것 (재가공)
-- 끝에 줄바꿈 후 "👉" 한 줄 추가 (이 줄까지 포함)
+[룰 엔진 ${engineVersion}]
+${engineRules}
 
 [블로그 글]
 제목: ${title}
@@ -116,6 +112,15 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (accErr || !account) throw new Error("활성 Threads 계정이 없습니다");
 
+    // 1-b) 룰 엔진 설정 로드
+    const { data: engineCfg } = await supabase
+      .from("threads_engine_config")
+      .select("rules, version_major, version_minor")
+      .eq("config_key", "threads_engine")
+      .maybeSingle();
+    const engineRules = engineCfg?.rules || "한국어 120자 이내, 이모지 1~2개, 끝에 👉";
+    const engineVersion = engineCfg ? `v${engineCfg.version_major}.${engineCfg.version_minor}` : "v1.0";
+
     const count = Math.min(Math.max(requestedCount ?? KST_SLOTS.length, 1), KST_SLOTS.length);
 
     // 2) 최근 큐(성공/대기/실패 전부)에 들어간 슬러그들 — 30일 이내
@@ -156,7 +161,7 @@ Deno.serve(async (req) => {
 
       let hook = "";
       try {
-        hook = await generateHook(post.title, post.excerpt || "", post.category || "SEO", lovableKey);
+        hook = await generateHook(post.title, post.excerpt || "", post.category || "SEO", lovableKey, engineRules, engineVersion);
       } catch (e) {
         hook = `${post.title}\n👉`;
       }
