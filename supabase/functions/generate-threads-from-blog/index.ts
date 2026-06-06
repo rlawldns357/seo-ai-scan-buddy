@@ -184,7 +184,7 @@ Deno.serve(async (req) => {
 
       let hook = "";
       try {
-        hook = await generateHook(post.title, post.excerpt || "", post.category || "SEO", lovableKey, engineRules, engineVersion);
+        hook = await generateHook(post.title, post.excerpt || "", post.category || "SEO", lovableKey, engineRules, engineVersion, persona);
       } catch (e) {
         hook = `${post.title}\n👉`;
       }
