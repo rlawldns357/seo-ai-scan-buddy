@@ -45,7 +45,7 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { password, queueId } = body as { password?: string; queueId?: string };
+    const { password, queueId, force } = body as { password?: string; queueId?: string; force?: boolean };
     const cronSecret = req.headers.get("x-cron-secret");
 
     const adminPassword = Deno.env.get("ADMIN_PASSWORD");
@@ -65,14 +65,18 @@ Deno.serve(async (req) => {
     );
 
     // 1) 처리 대상 조회
+    // force=true (관리자가 "지금 발행" 클릭): publish_at 무시하고 ready 전체 처리
     let query = supabase
       .from("social_publish_queue")
       .select("*")
       .eq("platform", "threads")
       .eq("status", "ready")
-      .lte("publish_at", new Date().toISOString())
       .order("publish_at", { ascending: true })
       .limit(10);
+
+    if (!force) {
+      query = query.lte("publish_at", new Date().toISOString());
+    }
 
     if (queueId) {
       query = supabase
