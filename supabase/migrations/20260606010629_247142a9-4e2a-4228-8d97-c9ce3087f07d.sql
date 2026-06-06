@@ -1,0 +1,2 @@
+UPDATE public.social_accounts SET threads_user_id='27630418566552758' WHERE platform='threads' AND username='searchtune';
+UPDATE public.social_publish_queue SET status='ready', error_message=NULL WHERE platform='threads' AND status='failed';
