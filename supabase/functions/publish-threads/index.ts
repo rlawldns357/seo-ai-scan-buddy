@@ -99,7 +99,7 @@ Deno.serve(async (req) => {
         .from("social_publish_queue")
         .update({ status: "publishing", error_message: null })
         .eq("id", row.id)
-        .in("status", ["ready", "failed"])
+        .in("status", ["ready", "failed", "draft"])
         .select("id")
         .maybeSingle();
       if (claimErr || !claimed) continue; // 다른 워커가 선점
