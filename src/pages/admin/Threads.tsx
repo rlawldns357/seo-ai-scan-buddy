@@ -144,27 +144,14 @@ export default function Threads() {
       created_at: new Date().toISOString(),
     };
     setChat(prev => [...prev, optimistic]);
-    const res = await engineInvoke<{ reply: string; proposed_rules: string | null }>("chat", { message: msg });
+    const res = await engineInvoke<{ reply: string; applied_rules: string | null; version: { major: number; minor: number } }>("chat", { message: msg });
     setChatBusy(false);
     if (res) {
       await load();
-      if (res.proposed_rules) toast({ title: "✨ 룰 변경안 도착", description: "[현재 룰]에서 [적용]을 누르면 메이저 버전이 올라갑니다." });
+      if (res.applied_rules) {
+        toast({ title: `🚀 엔진 v${res.version.major}.${res.version.minor} 자동 배포!`, description: "새 룰이 다음 자동 생성부터 적용됩니다." });
+      }
     }
-  };
-
-  const applyPending = async () => {
-    if (!engine?.pending_rules) return;
-    if (!confirm(`이 룰을 적용하면 엔진이 v${engine.version_major + 1}.0으로 업그레이드됩니다. 진행할까요?`)) return;
-    const res = await engineInvoke<{ success: boolean; version: { major: number; minor: number } }>("apply");
-    if (res?.success) {
-      toast({ title: `🚀 엔진 v${res.version.major}.${res.version.minor} 배포 완료!` });
-      load();
-    }
-  };
-
-  const resetPending = async () => {
-    const res = await engineInvoke<{ success: boolean }>("reset");
-    if (res?.success) { toast({ title: "변경안 폐기됨" }); load(); }
   };
 
   const refreshApiKnowledge = async () => {
@@ -223,9 +210,6 @@ export default function Threads() {
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="font-bold text-sm md:text-base">{characterName}</span>
                 <Badge className="bg-primary/10 text-primary font-mono normal-case">{versionStr}</Badge>
-                {engine?.pending_rules && (
-                  <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400">⏳ 변경안</Badge>
-                )}
               </div>
               <p className="text-[11px] md:text-xs text-muted-foreground">{characterTagline}</p>
               {characterVoiceShort && (
@@ -316,23 +300,6 @@ export default function Threads() {
                 <div className="flex-1 overflow-y-auto p-4 space-y-3">
                   {rulesTab === "rules" ? (
                     <>
-                      {engine?.pending_rules && (
-                        <div className="space-y-2 rounded-lg border-2 border-dashed border-amber-500/50 p-2.5 bg-amber-500/5">
-                          <div className="flex items-center justify-between">
-                            <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400">⏳ 대기 중인 변경안</p>
-                            <span className="text-[10px] font-mono text-muted-foreground">→ v{engine.version_major + 1}.0</span>
-                          </div>
-                          <pre className="text-[11px] whitespace-pre-wrap bg-background/50 rounded p-2 max-h-32 overflow-y-auto font-mono">{engine.pending_rules}</pre>
-                          <div className="flex gap-1.5">
-                            <Button size="sm" className="flex-1 h-8 text-xs" onClick={applyPending}>
-                              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> 적용 (v{engine.version_major + 1}.0)
-                            </Button>
-                            <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={resetPending}>
-                              <X className="w-3.5 h-3.5" />
-                            </Button>
-                          </div>
-                        </div>
-                      )}
                       <div>
                         <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">현재 적용 중 ({versionStr})</p>
                         <pre className="text-xs whitespace-pre-wrap bg-muted/50 rounded p-3 font-mono leading-relaxed">{engine?.rules || "(없음)"}</pre>

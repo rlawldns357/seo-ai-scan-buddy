@@ -108,14 +108,13 @@ ${apiKnowledge || "(아직 학습되지 않음)"}
 [현재 룰 (${versionStr})]
 ${cfg.rules}
 
-${cfg.pending_rules ? `[대기 중인 변경안]\n${cfg.pending_rules}\n` : ""}
 [너의 역할]
 - 위 API 지식과 너의 말투를 항상 고려해서 답변한다 (예: 500자 한도, 첫 줄 80자, 해시태그 1개 등)
-- 사용자가 구체적인 룰 변경(예: "이모지 빼", "더 짧게", "질문형으로 통일")을 요청하면, 새로운 전체 룰 텍스트를 다음 형식으로 응답 끝에 포함:
+- 사용자가 구체적인 룰 변경(예: "이모지 빼", "더 짧게", "질문형으로 통일")을 요청하면, **즉시 적용될 새로운 전체 룰 텍스트**를 다음 형식으로 응답 끝에 포함 (블록 포함 시 메이저 버전 +1로 자동 배포됨):
   PROPOSED_RULES:
   <변경된 전체 룰 텍스트(불릿 포함)>
   END_RULES
-- 단순 질문/논의면 PROPOSED_RULES 블록을 넣지 말 것
+- 단순 질문/논의면 PROPOSED_RULES 블록을 넣지 말 것 (마이너 +1만)
 - 답변 본문은 너의 말투로 2~3문장 + (필요시) PROPOSED_RULES 블록`;
 
       let aiText = "";
@@ -129,26 +128,44 @@ ${cfg.pending_rules ? `[대기 중인 변경안]\n${cfg.pending_rules}\n` : ""}
       const m = aiText.match(/PROPOSED_RULES:\s*\n([\s\S]*?)\nEND_RULES/);
       if (m) proposed = m[1].trim();
 
-      const newMinor = cfg.version_minor + 1;
-      const newVersion = `v${cfg.version_major}.${newMinor}`;
+      // 변경안이 있으면 즉시 적용 (메이저 +1), 없으면 마이너 +1
+      let newMajor = cfg.version_major;
+      let newMinor = cfg.version_minor + 1;
+      const update: Record<string, unknown> = { updated_at: new Date().toISOString() };
+
+      if (proposed) {
+        newMajor = cfg.version_major + 1;
+        newMinor = 0;
+        update.rules = proposed;
+        update.pending_rules = null;
+        update.version_major = newMajor;
+        update.version_minor = 0;
+      } else {
+        update.version_minor = newMinor;
+      }
+
+      const versionAfter = `v${newMajor}.${newMinor}`;
 
       await supabase.from("threads_engine_chat").insert([
         { role: "user", content: message, version_at: versionStr },
-        { role: "assistant", content: aiText, version_at: newVersion },
+        { role: "assistant", content: aiText, version_at: versionAfter },
       ]);
-
-      const update: Record<string, unknown> = {
-        version_minor: newMinor,
-        updated_at: new Date().toISOString(),
-      };
-      if (proposed) update.pending_rules = proposed;
 
       await supabase.from("threads_engine_config").update(update).eq("config_key", "threads_engine");
 
+      if (proposed) {
+        const charName = cfg.character_name || "쓰레디";
+        await supabase.from("threads_engine_chat").insert({
+          role: "system",
+          content: `🚀 ${charName} ${versionAfter} 자동 배포! 새 룰이 다음 자동 생성부터 적용됩니다.`,
+          version_at: versionAfter,
+        });
+      }
+
       return json({
         reply: aiText,
-        proposed_rules: proposed,
-        version: { major: cfg.version_major, minor: newMinor },
+        applied_rules: proposed,
+        version: { major: newMajor, minor: newMinor },
       });
     }
 
