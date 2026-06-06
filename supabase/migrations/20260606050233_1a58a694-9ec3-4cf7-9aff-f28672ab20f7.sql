@@ -1,0 +1,1 @@
+UPDATE public.threads_engine_config SET character_name = '쓰레드튜너' WHERE character_name = '쓰레디' OR character_name IS NULL;
