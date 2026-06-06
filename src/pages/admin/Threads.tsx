@@ -196,7 +196,7 @@ export default function Threads() {
       {/* 헤더 */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="min-w-0">
-          <h1 className="text-lg md:text-2xl font-bold">Threads 자동 발행</h1>
+          <h1 className="text-lg md:text-2xl font-bold">Thread Tuner</h1>
           <p className="hidden md:block text-sm text-muted-foreground">
             {characterName} · {characterTagline} · 엔진 {versionStr}
           </p>
