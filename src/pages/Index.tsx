@@ -610,7 +610,7 @@ const Index = () => {
                         onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                         onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                         placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
-                        className="relative w-full h-16 sm:h-[68px] pl-13 sm:pl-14 pr-5 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-base sm:text-lg font-medium"
+                        className="relative w-full h-16 sm:h-[68px] pl-13 sm:pl-14 pr-5 bg-transparent text-foreground placeholder:text-muted-foreground/45 placeholder:font-light focus:outline-none text-base sm:text-lg font-medium"
                         style={{ paddingLeft: "3.25rem" }}
                       />
                     </div>
