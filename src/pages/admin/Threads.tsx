@@ -309,7 +309,7 @@ export default function Threads() {
                     onClick={() => setRulesTab("api")}
                     className={cn("flex-1 px-3 py-2 text-xs font-semibold border-b-2 transition",
                       rulesTab === "api" ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>
-                    API 지식
+                    학습된 지식
                   </button>
                 </div>
 
