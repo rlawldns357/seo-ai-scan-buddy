@@ -90,16 +90,36 @@ const Index = () => {
   const [result, setResult] = useState<ExtendedDemoResult | null>(null);
   const [answerShareOpen, setAnswerShareOpen] = useState(false);
 
-  // Hero 입력창 placeholder 로테이션 (3.5초 간격, 빈 입력일 때만)
+  // Hero 입력창 placeholder 타이프라이터 (타이핑 → 잠깐 멈춤 → 지우기 → 다음)
   const [placeholderIdx, setPlaceholderIdx] = useState(0);
+  const [typedPlaceholder, setTypedPlaceholder] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   useEffect(() => {
     if (url) return;
-    const id = setInterval(() => {
-      setPlaceholderIdx((i) => (i + 1) % PLACEHOLDER_ROTATION.length);
-    }, 3500);
-    return () => clearInterval(id);
-  }, [url]);
-  const rotatingPlaceholder = PLACEHOLDER_ROTATION[placeholderIdx];
+    const full = PLACEHOLDER_ROTATION[placeholderIdx];
+    let delay: number;
+    if (!isDeleting && typedPlaceholder === full) {
+      delay = 1600; // 다 쓴 후 잠깐 머무름
+    } else if (isDeleting && typedPlaceholder === "") {
+      delay = 400;
+    } else {
+      delay = isDeleting ? 35 : 70 + Math.random() * 50;
+    }
+    const id = window.setTimeout(() => {
+      if (!isDeleting && typedPlaceholder === full) {
+        setIsDeleting(true);
+      } else if (isDeleting && typedPlaceholder === "") {
+        setIsDeleting(false);
+        setPlaceholderIdx((i) => (i + 1) % PLACEHOLDER_ROTATION.length);
+      } else if (isDeleting) {
+        setTypedPlaceholder(full.slice(0, typedPlaceholder.length - 1));
+      } else {
+        setTypedPlaceholder(full.slice(0, typedPlaceholder.length + 1));
+      }
+    }, delay);
+    return () => window.clearTimeout(id);
+  }, [url, typedPlaceholder, isDeleting, placeholderIdx]);
+  const rotatingPlaceholder = typedPlaceholder;
 
   const [psiMobile, setPsiMobile] = useState<PsiResult | null>(null);
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
@@ -590,7 +610,7 @@ const Index = () => {
                         onChange={(e) => { setUrl(e.target.value); setUrlError(""); }}
                         onKeyDown={(e) => e.key === "Enter" && handleAnalyze()}
                         placeholder={url ? "" : (naverMode ? "스마트스토어/브랜드스토어 URL을 입력해 주세요" : rotatingPlaceholder)}
-                        className="relative w-full h-16 sm:h-[68px] pl-13 sm:pl-14 pr-5 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-base sm:text-lg font-medium"
+                        className="relative w-full h-16 sm:h-[68px] pl-13 sm:pl-14 pr-5 bg-transparent text-foreground placeholder:text-muted-foreground/45 placeholder:font-light focus:outline-none text-base sm:text-lg font-medium"
                         style={{ paddingLeft: "3.25rem" }}
                       />
                     </div>
