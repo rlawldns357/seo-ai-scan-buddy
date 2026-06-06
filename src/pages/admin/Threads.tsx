@@ -144,27 +144,14 @@ export default function Threads() {
       created_at: new Date().toISOString(),
     };
     setChat(prev => [...prev, optimistic]);
-    const res = await engineInvoke<{ reply: string; proposed_rules: string | null }>("chat", { message: msg });
+    const res = await engineInvoke<{ reply: string; applied_rules: string | null; version: { major: number; minor: number } }>("chat", { message: msg });
     setChatBusy(false);
     if (res) {
       await load();
-      if (res.proposed_rules) toast({ title: "✨ 룰 변경안 도착", description: "[현재 룰]에서 [적용]을 누르면 메이저 버전이 올라갑니다." });
+      if (res.applied_rules) {
+        toast({ title: `🚀 엔진 v${res.version.major}.${res.version.minor} 자동 배포!`, description: "새 룰이 다음 자동 생성부터 적용됩니다." });
+      }
     }
-  };
-
-  const applyPending = async () => {
-    if (!engine?.pending_rules) return;
-    if (!confirm(`이 룰을 적용하면 엔진이 v${engine.version_major + 1}.0으로 업그레이드됩니다. 진행할까요?`)) return;
-    const res = await engineInvoke<{ success: boolean; version: { major: number; minor: number } }>("apply");
-    if (res?.success) {
-      toast({ title: `🚀 엔진 v${res.version.major}.${res.version.minor} 배포 완료!` });
-      load();
-    }
-  };
-
-  const resetPending = async () => {
-    const res = await engineInvoke<{ success: boolean }>("reset");
-    if (res?.success) { toast({ title: "변경안 폐기됨" }); load(); }
   };
 
   const refreshApiKnowledge = async () => {
