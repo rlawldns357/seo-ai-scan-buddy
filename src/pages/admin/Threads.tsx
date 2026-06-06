@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Send, RefreshCw, PlayCircle, Trash2, Loader2, CheckCircle2, X, MessageCircle } from "lucide-react";
+import { Send, RefreshCw, PlayCircle, Trash2, Loader2, CheckCircle2, X, MessageCircle, ScrollText, Radio } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import PixelEngine from "@/components/admin/PixelEngine";
@@ -28,6 +28,11 @@ type EngineConfig = {
   version_minor: number;
   rules: string;
   pending_rules: string | null;
+  character_name: string | null;
+  character_tagline: string | null;
+  character_voice: string | null;
+  api_knowledge: string | null;
+  api_knowledge_updated_at: string | null;
 };
 
 type ChatMsg = {
@@ -64,16 +69,30 @@ const STATUS_STYLES: Record<string, string> = {
   failed: "bg-destructive/10 text-destructive",
 };
 
+function timeAgo(iso: string | null): string {
+  if (!iso) return "갱신 전";
+  const diff = Date.now() - new Date(iso).getTime();
+  const d = Math.floor(diff / 86400000);
+  if (d > 0) return `${d}일 전`;
+  const h = Math.floor(diff / 3600000);
+  if (h > 0) return `${h}시간 전`;
+  const m = Math.floor(diff / 60000);
+  return `${m}분 전`;
+}
+
 export default function Threads() {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  const [refreshingKnowledge, setRefreshingKnowledge] = useState(false);
 
   const [engine, setEngine] = useState<EngineConfig | null>(null);
   const [chat, setChat] = useState<ChatMsg[]>([]);
   const [chatInput, setChatInput] = useState("");
   const [chatBusy, setChatBusy] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
+  const [rulesTab, setRulesTab] = useState<"rules" | "api">("rules");
   const chatBoxRef = useRef<HTMLDivElement>(null);
 
   const load = async () => {
@@ -129,7 +148,7 @@ export default function Threads() {
     setChatBusy(false);
     if (res) {
       await load();
-      if (res.proposed_rules) toast({ title: "✨ 룰 변경안이 도착했어요", description: "[적용]을 누르면 메이저 버전이 올라갑니다." });
+      if (res.proposed_rules) toast({ title: "✨ 룰 변경안 도착", description: "[현재 룰]에서 [적용]을 누르면 메이저 버전이 올라갑니다." });
     }
   };
 
@@ -148,6 +167,19 @@ export default function Threads() {
     if (res?.success) { toast({ title: "변경안 폐기됨" }); load(); }
   };
 
+  const refreshApiKnowledge = async () => {
+    setRefreshingKnowledge(true);
+    const password = sessionStorage.getItem("admin_pw");
+    const { data, error } = await supabase.functions.invoke("refresh-threads-api-knowledge", { body: { password } });
+    setRefreshingKnowledge(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "갱신 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
+    } else {
+      toast({ title: "📡 API 지식 갱신 완료", description: `${(data as any)?.length ?? 0}자 학습` });
+      load();
+    }
+  };
+
   const grouped = {
     ready: items.filter(i => i.status === "ready" || i.status === "publishing" || i.status === "draft"),
     published: items.filter(i => i.status === "published"),
@@ -155,6 +187,9 @@ export default function Threads() {
   };
 
   const versionStr = engine ? `v${engine.version_major}.${engine.version_minor}` : "v—";
+  const characterName = engine?.character_name || "쓰레디";
+  const characterTagline = engine?.character_tagline || "Threads 발행 전문가";
+  const characterVoiceShort = (engine?.character_voice || "").split(/[.!?]/)[0];
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -162,7 +197,9 @@ export default function Threads() {
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="min-w-0">
           <h1 className="text-lg md:text-2xl font-bold">Threads 자동 발행</h1>
-          <p className="hidden md:block text-sm text-muted-foreground">룰 엔진 {versionStr} · Meta Threads Graph API</p>
+          <p className="hidden md:block text-sm text-muted-foreground">
+            {characterName} · {characterTagline} · 엔진 {versionStr}
+          </p>
         </div>
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
@@ -175,77 +212,63 @@ export default function Threads() {
         </div>
       </div>
 
-      {/* 룰 엔진 카드 (컴팩트) */}
-      <Card className="bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      {/* 캐릭터 카드 */}
+      <Card className="bg-gradient-to-br from-primary/5 via-background to-accent/5 overflow-hidden">
         <CardContent className="p-3 md:p-4">
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-start gap-3 md:gap-4">
             <div className="shrink-0">
               <PixelEngine major={engine?.version_major ?? 1} minor={engine?.version_minor ?? 0} size={72} />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 space-y-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-semibold text-sm md:text-base">룰 엔진</span>
-                <Badge className="bg-primary/10 text-primary font-mono">{versionStr}</Badge>
+                <span className="font-bold text-sm md:text-base">{characterName}</span>
+                <Badge className="bg-primary/10 text-primary font-mono normal-case">{versionStr}</Badge>
                 {engine?.pending_rules && (
-                  <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400">⏳ 변경안 대기</Badge>
+                  <Badge className="bg-amber-500/10 text-amber-600 dark:text-amber-400">⏳ 변경안</Badge>
                 )}
               </div>
-              <p className="text-[11px] md:text-xs text-muted-foreground mt-1 line-clamp-2">
-                {engine?.rules?.split("\n")[0] || "현재 룰 없음"}
-              </p>
+              <p className="text-[11px] md:text-xs text-muted-foreground">{characterTagline}</p>
+              {characterVoiceShort && (
+                <p className="text-[11px] md:text-xs italic text-foreground/70 line-clamp-1">"{characterVoiceShort}"</p>
+              )}
+              <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-0.5">
+                <Radio className="w-3 h-3" />
+                <span>API 지식: {timeAgo(engine?.api_knowledge_updated_at ?? null)}</span>
+              </div>
             </div>
+          </div>
+
+          {/* 액션 버튼 */}
+          <div className="flex gap-2 mt-3 flex-wrap">
             <Dialog open={chatOpen} onOpenChange={setChatOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" variant="outline" className="shrink-0">
-                  <MessageCircle className="w-4 h-4 md:mr-1" />
-                  <span className="hidden md:inline">대화하기</span>
+                <Button size="sm" className="flex-1 min-w-0">
+                  <MessageCircle className="w-4 h-4 mr-1" />
+                  {characterName}랑 대화
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0">
                 <DialogHeader className="p-4 pb-2 border-b">
                   <DialogTitle className="flex items-center gap-2 text-base">
-                    💬 룰 엔진 대화 <span className="font-mono text-xs text-muted-foreground">{versionStr}</span>
+                    💬 {characterName} <span className="font-mono text-xs text-muted-foreground">{versionStr}</span>
                   </DialogTitle>
                   <p className="text-[11px] text-muted-foreground">대화 1회 = 마이너 +1 · 적용 = 메이저 +1</p>
                 </DialogHeader>
 
-                {engine?.pending_rules && (
-                  <div className="mx-4 mt-3 space-y-2 rounded-lg border-2 border-dashed border-amber-500/50 p-2.5 bg-amber-500/5">
-                    <div className="flex items-center justify-between">
-                      <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400">⏳ 대기 중인 변경안</p>
-                      <span className="text-[10px] font-mono text-muted-foreground">→ v{engine.version_major + 1}.0</span>
-                    </div>
-                    <pre className="text-[11px] whitespace-pre-wrap bg-background/50 rounded p-2 max-h-24 overflow-y-auto font-mono">{engine.pending_rules}</pre>
-                    <div className="flex gap-1.5">
-                      <Button size="sm" className="flex-1 h-8 text-xs" onClick={applyPending}>
-                        <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> 적용
-                      </Button>
-                      <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={resetPending}>
-                        <X className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
                 <div ref={chatBoxRef} className="flex-1 min-h-[240px] overflow-y-auto space-y-2 p-4 bg-muted/20">
                   {chat.length === 0 && (
                     <p className="text-xs text-muted-foreground text-center py-10">
-                      엔진에게 룰 변경을 제안해보세요.<br />
+                      {characterName}에게 룰 변경을 제안해보세요.<br />
                       <span className="opacity-60">예: "이모지 빼", "질문형으로 통일"</span>
                     </p>
                   )}
                   {chat.map(m => <ChatBubble key={m.id} msg={m} />)}
                   {chatBusy && (
                     <div className="flex items-center gap-2 text-xs text-muted-foreground px-2">
-                      <Loader2 className="w-3 h-3 animate-spin" /> 엔진이 생각하는 중...
+                      <Loader2 className="w-3 h-3 animate-spin" /> {characterName}가 생각하는 중...
                     </div>
                   )}
                 </div>
-
-                <details className="text-[11px] px-4 pt-2">
-                  <summary className="cursor-pointer text-muted-foreground font-semibold uppercase tracking-wide">현재 룰 보기</summary>
-                  <pre className="mt-1.5 whitespace-pre-wrap bg-muted/50 rounded p-2 max-h-32 overflow-y-auto font-mono">{engine?.rules || "(없음)"}</pre>
-                </details>
 
                 <div className="flex gap-1.5 p-3 border-t bg-background">
                   <Input
@@ -259,6 +282,79 @@ export default function Threads() {
                   <Button size="sm" onClick={sendChat} disabled={chatBusy || !chatInput.trim()} className="h-9">
                     <Send className="w-4 h-4" />
                   </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog open={rulesOpen} onOpenChange={setRulesOpen}>
+              <DialogTrigger asChild>
+                <Button size="sm" variant="outline" className="flex-1 min-w-0">
+                  <ScrollText className="w-4 h-4 mr-1" /> 현재 룰
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0">
+                <DialogHeader className="p-4 pb-2 border-b">
+                  <DialogTitle className="text-base">📜 {characterName}의 두뇌</DialogTitle>
+                </DialogHeader>
+
+                {/* 탭 */}
+                <div className="flex border-b shrink-0">
+                  <button
+                    onClick={() => setRulesTab("rules")}
+                    className={cn("flex-1 px-3 py-2 text-xs font-semibold border-b-2 transition",
+                      rulesTab === "rules" ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>
+                    룰 {versionStr}
+                  </button>
+                  <button
+                    onClick={() => setRulesTab("api")}
+                    className={cn("flex-1 px-3 py-2 text-xs font-semibold border-b-2 transition",
+                      rulesTab === "api" ? "border-primary text-primary" : "border-transparent text-muted-foreground")}>
+                    API 지식
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {rulesTab === "rules" ? (
+                    <>
+                      {engine?.pending_rules && (
+                        <div className="space-y-2 rounded-lg border-2 border-dashed border-amber-500/50 p-2.5 bg-amber-500/5">
+                          <div className="flex items-center justify-between">
+                            <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400">⏳ 대기 중인 변경안</p>
+                            <span className="text-[10px] font-mono text-muted-foreground">→ v{engine.version_major + 1}.0</span>
+                          </div>
+                          <pre className="text-[11px] whitespace-pre-wrap bg-background/50 rounded p-2 max-h-32 overflow-y-auto font-mono">{engine.pending_rules}</pre>
+                          <div className="flex gap-1.5">
+                            <Button size="sm" className="flex-1 h-8 text-xs" onClick={applyPending}>
+                              <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> 적용 (v{engine.version_major + 1}.0)
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={resetPending}>
+                              <X className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground mb-1.5">현재 적용 중 ({versionStr})</p>
+                        <pre className="text-xs whitespace-pre-wrap bg-muted/50 rounded p-3 font-mono leading-relaxed">{engine?.rules || "(없음)"}</pre>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-[10px] text-muted-foreground">
+                          마지막 갱신: <span className="font-mono">{timeAgo(engine?.api_knowledge_updated_at ?? null)}</span>
+                        </p>
+                        <Button size="sm" variant="outline" className="h-7 text-[11px]" onClick={refreshApiKnowledge} disabled={refreshingKnowledge}>
+                          {refreshingKnowledge ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+                          지금 갱신
+                        </Button>
+                      </div>
+                      <pre className="text-xs whitespace-pre-wrap bg-muted/50 rounded p-3 font-mono leading-relaxed">
+                        {engine?.api_knowledge || "(아직 학습되지 않음 — 위 [지금 갱신]을 눌러 Meta Threads Graph API 스펙을 학습시키세요)"}
+                      </pre>
+                      <p className="text-[10px] text-muted-foreground">월 1회 자동 갱신 + 수동 트리거 지원. 이 지식은 {characterName}의 모든 답변·자동 발행에 주입됩니다.</p>
+                    </>
+                  )}
                 </div>
               </DialogContent>
             </Dialog>
