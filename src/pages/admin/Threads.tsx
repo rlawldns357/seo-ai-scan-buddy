@@ -242,7 +242,7 @@ export default function Threads() {
           <div className="flex gap-2 mt-3 flex-wrap">
             <Dialog open={chatOpen} onOpenChange={setChatOpen}>
               <DialogTrigger asChild>
-                <Button size="sm" className="flex-1 min-w-0">
+                <Button size="sm" variant="outline" className="flex-1 min-w-0 order-2">
                   <MessageCircle className="w-4 h-4 mr-1" />
                   {characterName}랑 대화
                 </Button>
