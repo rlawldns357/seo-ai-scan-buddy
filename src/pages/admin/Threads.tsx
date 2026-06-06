@@ -187,7 +187,7 @@ export default function Threads() {
   };
 
   const versionStr = engine ? `v${engine.version_major}.${engine.version_minor}` : "v—";
-  const characterName = engine?.character_name || "쓰레디";
+  const characterName = engine?.character_name || "쓰레드튜너";
   const characterTagline = engine?.character_tagline || "Threads 발행 전문가";
   const characterVoiceShort = (engine?.character_voice || "").split(/[.!?]/)[0];
 
