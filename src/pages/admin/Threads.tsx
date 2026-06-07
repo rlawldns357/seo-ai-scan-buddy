@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Send, RefreshCw, PlayCircle, Trash2, Loader2, CheckCircle2, X, MessageCircle, ScrollText, Radio } from "lucide-react";
+import { Send, RefreshCw, PlayCircle, Trash2, Loader2, CheckCircle2, X, MessageCircle, ScrollText, Radio, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import PixelEngine from "@/components/admin/PixelEngine";
@@ -84,6 +84,7 @@ export default function Threads() {
   const [items, setItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  const [generating, setGenerating] = useState(false);
   const [refreshingKnowledge, setRefreshingKnowledge] = useState(false);
 
   const [engine, setEngine] = useState<EngineConfig | null>(null);
@@ -121,6 +122,19 @@ export default function Threads() {
     if (error || (data as any)?.error) toast({ title: "발행 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
     else toast({ title: "처리 완료", description: `${(data as any)?.processed ?? 0}건 처리됨` });
     load();
+  };
+
+  const generateNow = async () => {
+    setGenerating(true);
+    const password = sessionStorage.getItem("admin_pw");
+    const { data, error } = await supabase.functions.invoke("generate-threads-from-blog", { body: { password, count: 3 } });
+    setGenerating(false);
+    if (error || (data as any)?.error) {
+      toast({ title: "생성 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
+    } else {
+      toast({ title: "🪡 생성 완료", description: `${(data as any)?.inserted ?? 0}건 큐에 적재됨` });
+      load();
+    }
   };
 
   const retry = async (id: string) => {
@@ -191,6 +205,10 @@ export default function Threads() {
         <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> 새로고침
+          </Button>
+          <Button variant="outline" size="sm" onClick={generateNow} disabled={generating}>
+            {generating ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Sparkles className="w-4 h-4 mr-1" />}
+            지금 생성
           </Button>
           <Button size="sm" onClick={runWorker} disabled={running}>
             {running ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <PlayCircle className="w-4 h-4 mr-1" />}
