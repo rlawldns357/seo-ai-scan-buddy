@@ -23,6 +23,7 @@ type QueueItem = {
   published_url: string | null;
   error_message: string | null;
   pause_reason: string | null;
+  retry_count: number | null;
   created_at: string;
 };
 
