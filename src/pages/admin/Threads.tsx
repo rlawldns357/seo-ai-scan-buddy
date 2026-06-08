@@ -49,6 +49,17 @@ type ChatMsg = {
   created_at: string;
 };
 
+type AutogenSettings = {
+  enabled: boolean;
+  daily_count: number;
+  hour_kst: number;
+  minute_kst: number;
+  slot_start_hour_kst: number;
+  slot_end_hour_kst: number;
+  updated_at?: string;
+};
+
+
 async function threadsInvoke<T = any>(action: string, extra: Record<string, any> = {}): Promise<T | null> {
   const password = sessionStorage.getItem("admin_pw");
   if (!password) return null;
