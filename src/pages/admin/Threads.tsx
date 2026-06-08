@@ -175,6 +175,20 @@ export default function Threads() {
     return false;
   };
 
+  const scheduleItem = async (id: string) => {
+    const res = await threadsInvoke<{ success: boolean; publish_at: string }>("scheduleItem", { id });
+    if (res?.success) {
+      const t = new Date(res.publish_at).toLocaleString();
+      toast({ title: "예약됨", description: `다음 슬롯: ${t}` });
+      load();
+    }
+  };
+
+  const unscheduleItem = async (id: string) => {
+    const res = await threadsInvoke<{ success: boolean }>("unscheduleItem", { id });
+    if (res?.success) { toast({ title: "킵으로 되돌림" }); load(); }
+  };
+
   const sendChat = async () => {
     const msg = chatInput.trim();
     if (!msg) return;
@@ -209,8 +223,15 @@ export default function Threads() {
     }
   };
 
+  // 대기 컬럼: 킵(draft)을 위로, 예약된(ready/publishing)을 아래로 — publish_at 빠른 순
+  const keepItems = items
+    .filter(i => i.status === "draft")
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  const scheduledItems = items
+    .filter(i => i.status === "ready" || i.status === "publishing")
+    .sort((a, b) => new Date(a.publish_at).getTime() - new Date(b.publish_at).getTime());
   const grouped = {
-    ready: items.filter(i => i.status === "ready" || i.status === "publishing" || i.status === "draft"),
+    ready: [...keepItems, ...scheduledItems],
     published: items.filter(i => i.status === "published"),
     failed: items.filter(i => i.status === "failed"),
   };
@@ -412,7 +433,12 @@ export default function Threads() {
 
       {/* 큐 목록: 대기 → 성공 → 실패 */}
       <div className="grid gap-3 md:grid-cols-3">
-        <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} onUpdate={updateItem} onCreate={createItem} />
+        <QueueColumn
+          title={`대기 (킵 ${keepItems.length} · 예약 ${scheduledItems.length})`}
+          items={grouped.ready}
+          onRetry={retry} onDelete={remove} onUpdate={updateItem}
+          onCreate={createItem} onSchedule={scheduleItem} onUnschedule={unscheduleItem}
+        />
         <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
         <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
       </div>
@@ -447,13 +473,15 @@ function ChatBubble({ msg }: { msg: ChatMsg }) {
   );
 }
 
-function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate }: {
+function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate, onSchedule, onUnschedule }: {
   title: string;
   items: QueueItem[];
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => Promise<boolean>;
   onCreate?: (body: string, publishAt: string) => Promise<boolean>;
+  onSchedule?: (id: string) => void;
+  onUnschedule?: (id: string) => void;
 }) {
   return (
     <Card>
@@ -462,7 +490,11 @@ function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate }: {
         {onCreate && <NewItemForm onCreate={onCreate} />}
         {items.length === 0 && <p className="text-xs text-muted-foreground">항목 없음</p>}
         {items.map(it => (
-          <QueueCard key={it.id} item={it} onRetry={onRetry} onDelete={onDelete} onUpdate={onUpdate} />
+          <QueueCard
+            key={it.id} item={it}
+            onRetry={onRetry} onDelete={onDelete} onUpdate={onUpdate}
+            onSchedule={onSchedule} onUnschedule={onUnschedule}
+          />
         ))}
       </CardContent>
     </Card>
@@ -551,11 +583,13 @@ function compactTime(iso: string): string {
   return same ? hm : `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${hm}`;
 }
 
-function QueueCard({ item, onRetry, onDelete, onUpdate }: {
+function QueueCard({ item, onRetry, onDelete, onUpdate, onSchedule, onUnschedule }: {
   item: QueueItem;
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => Promise<boolean>;
+  onSchedule?: (id: string) => void;
+  onUnschedule?: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editBody, setEditBody] = useState(item.body);
@@ -565,6 +599,8 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
   const [saving, setSaving] = useState(false);
 
   const editable = item.status === "ready" || item.status === "failed" || item.status === "draft";
+  const isKept = item.status === "draft";
+  const isScheduled = item.status === "ready" || item.status === "publishing";
   const title = extractTitle(item.body);
 
   const toggle = () => {
@@ -593,27 +629,53 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
     if (ok) setExpanded(false);
   };
 
+  const toggleCheck = (e: React.MouseEvent | React.ChangeEvent) => {
+    e.stopPropagation();
+    if (isKept && onSchedule) onSchedule(item.id);
+    else if (isScheduled && onUnschedule) onUnschedule(item.id);
+  };
+
+  const checkable = (isKept && !!onSchedule) || (isScheduled && !!onUnschedule);
+
   return (
-    <div className="rounded-md border border-border overflow-hidden">
-      {/* 콤팩트 헤더: 제목 + 시각만 */}
-      <button
-        type="button"
-        onClick={editable || item.published_url ? toggle : undefined}
-        className={cn(
-          "w-full text-left px-2 py-1.5 flex items-center gap-2 transition",
-          (editable || item.published_url) && "hover:bg-muted/40 cursor-pointer",
+    <div className={cn("rounded-md border overflow-hidden",
+      isKept ? "border-dashed border-border bg-muted/20" : "border-border")}>
+      {/* 콤팩트 헤더: [체크박스] 제목 + 시각 */}
+      <div className={cn(
+        "w-full px-2 py-1.5 flex items-center gap-2 transition",
+        (editable || item.published_url) && "hover:bg-muted/40",
+      )}>
+        {checkable && (
+          <input
+            type="checkbox"
+            checked={isScheduled}
+            onChange={toggleCheck}
+            onClick={e => e.stopPropagation()}
+            title={isKept ? "체크하면 다음 슬롯에 자동 예약" : "체크 해제하면 킵으로 되돌림"}
+            className="shrink-0 w-3.5 h-3.5 cursor-pointer accent-primary"
+          />
         )}
-      >
-        <span className={cn("shrink-0 w-1.5 h-1.5 rounded-full",
-          item.status === "published" ? "bg-emerald-500" :
-          item.status === "failed" ? "bg-destructive" :
-          item.status === "draft" ? "bg-muted-foreground" :
-          item.status === "publishing" ? "bg-amber-500 animate-pulse" :
-          "bg-blue-500"
-        )} />
-        <span className="flex-1 min-w-0 text-xs truncate" title={title}>{title}</span>
-        <span className="shrink-0 text-[10px] text-muted-foreground font-mono">{compactTime(item.publish_at)}</span>
-      </button>
+        <button
+          type="button"
+          onClick={editable || item.published_url ? toggle : undefined}
+          className={cn(
+            "flex-1 min-w-0 flex items-center gap-2 text-left",
+            (editable || item.published_url) && "cursor-pointer",
+          )}
+        >
+          <span className={cn("shrink-0 w-1.5 h-1.5 rounded-full",
+            item.status === "published" ? "bg-emerald-500" :
+            item.status === "failed" ? "bg-destructive" :
+            item.status === "draft" ? "bg-muted-foreground" :
+            item.status === "publishing" ? "bg-amber-500 animate-pulse" :
+            "bg-blue-500"
+          )} />
+          <span className={cn("flex-1 min-w-0 text-xs truncate", isKept && "text-muted-foreground")} title={title}>{title}</span>
+          <span className="shrink-0 text-[10px] text-muted-foreground font-mono">
+            {isKept ? "킵" : compactTime(item.publish_at)}
+          </span>
+        </button>
+      </div>
 
       {/* 인라인 편집 패널 */}
       {expanded && editable && (

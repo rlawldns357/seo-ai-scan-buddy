@@ -113,6 +113,72 @@ Deno.serve(async (req) => {
       return json({ success: true });
     }
 
+    if (action === "scheduleItem") {
+      const { id } = body;
+      if (!id) throw new Error("id 필수");
+
+      // 이미 예약된(ready/publishing) 항목들의 publish_at 수집
+      const { data: taken, error: takenErr } = await supabase
+        .from("social_publish_queue")
+        .select("publish_at")
+        .eq("platform", "threads")
+        .in("status", ["ready", "publishing"])
+        .gte("publish_at", new Date().toISOString());
+      if (takenErr) throw takenErr;
+      const takenSet = new Set((taken || []).map((t: any) => new Date(t.publish_at).toISOString()));
+
+      // KST 10~19시 슬롯에서 가장 빠른 빈 자리 찾기 (최대 60일)
+      const KST_SLOTS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+      const now = new Date();
+      const kstNow = new Date(now.getTime() + 9 * 3600 * 1000);
+      let publishAt: string | null = null;
+      for (let day = 0; day < 60 && !publishAt; day++) {
+        for (const hour of KST_SLOTS) {
+          const target = new Date(Date.UTC(
+            kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate() + day,
+            hour, 0, 0,
+          ));
+          const utc = new Date(target.getTime() - 9 * 3600 * 1000);
+          if (utc.getTime() <= now.getTime()) continue;
+          const iso = utc.toISOString();
+          if (takenSet.has(iso)) continue;
+          publishAt = iso;
+          break;
+        }
+      }
+      if (!publishAt) throw new Error("60일 안에 빈 슬롯이 없습니다");
+
+      const { error } = await supabase
+        .from("social_publish_queue")
+        .update({
+          status: "ready",
+          publish_at: publishAt,
+          error_message: null,
+          pause_reason: null,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .in("status", ["draft", "failed"]);
+      if (error) throw error;
+      return json({ success: true, publish_at: publishAt });
+    }
+
+    if (action === "unscheduleItem") {
+      const { id } = body;
+      if (!id) throw new Error("id 필수");
+      const { error } = await supabase
+        .from("social_publish_queue")
+        .update({
+          status: "draft",
+          pause_reason: "체크 해제됨 — 킵 상태",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", id)
+        .in("status", ["ready", "failed"]);
+      if (error) throw error;
+      return json({ success: true });
+    }
+
     return new Response(JSON.stringify({ error: "unknown action" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

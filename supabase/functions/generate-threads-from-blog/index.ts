@@ -174,12 +174,12 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4) 각 글마다 훅 생성 + 큐 적재 (10/14/19 KST × 여러 날 분산)
+    // 4) 각 글마다 훅 생성 + draft(킵) 상태로 적재
+    //    — 사용자가 체크한 것만 scheduleItem으로 다음 빈 KST 슬롯에 자동 예약됨.
     const now = new Date();
-    const inserted: Array<{ slug: string; publish_at: string }> = [];
+    const inserted: Array<{ slug: string }> = [];
     for (let i = 0; i < candidates.length; i++) {
       const post = candidates[i];
-      // UTM 제거 — Threads에서 URL이 너무 길어지는 문제 해결. 깔끔한 canonical만.
       const url = `${SITE_BASE}/blog/${post.slug}/`;
 
       let hook = "";
@@ -190,10 +190,6 @@ Deno.serve(async (req) => {
       }
       const text = `${hook}\n${url}`.slice(0, 480);
 
-      const slotIdx = i % KST_SLOTS.length;
-      const dayOffset = Math.floor(i / KST_SLOTS.length);
-      const publishAt = kstSlotToUtcIso(KST_SLOTS[slotIdx], dayOffset, now);
-
       const { error: insErr } = await supabase
         .from("social_publish_queue")
         .insert({
@@ -201,10 +197,11 @@ Deno.serve(async (req) => {
           platform: "threads",
           body: text,
           media_type: "TEXT",
-          publish_at: publishAt,
-          status: "ready",
+          publish_at: now.toISOString(), // placeholder — 체크 시 재할당
+          status: "draft",
+          pause_reason: "자동 생성됨 — 체크하면 다음 빈 슬롯에 예약됩니다",
         });
-      if (!insErr) inserted.push({ slug: post.slug, publish_at: publishAt });
+      if (!insErr) inserted.push({ slug: post.slug });
     }
 
     return new Response(JSON.stringify({ inserted: inserted.length, items: inserted }), {
