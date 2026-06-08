@@ -573,6 +573,8 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
 
   useEffect(() => { setDraft(settings); }, [settings]);
 
+  const [toggling, setToggling] = useState(false);
+
   if (!settings) {
     return (
       <div className="rounded-md border border-dashed border-border bg-muted/20 px-2 py-1.5 text-[11px] text-muted-foreground">
@@ -585,10 +587,8 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
   const timeStr = `${pad(settings.hour_kst)}:${pad(settings.minute_kst)}`;
   const slotStr = `${settings.slot_start_hour_kst}~${settings.slot_end_hour_kst}시`;
 
-  const [toggling, setToggling] = useState(false);
   const quickToggle = async (next: boolean) => {
     if (settings.enabled === next) {
-      // 이미 그 상태면 설정 모달 열기
       setOpen(true);
       return;
     }
@@ -596,6 +596,7 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
     await onSave({ enabled: next });
     setToggling(false);
   };
+
 
   const submit = async () => {
     if (!draft) return;
