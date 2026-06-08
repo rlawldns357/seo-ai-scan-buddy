@@ -118,41 +118,60 @@ Deno.serve(async (req) => {
         if (account.status !== "active") throw new Error(`계정 상태가 active가 아님: ${account.status}`);
         if (!account.threads_user_id) throw new Error("threads_user_id가 비어있음");
 
-        // 4) 컨테이너 생성
-        const containerParams: Record<string, string> = {
-          media_type: row.media_type || "TEXT",
-          text: row.body || "",
-        };
-        if ((row.media_type || "TEXT") === "IMAGE") {
-          if (!row.media_url) throw new Error("IMAGE 게시인데 media_url이 비어있음");
-          containerParams.image_url = row.media_url;
+        // 4) 본문을 `\n---\n` 기준으로 분할 → 첫 글 + 답글 체인
+        const segments = String(row.body || "")
+          .split(/\n---\n/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        if (segments.length === 0) throw new Error("본문이 비어있습니다");
+
+        let firstPostId = "";
+        let lastPostId = "";
+
+        for (let i = 0; i < segments.length; i++) {
+          const text = segments[i];
+          const params: Record<string, string> = {
+            media_type: i === 0 ? (row.media_type || "TEXT") : "TEXT",
+            text,
+          };
+          if (i === 0 && (row.media_type || "TEXT") === "IMAGE") {
+            if (!row.media_url) throw new Error("IMAGE 게시인데 media_url이 비어있음");
+            params.image_url = row.media_url;
+          }
+          if (i > 0 && lastPostId) {
+            params.reply_to_id = lastPostId;
+          }
+
+          const container = await postThreads(
+            `/${account.threads_user_id}/threads`,
+            params,
+            account.access_token,
+          );
+          const creationId = container?.id;
+          if (!creationId) throw new Error(`세그먼트 ${i + 1} creation_id 없음`);
+
+          if (i === 0) {
+            await supabase
+              .from("social_publish_queue")
+              .update({ threads_creation_id: creationId })
+              .eq("id", row.id);
+          }
+
+          // Meta 권장: 컨테이너 처리 대기
+          await new Promise((r) => setTimeout(r, 3000));
+
+          const publishRes = await postThreads(
+            `/${account.threads_user_id}/threads_publish`,
+            { creation_id: creationId },
+            account.access_token,
+          );
+          const postId = publishRes?.id;
+          if (!postId) throw new Error(`세그먼트 ${i + 1} 게시 응답에 id 없음`);
+          lastPostId = postId;
+          if (i === 0) firstPostId = postId;
         }
-        const container = await postThreads(
-          `/${account.threads_user_id}/threads`,
-          containerParams,
-          account.access_token,
-        );
-        const creationId = container?.id;
-        if (!creationId) throw new Error("creation_id를 받지 못했습니다");
 
-        await supabase
-          .from("social_publish_queue")
-          .update({ threads_creation_id: creationId })
-          .eq("id", row.id);
-
-        // Meta Threads는 컨테이너 생성 직후 publish하면 "Fatal" 에러가 가끔 발생.
-        // 공식 권장 = 미디어 처리 대기. TEXT도 안전하게 3초 정도 대기.
-        await new Promise((r) => setTimeout(r, 3000));
-
-        // 5) 게시
-        const publishRes = await postThreads(
-          `/${account.threads_user_id}/threads_publish`,
-          { creation_id: creationId },
-          account.access_token,
-        );
-        const postId = publishRes?.id;
-        if (!postId) throw new Error("게시 응답에 id가 없습니다");
-
+        const postId = firstPostId;
         const publishedUrl = account.username
           ? `https://www.threads.net/@${account.username}/post/${postId}`
           : `https://www.threads.net/post/${postId}`;
