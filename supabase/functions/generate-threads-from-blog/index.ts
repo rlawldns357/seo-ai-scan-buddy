@@ -197,10 +197,37 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4) 각 글마다 훅 생성 + draft(킵) 상태로 적재
-    //    — 사용자가 체크한 것만 scheduleItem으로 다음 빈 KST 슬롯에 자동 예약됨.
-    const now = new Date();
-    const inserted: Array<{ slug: string }> = [];
+    // 4) 각 글마다 훅 생성 + 다음 빈 KST 슬롯에 ready(예약) 상태로 적재
+    //    — 사용자는 큐 카드에서 체크 해제하면 킵(draft) 상태로 빼낼 수 있음.
+    const { data: taken } = await supabase
+      .from("social_publish_queue")
+      .select("publish_at")
+      .eq("platform", "threads")
+      .in("status", ["ready", "publishing"])
+      .gte("publish_at", new Date().toISOString());
+    const takenSet = new Set((taken || []).map((t: any) => new Date(t.publish_at).toISOString()));
+
+    const findNextSlot = (): string | null => {
+      const now = new Date();
+      const kstNow = new Date(now.getTime() + 9 * 3600 * 1000);
+      for (let day = 0; day < 60; day++) {
+        for (const hour of slotHours) {
+          const target = new Date(Date.UTC(
+            kstNow.getUTCFullYear(), kstNow.getUTCMonth(), kstNow.getUTCDate() + day,
+            hour, 0, 0,
+          ));
+          const utc = new Date(target.getTime() - 9 * 3600 * 1000);
+          if (utc.getTime() <= now.getTime()) continue;
+          const iso = utc.toISOString();
+          if (takenSet.has(iso)) continue;
+          takenSet.add(iso);
+          return iso;
+        }
+      }
+      return null;
+    };
+
+    const inserted: Array<{ slug: string; publish_at: string }> = [];
     for (let i = 0; i < candidates.length; i++) {
       const post = candidates[i];
       const url = `${SITE_BASE}/blog/${post.slug}/`;
@@ -213,6 +240,9 @@ Deno.serve(async (req) => {
       }
       const text = `${hook}\n${url}`.slice(0, 480);
 
+      const slot = findNextSlot();
+      if (!slot) break; // 60일 안에 빈 슬롯 없음
+
       const { error: insErr } = await supabase
         .from("social_publish_queue")
         .insert({
@@ -220,11 +250,11 @@ Deno.serve(async (req) => {
           platform: "threads",
           body: text,
           media_type: "TEXT",
-          publish_at: now.toISOString(), // placeholder — 체크 시 재할당
-          status: "draft",
-          pause_reason: "자동 생성됨 — 체크하면 다음 빈 슬롯에 예약됩니다",
+          publish_at: slot,
+          status: "ready",
+          pause_reason: null,
         });
-      if (!insErr) inserted.push({ slug: post.slug });
+      if (!insErr) inserted.push({ slug: post.slug, publish_at: slot });
     }
 
     return new Response(JSON.stringify({ inserted: inserted.length, items: inserted }), {
