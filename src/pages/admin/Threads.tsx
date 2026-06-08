@@ -459,7 +459,7 @@ export default function Threads() {
           items={grouped.ready}
           onRetry={retry} onDelete={remove} onUpdate={updateItem}
           onCreate={createItem} onSchedule={scheduleItem} onUnschedule={unscheduleItem}
-          topSlot={<AutogenRuleCard settings={autogen} onSave={saveAutogen} engineVersion={versionStr} onGenerate={generateNow} />}
+          topSlot={<AutogenRuleCard settings={autogen} onSave={saveAutogen} engineVersion={versionStr} onGenerate={generateNow} generating={generating} />}
         />
         <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
         <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
