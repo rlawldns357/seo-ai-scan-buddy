@@ -588,6 +588,8 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => Promise<boolean>;
+  onSchedule?: (id: string) => void;
+  onUnschedule?: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editBody, setEditBody] = useState(item.body);
@@ -597,6 +599,8 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
   const [saving, setSaving] = useState(false);
 
   const editable = item.status === "ready" || item.status === "failed" || item.status === "draft";
+  const isKept = item.status === "draft";
+  const isScheduled = item.status === "ready" || item.status === "publishing";
   const title = extractTitle(item.body);
 
   const toggle = () => {
@@ -625,27 +629,53 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
     if (ok) setExpanded(false);
   };
 
+  const toggleCheck = (e: React.MouseEvent | React.ChangeEvent) => {
+    e.stopPropagation();
+    if (isKept && onSchedule) onSchedule(item.id);
+    else if (isScheduled && onUnschedule) onUnschedule(item.id);
+  };
+
+  const checkable = (isKept && !!onSchedule) || (isScheduled && !!onUnschedule);
+
   return (
-    <div className="rounded-md border border-border overflow-hidden">
-      {/* 콤팩트 헤더: 제목 + 시각만 */}
-      <button
-        type="button"
-        onClick={editable || item.published_url ? toggle : undefined}
-        className={cn(
-          "w-full text-left px-2 py-1.5 flex items-center gap-2 transition",
-          (editable || item.published_url) && "hover:bg-muted/40 cursor-pointer",
+    <div className={cn("rounded-md border overflow-hidden",
+      isKept ? "border-dashed border-border bg-muted/20" : "border-border")}>
+      {/* 콤팩트 헤더: [체크박스] 제목 + 시각 */}
+      <div className={cn(
+        "w-full px-2 py-1.5 flex items-center gap-2 transition",
+        (editable || item.published_url) && "hover:bg-muted/40",
+      )}>
+        {checkable && (
+          <input
+            type="checkbox"
+            checked={isScheduled}
+            onChange={toggleCheck}
+            onClick={e => e.stopPropagation()}
+            title={isKept ? "체크하면 다음 슬롯에 자동 예약" : "체크 해제하면 킵으로 되돌림"}
+            className="shrink-0 w-3.5 h-3.5 cursor-pointer accent-primary"
+          />
         )}
-      >
-        <span className={cn("shrink-0 w-1.5 h-1.5 rounded-full",
-          item.status === "published" ? "bg-emerald-500" :
-          item.status === "failed" ? "bg-destructive" :
-          item.status === "draft" ? "bg-muted-foreground" :
-          item.status === "publishing" ? "bg-amber-500 animate-pulse" :
-          "bg-blue-500"
-        )} />
-        <span className="flex-1 min-w-0 text-xs truncate" title={title}>{title}</span>
-        <span className="shrink-0 text-[10px] text-muted-foreground font-mono">{compactTime(item.publish_at)}</span>
-      </button>
+        <button
+          type="button"
+          onClick={editable || item.published_url ? toggle : undefined}
+          className={cn(
+            "flex-1 min-w-0 flex items-center gap-2 text-left",
+            (editable || item.published_url) && "cursor-pointer",
+          )}
+        >
+          <span className={cn("shrink-0 w-1.5 h-1.5 rounded-full",
+            item.status === "published" ? "bg-emerald-500" :
+            item.status === "failed" ? "bg-destructive" :
+            item.status === "draft" ? "bg-muted-foreground" :
+            item.status === "publishing" ? "bg-amber-500 animate-pulse" :
+            "bg-blue-500"
+          )} />
+          <span className={cn("flex-1 min-w-0 text-xs truncate", isKept && "text-muted-foreground")} title={title}>{title}</span>
+          <span className="shrink-0 text-[10px] text-muted-foreground font-mono">
+            {isKept ? "킵" : compactTime(item.publish_at)}
+          </span>
+        </button>
+      </div>
 
       {/* 인라인 편집 패널 */}
       {expanded && editable && (
