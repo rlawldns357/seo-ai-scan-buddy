@@ -142,7 +142,7 @@ Deno.serve(async (req) => {
       apiKnowledge: engineCfg?.api_knowledge || "",
     };
 
-    const count = Math.min(Math.max(requestedCount ?? KST_SLOTS.length, 1), KST_SLOTS.length);
+    const count = Math.min(Math.max(requestedCount ?? 10, 1), 30);
 
     // 2) 최근 큐(성공/대기/실패 전부)에 들어간 슬러그들 — 30일 이내
     const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
@@ -151,9 +151,10 @@ Deno.serve(async (req) => {
       .select("body")
       .eq("platform", "threads")
       .gte("created_at", since);
+    const slugRe = /\/blog\/([a-z0-9-]+)\/?/i;
     const usedSlugs = new Set<string>();
     for (const r of recent || []) {
-      const m = String(r.body || "").match(/utm_campaign=([a-z0-9-]+)/i);
+      const m = String(r.body || "").match(slugRe);
       if (m) usedSlugs.add(m[1]);
     }
 
@@ -163,7 +164,7 @@ Deno.serve(async (req) => {
       .select("id, slug, title, excerpt, category")
       .eq("published", true)
       .order("date", { ascending: false })
-      .limit(50);
+      .limit(200);
     if (postsErr) throw postsErr;
 
     const candidates = (posts || []).filter(p => !usedSlugs.has(p.slug)).slice(0, count);
@@ -173,22 +174,25 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 4) 각 글마다 훅 생성 + 큐 적재
+    // 4) 각 글마다 훅 생성 + 큐 적재 (10/14/19 KST × 여러 날 분산)
     const now = new Date();
     const inserted: Array<{ slug: string; publish_at: string }> = [];
     for (let i = 0; i < candidates.length; i++) {
       const post = candidates[i];
-      const url = `${SITE_BASE}/blog/${post.slug}/?utm_source=threads&utm_medium=social&utm_campaign=${post.slug}`;
+      // UTM 제거 — Threads에서 URL이 너무 길어지는 문제 해결. 깔끔한 canonical만.
+      const url = `${SITE_BASE}/blog/${post.slug}/`;
 
       let hook = "";
       try {
         hook = await generateHook(post.title, post.excerpt || "", post.category || "SEO", lovableKey, engineRules, engineVersion, persona);
-      } catch (e) {
+      } catch (_e) {
         hook = `${post.title}\n👉`;
       }
-      const text = `${hook}\n${url}`.slice(0, 480); // Threads 500자 한도 여유
+      const text = `${hook}\n${url}`.slice(0, 480);
 
-      const publishAt = kstSlotToUtcIso(KST_SLOTS[i % KST_SLOTS.length], now);
+      const slotIdx = i % KST_SLOTS.length;
+      const dayOffset = Math.floor(i / KST_SLOTS.length);
+      const publishAt = kstSlotToUtcIso(KST_SLOTS[slotIdx], dayOffset, now);
 
       const { error: insErr } = await supabase
         .from("social_publish_queue")
