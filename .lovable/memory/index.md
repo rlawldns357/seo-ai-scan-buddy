@@ -11,6 +11,7 @@
 - **Naver Store BM:** 별도 진단 라인. SEO/AEO/GEO 3축 통일 (별도 점수체계 금지). `/naver-store` 랜딩 + 메인 자동 분기.
 - **Naver Rulebook:** 네이버 웹마스터 공식 룰북은 분석/생성 엔진의 불변 베이스. 트렌드 업데이트로 절대 덮어쓰기 금지. 한국 사이트 채점 시 강제 주입.
 - **Google Official Baseline:** engine_config.analysis_prompt 내 `GOOGLE_OFFICIAL_BASELINE_START~END` 블록 불변. llms.txt 감점 금지, People-first/E-E-A-T 우대. update-analysis-engine 가드 적용. [google-ai-search-alignment](mem://logic/google-ai-search-alignment) 참조.
+- **Social Clean Canonical:** Threads 등 소셜 자동 발행 링크는 clean canonical URL만 사용. UTM·추적 파라미터 부착 금지. [social-clean-canonical](mem://constraints/social-clean-canonical) 참조.
 
 ## Memories
 - [PSI Integration](mem://technical/psi-integration) — Edge Function proxy for PSI API, 90-100s timeout, retries
