@@ -531,13 +531,48 @@ function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate, onSc
   );
 }
 
-function AutogenRuleCard({ settings, onSave }: {
+function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate }: {
   settings: AutogenSettings | null;
   onSave: (patch: Partial<AutogenSettings>) => Promise<boolean>;
+  engineVersion?: string;
+  onGenerate?: () => Promise<void> | void;
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<AutogenSettings | null>(settings);
   const [saving, setSaving] = useState(false);
+  const [learning, setLearning] = useState(false);
+  const [logs, setLogs] = useState<Array<{ id: string; created_at: string; prev_version: string | null; new_version: string | null; summary: string | null; status: string }>>([]);
+
+  const loadLogs = async () => {
+    const { data } = await supabase
+      .from("threads_engine_log")
+      .select("id, created_at, prev_version, new_version, summary, status")
+      .eq("kind", "learn")
+      .order("created_at", { ascending: false })
+      .limit(3);
+    setLogs((data || []) as any);
+  };
+
+  useEffect(() => { if (open) loadLogs(); }, [open]);
+
+  const runLearn = async () => {
+    setLearning(true);
+    const password = sessionStorage.getItem("admin_pw");
+    const { data, error } = await supabase.functions.invoke("threads-engine-learn", { body: { password } });
+    setLearning(false);
+    const d = data as any;
+    if (error || d?.error) {
+      toast({ title: "학습 실패", description: error?.message || d?.error, variant: "destructive" });
+    } else if (d?.skipped) {
+      toast({ title: "학습 보류", description: d?.reason || "데이터 부족" });
+    } else if (d?.unchanged) {
+      toast({ title: "변경 없음", description: `${d?.version} 유지 — 룰이 충분합니다` });
+    } else if (d?.applied) {
+      toast({ title: `🧠 학습 완료 ${d.new_version}`, description: d?.summary || "새 룰이 다음 생성부터 적용됩니다" });
+    }
+    loadLogs();
+  };
+
 
   useEffect(() => { setDraft(settings); }, [settings]);
 
