@@ -217,7 +217,8 @@ Deno.serve(async (req) => {
             hour, 0, 0,
           ));
           const utc = new Date(target.getTime() - 9 * 3600 * 1000);
-          if (utc.getTime() <= now.getTime()) continue;
+          // 1시간 이전 슬롯까지는 허용 (오늘 막 지난 슬롯도 즉시 발행 큐로 활용)
+          if (utc.getTime() <= now.getTime() - 60 * 60 * 1000) continue;
           const iso = utc.toISOString();
           if (takenSet.has(iso)) continue;
           takenSet.add(iso);
