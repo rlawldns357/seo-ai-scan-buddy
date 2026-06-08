@@ -85,6 +85,7 @@ function timeAgo(iso: string | null): string {
 
 export default function Threads() {
   const [items, setItems] = useState<QueueItem[]>([]);
+  const [accountId, setAccountId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -101,17 +102,34 @@ export default function Threads() {
 
   const load = async () => {
     setLoading(true);
-    const [qRes, eRes] = await Promise.all([
+    const [qRes, eRes, aRes] = await Promise.all([
       threadsInvoke<{ items: QueueItem[] }>("list"),
       engineInvoke<{ config: EngineConfig; chat: ChatMsg[] }>("state"),
+      threadsInvoke<{ items: Array<{ id: string; status: string }> }>("accounts"),
     ]);
     setItems(qRes?.items ?? []);
     if (eRes?.config) setEngine(eRes.config);
     if (eRes?.chat) setChat(eRes.chat);
+    const active = (aRes?.items ?? []).find(a => a.status === "active");
+    setAccountId(active?.id ?? aRes?.items?.[0]?.id ?? null);
     setLoading(false);
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+
+  const createItem = async (body: string, publishAt: string): Promise<boolean> => {
+    if (!accountId) {
+      toast({ title: "활성 Threads 계정이 없습니다", variant: "destructive" });
+      return false;
+    }
+    const res = await threadsInvoke<{ id?: string }>("createTest", {
+      account_id: accountId,
+      body,
+      publish_at: publishAt,
+    });
+    if (res?.id) { toast({ title: "대기 항목 추가됨" }); load(); return true; }
+    return false;
+  };
 
   useEffect(() => {
     if (chatOpen && chatBoxRef.current) chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
