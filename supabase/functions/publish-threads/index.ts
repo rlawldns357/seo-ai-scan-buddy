@@ -66,14 +66,17 @@ Deno.serve(async (req) => {
 
     // 1) 처리 대상 조회
     // force=true (관리자가 "지금 발행" 클릭): publish_at 무시 + draft까지 포함
+    //   → Meta Threads API 동시성/rate limit 이슈를 피하기 위해 **한 건만** 처리
+    // 일반 cron: publish_at 도달한 ready 항목 중 최대 1건 (분당 1건씩 자연 분산)
     const statuses = force ? ["ready", "draft"] : ["ready"];
+    const batchLimit = 1;
     let query = supabase
       .from("social_publish_queue")
       .select("*")
       .eq("platform", "threads")
       .in("status", statuses)
       .order("publish_at", { ascending: true })
-      .limit(10);
+      .limit(batchLimit);
 
     if (!force) {
       query = query.lte("publish_at", new Date().toISOString());
