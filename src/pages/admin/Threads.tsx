@@ -531,7 +531,7 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
   settings: AutogenSettings | null;
   onSave: (patch: Partial<AutogenSettings>) => Promise<boolean>;
   engineVersion?: string;
-  onGenerate?: () => Promise<void> | void;
+  onGenerate?: (count?: number) => Promise<void> | void;
   generating?: boolean;
 }) {
   const [open, setOpen] = useState(false);
