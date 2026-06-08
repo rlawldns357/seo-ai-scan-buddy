@@ -622,9 +622,9 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <div className="flex items-center gap-1.5">
-        {/* 세그먼트 On/Off */}
-        <div className="flex-1 inline-flex rounded-full border border-border overflow-hidden bg-muted/20">
+      <div className="space-y-1.5">
+        {/* Row 1: 자동 생성 On/Off 세그먼트 */}
+        <div className="inline-flex w-full rounded-full border border-border overflow-hidden bg-muted/20">
           <button
             type="button"
             onClick={() => quickToggle(true)}
@@ -638,7 +638,7 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
             )}
           >
             <RotateCw className={cn("w-3 h-3", settings.enabled && "animate-spin [animation-duration:3s]")} />
-            On
+            <span>자동 On</span>
           </button>
           <button
             type="button"
@@ -655,28 +655,30 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
             Off
           </button>
         </div>
-        {/* 10개 생성 */}
-        <Button
-          size="sm"
-          onClick={() => onGenerate?.(10)}
-          disabled={generating}
-          className="h-8 px-2.5 text-[11px] rounded-full shrink-0"
-          title="즉시 10개 생성"
-        >
-          {generating ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
-          10개
-        </Button>
-        {/* 1개 생성 */}
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => onGenerate?.(1)}
-          disabled={generating}
-          className="h-8 px-2.5 text-[11px] rounded-full shrink-0"
-          title="즉시 1개 생성"
-        >
-          {generating ? <Loader2 className="w-3 h-3" /> : <><Sparkles className="w-3 h-3 mr-1" />1개</>}
-        </Button>
+        {/* Row 2: 수동 생성 — 10개(왼쪽) · 1개(오른쪽) */}
+        <div className="flex items-center gap-1.5">
+          <Button
+            size="sm"
+            onClick={() => onGenerate?.(10)}
+            disabled={generating}
+            className="flex-1 h-8 px-2 text-[11px] rounded-full"
+            title="즉시 10개 생성"
+          >
+            {generating ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+            10개
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => onGenerate?.(1)}
+            disabled={generating}
+            className="flex-1 h-8 px-2 text-[11px] rounded-full"
+            title="즉시 1개 생성"
+          >
+            <Sparkles className="w-3 h-3 mr-1" />
+            1개
+          </Button>
+        </div>
       </div>
       {settings.enabled && (
         <p className="text-[10px] text-muted-foreground mt-1 px-1">
