@@ -575,6 +575,7 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
 
   const [toggling, setToggling] = useState(false);
 
+
   if (!settings) {
     return (
       <div className="rounded-md border border-dashed border-border bg-muted/20 px-2 py-1.5 text-[11px] text-muted-foreground">
