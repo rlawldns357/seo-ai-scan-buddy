@@ -531,6 +531,167 @@ function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate, onSc
   );
 }
 
+function AutogenRuleCard({ settings, onSave }: {
+  settings: AutogenSettings | null;
+  onSave: (patch: Partial<AutogenSettings>) => Promise<boolean>;
+}) {
+  const [open, setOpen] = useState(false);
+  const [draft, setDraft] = useState<AutogenSettings | null>(settings);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => { setDraft(settings); }, [settings]);
+
+  if (!settings) {
+    return (
+      <div className="rounded-md border border-dashed border-border bg-muted/20 px-2 py-1.5 text-[11px] text-muted-foreground">
+        자동 생성 룰 로딩 중…
+      </div>
+    );
+  }
+
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const timeStr = `${pad(settings.hour_kst)}:${pad(settings.minute_kst)}`;
+  const slotStr = `${settings.slot_start_hour_kst}~${settings.slot_end_hour_kst}시`;
+
+  const submit = async () => {
+    if (!draft) return;
+    setSaving(true);
+    const ok = await onSave({
+      enabled: draft.enabled,
+      daily_count: draft.daily_count,
+      hour_kst: draft.hour_kst,
+      minute_kst: draft.minute_kst,
+      slot_start_hour_kst: draft.slot_start_hour_kst,
+      slot_end_hour_kst: draft.slot_end_hour_kst,
+    });
+    setSaving(false);
+    if (ok) setOpen(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "w-full rounded-md border px-2 py-1.5 flex items-center gap-2 text-left transition hover:bg-muted/40",
+            settings.enabled
+              ? "border-primary/40 bg-primary/5"
+              : "border-dashed border-border bg-muted/20",
+          )}
+          title="클릭하면 자동 생성 룰을 수정합니다"
+        >
+          <Zap className={cn("w-3.5 h-3.5 shrink-0", settings.enabled ? "text-primary" : "text-muted-foreground")} />
+          <span className="flex-1 min-w-0 text-[11px] truncate">
+            <span className="font-semibold">
+              {settings.enabled ? `매일 ${timeStr} KST` : "자동 생성 OFF"}
+            </span>
+            <span className="text-muted-foreground">
+              {settings.enabled ? ` · ${settings.daily_count}개 생성 · ${slotStr} 발행` : ` · 수동 생성만 사용`}
+            </span>
+          </span>
+          <Pencil className="w-3 h-3 text-muted-foreground shrink-0" />
+        </button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md w-[95vw] p-0 gap-0">
+        <DialogHeader className="p-4 pb-2 border-b">
+          <DialogTitle className="flex items-center gap-2 text-base">
+            <Zap className="w-4 h-4 text-primary" /> 자동 생성 룰
+          </DialogTitle>
+          <p className="text-[11px] text-muted-foreground">
+            매일 정해진 시각에 블로그 글에서 Threads 초안을 자동으로 만들어 <strong>킵(draft)</strong> 상태로 적재합니다. 체크박스를 누르면 다음 빈 슬롯에 자동 예약됩니다.
+          </p>
+        </DialogHeader>
+        {draft && (
+          <div className="p-4 space-y-4">
+            {/* 활성 토글 */}
+            <div className="flex items-center justify-between rounded-md border border-border p-3">
+              <div>
+                <p className="text-xs font-semibold">자동 생성 활성화</p>
+                <p className="text-[10px] text-muted-foreground">OFF 시 cron이 호출돼도 생성을 건너뜁니다</p>
+              </div>
+              <Switch
+                checked={draft.enabled}
+                onCheckedChange={v => setDraft({ ...draft, enabled: v })}
+              />
+            </div>
+
+            {/* 개수 */}
+            <div className="space-y-1.5">
+              <Label className="text-[11px]">하루 생성 개수 (1~30)</Label>
+              <Input
+                type="number"
+                min={1}
+                max={30}
+                value={draft.daily_count}
+                onChange={e => setDraft({ ...draft, daily_count: Math.min(30, Math.max(1, Number(e.target.value) || 1)) })}
+                className="h-8 text-xs"
+              />
+            </div>
+
+            {/* 실행 시각 */}
+            <div className="space-y-1.5">
+              <Label className="text-[11px] flex items-center gap-1"><Clock className="w-3 h-3" /> 실행 시각 (KST)</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number" min={0} max={23}
+                  value={draft.hour_kst}
+                  onChange={e => setDraft({ ...draft, hour_kst: Math.min(23, Math.max(0, Number(e.target.value) || 0)) })}
+                  className="h-8 text-xs w-20"
+                />
+                <span className="text-xs">:</span>
+                <Input
+                  type="number" min={0} max={59}
+                  value={draft.minute_kst}
+                  onChange={e => setDraft({ ...draft, minute_kst: Math.min(59, Math.max(0, Number(e.target.value) || 0)) })}
+                  className="h-8 text-xs w-20"
+                />
+                <span className="text-[11px] text-muted-foreground">
+                  → {pad(draft.hour_kst)}:{pad(draft.minute_kst)} KST
+                </span>
+              </div>
+            </div>
+
+            {/* 발행 슬롯 시간대 */}
+            <div className="space-y-1.5">
+              <Label className="text-[11px]">발행 슬롯 시간대 (KST, 체크 시 자동 배정)</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number" min={0} max={23}
+                  value={draft.slot_start_hour_kst}
+                  onChange={e => setDraft({ ...draft, slot_start_hour_kst: Math.min(23, Math.max(0, Number(e.target.value) || 0)) })}
+                  className="h-8 text-xs w-20"
+                />
+                <span className="text-xs">~</span>
+                <Input
+                  type="number" min={0} max={23}
+                  value={draft.slot_end_hour_kst}
+                  onChange={e => setDraft({ ...draft, slot_end_hour_kst: Math.min(23, Math.max(0, Number(e.target.value) || 0)) })}
+                  className="h-8 text-xs w-20"
+                />
+                <span className="text-[11px] text-muted-foreground">시</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                예: 10~19 → 매시 정각에 10개 슬롯이 열립니다.
+              </p>
+            </div>
+
+            <div className="flex gap-2 justify-end pt-1">
+              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => { setDraft(settings); setOpen(false); }}>취소</Button>
+              <Button size="sm" className="h-8 text-xs" onClick={submit} disabled={saving}>
+                {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
+                저장
+              </Button>
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+
+
 function NewItemForm({ onCreate }: { onCreate: (body: string, publishAt: string) => Promise<boolean> }) {
   const [open, setOpen] = useState(false);
   const [body, setBody] = useState("");
