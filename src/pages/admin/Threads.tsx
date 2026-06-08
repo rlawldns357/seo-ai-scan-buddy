@@ -617,6 +617,15 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
       {/* 인라인 편집 패널 */}
       {expanded && editable && (
         <div className="p-3 border-t border-border bg-muted/20 space-y-3">
+          {item.status === "failed" && item.error_message && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/5 p-2.5 space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-destructive">실패 사유</p>
+              <p className="text-[11px] text-destructive whitespace-pre-wrap font-mono break-all">{item.error_message}</p>
+              {item.retry_count != null && (
+                <p className="text-[10px] text-muted-foreground">재시도: {item.retry_count}회</p>
+              )}
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label className="text-[11px]">본문 ({editBody.length}/500)</Label>
             <Textarea
