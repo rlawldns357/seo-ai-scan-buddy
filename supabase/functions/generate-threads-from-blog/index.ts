@@ -142,7 +142,21 @@ Deno.serve(async (req) => {
       apiKnowledge: engineCfg?.api_knowledge || "",
     };
 
-    const count = Math.min(Math.max(requestedCount ?? 10, 1), 30);
+    // 1-c) 자동 생성 룰 로드 (테이블 없으면 기본값)
+    const { data: autogen } = await supabase
+      .from("threads_autogen_settings")
+      .select("enabled, daily_count")
+      .eq("id", 1)
+      .maybeSingle();
+    // cron 호출일 때 enabled=false면 스킵
+    if (isCron && autogen && autogen.enabled === false) {
+      return new Response(JSON.stringify({ inserted: 0, skipped: "autogen disabled" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const defaultCount = autogen?.daily_count ?? 10;
+    const count = Math.min(Math.max(requestedCount ?? defaultCount, 1), 30);
+
 
     // 2) 최근 큐(성공/대기/실패 전부)에 들어간 슬러그들 — 30일 이내
     const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
