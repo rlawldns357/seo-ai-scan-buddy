@@ -140,6 +140,10 @@ Deno.serve(async (req) => {
           .update({ threads_creation_id: creationId })
           .eq("id", row.id);
 
+        // Meta Threads는 컨테이너 생성 직후 publish하면 "Fatal" 에러가 가끔 발생.
+        // 공식 권장 = 미디어 처리 대기. TEXT도 안전하게 3초 정도 대기.
+        await new Promise((r) => setTimeout(r, 3000));
+
         // 5) 게시
         const publishRes = await postThreads(
           `/${account.threads_user_id}/threads_publish`,
