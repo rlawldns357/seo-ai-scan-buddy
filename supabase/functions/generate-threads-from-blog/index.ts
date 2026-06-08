@@ -101,10 +101,14 @@ Deno.serve(async (req) => {
     const adminPassword = Deno.env.get("ADMIN_PASSWORD");
     const expectedCron = Deno.env.get("CRON_SECRET");
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
+    const auth = req.headers.get("authorization") || "";
+    const bearer = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : "";
     const isAdmin = adminPassword && password === adminPassword;
     const isCron = expectedCron && cronSecret === expectedCron;
-    if (!isAdmin && !isCron) {
+    const isService = serviceKey && bearer === serviceKey;
+    if (!isAdmin && !isCron && !isService) {
       return new Response(JSON.stringify({ error: "인증 실패" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
