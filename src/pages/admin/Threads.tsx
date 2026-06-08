@@ -433,7 +433,7 @@ function QueueColumn({ title, items, onRetry, onDelete, onUpdate }: {
   items: QueueItem[];
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
-  onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft" }) => Promise<boolean>;
+  onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => Promise<boolean>;
 }) {
   return (
     <Card>
@@ -459,140 +459,154 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
   item: QueueItem;
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
-  onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft" }) => Promise<boolean>;
+  onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => Promise<boolean>;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
   const [editBody, setEditBody] = useState(item.body);
   const [editAt, setEditAt] = useState(toLocalInput(item.publish_at));
   const [editStatus, setEditStatus] = useState<"ready" | "draft">(item.status === "draft" ? "draft" : "ready");
+  const [pauseReason, setPauseReason] = useState(item.pause_reason ?? "");
   const [saving, setSaving] = useState(false);
 
   const editable = item.status === "ready" || item.status === "failed" || item.status === "draft";
 
-  const openEdit = () => {
-    setEditBody(item.body);
-    setEditAt(toLocalInput(item.publish_at));
-    setEditStatus(item.status === "draft" ? "draft" : "ready");
-    setEditOpen(true);
+  const toggle = () => {
+    if (!expanded) {
+      // 펼칠 때 최신값으로 리셋
+      setEditBody(item.body);
+      setEditAt(toLocalInput(item.publish_at));
+      setEditStatus(item.status === "draft" ? "draft" : "ready");
+      setPauseReason(item.pause_reason ?? "");
+    }
+    setExpanded(v => !v);
   };
 
   const save = async () => {
+    if (editStatus === "draft" && !pauseReason.trim()) {
+      toast({ title: "정지 사유를 입력해주세요", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     const ok = await onUpdate(item.id, {
       body: editBody,
       publish_at: new Date(editAt).toISOString(),
       status: editStatus,
+      pause_reason: editStatus === "draft" ? pauseReason.trim() : "",
     });
     setSaving(false);
-    if (ok) setEditOpen(false);
+    if (ok) setExpanded(false);
   };
 
   return (
-    <div className="rounded-lg border border-border p-2 space-y-1">
-      <div className="flex items-center justify-between gap-2">
-        <Badge className={STATUS_STYLES[item.status] || ""}>{item.status}</Badge>
-        <span className="text-[10px] text-muted-foreground">{new Date(item.publish_at).toLocaleString()}</span>
-      </div>
-
+    <div className="rounded-lg border border-border overflow-hidden">
+      {/* 헤더: 누르면 토글 */}
       <button
         type="button"
-        onClick={() => setExpanded(v => !v)}
-        className="w-full text-left text-xs whitespace-pre-wrap hover:bg-muted/40 rounded px-1 -mx-1 py-0.5 transition"
+        onClick={editable ? toggle : undefined}
+        className={cn(
+          "w-full text-left p-2 space-y-1 transition",
+          editable && "hover:bg-muted/40 cursor-pointer",
+        )}
       >
-        <p className={expanded ? "" : "line-clamp-3"}>{item.body}</p>
-        <span className="text-[9px] text-muted-foreground mt-0.5 block">
-          {expanded ? "▲ 접기" : "▼ 전체 보기"}
-        </span>
+        <div className="flex items-center justify-between gap-2">
+          <Badge className={STATUS_STYLES[item.status] || ""}>{item.status}</Badge>
+          <span className="text-[10px] text-muted-foreground">{new Date(item.publish_at).toLocaleString()}</span>
+        </div>
+        <p className={cn("text-xs whitespace-pre-wrap", !expanded && "line-clamp-3")}>{item.body}</p>
+        {item.pause_reason && item.status === "draft" && !expanded && (
+          <p className="text-[10px] text-amber-600 dark:text-amber-400 line-clamp-1">⏸ {item.pause_reason}</p>
+        )}
+        {item.error_message && <p className="text-[10px] text-destructive line-clamp-2">⚠ {item.error_message}</p>}
+        {item.published_url && (
+          <a href={item.published_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-primary underline inline-block">
+            게시물 열기 →
+          </a>
+        )}
+        {editable && (
+          <span className="text-[9px] text-muted-foreground block">
+            {expanded ? "▲ 접기" : "▼ 눌러서 수정"}
+          </span>
+        )}
       </button>
 
-      {expanded && (
-        <div className="text-[10px] text-muted-foreground space-y-0.5 pt-1 border-t border-border/50">
-          <div>예약: <span className="font-mono">{new Date(item.publish_at).toLocaleString()}</span></div>
-          <div>생성: <span className="font-mono">{new Date(item.created_at).toLocaleString()}</span></div>
-        </div>
-      )}
+      {/* 인라인 편집 패널 */}
+      {expanded && editable && (
+        <div className="p-3 border-t border-border bg-muted/20 space-y-3">
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">본문 ({editBody.length}/500)</Label>
+            <Textarea
+              value={editBody}
+              onChange={e => setEditBody(e.target.value.slice(0, 500))}
+              rows={5}
+              className="text-xs font-mono"
+            />
+          </div>
 
-      {item.error_message && <p className="text-[10px] text-destructive line-clamp-2">⚠ {item.error_message}</p>}
-      {item.published_url && (
-        <a href={item.published_url} target="_blank" rel="noreferrer" className="text-[10px] text-primary underline">게시물 열기 →</a>
-      )}
+          <div className="space-y-1.5">
+            <Label className="text-[11px] flex items-center gap-1"><Calendar className="w-3 h-3" /> 예약 발행 시각</Label>
+            <Input
+              type="datetime-local"
+              value={editAt}
+              onChange={e => setEditAt(e.target.value)}
+              className="h-8 text-xs"
+            />
+          </div>
 
-      <div className="flex gap-1 flex-wrap pt-1">
-        {editable && (
-          <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={openEdit}>
-            <Pencil className="w-3 h-3 mr-0.5" /> 수정
-          </Button>
-        )}
-        {item.status === "failed" && (
-          <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => onRetry(item.id)}>
-            <RefreshCw className="w-3 h-3 mr-0.5" /> 재시도
-          </Button>
-        )}
-        {editable && (
-          <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2 text-destructive ml-auto" onClick={() => onDelete(item.id)}>
-            <Trash2 className="w-3 h-3" />
-          </Button>
-        )}
-      </div>
-
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="max-w-md w-[95vw] p-0 gap-0">
-          <DialogHeader className="p-4 pb-2 border-b">
-            <DialogTitle className="text-base flex items-center gap-2">
-              <Pencil className="w-4 h-4" /> 큐 항목 수정
-            </DialogTitle>
-          </DialogHeader>
-          <div className="p-4 space-y-3">
-            <div className="space-y-1.5">
-              <Label className="text-xs">본문 ({editBody.length}/500)</Label>
-              <Textarea
-                value={editBody}
-                onChange={e => setEditBody(e.target.value.slice(0, 500))}
-                rows={6}
-                className="text-xs font-mono"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs flex items-center gap-1"><Calendar className="w-3 h-3" /> 예약 발행 시각</Label>
-              <Input
-                type="datetime-local"
-                value={editAt}
-                onChange={e => setEditAt(e.target.value)}
-                className="h-9 text-sm"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-xs">상태</Label>
-              <div className="flex gap-2">
-                {(["ready", "draft"] as const).map(s => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setEditStatus(s)}
-                    className={cn(
-                      "flex-1 h-8 rounded-md border text-xs font-semibold transition",
-                      editStatus === s
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-background text-muted-foreground hover:bg-muted/40"
-                    )}
-                  >
-                    {s === "ready" ? "발행 대기" : "초안"}
-                  </button>
-                ))}
-              </div>
-              <p className="text-[10px] text-muted-foreground">초안은 cron이 발행하지 않습니다. 발행 대기로 두어야 자동 게시됩니다.</p>
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">상태</Label>
+            <div className="flex gap-2">
+              {(["ready", "draft"] as const).map(s => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => setEditStatus(s)}
+                  className={cn(
+                    "flex-1 h-8 rounded-md border text-xs font-semibold transition",
+                    editStatus === s
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-muted-foreground hover:bg-muted/40"
+                  )}
+                >
+                  {s === "ready" ? "발행 대기" : "정지(초안)"}
+                </button>
+              ))}
             </div>
           </div>
-          <div className="flex justify-end gap-2 p-3 border-t bg-muted/20">
-            <Button size="sm" variant="ghost" onClick={() => setEditOpen(false)} disabled={saving}>취소</Button>
-            <Button size="sm" onClick={save} disabled={saving || !editBody.trim()}>
-              {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
+
+          {editStatus === "draft" && (
+            <div className="space-y-1.5">
+              <Label className="text-[11px] text-amber-600 dark:text-amber-400">정지 사유 (필수)</Label>
+              <Textarea
+                value={pauseReason}
+                onChange={e => setPauseReason(e.target.value.slice(0, 500))}
+                rows={2}
+                placeholder="예: 본문 문구 재검토 필요, 캠페인 일정 변경 등"
+                className="text-xs"
+              />
+              <p className="text-[10px] text-muted-foreground">정지(초안) 상태는 cron이 발행하지 않습니다.</p>
+            </div>
+          )}
+
+          <div className="text-[10px] text-muted-foreground space-y-0.5">
+            <div>생성: <span className="font-mono">{new Date(item.created_at).toLocaleString()}</span></div>
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            {item.status === "failed" && (
+              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => onRetry(item.id)}>
+                <RefreshCw className="w-3 h-3 mr-1" /> 재시도
+              </Button>
+            )}
+            <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => onDelete(item.id)}>
+              <Trash2 className="w-3 h-3 mr-1" /> 삭제
+            </Button>
+            <Button size="sm" className="h-8 text-xs ml-auto" onClick={save} disabled={saving || !editBody.trim()}>
+              {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
               저장
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }
