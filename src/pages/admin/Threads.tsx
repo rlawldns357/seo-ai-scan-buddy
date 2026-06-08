@@ -646,14 +646,61 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate }: {
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-md w-[95vw] p-0 gap-0">
-        <DialogHeader className="p-4 pb-2 border-b">
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <Zap className="w-4 h-4 text-primary" /> 자동 생성 룰
-          </DialogTitle>
+        <DialogHeader className="p-4 pb-3 border-b space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Zap className="w-4 h-4 text-primary" /> 자동 생성 룰
+            </DialogTitle>
+            {engineVersion && (
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/30">
+                엔진 {engineVersion}
+              </span>
+            )}
+          </div>
           <p className="text-[11px] text-muted-foreground">
-            매일 정해진 시각에 블로그 글에서 Threads 초안을 자동으로 만들어 <strong>킵(draft)</strong> 상태로 적재합니다. 체크박스를 누르면 다음 빈 슬롯에 자동 예약됩니다.
+            매일 정한 시각에 블로그 글에서 Threads 초안을 자동으로 만들어 <strong>킵</strong> 상태로 적재합니다. 저장하면 즉시 1주기가 시작됩니다.
           </p>
+
+          {/* 자가 학습 루프 */}
+          <div className="rounded-md border border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 p-2.5 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Brain className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-[11px] font-semibold">자가 학습 루프</span>
+              </div>
+              <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={runLearn} disabled={learning}>
+                {learning ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <TrendingUp className="w-3 h-3 mr-1" />}
+                지금 학습
+              </Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground leading-snug">
+              최근 30일 발행/실패 데이터를 분석해 룰을 다듬고, 엔진 minor 버전을 올려 다음 생성·발행에 즉시 반영합니다.
+            </p>
+            {logs.length > 0 && (
+              <div className="space-y-1 pt-1 border-t border-border/50">
+                {logs.map(l => (
+                  <div key={l.id} className="flex items-start gap-1.5 text-[10px]">
+                    <span className={cn(
+                      "shrink-0 font-mono px-1 rounded",
+                      l.status === "success" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                      l.status === "noop" || l.status === "skipped" ? "bg-muted text-muted-foreground" :
+                      "bg-destructive/10 text-destructive",
+                    )}>
+                      {l.new_version || l.prev_version || "—"}
+                    </span>
+                    <span className="flex-1 min-w-0 text-muted-foreground truncate" title={l.summary || ""}>
+                      {l.summary || "(요약 없음)"}
+                    </span>
+                    <span className="shrink-0 text-muted-foreground font-mono">
+                      {new Date(l.created_at).toLocaleDateString("ko-KR", { month: "2-digit", day: "2-digit" })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </DialogHeader>
+
         {draft && (
           <div className="p-4 space-y-4">
             {/* 활성 토글 */}
