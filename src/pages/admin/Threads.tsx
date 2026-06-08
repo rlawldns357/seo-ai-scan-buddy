@@ -280,10 +280,6 @@ export default function Threads() {
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-1 ${loading ? "animate-spin" : ""}`} /> 새로고침
           </Button>
-          <Button variant="outline" size="sm" onClick={generateNow} disabled={generating}>
-            {generating ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Sparkles className="w-4 h-4 mr-1" />}
-            지금 생성
-          </Button>
           <Button size="sm" onClick={runWorker} disabled={running}>
             {running ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <PlayCircle className="w-4 h-4 mr-1" />}
             지금 발행
