@@ -600,8 +600,15 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate }: {
       slot_end_hour_kst: draft.slot_end_hour_kst,
     });
     setSaving(false);
-    if (ok) setOpen(false);
+    if (ok) {
+      setOpen(false);
+      // 저장 후 ON이면 즉시 1주기 생성 (자가 루프 시동)
+      if (draft.enabled && onGenerate) {
+        await onGenerate();
+      }
+    }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
