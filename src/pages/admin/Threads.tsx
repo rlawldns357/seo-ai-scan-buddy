@@ -455,6 +455,26 @@ function toLocalInput(iso: string): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
+// 본문에서 제목 한 줄 추출 (URL/이모지 라인 제외)
+function extractTitle(body: string): string {
+  const lines = (body || "").split("\n").map(l => l.trim()).filter(Boolean);
+  for (const line of lines) {
+    if (/^https?:\/\//i.test(line)) continue;
+    return line.replace(/\s+👉\s*$/, "");
+  }
+  return body.slice(0, 60);
+}
+
+// 시각 콤팩트 포맷: 오늘이면 HH:mm, 아니면 MM/DD HH:mm
+function compactTime(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const now = new Date();
+  const same = d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+  const hm = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  return same ? hm : `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${hm}`;
+}
+
 function QueueCard({ item, onRetry, onDelete, onUpdate }: {
   item: QueueItem;
   onRetry: (id: string) => void;
@@ -469,10 +489,10 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
   const [saving, setSaving] = useState(false);
 
   const editable = item.status === "ready" || item.status === "failed" || item.status === "draft";
+  const title = extractTitle(item.body);
 
   const toggle = () => {
     if (!expanded) {
-      // 펼칠 때 최신값으로 리셋
       setEditBody(item.body);
       setEditAt(toLocalInput(item.publish_at));
       setEditStatus(item.status === "draft" ? "draft" : "ready");
@@ -498,35 +518,25 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
   };
 
   return (
-    <div className="rounded-lg border border-border overflow-hidden">
-      {/* 헤더: 누르면 토글 */}
+    <div className="rounded-md border border-border overflow-hidden">
+      {/* 콤팩트 헤더: 제목 + 시각만 */}
       <button
         type="button"
-        onClick={editable ? toggle : undefined}
+        onClick={editable || item.published_url ? toggle : undefined}
         className={cn(
-          "w-full text-left p-2 space-y-1 transition",
-          editable && "hover:bg-muted/40 cursor-pointer",
+          "w-full text-left px-2 py-1.5 flex items-center gap-2 transition",
+          (editable || item.published_url) && "hover:bg-muted/40 cursor-pointer",
         )}
       >
-        <div className="flex items-center justify-between gap-2">
-          <Badge className={STATUS_STYLES[item.status] || ""}>{item.status}</Badge>
-          <span className="text-[10px] text-muted-foreground">{new Date(item.publish_at).toLocaleString()}</span>
-        </div>
-        <p className={cn("text-xs whitespace-pre-wrap", !expanded && "line-clamp-3")}>{item.body}</p>
-        {item.pause_reason && item.status === "draft" && !expanded && (
-          <p className="text-[10px] text-amber-600 dark:text-amber-400 line-clamp-1">⏸ {item.pause_reason}</p>
-        )}
-        {item.error_message && <p className="text-[10px] text-destructive line-clamp-2">⚠ {item.error_message}</p>}
-        {item.published_url && (
-          <a href={item.published_url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-primary underline inline-block">
-            게시물 열기 →
-          </a>
-        )}
-        {editable && (
-          <span className="text-[9px] text-muted-foreground block">
-            {expanded ? "▲ 접기" : "▼ 눌러서 수정"}
-          </span>
-        )}
+        <span className={cn("shrink-0 w-1.5 h-1.5 rounded-full",
+          item.status === "published" ? "bg-emerald-500" :
+          item.status === "failed" ? "bg-destructive" :
+          item.status === "draft" ? "bg-muted-foreground" :
+          item.status === "publishing" ? "bg-amber-500 animate-pulse" :
+          "bg-blue-500"
+        )} />
+        <span className="flex-1 min-w-0 text-xs truncate" title={title}>{title}</span>
+        <span className="shrink-0 text-[10px] text-muted-foreground font-mono">{compactTime(item.publish_at)}</span>
       </button>
 
       {/* 인라인 편집 패널 */}
@@ -605,6 +615,19 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
               저장
             </Button>
           </div>
+        </div>
+      )}
+
+      {/* 발행됨 — 읽기 전용 펼침 */}
+      {expanded && !editable && (
+        <div className="p-3 border-t border-border bg-muted/20 space-y-2">
+          <p className="text-xs whitespace-pre-wrap">{item.body}</p>
+          {item.published_url && (
+            <a href={item.published_url} target="_blank" rel="noreferrer" className="text-[11px] text-primary underline inline-block">
+              게시물 열기 →
+            </a>
+          )}
+          <p className="text-[10px] text-muted-foreground">발행: <span className="font-mono">{new Date(item.publish_at).toLocaleString()}</span></p>
         </div>
       )}
     </div>
