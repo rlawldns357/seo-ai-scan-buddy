@@ -305,7 +305,7 @@ export default function Threads() {
               )}
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-0.5">
                 <Radio className="w-3 h-3" />
-                <span>API 지식: {timeAgo(engine?.api_knowledge_updated_at ?? null)}</span>
+                <span>엔진 메모: {timeAgo(engine?.api_knowledge_updated_at ?? null)}</span>
               </div>
             </div>
           </div>
