@@ -150,7 +150,7 @@ export default function Threads() {
     if (res?.success) { toast({ title: "삭제됨" }); load(); }
   };
 
-  const updateItem = async (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft" }) => {
+  const updateItem = async (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => {
     const res = await threadsInvoke<{ success: boolean }>("updateItem", { id, ...patch });
     if (res?.success) { toast({ title: "수정 완료" }); load(); return true; }
     return false;
