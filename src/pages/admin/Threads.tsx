@@ -446,23 +446,80 @@ function ChatBubble({ msg }: { msg: ChatMsg }) {
   );
 }
 
-function QueueColumn({ title, items, onRetry, onDelete, onUpdate }: {
+function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate }: {
   title: string;
   items: QueueItem[];
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => Promise<boolean>;
+  onCreate?: (body: string, publishAt: string) => Promise<boolean>;
 }) {
   return (
     <Card>
       <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
       <CardContent className="space-y-2">
+        {onCreate && <NewItemForm onCreate={onCreate} />}
         {items.length === 0 && <p className="text-xs text-muted-foreground">항목 없음</p>}
         {items.map(it => (
           <QueueCard key={it.id} item={it} onRetry={onRetry} onDelete={onDelete} onUpdate={onUpdate} />
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function NewItemForm({ onCreate }: { onCreate: (body: string, publishAt: string) => Promise<boolean> }) {
+  const [open, setOpen] = useState(false);
+  const [body, setBody] = useState("");
+  const [at, setAt] = useState(() => {
+    const d = new Date(Date.now() + 5 * 60 * 1000);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  });
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!body.trim()) return;
+    setSaving(true);
+    const ok = await onCreate(body.trim().slice(0, 500), new Date(at).toISOString());
+    setSaving(false);
+    if (ok) { setBody(""); setOpen(false); }
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="w-full rounded-md border border-dashed border-border px-2 py-1.5 text-[11px] text-muted-foreground hover:bg-muted/40 hover:text-foreground transition"
+      >
+        + 새 대기 항목 추가
+      </button>
+    );
+  }
+  return (
+    <div className="rounded-md border border-primary/40 bg-primary/5 p-2.5 space-y-2">
+      <Textarea
+        value={body}
+        onChange={e => setBody(e.target.value.slice(0, 500))}
+        rows={3}
+        placeholder="본문 (URL 포함, 480자 권장)"
+        className="text-xs font-mono"
+        autoFocus
+      />
+      <div className="flex items-center gap-2">
+        <Calendar className="w-3 h-3 text-muted-foreground shrink-0" />
+        <Input type="datetime-local" value={at} onChange={e => setAt(e.target.value)} className="h-7 text-[11px] flex-1" />
+        <span className="text-[10px] text-muted-foreground font-mono shrink-0">{compactTime(new Date(at).toISOString())}</span>
+      </div>
+      <div className="flex gap-1.5 justify-end">
+        <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => { setOpen(false); setBody(""); }}>취소</Button>
+        <Button size="sm" className="h-7 text-[11px]" onClick={submit} disabled={saving || !body.trim()}>
+          {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
+          예약
+        </Button>
+      </div>
+    </div>
   );
 }
 
