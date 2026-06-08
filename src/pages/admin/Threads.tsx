@@ -103,20 +103,32 @@ export default function Threads() {
   const [rulesTab, setRulesTab] = useState<"rules" | "api">("rules");
   const chatBoxRef = useRef<HTMLDivElement>(null);
 
+  const [autogen, setAutogen] = useState<AutogenSettings | null>(null);
+
   const load = async () => {
     setLoading(true);
-    const [qRes, eRes, aRes] = await Promise.all([
+    const [qRes, eRes, aRes, agRes] = await Promise.all([
       threadsInvoke<{ items: QueueItem[] }>("list"),
       engineInvoke<{ config: EngineConfig; chat: ChatMsg[] }>("state"),
       threadsInvoke<{ items: Array<{ id: string; status: string }> }>("accounts"),
+      threadsInvoke<{ settings: AutogenSettings | null }>("getAutogen"),
     ]);
     setItems(qRes?.items ?? []);
     if (eRes?.config) setEngine(eRes.config);
     if (eRes?.chat) setChat(eRes.chat);
     const active = (aRes?.items ?? []).find(a => a.status === "active");
     setAccountId(active?.id ?? aRes?.items?.[0]?.id ?? null);
+    if (agRes?.settings) setAutogen(agRes.settings);
     setLoading(false);
   };
+
+  const saveAutogen = async (patch: Partial<AutogenSettings>): Promise<boolean> => {
+    const res = await threadsInvoke<{ success: boolean }>("updateAutogen", patch);
+    if (res?.success) { toast({ title: "자동 생성 룰 저장됨" }); load(); return true; }
+    return false;
+  };
+
+
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
