@@ -171,10 +171,10 @@ export default function Threads() {
     load();
   };
 
-  const generateNow = async () => {
+  const generateNow = async (count: number = 10) => {
     setGenerating(true);
     const password = sessionStorage.getItem("admin_pw");
-    const { data, error } = await supabase.functions.invoke("generate-threads-from-blog", { body: { password, count: 10 } });
+    const { data, error } = await supabase.functions.invoke("generate-threads-from-blog", { body: { password, count } });
     setGenerating(false);
     if (error || (data as any)?.error) {
       toast({ title: "생성 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
