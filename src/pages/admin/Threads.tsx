@@ -881,12 +881,19 @@ function QueueCard({ item, onRetry, onDelete, onUpdate, onSchedule, onUnschedule
             </div>
           )}
           <div className="space-y-1.5">
-            <Label className="text-[11px]">본문 ({editBody.length}/500)</Label>
+            <Label className="text-[11px]">전체 본문 미리보기</Label>
+            <div className="rounded-md border border-border bg-background p-2.5 text-xs whitespace-pre-wrap break-words max-h-72 overflow-y-auto">
+              {item.body}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">본문 편집 ({editBody.length}/500)</Label>
             <Textarea
               value={editBody}
               onChange={e => setEditBody(e.target.value.slice(0, 500))}
-              rows={5}
-              className="text-xs font-mono"
+              rows={10}
+              className="text-xs font-mono min-h-[200px]"
             />
           </div>
 
