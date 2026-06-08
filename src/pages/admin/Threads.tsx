@@ -248,15 +248,15 @@ export default function Threads() {
     }
   };
 
-  // 대기 컬럼: 킵(draft)을 위로, 예약된(ready/publishing)을 아래로 — publish_at 빠른 순
-  const keepItems = items
-    .filter(i => i.status === "draft")
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  // 대기 컬럼: 예약(ready/publishing)을 위로 — publish_at 빠른 순, 킵(draft)을 아래로
   const scheduledItems = items
     .filter(i => i.status === "ready" || i.status === "publishing")
     .sort((a, b) => new Date(a.publish_at).getTime() - new Date(b.publish_at).getTime());
+  const keepItems = items
+    .filter(i => i.status === "draft")
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   const grouped = {
-    ready: [...keepItems, ...scheduledItems],
+    ready: [...scheduledItems, ...keepItems],
     published: items.filter(i => i.status === "published"),
     failed: items.filter(i => i.status === "failed"),
   };
