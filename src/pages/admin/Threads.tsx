@@ -500,7 +500,7 @@ function ChatBubble({ msg }: { msg: ChatMsg }) {
   );
 }
 
-function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate, onSchedule, onUnschedule }: {
+function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate, onSchedule, onUnschedule, topSlot }: {
   title: string;
   items: QueueItem[];
   onRetry: (id: string) => void;
@@ -509,12 +509,15 @@ function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate, onSc
   onCreate?: (body: string, publishAt: string) => Promise<boolean>;
   onSchedule?: (id: string) => void;
   onUnschedule?: (id: string) => void;
+  topSlot?: React.ReactNode;
 }) {
   return (
     <Card>
       <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
       <CardContent className="space-y-2">
+        {topSlot}
         {onCreate && <NewItemForm onCreate={onCreate} />}
+
         {items.length === 0 && <p className="text-xs text-muted-foreground">항목 없음</p>}
         {items.map(it => (
           <QueueCard
