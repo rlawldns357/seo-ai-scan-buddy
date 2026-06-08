@@ -23,6 +23,7 @@ type QueueItem = {
   published_url: string | null;
   error_message: string | null;
   pause_reason: string | null;
+  retry_count: number | null;
   created_at: string;
 };
 
@@ -85,6 +86,7 @@ function timeAgo(iso: string | null): string {
 
 export default function Threads() {
   const [items, setItems] = useState<QueueItem[]>([]);
+  const [accountId, setAccountId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -101,17 +103,34 @@ export default function Threads() {
 
   const load = async () => {
     setLoading(true);
-    const [qRes, eRes] = await Promise.all([
+    const [qRes, eRes, aRes] = await Promise.all([
       threadsInvoke<{ items: QueueItem[] }>("list"),
       engineInvoke<{ config: EngineConfig; chat: ChatMsg[] }>("state"),
+      threadsInvoke<{ items: Array<{ id: string; status: string }> }>("accounts"),
     ]);
     setItems(qRes?.items ?? []);
     if (eRes?.config) setEngine(eRes.config);
     if (eRes?.chat) setChat(eRes.chat);
+    const active = (aRes?.items ?? []).find(a => a.status === "active");
+    setAccountId(active?.id ?? aRes?.items?.[0]?.id ?? null);
     setLoading(false);
   };
 
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
+
+  const createItem = async (body: string, publishAt: string): Promise<boolean> => {
+    if (!accountId) {
+      toast({ title: "활성 Threads 계정이 없습니다", variant: "destructive" });
+      return false;
+    }
+    const res = await threadsInvoke<{ id?: string }>("createTest", {
+      account_id: accountId,
+      body,
+      publish_at: publishAt,
+    });
+    if (res?.id) { toast({ title: "대기 항목 추가됨" }); load(); return true; }
+    return false;
+  };
 
   useEffect(() => {
     if (chatOpen && chatBoxRef.current) chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
@@ -393,7 +412,7 @@ export default function Threads() {
 
       {/* 큐 목록: 대기 → 성공 → 실패 */}
       <div className="grid gap-3 md:grid-cols-3">
-        <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
+        <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} onUpdate={updateItem} onCreate={createItem} />
         <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
         <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
       </div>
@@ -428,23 +447,80 @@ function ChatBubble({ msg }: { msg: ChatMsg }) {
   );
 }
 
-function QueueColumn({ title, items, onRetry, onDelete, onUpdate }: {
+function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate }: {
   title: string;
   items: QueueItem[];
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => Promise<boolean>;
+  onCreate?: (body: string, publishAt: string) => Promise<boolean>;
 }) {
   return (
     <Card>
       <CardHeader className="pb-2"><CardTitle className="text-sm">{title}</CardTitle></CardHeader>
       <CardContent className="space-y-2">
+        {onCreate && <NewItemForm onCreate={onCreate} />}
         {items.length === 0 && <p className="text-xs text-muted-foreground">항목 없음</p>}
         {items.map(it => (
           <QueueCard key={it.id} item={it} onRetry={onRetry} onDelete={onDelete} onUpdate={onUpdate} />
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function NewItemForm({ onCreate }: { onCreate: (body: string, publishAt: string) => Promise<boolean> }) {
+  const [open, setOpen] = useState(false);
+  const [body, setBody] = useState("");
+  const [at, setAt] = useState(() => {
+    const d = new Date(Date.now() + 5 * 60 * 1000);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  });
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!body.trim()) return;
+    setSaving(true);
+    const ok = await onCreate(body.trim().slice(0, 500), new Date(at).toISOString());
+    setSaving(false);
+    if (ok) { setBody(""); setOpen(false); }
+  };
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="w-full rounded-md border border-dashed border-border px-2 py-1.5 text-[11px] text-muted-foreground hover:bg-muted/40 hover:text-foreground transition"
+      >
+        + 새 대기 항목 추가
+      </button>
+    );
+  }
+  return (
+    <div className="rounded-md border border-primary/40 bg-primary/5 p-2.5 space-y-2">
+      <Textarea
+        value={body}
+        onChange={e => setBody(e.target.value.slice(0, 500))}
+        rows={3}
+        placeholder="본문 (URL 포함, 480자 권장)"
+        className="text-xs font-mono"
+        autoFocus
+      />
+      <div className="flex items-center gap-2">
+        <Calendar className="w-3 h-3 text-muted-foreground shrink-0" />
+        <Input type="datetime-local" value={at} onChange={e => setAt(e.target.value)} className="h-7 text-[11px] flex-1" />
+        <span className="text-[10px] text-muted-foreground font-mono shrink-0">{compactTime(new Date(at).toISOString())}</span>
+      </div>
+      <div className="flex gap-1.5 justify-end">
+        <Button size="sm" variant="ghost" className="h-7 text-[11px]" onClick={() => { setOpen(false); setBody(""); }}>취소</Button>
+        <Button size="sm" className="h-7 text-[11px]" onClick={submit} disabled={saving || !body.trim()}>
+          {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
+          예약
+        </Button>
+      </div>
+    </div>
   );
 }
 
@@ -542,6 +618,15 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
       {/* 인라인 편집 패널 */}
       {expanded && editable && (
         <div className="p-3 border-t border-border bg-muted/20 space-y-3">
+          {item.status === "failed" && item.error_message && (
+            <div className="rounded-md border border-destructive/40 bg-destructive/5 p-2.5 space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-destructive">실패 사유</p>
+              <p className="text-[11px] text-destructive whitespace-pre-wrap font-mono break-all">{item.error_message}</p>
+              {item.retry_count != null && (
+                <p className="text-[10px] text-muted-foreground">재시도: {item.retry_count}회</p>
+              )}
+            </div>
+          )}
           <div className="space-y-1.5">
             <Label className="text-[11px]">본문 ({editBody.length}/500)</Label>
             <Textarea
