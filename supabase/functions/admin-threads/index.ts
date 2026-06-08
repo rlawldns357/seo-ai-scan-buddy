@@ -91,6 +91,25 @@ Deno.serve(async (req) => {
       return json({ success: true });
     }
 
+    if (action === "updateItem") {
+      const { id, body: newBody, publish_at, status } = body;
+      if (!id) throw new Error("id 필수");
+      const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (typeof newBody === "string") patch.body = newBody.slice(0, 500);
+      if (typeof publish_at === "string" && publish_at) patch.publish_at = publish_at;
+      if (status === "ready" || status === "draft") {
+        patch.status = status;
+        patch.error_message = null;
+      }
+      const { error } = await supabase
+        .from("social_publish_queue")
+        .update(patch)
+        .eq("id", id)
+        .in("status", ["ready", "failed", "draft"]);
+      if (error) throw error;
+      return json({ success: true });
+    }
+
     return new Response(JSON.stringify({ error: "unknown action" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
