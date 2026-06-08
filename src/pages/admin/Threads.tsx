@@ -463,6 +463,7 @@ export default function Threads() {
           items={grouped.ready}
           onRetry={retry} onDelete={remove} onUpdate={updateItem}
           onCreate={createItem} onSchedule={scheduleItem} onUnschedule={unscheduleItem}
+          topSlot={<AutogenRuleCard settings={autogen} onSave={saveAutogen} />}
         />
         <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
         <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
@@ -470,6 +471,7 @@ export default function Threads() {
     </div>
   );
 }
+
 
 function ChatBubble({ msg }: { msg: ChatMsg }) {
   if (msg.role === "system") {
