@@ -473,13 +473,15 @@ function ChatBubble({ msg }: { msg: ChatMsg }) {
   );
 }
 
-function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate }: {
+function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate, onSchedule, onUnschedule }: {
   title: string;
   items: QueueItem[];
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
   onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft"; pause_reason?: string }) => Promise<boolean>;
   onCreate?: (body: string, publishAt: string) => Promise<boolean>;
+  onSchedule?: (id: string) => void;
+  onUnschedule?: (id: string) => void;
 }) {
   return (
     <Card>
@@ -488,7 +490,11 @@ function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate }: {
         {onCreate && <NewItemForm onCreate={onCreate} />}
         {items.length === 0 && <p className="text-xs text-muted-foreground">항목 없음</p>}
         {items.map(it => (
-          <QueueCard key={it.id} item={it} onRetry={onRetry} onDelete={onDelete} onUpdate={onUpdate} />
+          <QueueCard
+            key={it.id} item={it}
+            onRetry={onRetry} onDelete={onDelete} onUpdate={onUpdate}
+            onSchedule={onSchedule} onUnschedule={onUnschedule}
+          />
         ))}
       </CardContent>
     </Card>
