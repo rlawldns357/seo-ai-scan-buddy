@@ -828,153 +828,175 @@ function QueueCard({ item, onRetry, onDelete, onUpdate, onSchedule, onUnschedule
 
   const checkable = (isKept && !!onSchedule) || (isScheduled && !!onUnschedule);
 
+  const parts = editBody.split(/\n---\n/).map(s => s.trim()).filter(Boolean);
+  const isThread = parts.length > 1;
+
+  const addSplit = () => {
+    setEditBody(b => (b.endsWith("\n") ? b : b + "\n") + "---\n");
+  };
+
   return (
-    <div className={cn("rounded-md border overflow-hidden",
-      isKept ? "border-dashed border-border bg-muted/20" : "border-border")}>
-      {/* 콤팩트 헤더: [체크박스] 제목 + 시각 */}
-      <div className={cn(
-        "w-full px-2 py-1.5 flex items-center gap-2 transition",
-        (editable || item.published_url) && "hover:bg-muted/40",
-      )}>
-        {checkable && (
-          <input
-            type="checkbox"
-            checked={isScheduled}
-            onChange={toggleCheck}
-            onClick={e => e.stopPropagation()}
-            title={isKept ? "체크하면 다음 슬롯에 자동 예약" : "체크 해제하면 킵으로 되돌림"}
-            className="shrink-0 w-3.5 h-3.5 cursor-pointer accent-primary"
-          />
-        )}
-        <button
-          type="button"
-          onClick={editable || item.published_url ? toggle : undefined}
-          className={cn(
-            "flex-1 min-w-0 flex items-center gap-2 text-left",
-            (editable || item.published_url) && "cursor-pointer",
+    <>
+      <div className={cn("rounded-md border overflow-hidden",
+        isKept ? "border-dashed border-border bg-muted/20" : "border-border")}>
+        <div className={cn(
+          "w-full px-2 py-1.5 flex items-center gap-2 transition",
+          (editable || item.published_url) && "hover:bg-muted/40",
+        )}>
+          {checkable && (
+            <input
+              type="checkbox"
+              checked={isScheduled}
+              onChange={toggleCheck}
+              onClick={e => e.stopPropagation()}
+              title={isKept ? "체크하면 다음 슬롯에 자동 예약" : "체크 해제하면 킵으로 되돌림"}
+              className="shrink-0 w-3.5 h-3.5 cursor-pointer accent-primary"
+            />
           )}
-        >
-          <span className={cn("shrink-0 w-1.5 h-1.5 rounded-full",
-            item.status === "published" ? "bg-emerald-500" :
-            item.status === "failed" ? "bg-destructive" :
-            item.status === "draft" ? "bg-muted-foreground" :
-            item.status === "publishing" ? "bg-amber-500 animate-pulse" :
-            "bg-blue-500"
-          )} />
-          <span className={cn("flex-1 min-w-0 text-xs truncate", isKept && "text-muted-foreground")} title={title}>{title}</span>
-          <span className="shrink-0 text-[10px] text-muted-foreground font-mono">
-            {isKept ? "킵" : compactTime(item.publish_at)}
-          </span>
-        </button>
+          <button
+            type="button"
+            onClick={editable || item.published_url ? toggle : undefined}
+            className={cn(
+              "flex-1 min-w-0 flex items-center gap-2 text-left",
+              (editable || item.published_url) && "cursor-pointer",
+            )}
+          >
+            <span className={cn("shrink-0 w-1.5 h-1.5 rounded-full",
+              item.status === "published" ? "bg-emerald-500" :
+              item.status === "failed" ? "bg-destructive" :
+              item.status === "draft" ? "bg-muted-foreground" :
+              item.status === "publishing" ? "bg-amber-500 animate-pulse" :
+              "bg-blue-500"
+            )} />
+            <span className={cn("flex-1 min-w-0 text-xs truncate", isKept && "text-muted-foreground")} title={title}>{title}</span>
+            <span className="shrink-0 text-[10px] text-muted-foreground font-mono">
+              {isKept ? "킵" : compactTime(item.publish_at)}
+            </span>
+          </button>
+        </div>
       </div>
 
-      {/* 인라인 편집 패널 */}
-      {expanded && editable && (
-        <div className="p-3 border-t border-border bg-muted/20 space-y-3">
-          {item.status === "failed" && item.error_message && (
-            <div className="rounded-md border border-destructive/40 bg-destructive/5 p-2.5 space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-destructive">실패 사유</p>
-              <p className="text-[11px] text-destructive whitespace-pre-wrap font-mono break-all">{item.error_message}</p>
-              {item.retry_count != null && (
-                <p className="text-[10px] text-muted-foreground">재시도: {item.retry_count}회</p>
+      <Dialog open={expanded} onOpenChange={setExpanded}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-sm truncate">{title}</DialogTitle>
+          </DialogHeader>
+
+          {editable ? (
+            <div className="space-y-3">
+              {item.status === "failed" && item.error_message && (
+                <div className="rounded-md border border-destructive/40 bg-destructive/5 p-2.5">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-destructive mb-1">실패 사유</p>
+                  <p className="text-[11px] text-destructive whitespace-pre-wrap font-mono break-all">{item.error_message}</p>
+                </div>
+              )}
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[11px]">
+                    본문 ({editBody.length}자)
+                    {isThread && <span className="ml-2 text-primary">· 스레드 {parts.length}개로 발행</span>}
+                  </Label>
+                  <button
+                    type="button"
+                    onClick={addSplit}
+                    className="text-[10px] text-primary hover:underline"
+                    title="구분선(---)을 추가하면 스레드 체인으로 분할 발행됩니다"
+                  >
+                    + 스레드 나누기
+                  </button>
+                </div>
+                <Textarea
+                  value={editBody}
+                  onChange={e => setEditBody(e.target.value)}
+                  rows={12}
+                  className="text-xs font-mono min-h-[240px]"
+                />
+                {isThread && (
+                  <div className="rounded-md border border-border bg-muted/30 p-2 space-y-1">
+                    {parts.map((p, i) => (
+                      <div key={i} className="text-[10px] font-mono flex gap-2">
+                        <span className="text-primary shrink-0">{i + 1}/{parts.length}</span>
+                        <span className={cn("flex-1", p.length > 500 && "text-destructive")}>
+                          {p.length}자{p.length > 500 ? " · 500자 초과!" : ""}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] flex items-center gap-1"><Calendar className="w-3 h-3" /> 예약 발행</Label>
+                  <Input
+                    type="datetime-local"
+                    value={editAt}
+                    onChange={e => setEditAt(e.target.value)}
+                    className="h-8 text-xs"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-[11px]">상태</Label>
+                  <div className="flex gap-1">
+                    {(["ready", "draft"] as const).map(s => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => setEditStatus(s)}
+                        className={cn(
+                          "flex-1 h-8 rounded-md border text-xs font-semibold transition",
+                          editStatus === s
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border bg-background text-muted-foreground hover:bg-muted/40"
+                        )}
+                      >
+                        {s === "ready" ? "예약" : "킵"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {editStatus === "draft" && (
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] text-amber-600 dark:text-amber-400">킵 사유 (필수)</Label>
+                  <Textarea
+                    value={pauseReason}
+                    onChange={e => setPauseReason(e.target.value.slice(0, 500))}
+                    rows={2}
+                    className="text-xs"
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-1">
+                {item.status === "failed" && (
+                  <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => onRetry(item.id)}>
+                    <RefreshCw className="w-3 h-3 mr-1" /> 재시도
+                  </Button>
+                )}
+                <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => onDelete(item.id)}>
+                  <Trash2 className="w-3 h-3 mr-1" /> 삭제
+                </Button>
+                <Button size="sm" className="h-8 text-xs ml-auto" onClick={save} disabled={saving || !editBody.trim() || parts.some(p => p.length > 500)}>
+                  {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
+                  저장
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs whitespace-pre-wrap">{item.body}</p>
+              {item.published_url && (
+                <a href={item.published_url} target="_blank" rel="noreferrer" className="text-[11px] text-primary underline inline-block">
+                  게시물 열기 →
+                </a>
               )}
             </div>
           )}
-          <div className="space-y-1.5">
-            <Label className="text-[11px]">전체 본문 미리보기</Label>
-            <div className="rounded-md border border-border bg-background p-2.5 text-xs whitespace-pre-wrap break-words max-h-72 overflow-y-auto">
-              {item.body}
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-[11px]">본문 편집 ({editBody.length}/500)</Label>
-            <Textarea
-              value={editBody}
-              onChange={e => setEditBody(e.target.value.slice(0, 500))}
-              rows={10}
-              className="text-xs font-mono min-h-[200px]"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-[11px] flex items-center gap-1"><Calendar className="w-3 h-3" /> 예약 발행 시각</Label>
-            <Input
-              type="datetime-local"
-              value={editAt}
-              onChange={e => setEditAt(e.target.value)}
-              className="h-8 text-xs"
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-[11px]">상태</Label>
-            <div className="flex gap-2">
-              {(["ready", "draft"] as const).map(s => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setEditStatus(s)}
-                  className={cn(
-                    "flex-1 h-8 rounded-md border text-xs font-semibold transition",
-                    editStatus === s
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-background text-muted-foreground hover:bg-muted/40"
-                  )}
-                >
-                  {s === "ready" ? "발행 대기" : "정지(초안)"}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {editStatus === "draft" && (
-            <div className="space-y-1.5">
-              <Label className="text-[11px] text-amber-600 dark:text-amber-400">정지 사유 (필수)</Label>
-              <Textarea
-                value={pauseReason}
-                onChange={e => setPauseReason(e.target.value.slice(0, 500))}
-                rows={2}
-                placeholder="예: 본문 문구 재검토 필요, 캠페인 일정 변경 등"
-                className="text-xs"
-              />
-              <p className="text-[10px] text-muted-foreground">정지(초안) 상태는 cron이 발행하지 않습니다.</p>
-            </div>
-          )}
-
-          <div className="text-[10px] text-muted-foreground space-y-0.5">
-            <div>생성: <span className="font-mono">{new Date(item.created_at).toLocaleString()}</span></div>
-          </div>
-
-          <div className="flex gap-2 pt-1">
-            {item.status === "failed" && (
-              <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => onRetry(item.id)}>
-                <RefreshCw className="w-3 h-3 mr-1" /> 재시도
-              </Button>
-            )}
-            <Button size="sm" variant="ghost" className="h-8 text-xs text-destructive" onClick={() => onDelete(item.id)}>
-              <Trash2 className="w-3 h-3 mr-1" /> 삭제
-            </Button>
-            <Button size="sm" className="h-8 text-xs ml-auto" onClick={save} disabled={saving || !editBody.trim()}>
-              {saving ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Save className="w-3 h-3 mr-1" />}
-              저장
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* 발행됨 — 읽기 전용 펼침 */}
-      {expanded && !editable && (
-        <div className="p-3 border-t border-border bg-muted/20 space-y-2">
-          <p className="text-xs whitespace-pre-wrap">{item.body}</p>
-          {item.published_url && (
-            <a href={item.published_url} target="_blank" rel="noreferrer" className="text-[11px] text-primary underline inline-block">
-              게시물 열기 →
-            </a>
-          )}
-          <p className="text-[10px] text-muted-foreground">발행: <span className="font-mono">{new Date(item.publish_at).toLocaleString()}</span></p>
-        </div>
-      )}
-    </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
