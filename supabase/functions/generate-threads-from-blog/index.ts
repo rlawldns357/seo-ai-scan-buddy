@@ -109,7 +109,7 @@ Deno.serve(async (req) => {
     const isCron = expectedCron && cronSecret === expectedCron;
     const isService = serviceKey && bearer === serviceKey;
     if (!isAdmin && !isCron && !isService) {
-      console.log(`AUTH_FAIL bearer_len=${bearer.length} service_len=${serviceKey?.length||0} cron_hdr_len=${cronSecret?.length||0} expected_cron_len=${expectedCron?.length||0} pw_len=${password?.length||0}`);
+      console.error(`AUTH_FAIL bearer_len=${bearer.length} service_len=${serviceKey?.length||0} cron_hdr_len=${cronSecret?.length||0} expected_cron_len=${expectedCron?.length||0} pw_len=${password?.length||0} hdrs=${[...req.headers.keys()].join(',')}`);
       return new Response(JSON.stringify({ error: "인증 실패" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
