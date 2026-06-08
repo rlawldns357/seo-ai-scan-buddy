@@ -1575,6 +1575,39 @@ export type Database = {
         }
         Relationships: []
       }
+      threads_autogen_settings: {
+        Row: {
+          daily_count: number
+          enabled: boolean
+          hour_kst: number
+          id: number
+          minute_kst: number
+          slot_end_hour_kst: number
+          slot_start_hour_kst: number
+          updated_at: string
+        }
+        Insert: {
+          daily_count?: number
+          enabled?: boolean
+          hour_kst?: number
+          id?: number
+          minute_kst?: number
+          slot_end_hour_kst?: number
+          slot_start_hour_kst?: number
+          updated_at?: string
+        }
+        Update: {
+          daily_count?: number
+          enabled?: boolean
+          hour_kst?: number
+          id?: number
+          minute_kst?: number
+          slot_end_hour_kst?: number
+          slot_start_hour_kst?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       threads_engine_chat: {
         Row: {
           content: string
@@ -1753,6 +1786,10 @@ export type Database = {
           msg_id: number
           read_ct: number
         }[]
+      }
+      set_threads_autogen_cron: {
+        Args: { p_hour: number; p_minute: number }
+        Returns: undefined
       }
     }
     Enums: {

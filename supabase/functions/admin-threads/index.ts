@@ -179,6 +179,50 @@ Deno.serve(async (req) => {
       return json({ success: true });
     }
 
+    if (action === "getAutogen") {
+      const { data, error } = await supabase
+        .from("threads_autogen_settings")
+        .select("enabled, daily_count, hour_kst, minute_kst, slot_start_hour_kst, slot_end_hour_kst, updated_at")
+        .eq("id", 1)
+        .maybeSingle();
+      if (error) throw error;
+      return json({ settings: data });
+    }
+
+    if (action === "updateAutogen") {
+      const { enabled, daily_count, hour_kst, minute_kst, slot_start_hour_kst, slot_end_hour_kst } = body;
+      const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (typeof enabled === "boolean") patch.enabled = enabled;
+      if (typeof daily_count === "number") patch.daily_count = Math.min(30, Math.max(1, daily_count));
+      if (typeof hour_kst === "number") patch.hour_kst = Math.min(23, Math.max(0, hour_kst));
+      if (typeof minute_kst === "number") patch.minute_kst = Math.min(59, Math.max(0, minute_kst));
+      if (typeof slot_start_hour_kst === "number") patch.slot_start_hour_kst = Math.min(23, Math.max(0, slot_start_hour_kst));
+      if (typeof slot_end_hour_kst === "number") patch.slot_end_hour_kst = Math.min(23, Math.max(0, slot_end_hour_kst));
+
+      const { error } = await supabase
+        .from("threads_autogen_settings")
+        .update(patch)
+        .eq("id", 1);
+      if (error) throw error;
+
+      // cron 스케줄도 같이 갱신
+      if (typeof hour_kst === "number" || typeof minute_kst === "number") {
+        const { data: cur } = await supabase
+          .from("threads_autogen_settings")
+          .select("hour_kst, minute_kst")
+          .eq("id", 1)
+          .maybeSingle();
+        if (cur) {
+          await supabase.rpc("set_threads_autogen_cron", {
+            p_hour: cur.hour_kst,
+            p_minute: cur.minute_kst,
+          });
+        }
+      }
+      return json({ success: true });
+    }
+
+
     return new Response(JSON.stringify({ error: "unknown action" }), {
       status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.set_threads_autogen_cron(int,int) FROM anon, authenticated;
