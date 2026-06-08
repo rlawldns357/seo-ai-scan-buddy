@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     if (action === "list") {
       const { data, error } = await supabase
         .from("social_publish_queue")
-        .select("id, account_id, body, media_type, media_url, publish_at, status, threads_post_id, published_url, error_message, retry_count, created_at, updated_at")
+        .select("id, account_id, body, media_type, media_url, publish_at, status, threads_post_id, published_url, error_message, pause_reason, retry_count, created_at, updated_at")
         .eq("platform", "threads")
         .order("created_at", { ascending: false })
         .limit(200);
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "updateItem") {
-      const { id, body: newBody, publish_at, status } = body;
+      const { id, body: newBody, publish_at, status, pause_reason } = body;
       if (!id) throw new Error("id 필수");
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (typeof newBody === "string") patch.body = newBody.slice(0, 500);
@@ -100,6 +100,9 @@ Deno.serve(async (req) => {
       if (status === "ready" || status === "draft") {
         patch.status = status;
         patch.error_message = null;
+      }
+      if (typeof pause_reason === "string") {
+        patch.pause_reason = pause_reason.slice(0, 500) || null;
       }
       const { error } = await supabase
         .from("social_publish_queue")
