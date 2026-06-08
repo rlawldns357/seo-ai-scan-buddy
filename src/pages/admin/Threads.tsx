@@ -574,23 +574,33 @@ function AutogenRuleCard({ settings, onSave }: {
         <button
           type="button"
           className={cn(
-            "w-full rounded-md border px-2 py-1.5 flex items-center gap-2 text-left transition hover:bg-muted/40",
+            "group relative w-full rounded-full border px-3 py-2 flex items-center gap-2.5 text-left transition-all overflow-hidden",
             settings.enabled
-              ? "border-primary/40 bg-primary/5"
-              : "border-dashed border-border bg-muted/20",
+              ? "border-primary/50 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 shadow-[0_0_20px_-8px_hsl(var(--primary))] hover:shadow-[0_0_28px_-6px_hsl(var(--primary))]"
+              : "border-dashed border-border bg-muted/20 hover:bg-muted/40",
           )}
-          title="클릭하면 자동 생성 룰을 수정합니다"
+          title={settings.enabled ? "자동 생성 작동 중 — 클릭해서 설정" : "자동 생성 OFF — 클릭해서 설정"}
         >
-          <Zap className={cn("w-3.5 h-3.5 shrink-0", settings.enabled ? "text-primary" : "text-muted-foreground")} />
+          <span className={cn(
+            "shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors",
+            settings.enabled
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground",
+          )}>
+            <RotateCw className={cn(
+              "w-3.5 h-3.5",
+              settings.enabled && "animate-spin [animation-duration:3s]",
+            )} />
+          </span>
           <span className="flex-1 min-w-0 text-[11px] truncate">
-            <span className="font-semibold">
-              {settings.enabled ? `매일 ${timeStr} KST` : "자동 생성 OFF"}
+            <span className={cn("font-semibold", settings.enabled ? "text-primary" : "text-muted-foreground")}>
+              {settings.enabled ? `자동 생성 중 · 매일 ${timeStr} KST` : "자동 생성 OFF"}
             </span>
             <span className="text-muted-foreground">
-              {settings.enabled ? ` · ${settings.daily_count}개 생성 · ${slotStr} 발행` : ` · 수동 생성만 사용`}
+              {settings.enabled ? ` · ${settings.daily_count}개 · ${slotStr} 발행` : ` · 수동 생성만 사용`}
             </span>
           </span>
-          <Pencil className="w-3 h-3 text-muted-foreground shrink-0" />
+          <Settings2 className="w-3.5 h-3.5 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-md w-[95vw] p-0 gap-0">
