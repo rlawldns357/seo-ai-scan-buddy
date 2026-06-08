@@ -171,10 +171,10 @@ export default function Threads() {
     load();
   };
 
-  const generateNow = async () => {
+  const generateNow = async (count: number = 10) => {
     setGenerating(true);
     const password = sessionStorage.getItem("admin_pw");
-    const { data, error } = await supabase.functions.invoke("generate-threads-from-blog", { body: { password, count: 10 } });
+    const { data, error } = await supabase.functions.invoke("generate-threads-from-blog", { body: { password, count } });
     setGenerating(false);
     if (error || (data as any)?.error) {
       toast({ title: "생성 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
@@ -531,7 +531,7 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
   settings: AutogenSettings | null;
   onSave: (patch: Partial<AutogenSettings>) => Promise<boolean>;
   engineVersion?: string;
-  onGenerate?: () => Promise<void> | void;
+  onGenerate?: (count?: number) => Promise<void> | void;
   generating?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -655,17 +655,27 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
             Off
           </button>
         </div>
-        {/* 지금 생성 */}
+        {/* 10개 생성 */}
+        <Button
+          size="sm"
+          onClick={() => onGenerate?.(10)}
+          disabled={generating}
+          className="h-8 px-2.5 text-[11px] rounded-full shrink-0"
+          title="즉시 10개 생성"
+        >
+          {generating ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+          10개
+        </Button>
+        {/* 1개 생성 */}
         <Button
           size="sm"
           variant="outline"
-          onClick={() => onGenerate?.()}
+          onClick={() => onGenerate?.(1)}
           disabled={generating}
           className="h-8 px-2.5 text-[11px] rounded-full shrink-0"
-          title="설정과 별개로 즉시 1회 생성"
+          title="즉시 1개 생성"
         >
-          {generating ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
-          지금 생성
+          {generating ? <Loader2 className="w-3 h-3" /> : <><Sparkles className="w-3 h-3 mr-1" />1개</>}
         </Button>
       </div>
       {settings.enabled && (
