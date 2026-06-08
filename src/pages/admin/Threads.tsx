@@ -149,6 +149,12 @@ export default function Threads() {
     if (res?.success) { toast({ title: "삭제됨" }); load(); }
   };
 
+  const updateItem = async (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft" }) => {
+    const res = await threadsInvoke<{ success: boolean }>("updateItem", { id, ...patch });
+    if (res?.success) { toast({ title: "수정 완료" }); load(); return true; }
+    return false;
+  };
+
   const sendChat = async () => {
     const msg = chatInput.trim();
     if (!msg) return;
@@ -386,9 +392,9 @@ export default function Threads() {
 
       {/* 큐 목록: 대기 → 성공 → 실패 */}
       <div className="grid gap-3 md:grid-cols-3">
-        <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} />
-        <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} />
-        <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} />
+        <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
+        <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
+        <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
       </div>
     </div>
   );
@@ -421,8 +427,12 @@ function ChatBubble({ msg }: { msg: ChatMsg }) {
   );
 }
 
-function QueueColumn({ title, items, onRetry, onDelete }: {
-  title: string; items: QueueItem[]; onRetry: (id: string) => void; onDelete: (id: string) => void;
+function QueueColumn({ title, items, onRetry, onDelete, onUpdate }: {
+  title: string;
+  items: QueueItem[];
+  onRetry: (id: string) => void;
+  onDelete: (id: string) => void;
+  onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft" }) => Promise<boolean>;
 }) {
   return (
     <Card>
@@ -430,31 +440,158 @@ function QueueColumn({ title, items, onRetry, onDelete }: {
       <CardContent className="space-y-2">
         {items.length === 0 && <p className="text-xs text-muted-foreground">항목 없음</p>}
         {items.map(it => (
-          <div key={it.id} className="rounded-lg border border-border p-2 space-y-1">
-            <div className="flex items-center justify-between gap-2">
-              <Badge className={STATUS_STYLES[it.status] || ""}>{it.status}</Badge>
-              <span className="text-[10px] text-muted-foreground">{new Date(it.created_at).toLocaleString()}</span>
-            </div>
-            <p className="text-xs whitespace-pre-wrap line-clamp-3">{it.body}</p>
-            {it.error_message && <p className="text-[10px] text-destructive line-clamp-2">⚠ {it.error_message}</p>}
-            {it.published_url && (
-              <a href={it.published_url} target="_blank" rel="noreferrer" className="text-[10px] text-primary underline">게시물 열기 →</a>
-            )}
-            <div className="flex gap-1">
-              {it.status === "failed" && (
-                <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => onRetry(it.id)}>
-                  <RefreshCw className="w-3 h-3 mr-0.5" /> 재시도
-                </Button>
-              )}
-              {(it.status === "ready" || it.status === "failed" || it.status === "draft") && (
-                <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2 text-destructive" onClick={() => onDelete(it.id)}>
-                  <Trash2 className="w-3 h-3" />
-                </Button>
-              )}
-            </div>
-          </div>
+          <QueueCard key={it.id} item={it} onRetry={onRetry} onDelete={onDelete} onUpdate={onUpdate} />
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+// ISO → datetime-local input value (로컬 타임존 기준)
+function toLocalInput(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function QueueCard({ item, onRetry, onDelete, onUpdate }: {
+  item: QueueItem;
+  onRetry: (id: string) => void;
+  onDelete: (id: string) => void;
+  onUpdate: (id: string, patch: { body?: string; publish_at?: string; status?: "ready" | "draft" }) => Promise<boolean>;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editBody, setEditBody] = useState(item.body);
+  const [editAt, setEditAt] = useState(toLocalInput(item.publish_at));
+  const [editStatus, setEditStatus] = useState<"ready" | "draft">(item.status === "draft" ? "draft" : "ready");
+  const [saving, setSaving] = useState(false);
+
+  const editable = item.status === "ready" || item.status === "failed" || item.status === "draft";
+
+  const openEdit = () => {
+    setEditBody(item.body);
+    setEditAt(toLocalInput(item.publish_at));
+    setEditStatus(item.status === "draft" ? "draft" : "ready");
+    setEditOpen(true);
+  };
+
+  const save = async () => {
+    setSaving(true);
+    const ok = await onUpdate(item.id, {
+      body: editBody,
+      publish_at: new Date(editAt).toISOString(),
+      status: editStatus,
+    });
+    setSaving(false);
+    if (ok) setEditOpen(false);
+  };
+
+  return (
+    <div className="rounded-lg border border-border p-2 space-y-1">
+      <div className="flex items-center justify-between gap-2">
+        <Badge className={STATUS_STYLES[item.status] || ""}>{item.status}</Badge>
+        <span className="text-[10px] text-muted-foreground">{new Date(item.publish_at).toLocaleString()}</span>
+      </div>
+
+      <button
+        type="button"
+        onClick={() => setExpanded(v => !v)}
+        className="w-full text-left text-xs whitespace-pre-wrap hover:bg-muted/40 rounded px-1 -mx-1 py-0.5 transition"
+      >
+        <p className={expanded ? "" : "line-clamp-3"}>{item.body}</p>
+        <span className="text-[9px] text-muted-foreground mt-0.5 block">
+          {expanded ? "▲ 접기" : "▼ 전체 보기"}
+        </span>
+      </button>
+
+      {expanded && (
+        <div className="text-[10px] text-muted-foreground space-y-0.5 pt-1 border-t border-border/50">
+          <div>예약: <span className="font-mono">{new Date(item.publish_at).toLocaleString()}</span></div>
+          <div>생성: <span className="font-mono">{new Date(item.created_at).toLocaleString()}</span></div>
+        </div>
+      )}
+
+      {item.error_message && <p className="text-[10px] text-destructive line-clamp-2">⚠ {item.error_message}</p>}
+      {item.published_url && (
+        <a href={item.published_url} target="_blank" rel="noreferrer" className="text-[10px] text-primary underline">게시물 열기 →</a>
+      )}
+
+      <div className="flex gap-1 flex-wrap pt-1">
+        {editable && (
+          <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={openEdit}>
+            <Pencil className="w-3 h-3 mr-0.5" /> 수정
+          </Button>
+        )}
+        {item.status === "failed" && (
+          <Button size="sm" variant="outline" className="h-6 text-[10px] px-2" onClick={() => onRetry(item.id)}>
+            <RefreshCw className="w-3 h-3 mr-0.5" /> 재시도
+          </Button>
+        )}
+        {editable && (
+          <Button size="sm" variant="ghost" className="h-6 text-[10px] px-2 text-destructive ml-auto" onClick={() => onDelete(item.id)}>
+            <Trash2 className="w-3 h-3" />
+          </Button>
+        )}
+      </div>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-md w-[95vw] p-0 gap-0">
+          <DialogHeader className="p-4 pb-2 border-b">
+            <DialogTitle className="text-base flex items-center gap-2">
+              <Pencil className="w-4 h-4" /> 큐 항목 수정
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-4 space-y-3">
+            <div className="space-y-1.5">
+              <Label className="text-xs">본문 ({editBody.length}/500)</Label>
+              <Textarea
+                value={editBody}
+                onChange={e => setEditBody(e.target.value.slice(0, 500))}
+                rows={6}
+                className="text-xs font-mono"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs flex items-center gap-1"><Calendar className="w-3 h-3" /> 예약 발행 시각</Label>
+              <Input
+                type="datetime-local"
+                value={editAt}
+                onChange={e => setEditAt(e.target.value)}
+                className="h-9 text-sm"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-xs">상태</Label>
+              <div className="flex gap-2">
+                {(["ready", "draft"] as const).map(s => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setEditStatus(s)}
+                    className={cn(
+                      "flex-1 h-8 rounded-md border text-xs font-semibold transition",
+                      editStatus === s
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-background text-muted-foreground hover:bg-muted/40"
+                    )}
+                  >
+                    {s === "ready" ? "발행 대기" : "초안"}
+                  </button>
+                ))}
+              </div>
+              <p className="text-[10px] text-muted-foreground">초안은 cron이 발행하지 않습니다. 발행 대기로 두어야 자동 게시됩니다.</p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 p-3 border-t bg-muted/20">
+            <Button size="sm" variant="ghost" onClick={() => setEditOpen(false)} disabled={saving}>취소</Button>
+            <Button size="sm" onClick={save} disabled={saving || !editBody.trim()}>
+              {saving ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Save className="w-4 h-4 mr-1" />}
+              저장
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
