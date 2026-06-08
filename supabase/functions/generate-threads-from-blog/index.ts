@@ -156,7 +156,7 @@ Deno.serve(async (req) => {
       .eq("id", 1)
       .maybeSingle();
     // cron 호출일 때 enabled=false면 스킵
-    if (isCron && autogen && autogen.enabled === false) {
+    if ((isCron || isAnonCron) && autogen && autogen.enabled === false) {
       return new Response(JSON.stringify({ inserted: 0, skipped: "autogen disabled" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
