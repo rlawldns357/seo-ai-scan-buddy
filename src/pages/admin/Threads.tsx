@@ -129,7 +129,7 @@ export default function Threads() {
   const generateNow = async () => {
     setGenerating(true);
     const password = sessionStorage.getItem("admin_pw");
-    const { data, error } = await supabase.functions.invoke("generate-threads-from-blog", { body: { password, count: 3 } });
+    const { data, error } = await supabase.functions.invoke("generate-threads-from-blog", { body: { password, count: 10 } });
     setGenerating(false);
     if (error || (data as any)?.error) {
       toast({ title: "생성 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
