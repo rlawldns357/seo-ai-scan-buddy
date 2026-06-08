@@ -539,6 +539,7 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
   const [saving, setSaving] = useState(false);
   const [learning, setLearning] = useState(false);
   const [logs, setLogs] = useState<Array<{ id: string; created_at: string; prev_version: string | null; new_version: string | null; summary: string | null; status: string }>>([]);
+  const [lastCount, setLastCount] = useState<number | null>(null);
 
   const loadLogs = async () => {
     const { data } = await supabase
@@ -659,26 +660,27 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
         <div className="flex items-center gap-1.5">
           <Button
             size="sm"
-            onClick={() => onGenerate?.(10)}
+            onClick={() => { setLastCount(10); onGenerate?.(10); }}
             disabled={generating}
             className="flex-1 h-8 px-2 text-[11px] rounded-full"
             title="즉시 10개 생성"
           >
-            {generating ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+            {generating && lastCount === 10 ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
             10개
           </Button>
           <Button
             size="sm"
             variant="outline"
-            onClick={() => onGenerate?.(1)}
+            onClick={() => { setLastCount(1); onGenerate?.(1); }}
             disabled={generating}
             className="flex-1 h-8 px-2 text-[11px] rounded-full"
             title="즉시 1개 생성"
           >
-            <Sparkles className="w-3 h-3 mr-1" />
+            {generating && lastCount === 1 ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
             1개
           </Button>
         </div>
+
       </div>
       {settings.enabled && (
         <p className="text-[10px] text-muted-foreground mt-1 px-1">
