@@ -150,7 +150,7 @@ Deno.serve(async (req) => {
     // 1-c) 자동 생성 룰 로드 (테이블 없으면 기본값)
     const { data: autogen } = await supabase
       .from("threads_autogen_settings")
-      .select("enabled, daily_count")
+      .select("enabled, daily_count, slot_start_hour_kst, slot_end_hour_kst")
       .eq("id", 1)
       .maybeSingle();
     // cron 호출일 때 enabled=false면 스킵
@@ -161,7 +161,11 @@ Deno.serve(async (req) => {
     }
     const defaultCount = autogen?.daily_count ?? 10;
     const count = Math.min(Math.max(requestedCount ?? defaultCount, 1), 30);
-
+    const slotStart = autogen?.slot_start_hour_kst ?? 10;
+    const slotEnd = autogen?.slot_end_hour_kst ?? 19;
+    const slotHours: number[] = [];
+    for (let h = slotStart; h <= slotEnd; h++) slotHours.push(h);
+    if (slotHours.length === 0) slotHours.push(...KST_SLOTS);
 
     // 2) 최근 큐(성공/대기/실패 전부)에 들어간 슬러그들 — 30일 이내
     const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
