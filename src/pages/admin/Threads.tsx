@@ -585,6 +585,18 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
   const timeStr = `${pad(settings.hour_kst)}:${pad(settings.minute_kst)}`;
   const slotStr = `${settings.slot_start_hour_kst}~${settings.slot_end_hour_kst}시`;
 
+  const [toggling, setToggling] = useState(false);
+  const quickToggle = async (next: boolean) => {
+    if (settings.enabled === next) {
+      // 이미 그 상태면 설정 모달 열기
+      setOpen(true);
+      return;
+    }
+    setToggling(true);
+    await onSave({ enabled: next });
+    setToggling(false);
+  };
+
   const submit = async () => {
     if (!draft) return;
     setSaving(true);
@@ -599,7 +611,6 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
     setSaving(false);
     if (ok) {
       setOpen(false);
-      // 저장 후 ON이면 즉시 1주기 생성 (자가 루프 시동)
       if (draft.enabled && onGenerate) {
         await onGenerate();
       }
@@ -609,39 +620,57 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "group relative w-full rounded-full border px-3 py-2 flex items-center gap-2.5 text-left transition-all overflow-hidden",
-            settings.enabled
-              ? "border-primary/50 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 shadow-[0_0_20px_-8px_hsl(var(--primary))] hover:shadow-[0_0_28px_-6px_hsl(var(--primary))]"
-              : "border-dashed border-border bg-muted/20 hover:bg-muted/40",
-          )}
-          title={settings.enabled ? "자동 생성 작동 중 — 클릭해서 설정" : "자동 생성 OFF — 클릭해서 설정"}
+      <div className="flex items-center gap-1.5">
+        {/* 세그먼트 On/Off */}
+        <div className="flex-1 inline-flex rounded-full border border-border overflow-hidden bg-muted/20">
+          <button
+            type="button"
+            onClick={() => quickToggle(true)}
+            disabled={toggling}
+            title={settings.enabled ? "설정 열기" : "자동 생성 켜기"}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold transition-all",
+              settings.enabled
+                ? "bg-primary text-primary-foreground shadow-[inset_0_0_12px_-4px_hsl(var(--primary))]"
+                : "text-muted-foreground hover:bg-muted/40",
+            )}
+          >
+            <RotateCw className={cn("w-3 h-3", settings.enabled && "animate-spin [animation-duration:3s]")} />
+            On
+          </button>
+          <button
+            type="button"
+            onClick={() => quickToggle(false)}
+            disabled={toggling}
+            title={!settings.enabled ? "설정 열기" : "자동 생성 끄기"}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 px-2.5 py-1.5 text-[11px] font-semibold transition-all border-l border-border",
+              !settings.enabled
+                ? "bg-foreground text-background"
+                : "text-muted-foreground hover:bg-muted/40",
+            )}
+          >
+            Off
+          </button>
+        </div>
+        {/* 지금 생성 */}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => onGenerate?.()}
+          disabled={generating}
+          className="h-8 px-2.5 text-[11px] rounded-full shrink-0"
+          title="설정과 별개로 즉시 1회 생성"
         >
-          <span className={cn(
-            "shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition-colors",
-            settings.enabled
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground",
-          )}>
-            <RotateCw className={cn(
-              "w-3.5 h-3.5",
-              settings.enabled && "animate-spin [animation-duration:3s]",
-            )} />
-          </span>
-          <span className="flex-1 min-w-0 text-[11px] truncate">
-            <span className={cn("font-semibold", settings.enabled ? "text-primary" : "text-muted-foreground")}>
-              {settings.enabled ? `자동 생성 중 · 매일 ${timeStr} KST` : "자동 생성 OFF"}
-            </span>
-            <span className="text-muted-foreground">
-              {settings.enabled ? ` · ${settings.daily_count}개 · ${slotStr} 발행` : ` · 수동 생성만 사용`}
-            </span>
-          </span>
-          <Settings2 className="w-3.5 h-3.5 text-muted-foreground shrink-0 group-hover:text-foreground transition-colors" />
-        </button>
-      </DialogTrigger>
+          {generating ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+          지금 생성
+        </Button>
+      </div>
+      {settings.enabled && (
+        <p className="text-[10px] text-muted-foreground mt-1 px-1">
+          매일 {timeStr} KST · {settings.daily_count}개 · {slotStr} 발행
+        </p>
+      )}
       <DialogContent className="max-w-md w-[95vw] p-0 gap-0">
         <DialogHeader className="p-4 pb-3 border-b space-y-2">
           <div className="flex items-center justify-between gap-2">
