@@ -175,6 +175,20 @@ export default function Threads() {
     return false;
   };
 
+  const scheduleItem = async (id: string) => {
+    const res = await threadsInvoke<{ success: boolean; publish_at: string }>("scheduleItem", { id });
+    if (res?.success) {
+      const t = new Date(res.publish_at).toLocaleString();
+      toast({ title: "예약됨", description: `다음 슬롯: ${t}` });
+      load();
+    }
+  };
+
+  const unscheduleItem = async (id: string) => {
+    const res = await threadsInvoke<{ success: boolean }>("unscheduleItem", { id });
+    if (res?.success) { toast({ title: "킵으로 되돌림" }); load(); }
+  };
+
   const sendChat = async () => {
     const msg = chatInput.trim();
     if (!msg) return;
