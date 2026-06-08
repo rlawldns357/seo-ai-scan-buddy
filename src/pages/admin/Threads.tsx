@@ -583,7 +583,7 @@ function compactTime(iso: string): string {
   return same ? hm : `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${hm}`;
 }
 
-function QueueCard({ item, onRetry, onDelete, onUpdate }: {
+function QueueCard({ item, onRetry, onDelete, onUpdate, onSchedule, onUnschedule }: {
   item: QueueItem;
   onRetry: (id: string) => void;
   onDelete: (id: string) => void;
