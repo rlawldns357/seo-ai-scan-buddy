@@ -655,17 +655,27 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
             Off
           </button>
         </div>
-        {/* 지금 생성 */}
+        {/* 10개 생성 */}
+        <Button
+          size="sm"
+          onClick={() => onGenerate?.(10)}
+          disabled={generating}
+          className="h-8 px-2.5 text-[11px] rounded-full shrink-0"
+          title="즉시 10개 생성"
+        >
+          {generating ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
+          10개
+        </Button>
+        {/* 1개 생성 */}
         <Button
           size="sm"
           variant="outline"
-          onClick={() => onGenerate?.()}
+          onClick={() => onGenerate?.(1)}
           disabled={generating}
           className="h-8 px-2.5 text-[11px] rounded-full shrink-0"
-          title="설정과 별개로 즉시 1회 생성"
+          title="즉시 1개 생성"
         >
-          {generating ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <Sparkles className="w-3 h-3 mr-1" />}
-          지금 생성
+          {generating ? <Loader2 className="w-3 h-3" /> : <><Sparkles className="w-3 h-3 mr-1" />1개</>}
         </Button>
       </div>
       {settings.enabled && (
