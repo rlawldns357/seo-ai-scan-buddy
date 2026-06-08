@@ -1692,6 +1692,42 @@ export type Database = {
         }
         Relationships: []
       }
+      threads_engine_log: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          kind: string
+          metrics: Json
+          new_version: string | null
+          prev_version: string | null
+          status: string
+          summary: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          metrics?: Json
+          new_version?: string | null
+          prev_version?: string | null
+          status?: string
+          summary?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          kind?: string
+          metrics?: Json
+          new_version?: string | null
+          prev_version?: string | null
+          status?: string
+          summary?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           expires_at: string | null
