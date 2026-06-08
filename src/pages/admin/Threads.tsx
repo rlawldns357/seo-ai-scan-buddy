@@ -617,6 +617,19 @@ function QueueCard({ item, onRetry, onDelete, onUpdate }: {
           </div>
         </div>
       )}
+
+      {/* 발행됨 — 읽기 전용 펼침 */}
+      {expanded && !editable && (
+        <div className="p-3 border-t border-border bg-muted/20 space-y-2">
+          <p className="text-xs whitespace-pre-wrap">{item.body}</p>
+          {item.published_url && (
+            <a href={item.published_url} target="_blank" rel="noreferrer" className="text-[11px] text-primary underline inline-block">
+              게시물 열기 →
+            </a>
+          )}
+          <p className="text-[10px] text-muted-foreground">발행: <span className="font-mono">{new Date(item.publish_at).toLocaleString()}</span></p>
+        </div>
+      )}
     </div>
   );
 }
