@@ -22,6 +22,7 @@ type QueueItem = {
   status: "draft" | "ready" | "publishing" | "published" | "failed";
   published_url: string | null;
   error_message: string | null;
+  pause_reason: string | null;
   created_at: string;
 };
 
