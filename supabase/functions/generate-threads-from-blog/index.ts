@@ -19,8 +19,8 @@ const corsHeaders = {
 const SITE_BASE = "https://www.searchtuneos.com";
 const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 
-// KST 기준 발행 시간 슬롯 (시간만, 분=0)
-const KST_SLOTS = [10, 14, 19];
+// KST 기준 발행 시간 슬롯 — 하루 10건을 10~19시에 1시간 간격으로 분산
+const KST_SLOTS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
 
 // hourKst 슬롯 + dayOffset(오늘 기준 +N일)을 UTC ISO로 변환
 function kstSlotToUtcIso(hourKst: number, dayOffset = 0, baseDate = new Date()): string {
