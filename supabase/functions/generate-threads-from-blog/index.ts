@@ -102,13 +102,15 @@ Deno.serve(async (req) => {
     const expectedCron = Deno.env.get("CRON_SECRET");
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
     const auth = req.headers.get("authorization") || "";
     const bearer = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : "";
     const isAdmin = adminPassword && password === adminPassword;
     const isCron = expectedCron && cronSecret === expectedCron;
     const isService = serviceKey && bearer === serviceKey;
-    if (!isAdmin && !isCron && !isService) {
+    const isAnonCron = anonKey && bearer === anonKey;
+    if (!isAdmin && !isCron && !isService && !isAnonCron) {
       console.error(`AUTH_FAIL bearer_len=${bearer.length} service_len=${serviceKey?.length||0} cron_hdr_len=${cronSecret?.length||0} expected_cron_len=${expectedCron?.length||0} pw_len=${password?.length||0} hdrs=${[...req.headers.keys()].join(',')}`);
       return new Response(JSON.stringify({ error: "인증 실패" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -154,7 +156,7 @@ Deno.serve(async (req) => {
       .eq("id", 1)
       .maybeSingle();
     // cron 호출일 때 enabled=false면 스킵
-    if (isCron && autogen && autogen.enabled === false) {
+    if ((isCron || isAnonCron) && autogen && autogen.enabled === false) {
       return new Response(JSON.stringify({ inserted: 0, skipped: "autogen disabled" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

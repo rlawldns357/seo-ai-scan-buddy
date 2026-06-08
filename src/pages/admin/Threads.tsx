@@ -243,7 +243,7 @@ export default function Threads() {
     if (error || (data as any)?.error) {
       toast({ title: "갱신 실패", description: error?.message || (data as any)?.error, variant: "destructive" });
     } else {
-      toast({ title: "📡 API 지식 갱신 완료", description: `${(data as any)?.length ?? 0}자 학습` });
+      toast({ title: "📡 엔진 메모 갱신 완료", description: `${(data as any)?.length ?? 0}자 학습` });
       load();
     }
   };
@@ -305,7 +305,7 @@ export default function Threads() {
               )}
               <div className="flex items-center gap-1 text-[10px] text-muted-foreground pt-0.5">
                 <Radio className="w-3 h-3" />
-                <span>API 지식: {timeAgo(engine?.api_knowledge_updated_at ?? null)}</span>
+                <span>엔진 메모: {timeAgo(engine?.api_knowledge_updated_at ?? null)}</span>
               </div>
             </div>
           </div>
