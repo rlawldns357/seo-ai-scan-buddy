@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Send, RefreshCw, PlayCircle, Trash2, Loader2, CheckCircle2, X, MessageCircle, ScrollText, Radio, Sparkles, Pencil, Calendar, Save, Zap, Clock, RotateCw, Settings2 } from "lucide-react";
+import { Send, RefreshCw, PlayCircle, Trash2, Loader2, CheckCircle2, X, MessageCircle, ScrollText, Radio, Sparkles, Pencil, Calendar, Save, Zap, Clock, RotateCw, Settings2, Brain, TrendingUp } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 import { Textarea } from "@/components/ui/textarea";
@@ -463,7 +463,7 @@ export default function Threads() {
           items={grouped.ready}
           onRetry={retry} onDelete={remove} onUpdate={updateItem}
           onCreate={createItem} onSchedule={scheduleItem} onUnschedule={unscheduleItem}
-          topSlot={<AutogenRuleCard settings={autogen} onSave={saveAutogen} />}
+          topSlot={<AutogenRuleCard settings={autogen} onSave={saveAutogen} engineVersion={versionStr} onGenerate={generateNow} />}
         />
         <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
         <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
@@ -531,13 +531,48 @@ function QueueColumn({ title, items, onRetry, onDelete, onUpdate, onCreate, onSc
   );
 }
 
-function AutogenRuleCard({ settings, onSave }: {
+function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate }: {
   settings: AutogenSettings | null;
   onSave: (patch: Partial<AutogenSettings>) => Promise<boolean>;
+  engineVersion?: string;
+  onGenerate?: () => Promise<void> | void;
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<AutogenSettings | null>(settings);
   const [saving, setSaving] = useState(false);
+  const [learning, setLearning] = useState(false);
+  const [logs, setLogs] = useState<Array<{ id: string; created_at: string; prev_version: string | null; new_version: string | null; summary: string | null; status: string }>>([]);
+
+  const loadLogs = async () => {
+    const { data } = await supabase
+      .from("threads_engine_log")
+      .select("id, created_at, prev_version, new_version, summary, status")
+      .eq("kind", "learn")
+      .order("created_at", { ascending: false })
+      .limit(3);
+    setLogs((data || []) as any);
+  };
+
+  useEffect(() => { if (open) loadLogs(); }, [open]);
+
+  const runLearn = async () => {
+    setLearning(true);
+    const password = sessionStorage.getItem("admin_pw");
+    const { data, error } = await supabase.functions.invoke("threads-engine-learn", { body: { password } });
+    setLearning(false);
+    const d = data as any;
+    if (error || d?.error) {
+      toast({ title: "학습 실패", description: error?.message || d?.error, variant: "destructive" });
+    } else if (d?.skipped) {
+      toast({ title: "학습 보류", description: d?.reason || "데이터 부족" });
+    } else if (d?.unchanged) {
+      toast({ title: "변경 없음", description: `${d?.version} 유지 — 룰이 충분합니다` });
+    } else if (d?.applied) {
+      toast({ title: `🧠 학습 완료 ${d.new_version}`, description: d?.summary || "새 룰이 다음 생성부터 적용됩니다" });
+    }
+    loadLogs();
+  };
+
 
   useEffect(() => { setDraft(settings); }, [settings]);
 
@@ -565,8 +600,15 @@ function AutogenRuleCard({ settings, onSave }: {
       slot_end_hour_kst: draft.slot_end_hour_kst,
     });
     setSaving(false);
-    if (ok) setOpen(false);
+    if (ok) {
+      setOpen(false);
+      // 저장 후 ON이면 즉시 1주기 생성 (자가 루프 시동)
+      if (draft.enabled && onGenerate) {
+        await onGenerate();
+      }
+    }
   };
+
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -604,14 +646,61 @@ function AutogenRuleCard({ settings, onSave }: {
         </button>
       </DialogTrigger>
       <DialogContent className="max-w-md w-[95vw] p-0 gap-0">
-        <DialogHeader className="p-4 pb-2 border-b">
-          <DialogTitle className="flex items-center gap-2 text-base">
-            <Zap className="w-4 h-4 text-primary" /> 자동 생성 룰
-          </DialogTitle>
+        <DialogHeader className="p-4 pb-3 border-b space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <DialogTitle className="flex items-center gap-2 text-base">
+              <Zap className="w-4 h-4 text-primary" /> 자동 생성 룰
+            </DialogTitle>
+            {engineVersion && (
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-primary/10 text-primary border border-primary/30">
+                엔진 {engineVersion}
+              </span>
+            )}
+          </div>
           <p className="text-[11px] text-muted-foreground">
-            매일 정해진 시각에 블로그 글에서 Threads 초안을 자동으로 만들어 <strong>킵(draft)</strong> 상태로 적재합니다. 체크박스를 누르면 다음 빈 슬롯에 자동 예약됩니다.
+            매일 정한 시각에 블로그 글에서 Threads 초안을 자동으로 만들어 <strong>킵</strong> 상태로 적재합니다. 저장하면 즉시 1주기가 시작됩니다.
           </p>
+
+          {/* 자가 학습 루프 */}
+          <div className="rounded-md border border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5 p-2.5 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Brain className="w-3.5 h-3.5 text-primary shrink-0" />
+                <span className="text-[11px] font-semibold">자가 학습 루프</span>
+              </div>
+              <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={runLearn} disabled={learning}>
+                {learning ? <Loader2 className="w-3 h-3 mr-1 animate-spin" /> : <TrendingUp className="w-3 h-3 mr-1" />}
+                지금 학습
+              </Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground leading-snug">
+              최근 30일 발행/실패 데이터를 분석해 룰을 다듬고, 엔진 minor 버전을 올려 다음 생성·발행에 즉시 반영합니다.
+            </p>
+            {logs.length > 0 && (
+              <div className="space-y-1 pt-1 border-t border-border/50">
+                {logs.map(l => (
+                  <div key={l.id} className="flex items-start gap-1.5 text-[10px]">
+                    <span className={cn(
+                      "shrink-0 font-mono px-1 rounded",
+                      l.status === "success" ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" :
+                      l.status === "noop" || l.status === "skipped" ? "bg-muted text-muted-foreground" :
+                      "bg-destructive/10 text-destructive",
+                    )}>
+                      {l.new_version || l.prev_version || "—"}
+                    </span>
+                    <span className="flex-1 min-w-0 text-muted-foreground truncate" title={l.summary || ""}>
+                      {l.summary || "(요약 없음)"}
+                    </span>
+                    <span className="shrink-0 text-muted-foreground font-mono">
+                      {new Date(l.created_at).toLocaleDateString("ko-KR", { month: "2-digit", day: "2-digit" })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </DialogHeader>
+
         {draft && (
           <div className="p-4 space-y-4">
             {/* 활성 토글 */}
