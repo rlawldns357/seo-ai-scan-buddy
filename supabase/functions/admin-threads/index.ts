@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     }
 
     if (action === "updateItem") {
-      const { id, body: newBody, publish_at, status } = body;
+      const { id, body: newBody, publish_at, status, pause_reason } = body;
       if (!id) throw new Error("id 필수");
       const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (typeof newBody === "string") patch.body = newBody.slice(0, 500);
@@ -100,6 +100,9 @@ Deno.serve(async (req) => {
       if (status === "ready" || status === "draft") {
         patch.status = status;
         patch.error_message = null;
+      }
+      if (typeof pause_reason === "string") {
+        patch.pause_reason = pause_reason.slice(0, 500) || null;
       }
       const { error } = await supabase
         .from("social_publish_queue")
