@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { Send, RefreshCw, PlayCircle, Trash2, Loader2, CheckCircle2, X, MessageCircle, ScrollText, Radio, Sparkles, Pencil, Calendar, Save, Zap, Clock } from "lucide-react";
+import { Send, RefreshCw, PlayCircle, Trash2, Loader2, CheckCircle2, X, MessageCircle, ScrollText, Radio, Sparkles, Pencil, Calendar, Save, Zap, Clock, RotateCw, Settings2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 import { Textarea } from "@/components/ui/textarea";
