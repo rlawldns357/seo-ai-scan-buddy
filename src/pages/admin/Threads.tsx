@@ -539,6 +539,7 @@ function AutogenRuleCard({ settings, onSave, engineVersion, onGenerate, generati
   const [saving, setSaving] = useState(false);
   const [learning, setLearning] = useState(false);
   const [logs, setLogs] = useState<Array<{ id: string; created_at: string; prev_version: string | null; new_version: string | null; summary: string | null; status: string }>>([]);
+  const [lastCount, setLastCount] = useState<number | null>(null);
 
   const loadLogs = async () => {
     const { data } = await supabase
