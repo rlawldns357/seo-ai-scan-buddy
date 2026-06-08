@@ -411,7 +411,7 @@ export default function Threads() {
 
       {/* 큐 목록: 대기 → 성공 → 실패 */}
       <div className="grid gap-3 md:grid-cols-3">
-        <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
+        <QueueColumn title={`대기 (${grouped.ready.length})`} items={grouped.ready} onRetry={retry} onDelete={remove} onUpdate={updateItem} onCreate={createItem} />
         <QueueColumn title={`성공 (${grouped.published.length})`} items={grouped.published} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
         <QueueColumn title={`실패 (${grouped.failed.length})`} items={grouped.failed} onRetry={retry} onDelete={remove} onUpdate={updateItem} />
       </div>
