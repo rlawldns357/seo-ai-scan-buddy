@@ -22,22 +22,20 @@ const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 // KST 기준 발행 시간 슬롯 (시간만, 분=0)
 const KST_SLOTS = [10, 14, 19];
 
-function kstSlotToUtcIso(hourKst: number, baseDate = new Date()): string {
-  // KST = UTC+9. 오늘 KST 날짜 기준 hourKst:00:00 → UTC로 환산
-  // 가장 가까운 미래 슬롯을 잡되, 지난 시간이면 내일로
+// hourKst 슬롯 + dayOffset(오늘 기준 +N일)을 UTC ISO로 변환
+function kstSlotToUtcIso(hourKst: number, dayOffset = 0, baseDate = new Date()): string {
   const now = new Date(baseDate);
-  // KST 현재 시각
   const kstNow = new Date(now.getTime() + 9 * 3600 * 1000);
   const target = new Date(Date.UTC(
     kstNow.getUTCFullYear(),
     kstNow.getUTCMonth(),
-    kstNow.getUTCDate(),
+    kstNow.getUTCDate() + dayOffset,
     hourKst,
     0,
     0,
   ));
-  // target은 "KST 자정 기준의 시간"을 UTC로 표현한 것 → -9h
   const utcTarget = new Date(target.getTime() - 9 * 3600 * 1000);
+  // 과거 시각이면 하루 미루기 (dayOffset=0인 오늘 슬롯이 이미 지났을 때)
   if (utcTarget.getTime() <= now.getTime()) {
     utcTarget.setUTCDate(utcTarget.getUTCDate() + 1);
   }
