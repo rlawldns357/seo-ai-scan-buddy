@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     if (action === "list") {
       const { data, error } = await supabase
         .from("social_publish_queue")
-        .select("id, account_id, body, media_type, media_url, publish_at, status, threads_post_id, published_url, error_message, retry_count, created_at, updated_at")
+        .select("id, account_id, body, media_type, media_url, publish_at, status, threads_post_id, published_url, error_message, pause_reason, retry_count, created_at, updated_at")
         .eq("platform", "threads")
         .order("created_at", { ascending: false })
         .limit(200);
