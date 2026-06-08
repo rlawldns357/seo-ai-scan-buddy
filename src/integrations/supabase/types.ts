@@ -1444,6 +1444,7 @@ export type Database = {
           id: string
           media_type: string
           media_url: string | null
+          pause_reason: string | null
           platform: string
           publish_at: string
           published_url: string | null
@@ -1461,6 +1462,7 @@ export type Database = {
           id?: string
           media_type?: string
           media_url?: string | null
+          pause_reason?: string | null
           platform?: string
           publish_at?: string
           published_url?: string | null
@@ -1478,6 +1480,7 @@ export type Database = {
           id?: string
           media_type?: string
           media_url?: string | null
+          pause_reason?: string | null
           platform?: string
           publish_at?: string
           published_url?: string | null

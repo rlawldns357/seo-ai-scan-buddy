@@ -1,0 +1,1 @@
+ALTER TABLE public.social_publish_queue ADD COLUMN IF NOT EXISTS pause_reason text;
