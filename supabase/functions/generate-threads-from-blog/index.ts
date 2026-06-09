@@ -22,6 +22,15 @@ const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 // KST 기준 발행 시간 슬롯 — 하루 10건을 10~19시에 1시간 간격으로 분산
 const KST_SLOTS = [10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
 
+function isProjectAnonJwt(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1] || ""));
+    return payload?.ref === "dmnrbmarbvirtymhszww" && payload?.role === "anon";
+  } catch {
+    return false;
+  }
+}
+
 // hourKst 슬롯 + dayOffset(오늘 기준 +N일)을 UTC ISO로 변환
 function kstSlotToUtcIso(hourKst: number, dayOffset = 0, baseDate = new Date()): string {
   const now = new Date(baseDate);
@@ -103,13 +112,19 @@ Deno.serve(async (req) => {
     const lovableKey = Deno.env.get("LOVABLE_API_KEY");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const publishableKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY");
+    const publishableKeys = Deno.env.get("SUPABASE_PUBLISHABLE_KEYS");
 
     const auth = req.headers.get("authorization") || "";
     const bearer = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : "";
     const isAdmin = adminPassword && password === adminPassword;
     const isCron = expectedCron && cronSecret === expectedCron;
     const isService = serviceKey && bearer === serviceKey;
-    const isAnonCron = anonKey && bearer === anonKey;
+    const cronBearerKeys = [anonKey, publishableKey, publishableKeys]
+      .flatMap((value) => (value || "").split(","))
+      .map((value) => value.trim())
+      .filter(Boolean);
+    const isAnonCron = cronBearerKeys.includes(bearer) || isProjectAnonJwt(bearer);
     if (!isAdmin && !isCron && !isService && !isAnonCron) {
       console.error(`AUTH_FAIL bearer_len=${bearer.length} service_len=${serviceKey?.length||0} cron_hdr_len=${cronSecret?.length||0} expected_cron_len=${expectedCron?.length||0} pw_len=${password?.length||0} hdrs=${[...req.headers.keys()].join(',')}`);
       return new Response(JSON.stringify({ error: "인증 실패" }), {
