@@ -21,6 +21,15 @@ function safeError(e: unknown): string {
   return msg.replace(/access_token=[^&\s"]+/gi, "access_token=***");
 }
 
+function isProjectAnonJwt(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1] || ""));
+    return payload?.ref === "dmnrbmarbvirtymhszww" && payload?.role === "anon";
+  } catch {
+    return false;
+  }
+}
+
 async function postThreads(path: string, params: Record<string, string>, accessToken: string) {
   const form = new URLSearchParams({ ...params, access_token: accessToken });
   const res = await fetch(`${THREADS_API}${path}`, {
@@ -65,7 +74,7 @@ Deno.serve(async (req) => {
       .flatMap((value) => (value || "").split(","))
       .map((value) => value.trim())
       .filter(Boolean);
-    const isAnonCron = cronBearerKeys.includes(bearer);
+    const isAnonCron = cronBearerKeys.includes(bearer) || isProjectAnonJwt(bearer);
     if (!isAdmin && !isCron && !isService && !isAnonCron) {
       console.error(`AUTH_FAIL bearer_len=${bearer.length} anon_len=${anonKey?.length||0} publishable_len=${publishableKey?.length||0} service_len=${serviceKey?.length||0} cron_hdr_len=${cronSecret?.length||0} expected_cron_len=${expectedCron?.length||0}`);
       return new Response(JSON.stringify({ error: "인증 실패" }), {
