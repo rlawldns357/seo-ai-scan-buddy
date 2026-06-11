@@ -458,7 +458,12 @@ ${links.slice(0, 20).join("\n")}
     }
 
     return new Response(
-      JSON.stringify({ success: true, data: analysis }),
+      JSON.stringify({
+        success: true,
+        data: analysis,
+        geo_fallback_applied: geoFallbackApplied,
+        proxy_country: mainProxyCountry,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
