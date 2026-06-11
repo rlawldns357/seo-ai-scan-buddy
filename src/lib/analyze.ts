@@ -34,6 +34,8 @@ export interface NaverStoreContext {
 
 export type ExtendedDemoResult = DemoResult & {
   storeContext?: NaverStoreContext;
+  geoFallbackApplied?: boolean;
+  proxyCountry?: "KR" | "DEFAULT";
 };
 
 export async function analyzeSite(
