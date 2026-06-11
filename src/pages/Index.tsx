@@ -795,7 +795,14 @@ const Index = () => {
                 result={result ?? undefined}
               />
 
-              {psiError && !result?.storeContext && <PsiErrorBanner error={psiError} onRetry={handleRetryPsi} />}
+              {psiError && !result?.storeContext && (
+                <PsiErrorBanner
+                  error={psiError}
+                  onRetry={handleRetryPsi}
+                  url={normalizedUrl}
+                  geoFallbackApplied={result?.geoFallbackApplied}
+                />
+              )}
 
               {result?.storeContext ? (
                 <div className="rounded-2xl border border-border/60 bg-muted/30 p-4 text-center">

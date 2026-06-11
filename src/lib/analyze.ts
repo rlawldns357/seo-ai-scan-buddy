@@ -34,6 +34,8 @@ export interface NaverStoreContext {
 
 export type ExtendedDemoResult = DemoResult & {
   storeContext?: NaverStoreContext;
+  geoFallbackApplied?: boolean;
+  proxyCountry?: "KR" | "DEFAULT";
 };
 
 export async function analyzeSite(
@@ -73,7 +75,12 @@ export async function analyzeSite(
       return { error: { message: json.error || "분석에 실패했어요." } };
     }
 
-    return { data: json.data as ExtendedDemoResult };
+    const data: ExtendedDemoResult = {
+      ...(json.data as ExtendedDemoResult),
+      geoFallbackApplied: !!json.geo_fallback_applied,
+      proxyCountry: json.proxy_country,
+    };
+    return { data };
   } catch (err: any) {
     if (err.name === "AbortError") {
       return { error: { message: "분석 시간이 초과되었어요. 다시 시도해 주세요." } };
