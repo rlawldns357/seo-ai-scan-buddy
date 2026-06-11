@@ -193,53 +193,85 @@ serve(async (req) => {
 
     console.log("Scraping URL:", formattedUrl);
 
-    // Scrape main page and /about in parallel
-    const scrapeMain = fetch("https://api.firecrawl.dev/v1/scrape", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${firecrawlKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        url: formattedUrl,
-        formats: ["markdown", "html", "rawHtml", "links"],
-        onlyMainContent: false,
-        waitFor: 3000,
-      }),
-    });
-
-    // Build /about URL from the base
+    // Geo-aware Firecrawl: KR 도메인(.kr/.co.kr 등)은 첫 시도부터 한국 프록시를 사용한다.
+    // 해외(US) 프록시는 한국 호스팅의 geo-block(방화벽)으로 자주 막혀서 분석 자체가 실패함.
     const urlObj = new URL(formattedUrl);
+    const hostLower = urlObj.hostname.toLowerCase();
+    const isKrHost = /\.kr$/.test(hostLower) || /\.kr\./.test(hostLower);
     const aboutUrl = `${urlObj.origin}/about`;
-    const scrapeAbout = fetch("https://api.firecrawl.dev/v1/scrape", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${firecrawlKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        url: aboutUrl,
-        formats: ["markdown"],
-        onlyMainContent: true,
-        waitFor: 3000,
-      }),
-    }).catch(() => null);
 
-    const [mainRes, aboutRes] = await Promise.all([scrapeMain, scrapeAbout]);
+    const scrapeOnce = (target: string, formats: unknown[], onlyMain: boolean, useKr: boolean) =>
+      fetch("https://api.firecrawl.dev/v1/scrape", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${firecrawlKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: target,
+          formats,
+          onlyMainContent: onlyMain,
+          waitFor: 3000,
+          ...(useKr ? { location: { country: "KR", languages: ["ko"] } } : {}),
+        }),
+      });
 
-    // Log Firecrawl costs (1 main scrape + 0/1 about scrape)
-    logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "main", url: formattedUrl } });
-    if (aboutRes) logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "about" } });
+    // Scrape main page and /about in parallel.
+    // 1차: KR 호스트면 KR proxy / 그 외는 default
+    let mainProxyCountry: "KR" | "DEFAULT" = isKrHost ? "KR" : "DEFAULT";
+    let geoFallbackApplied = false;
+    let mainRes = await scrapeOnce(
+      formattedUrl,
+      ["markdown", "html", "rawHtml", "links"],
+      false,
+      isKrHost,
+    );
+    let scrapeData = await mainRes.json().catch(() => ({}));
+    logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "main", url: formattedUrl, proxy: mainProxyCountry } });
 
-    const scrapeData = await mainRes.json();
+    // 1차 실패가 timeout/네트워크 류이고 KR을 아직 안 써봤다면 KR proxy로 1회 재시도.
+    // (해외 차단 사이트 자동 우회)
+    const looksGeoBlock =
+      !mainRes.ok ||
+      !scrapeData?.success ||
+      (typeof scrapeData?.error === "string" &&
+        /timeout|timed?\s*out|unreachable|fetch|network|ECONN|forbidden|403/i.test(scrapeData.error));
+    if (!isKrHost && looksGeoBlock) {
+      console.warn("[analyze-site] retrying with KR proxy (geo-block suspected):", scrapeData?.error || mainRes.status);
+      geoFallbackApplied = true;
+      mainProxyCountry = "KR";
+      mainRes = await scrapeOnce(
+        formattedUrl,
+        ["markdown", "html", "rawHtml", "links"],
+        false,
+        true,
+      );
+      scrapeData = await mainRes.json().catch(() => ({}));
+      logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "main_retry_kr", url: formattedUrl, proxy: "KR" } });
+    }
 
-    if (!mainRes.ok || !scrapeData.success) {
+    if (!mainRes.ok || !scrapeData?.success) {
       console.error("Firecrawl error:", scrapeData);
+      const errMsg = String(scrapeData?.error || mainRes.status);
+      // KR 프록시까지 실패했으면 사이트 자체가 닫혀있거나 양방향 차단. 사용자에게 명확히 전달.
+      const friendly =
+        geoFallbackApplied || isKrHost
+          ? `사이트 응답이 없거나 접근이 차단되었어요. 사이트가 정상 운영 중인지, 방화벽 설정(특히 해외 IP 차단)을 확인해 주세요. (${errMsg})`
+          : `크롤링 실패: ${errMsg}`;
       return new Response(
-        JSON.stringify({ success: false, error: `크롤링 실패: ${scrapeData.error || mainRes.status}` }),
+        JSON.stringify({
+          success: false,
+          error: friendly,
+          geo_block_suspected: geoFallbackApplied || isKrHost,
+        }),
         { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // /about: 메인이 KR proxy로 성공했으면 about도 KR로 통일
+    const useKrForAbout = mainProxyCountry === "KR";
+    const aboutRes = await scrapeOnce(aboutUrl, ["markdown"], true, useKrForAbout).catch(() => null);
+    if (aboutRes) logApiCost({ function_name: "analyze-site", model: "firecrawl/scrape", requests: 1, metadata: { stage: "about", proxy: mainProxyCountry } });
 
     const markdown = scrapeData.data?.markdown || scrapeData.markdown || "";
     const html = scrapeData.data?.html || scrapeData.html || "";
