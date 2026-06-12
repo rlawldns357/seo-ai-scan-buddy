@@ -31,7 +31,7 @@ const ResultHeader = lazy(() => import("@/components/ResultHeader"));
 const VerificationLinks = lazy(() => import("@/components/VerificationLinks"));
 const EmailForm = lazy(() => import("@/components/EmailForm"));
 const FunnelCTAs = lazy(() => import("@/components/FunnelCTAs"));
-const PsiErrorBanner = lazy(() => import("@/components/PsiErrorBanner"));
+const SiteAccessBanner = lazy(() => import("@/components/SiteAccessBanner"));
 const ScoreComparison = lazy(() => import("@/components/ScoreComparison"));
 const IndexingStatus = lazy(() => import("@/components/IndexingStatus"));
 
@@ -795,12 +795,15 @@ const Index = () => {
                 result={result ?? undefined}
               />
 
-              {psiError && !result?.storeContext && (
-                <PsiErrorBanner
-                  error={psiError}
-                  onRetry={handleRetryPsi}
+              {/* 통합 접근 실패 배너 — analyzeError + psiError가 동시에 발생해도 1개만 노출.
+                  한국 호스트이거나 KR proxy fallback이 트리거됐으면 "지역 차단 가능성" 톤으로 자동 전환. */}
+              {(analyzeError || psiError) && !result?.storeContext && (
+                <SiteAccessBanner
                   url={normalizedUrl}
+                  analyzeError={analyzeError}
+                  psiError={psiError}
                   geoFallbackApplied={result?.geoFallbackApplied}
+                  onRetry={() => normalizedUrl && runAnalysis(normalizedUrl)}
                 />
               )}
 
@@ -813,7 +816,7 @@ const Index = () => {
               ) : (
                 (psiMobile || psiDesktop) && <LighthouseScores mobile={psiMobile} desktop={psiDesktop} />
               )}
-              {!result?.storeContext && lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && (
+              {!result?.storeContext && lighthouseSkipped && !psiMobile && !psiDesktop && !psiError && !analyzeError && (
                 <div className="flex flex-col items-center gap-2">
                   <button
                     onClick={handleRetryPsi}
@@ -835,18 +838,6 @@ const Index = () => {
                   {psiRetryError && (
                     <p className="text-xs text-destructive font-medium">{psiRetryError}</p>
                   )}
-                </div>
-              )}
-
-              {analyzeError && (
-                <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 text-center">
-                  <p className="text-sm text-destructive font-medium">{analyzeError}</p>
-                  <button
-                    onClick={() => normalizedUrl && runAnalysis(normalizedUrl)}
-                    className="mt-2 text-xs text-primary font-semibold hover:underline"
-                  >
-                    다시 분석하기
-                  </button>
                 </div>
               )}
 
