@@ -270,6 +270,7 @@ const Index = () => {
       setPsiDesktop(null);
       setPsiError(null);
       setAnalyzeError(null);
+      setAnalyzeGeoBlock(false);
       setPsiRetryError(null);
       setCompletedPhases(new Set());
       setLighthouseSkipped(effectiveSkipLighthouse);
