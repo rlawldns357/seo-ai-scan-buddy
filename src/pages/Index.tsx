@@ -125,6 +125,7 @@ const Index = () => {
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const [analyzeGeoBlock, setAnalyzeGeoBlock] = useState(false);
 
   // Skip Lighthouse toggle
   const [skipLighthouse, setSkipLighthouse] = useState(false);
