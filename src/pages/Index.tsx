@@ -806,6 +806,7 @@ const Index = () => {
                   analyzeError={analyzeError}
                   psiError={psiError}
                   geoFallbackApplied={result?.geoFallbackApplied}
+                  geoBlockSuspected={analyzeGeoBlock}
                   onRetry={() => normalizedUrl && runAnalysis(normalizedUrl)}
                 />
               )}
