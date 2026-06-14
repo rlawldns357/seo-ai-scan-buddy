@@ -358,6 +358,7 @@ const Index = () => {
         // Preserve raw debugging info in console while showing a friendly message to the user.
         console.warn("[runAnalysis] analyze failed:", analyzeRes.error);
         setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
+        setAnalyzeGeoBlock(!!analyzeRes.error?.geoBlockSuspected);
         trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
       }
 
