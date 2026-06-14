@@ -9,6 +9,8 @@ interface SiteAccessBannerProps {
   psiError?: PsiError | null;
   /** analyze-site가 KR proxy fallback으로 성공했음 → 외부 도구가 막힐 수 있다는 강한 신호 */
   geoFallbackApplied?: boolean;
+  /** 서버가 명시적으로 "지역 차단 의심"으로 판정 — 가장 강한 신호 */
+  geoBlockSuspected?: boolean;
   onRetry: () => void;
 }
 
