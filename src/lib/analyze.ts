@@ -74,7 +74,12 @@ export async function analyzeSite(
     const json = await res.json();
 
     if (!json.success) {
-      return { error: { message: json.error || "분석에 실패했어요." } };
+      return {
+        error: {
+          message: json.error || "분석에 실패했어요.",
+          geoBlockSuspected: !!json.geo_block_suspected,
+        },
+      };
     }
 
     const data: ExtendedDemoResult = {
