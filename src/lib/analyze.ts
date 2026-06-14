@@ -3,6 +3,8 @@ import { isNaverStoreUrl } from "@/lib/naverStore";
 
 export interface AnalyzeError {
   message: string;
+  /** 서버가 "해외 IP 차단/지역 차단" 의심으로 판정했는지 (Firecrawl + KR proxy 모두 실패 등) */
+  geoBlockSuspected?: boolean;
 }
 
 /**
