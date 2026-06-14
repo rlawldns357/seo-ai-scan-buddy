@@ -125,6 +125,7 @@ const Index = () => {
   const [psiDesktop, setPsiDesktop] = useState<PsiResult | null>(null);
   const [psiError, setPsiError] = useState<PsiError | null>(null);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+  const [analyzeGeoBlock, setAnalyzeGeoBlock] = useState(false);
 
   // Skip Lighthouse toggle
   const [skipLighthouse, setSkipLighthouse] = useState(false);
@@ -269,6 +270,7 @@ const Index = () => {
       setPsiDesktop(null);
       setPsiError(null);
       setAnalyzeError(null);
+      setAnalyzeGeoBlock(false);
       setPsiRetryError(null);
       setCompletedPhases(new Set());
       setLighthouseSkipped(effectiveSkipLighthouse);
@@ -356,6 +358,7 @@ const Index = () => {
         // Preserve raw debugging info in console while showing a friendly message to the user.
         console.warn("[runAnalysis] analyze failed:", analyzeRes.error);
         setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
+        setAnalyzeGeoBlock(!!analyzeRes.error?.geoBlockSuspected);
         trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
       }
 
@@ -803,6 +806,7 @@ const Index = () => {
                   analyzeError={analyzeError}
                   psiError={psiError}
                   geoFallbackApplied={result?.geoFallbackApplied}
+                  geoBlockSuspected={analyzeGeoBlock}
                   onRetry={() => normalizedUrl && runAnalysis(normalizedUrl)}
                 />
               )}

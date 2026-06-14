@@ -3,6 +3,8 @@ import { isNaverStoreUrl } from "@/lib/naverStore";
 
 export interface AnalyzeError {
   message: string;
+  /** 서버가 "해외 IP 차단/지역 차단" 의심으로 판정했는지 (Firecrawl + KR proxy 모두 실패 등) */
+  geoBlockSuspected?: boolean;
 }
 
 /**
@@ -72,7 +74,12 @@ export async function analyzeSite(
     const json = await res.json();
 
     if (!json.success) {
-      return { error: { message: json.error || "분석에 실패했어요." } };
+      return {
+        error: {
+          message: json.error || "분석에 실패했어요.",
+          geoBlockSuspected: !!json.geo_block_suspected,
+        },
+      };
     }
 
     const data: ExtendedDemoResult = {

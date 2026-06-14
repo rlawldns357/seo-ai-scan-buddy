@@ -9,6 +9,8 @@ interface SiteAccessBannerProps {
   psiError?: PsiError | null;
   /** analyze-site가 KR proxy fallback으로 성공했음 → 외부 도구가 막힐 수 있다는 강한 신호 */
   geoFallbackApplied?: boolean;
+  /** 서버가 명시적으로 "지역 차단 의심"으로 판정 — 가장 강한 신호 */
+  geoBlockSuspected?: boolean;
   onRetry: () => void;
 }
 
@@ -41,6 +43,7 @@ export default function SiteAccessBanner({
   analyzeError,
   psiError,
   geoFallbackApplied,
+  geoBlockSuspected,
   onRetry,
 }: SiteAccessBannerProps) {
   const psiAccessLike =
@@ -48,7 +51,8 @@ export default function SiteAccessBanner({
   // analyzeError가 있다는 건 본 분석 자체가 막혔다는 뜻 → 접근/차단 카테고리로 본다
   const accessLike = !!analyzeError || psiAccessLike;
 
-  const geoLikely = accessLike && (geoFallbackApplied || isKoreanHost(url));
+  const geoLikely =
+    accessLike && (geoBlockSuspected || geoFallbackApplied || isKoreanHost(url));
 
   if (geoLikely) {
     const failedAnalyze = !!analyzeError;
