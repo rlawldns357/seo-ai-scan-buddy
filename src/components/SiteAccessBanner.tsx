@@ -43,6 +43,7 @@ export default function SiteAccessBanner({
   analyzeError,
   psiError,
   geoFallbackApplied,
+  geoBlockSuspected,
   onRetry,
 }: SiteAccessBannerProps) {
   const psiAccessLike =
@@ -50,7 +51,8 @@ export default function SiteAccessBanner({
   // analyzeError가 있다는 건 본 분석 자체가 막혔다는 뜻 → 접근/차단 카테고리로 본다
   const accessLike = !!analyzeError || psiAccessLike;
 
-  const geoLikely = accessLike && (geoFallbackApplied || isKoreanHost(url));
+  const geoLikely =
+    accessLike && (geoBlockSuspected || geoFallbackApplied || isKoreanHost(url));
 
   if (geoLikely) {
     const failedAnalyze = !!analyzeError;
