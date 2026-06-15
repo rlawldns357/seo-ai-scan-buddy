@@ -431,6 +431,58 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (action === "blogShareStats") {
+      const statDays = Math.min(Math.max(Number(body.statDays ?? 7), 1), 90);
+      const since = new Date(Date.now() - statDays * 86400000).toISOString();
+      const { data: events } = await supabase
+        .from("analytics_events")
+        .select("event_name, event_data, url, created_at, session_id")
+        .in("event_name", ["share_click", "blog_share_landing", "blog_share_scrape"])
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(5000);
+
+      const slugFromUrl = (value?: string | null) => {
+        if (!value) return "";
+        try {
+          const u = new URL(value);
+          const qs = u.searchParams.get("slug") || u.searchParams.get("shared_slug");
+          if (qs) return qs.replace(/\.html$/i, "");
+          const m = u.pathname.match(/\/blog\/([^/?#]+)/);
+          return m ? decodeURIComponent(m[1]).replace(/\.html$/i, "") : "";
+        } catch {
+          const m = String(value).match(/\/blog\/([^/?#]+)/);
+          return m ? decodeURIComponent(m[1]).replace(/\.html$/i, "") : "";
+        }
+      };
+
+      const bySlug = new Map<string, any>();
+      const totals = { shares: 0, landings: 0, scrapes: 0, kakaoShares: 0, kakaoScrapes: 0 };
+      for (const e of events || []) {
+        const data = e.event_data || {};
+        const slug = String(data.slug || slugFromUrl(data.url || e.url) || "");
+        if (!slug) continue;
+        const row = bySlug.get(slug) || { slug, shares: 0, landings: 0, scrapes: 0, kakaoShares: 0, kakaoScrapes: 0, latestAt: null };
+        row.latestAt = row.latestAt && row.latestAt > e.created_at ? row.latestAt : e.created_at;
+        if (e.event_name === "share_click") {
+          row.shares += 1; totals.shares += 1;
+          if (data.platform === "kakao") { row.kakaoShares += 1; totals.kakaoShares += 1; }
+        } else if (e.event_name === "blog_share_landing") {
+          row.landings += 1; totals.landings += 1;
+        } else if (e.event_name === "blog_share_scrape") {
+          row.scrapes += 1; totals.scrapes += 1;
+          if (/kakao/i.test(String(data.crawler || ""))) { row.kakaoScrapes += 1; totals.kakaoScrapes += 1; }
+        }
+        bySlug.set(slug, row);
+      }
+
+      return new Response(JSON.stringify({
+        range: { days: statDays, since },
+        totals,
+        rows: Array.from(bySlug.values()).sort((a, b) => (b.landings + b.scrapes + b.shares) - (a.landings + a.scrapes + a.shares)).slice(0, 100),
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // ─────────────── SEO Monitor / Indexing Queue / Growth Loop ───────────────
 
     // SEO Monitor: keywords + latest 2 days of results to compute today vs yesterday
