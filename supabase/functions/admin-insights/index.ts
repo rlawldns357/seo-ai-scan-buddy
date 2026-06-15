@@ -459,10 +459,12 @@ Deno.serve(async (req) => {
           success: true,
           inserted: row?.inserted ?? 0,
           deactivated: row?.deactivated ?? 0,
+          totalActive: row?.total_active ?? 0,
           trackingTriggered: !!body.runTracking,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
+
     }
 
     if (action === "blogShareStats") {

@@ -165,55 +165,79 @@ Deno.serve(async (req) => {
   }
 
   const limitParam = parseInt(url.searchParams.get("limit") || "0", 10);
-  const targetKeywords = limitParam > 0 ? keywords.slice(0, limitParam) : keywords;
+  const offsetParam = parseInt(url.searchParams.get("offset") || "0", 10);
+  const concurrencyParam = Math.min(Math.max(parseInt(url.searchParams.get("concurrency") || "3", 10), 1), 6);
+  // Hard cap on per-invocation duration to avoid edge timeout (default 240s).
+  const maxDurationMs = Math.min(Math.max(parseInt(url.searchParams.get("maxMs") || "240000", 10), 30000), 540000);
+  const startedAt = Date.now();
+
+  let targetKeywords = keywords;
+  if (offsetParam > 0) targetKeywords = targetKeywords.slice(offsetParam);
+  if (limitParam > 0) targetKeywords = targetKeywords.slice(0, limitParam);
 
   const rows: any[] = [];
   let processed = 0;
+  let timedOut = false;
 
-  for (const kw of targetKeywords) {
-    // Run both engines in parallel per keyword
-    const [naver, google] = await Promise.all([
-      searchNaver(kw.keyword),
-      searchGoogle(kw.keyword),
-    ]);
-
-    for (const [engine, result] of [
-      ["naver", naver],
-      ["google", google],
-    ] as const) {
-      const items = result.items;
-      const ours = items.find((it) => isOurResult(it.url));
-      const topDomains = Array.from(new Set(items.map((it) => it.domain).filter(Boolean))).slice(0, 10);
-
-      rows.push({
-        keyword_id: kw.id,
-        keyword: kw.keyword,
-        engine,
-        our_exposed: !!ours,
-        our_rank: ours?.rank ?? null,
-        our_url: ours?.url ?? null,
-        our_title: ours?.title ?? null,
-        our_snippet: ours?.snippet ?? null,
-        top10: items,
-        top_domains: topDomains,
-        total_results: (engine === "naver" ? (naver as any).total : items.length) ?? null,
-        error: result.error ?? null,
-      });
+  // Process keywords with bounded concurrency
+  let cursor = 0;
+  async function worker() {
+    while (cursor < targetKeywords.length) {
+      if (Date.now() - startedAt > maxDurationMs) { timedOut = true; return; }
+      const idx = cursor++;
+      const kw = targetKeywords[idx];
+      const [naver, google] = await Promise.all([
+        searchNaver(kw.keyword),
+        searchGoogle(kw.keyword),
+      ]);
+      for (const [engine, result] of [
+        ["naver", naver],
+        ["google", google],
+      ] as const) {
+        const items = result.items;
+        const ours = items.find((it) => isOurResult(it.url));
+        const topDomains = Array.from(new Set(items.map((it) => it.domain).filter(Boolean))).slice(0, 10);
+        rows.push({
+          keyword_id: kw.id,
+          keyword: kw.keyword,
+          engine,
+          our_exposed: !!ours,
+          our_rank: ours?.rank ?? null,
+          our_url: ours?.url ?? null,
+          our_title: ours?.title ?? null,
+          our_snippet: ours?.snippet ?? null,
+          top10: items,
+          top_domains: topDomains,
+          total_results: (engine === "naver" ? (naver as any).total : items.length) ?? null,
+          error: result.error ?? null,
+        });
+      }
+      processed += 1;
+      // Gentle pacing per worker (Naver 10 req/sec cap shared across workers)
+      await new Promise((r) => setTimeout(r, 120));
     }
-    processed += 1;
-    // Gentle pacing for Naver (10 req/sec hard cap, Firecrawl ~1 req/sec)
-    await new Promise((r) => setTimeout(r, 250));
   }
+  await Promise.all(Array.from({ length: concurrencyParam }, () => worker()));
 
-  const { error: insErr } = await supabase.from("serp_tracking_results").insert(rows);
+  // Batch insert in chunks of 200 to avoid payload limits
+  let insErr: any = null;
+  for (let i = 0; i < rows.length; i += 200) {
+    const chunk = rows.slice(i, i + 200);
+    const { error } = await supabase.from("serp_tracking_results").insert(chunk);
+    if (error) { insErr = error; break; }
+  }
 
   return new Response(
     JSON.stringify({
       success: !insErr,
       error: insErr?.message,
       processed,
+      total_keywords: targetKeywords.length,
       rows_inserted: rows.length,
+      timed_out: timedOut,
+      duration_ms: Date.now() - startedAt,
     }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );
 });
+

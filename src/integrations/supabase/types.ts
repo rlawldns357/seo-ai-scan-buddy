@@ -1832,6 +1832,7 @@ export type Database = {
         Returns: {
           deactivated: number
           inserted: number
+          total_active: number
         }[]
       }
     }
