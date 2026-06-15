@@ -14,24 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      _tmp_diag: {
-        Row: {
-          at: string | null
-          k: string | null
-          v: number | null
-        }
-        Insert: {
-          at?: string | null
-          k?: string | null
-          v?: number | null
-        }
-        Update: {
-          at?: string | null
-          k?: string | null
-          v?: number | null
-        }
-        Relationships: []
-      }
       ai_perception_cache: {
         Row: {
           brand: string | null
