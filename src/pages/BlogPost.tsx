@@ -598,14 +598,6 @@ export default function BlogPost() {
   // SPA navigate() would keep serving the homepage HTML shell — useless for SEO.
   useEffect(() => {
     if (!slug) return;
-    // Experiment slugs use clean URL — only normalize trailing slash / index.html.
-    if (isCleanExperiment(slug)) {
-      const target = `/blog/${slug}`;
-      if (location.pathname !== target) {
-        window.location.replace(target + location.search + location.hash);
-      }
-      return;
-    }
     const canonical = blogPostPath(slug);
     if (location.pathname !== canonical) {
       window.location.replace(canonical + location.search + location.hash);
