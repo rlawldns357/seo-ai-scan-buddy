@@ -29,18 +29,10 @@ const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips"
 // Canonical URL form is .html (e.g. /blog/what-is-aeo.html). Lovable host serves
 // .html files directly; clean URLs fall back to SPA index.html (homepage) which
 // breaks per-route SEO. So all internal links / canonical / og:url must use .html.
-// EXCEPT slugs in CLEAN_URL_EXPERIMENT — those use /blog/{slug} to test whether
-// Lovable's new on-request prerender (May 2026) makes clean URLs viable.
-const CLEAN_URL_EXPERIMENT = new Set<string>([
-  "faq-schema-aeo-boost",
-]);
-const isCleanExperiment = (slug: string) => CLEAN_URL_EXPERIMENT.has(slug);
-const blogPostPath = (slug: string) =>
-  isCleanExperiment(slug) ? `/blog/${slug}` : `/blog/${slug}.html`;
-const blogPostUrl = (slug: string) =>
-  isCleanExperiment(slug)
-    ? `https://searchtuneos.com/blog/${slug}`
-    : `https://searchtuneos.com/blog/${slug}.html`;
+// 실험 결과 (2026-06-15): Lovable on-demand prerender 작동 안 함 확인 — clean URL은
+// 여전히 홈페이지 index.html로 fallback (카톡 디버거에서 홈페이지 OG 반환). .html 유지.
+const blogPostPath = (slug: string) => `/blog/${slug}.html`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
 const blogShareUrl = (slug: string) => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share?slug=${encodeURIComponent(slug)}`;
 
 function isNaverPost(slug: string) {
@@ -606,14 +598,6 @@ export default function BlogPost() {
   // SPA navigate() would keep serving the homepage HTML shell — useless for SEO.
   useEffect(() => {
     if (!slug) return;
-    // Experiment slugs use clean URL — only normalize trailing slash / index.html.
-    if (isCleanExperiment(slug)) {
-      const target = `/blog/${slug}`;
-      if (location.pathname !== target) {
-        window.location.replace(target + location.search + location.hash);
-      }
-      return;
-    }
     const canonical = blogPostPath(slug);
     if (location.pathname !== canonical) {
       window.location.replace(canonical + location.search + location.hash);
