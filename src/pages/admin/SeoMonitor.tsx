@@ -95,18 +95,19 @@ export default function SeoMonitor() {
 
   const syncKeywords = async () => {
     setSyncing(true);
-    const res = await adminInvoke<{ success: boolean; inserted: number; deactivated: number; trackingTriggered: boolean; error?: string }>(
+    const res = await adminInvoke<{ success: boolean; inserted: number; deactivated: number; totalActive: number; trackingTriggered: boolean; error?: string }>(
       "syncBlogKeywords",
       { runTracking: true }
     );
     if (res?.success) {
-      toast.success(`블로그 키워드 동기화 — 신규/갱신 ${res.inserted}건, 비활성 ${res.deactivated}건${res.trackingTriggered ? " · SERP 추적 시작" : ""}`);
+      toast.success(`동기화 완료 — 신규/갱신 ${res.inserted}건 · 비활성 ${res.deactivated}건 · 활성 총 ${res.totalActive}개${res.trackingTriggered ? " · SERP 추적 시작" : ""}`);
       setTimeout(load, 4000);
     } else {
       toast.error(res?.error || "동기화 실패");
     }
     setSyncing(false);
   };
+
 
   const addToIndexing = async (r: Row) => {
     const absUrl = toAbsoluteUrl(r.target_url);
