@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, ExternalLink, RefreshCw, ShieldCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { copyToClipboard } from "./_lib";
+import { adminInvoke, copyToClipboard } from "./_lib";
 import { toast } from "@/components/ui/sonner";
 
 const SITE_ORIGIN = "https://searchtuneos.com";
@@ -57,6 +57,8 @@ interface GscData {
   blogPages: GscPage[];
   topQueries: GscQuery[];
 }
+interface ShareRow { slug: string; shares: number; landings: number; scrapes: number; kakaoShares: number; kakaoScrapes: number; latestAt: string | null }
+interface ShareStats { range: { days: number; since: string }; totals: { shares: number; landings: number; scrapes: number; kakaoShares: number; kakaoScrapes: number }; rows: ShareRow[] }
 
 export default function SeoOps() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -66,6 +68,8 @@ export default function SeoOps() {
   const [gsc, setGsc] = useState<GscData | null>(null);
   const [gscError, setGscError] = useState<string | null>(null);
   const [gscDays, setGscDays] = useState(28);
+  const [shareStats, setShareStats] = useState<ShareStats | null>(null);
+  const [shareDays, setShareDays] = useState(7);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -151,6 +155,13 @@ export default function SeoOps() {
   }, []);
 
   useEffect(() => { loadGsc(gscDays); }, [loadGsc, gscDays]);
+
+  const loadShareStats = useCallback(async (days: number) => {
+    const res = await adminInvoke<ShareStats>("blogShareStats", { statDays: days });
+    if (res) setShareStats(res);
+  }, []);
+
+  useEffect(() => { loadShareStats(shareDays); }, [loadShareStats, shareDays]);
 
 
 
