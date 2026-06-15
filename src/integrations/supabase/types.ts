@@ -1827,6 +1827,13 @@ export type Database = {
         Args: { p_hour: number; p_minute: number }
         Returns: undefined
       }
+      sync_blog_serp_keywords: {
+        Args: never
+        Returns: {
+          deactivated: number
+          inserted: number
+        }[]
+      }
     }
     Enums: {
       app_role: "free" | "beta" | "lite" | "pro" | "studio" | "admin"
