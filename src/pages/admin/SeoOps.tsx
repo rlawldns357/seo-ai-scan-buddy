@@ -260,6 +260,64 @@ export default function SeoOps() {
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+          <CardTitle className="text-base">카톡 공유 랜딩 추적 (최근 {shareDays}일)</CardTitle>
+          <div className="flex gap-1">
+            {[1, 7, 28].map(d => (
+              <Button key={d} size="sm" variant={shareDays === d ? "default" : "outline"} className="h-7 text-xs px-2"
+                onClick={() => setShareDays(d)}>{d}d</Button>
+            ))}
+            <Button size="sm" variant="outline" className="h-7 text-xs px-2" onClick={() => loadShareStats(shareDays)}>새로고침</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!shareStats ? <div className="text-xs text-muted-foreground">불러오는 중…</div> : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <Kpi label="공유 클릭" value={shareStats.totals.shares} />
+                <Kpi label="카톡 공유" value={shareStats.totals.kakaoShares} tone={shareStats.totals.kakaoShares > 0 ? "good" : "warn"} />
+                <Kpi label="공유 랜딩" value={shareStats.totals.landings} tone={shareStats.totals.landings > 0 ? "good" : "warn"} />
+                <Kpi label="프리뷰 스크랩" value={shareStats.totals.scrapes} />
+                <Kpi label="카톡 스크랩" value={shareStats.totals.kakaoScrapes} tone={shareStats.totals.kakaoScrapes > 0 ? "good" : "warn"} />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="text-muted-foreground border-b">
+                    <tr className="text-left">
+                      <th className="py-1.5 pr-2">slug</th>
+                      <th className="py-1.5 pr-2 text-right">공유</th>
+                      <th className="py-1.5 pr-2 text-right">카톡</th>
+                      <th className="py-1.5 pr-2 text-right">랜딩</th>
+                      <th className="py-1.5 pr-2 text-right">스크랩</th>
+                      <th className="py-1.5 pr-2">최근</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {shareStats.rows.slice(0, 20).map(r => (
+                      <tr key={r.slug} className="border-b last:border-b-0">
+                        <td className="py-1.5 pr-2 font-mono text-[11px] truncate max-w-[280px]" title={r.slug}>{r.slug}</td>
+                        <td className="py-1.5 pr-2 text-right font-mono">{r.shares}</td>
+                        <td className="py-1.5 pr-2 text-right font-mono">{r.kakaoShares}</td>
+                        <td className="py-1.5 pr-2 text-right font-mono">{r.landings}</td>
+                        <td className="py-1.5 pr-2 text-right font-mono">{r.scrapes}</td>
+                        <td className="py-1.5 pr-2 text-muted-foreground whitespace-nowrap">{r.latestAt ? new Date(r.latestAt).toLocaleString("ko-KR") : "—"}</td>
+                      </tr>
+                    ))}
+                    {shareStats.rows.length === 0 && (
+                      <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">아직 공유/랜딩 이벤트 없음</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                카톡에서 공유 URL을 미리보기로 긁으면 <strong>카톡 스크랩</strong>, 사람이 글로 들어오면 <strong>공유 랜딩</strong>이 증가합니다.
+              </p>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
           <CardTitle className="text-base">Google Search Console 실측 (최근 {gscDays}일)</CardTitle>
           <div className="flex gap-1">
             {[7, 28, 90].map(d => (
