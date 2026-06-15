@@ -10,7 +10,7 @@ const headers = {
 
 function buildHtmlHeaders() {
   const h = new Headers(headers);
-  h.set("Content-Type", "text/html; charset=utf-8");
+  h.set("content-type", "text/html; charset=utf-8");
   h.set("Cache-Control", "public, max-age=300, s-maxage=300");
   return h;
 }
@@ -151,7 +151,7 @@ Deno.serve(async (req) => {
 
     await trackShareScrape(supabase, data, req).catch((e) => console.warn("[blog-share] tracking failed", e));
 
-    return new Response(new TextEncoder().encode(buildHtml(data, req)), {
+    return new Response(buildHtml(data, req), {
       status: 200,
       headers: buildHtmlHeaders(),
     });
