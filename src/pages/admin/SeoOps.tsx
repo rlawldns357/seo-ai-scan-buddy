@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Copy, ExternalLink, RefreshCw, ShieldCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { copyToClipboard } from "./_lib";
+import { adminInvoke, copyToClipboard } from "./_lib";
 import { toast } from "@/components/ui/sonner";
 
 const SITE_ORIGIN = "https://searchtuneos.com";
@@ -57,6 +57,8 @@ interface GscData {
   blogPages: GscPage[];
   topQueries: GscQuery[];
 }
+interface ShareRow { slug: string; shares: number; landings: number; scrapes: number; kakaoShares: number; kakaoScrapes: number; latestAt: string | null }
+interface ShareStats { range: { days: number; since: string }; totals: { shares: number; landings: number; scrapes: number; kakaoShares: number; kakaoScrapes: number }; rows: ShareRow[] }
 
 export default function SeoOps() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -66,6 +68,8 @@ export default function SeoOps() {
   const [gsc, setGsc] = useState<GscData | null>(null);
   const [gscError, setGscError] = useState<string | null>(null);
   const [gscDays, setGscDays] = useState(28);
+  const [shareStats, setShareStats] = useState<ShareStats | null>(null);
+  const [shareDays, setShareDays] = useState(7);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -151,6 +155,13 @@ export default function SeoOps() {
   }, []);
 
   useEffect(() => { loadGsc(gscDays); }, [loadGsc, gscDays]);
+
+  const loadShareStats = useCallback(async (days: number) => {
+    const res = await adminInvoke<ShareStats>("blogShareStats", { statDays: days });
+    if (res) setShareStats(res);
+  }, []);
+
+  useEffect(() => { loadShareStats(shareDays); }, [loadShareStats, shareDays]);
 
 
 
@@ -244,6 +255,64 @@ export default function SeoOps() {
             <strong>indexnow</strong> = 자동 제출 (Bing/Naver/Yandex), <strong>google</strong> = Search Console 수동 확인 후보,
             <strong> naver</strong> = 서치어드바이저 수동 제출, <strong>both</strong> = 양쪽 수동.
           </p>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+          <CardTitle className="text-base">카톡 공유 랜딩 추적 (최근 {shareDays}일)</CardTitle>
+          <div className="flex gap-1">
+            {[1, 7, 28].map(d => (
+              <Button key={d} size="sm" variant={shareDays === d ? "default" : "outline"} className="h-7 text-xs px-2"
+                onClick={() => setShareDays(d)}>{d}d</Button>
+            ))}
+            <Button size="sm" variant="outline" className="h-7 text-xs px-2" onClick={() => loadShareStats(shareDays)}>새로고침</Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!shareStats ? <div className="text-xs text-muted-foreground">불러오는 중…</div> : (
+            <>
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                <Kpi label="공유 클릭" value={shareStats.totals.shares} />
+                <Kpi label="카톡 공유" value={shareStats.totals.kakaoShares} tone={shareStats.totals.kakaoShares > 0 ? "good" : "warn"} />
+                <Kpi label="공유 랜딩" value={shareStats.totals.landings} tone={shareStats.totals.landings > 0 ? "good" : "warn"} />
+                <Kpi label="프리뷰 스크랩" value={shareStats.totals.scrapes} />
+                <Kpi label="카톡 스크랩" value={shareStats.totals.kakaoScrapes} tone={shareStats.totals.kakaoScrapes > 0 ? "good" : "warn"} />
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead className="text-muted-foreground border-b">
+                    <tr className="text-left">
+                      <th className="py-1.5 pr-2">slug</th>
+                      <th className="py-1.5 pr-2 text-right">공유</th>
+                      <th className="py-1.5 pr-2 text-right">카톡</th>
+                      <th className="py-1.5 pr-2 text-right">랜딩</th>
+                      <th className="py-1.5 pr-2 text-right">스크랩</th>
+                      <th className="py-1.5 pr-2">최근</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {shareStats.rows.slice(0, 20).map(r => (
+                      <tr key={r.slug} className="border-b last:border-b-0">
+                        <td className="py-1.5 pr-2 font-mono text-[11px] truncate max-w-[280px]" title={r.slug}>{r.slug}</td>
+                        <td className="py-1.5 pr-2 text-right font-mono">{r.shares}</td>
+                        <td className="py-1.5 pr-2 text-right font-mono">{r.kakaoShares}</td>
+                        <td className="py-1.5 pr-2 text-right font-mono">{r.landings}</td>
+                        <td className="py-1.5 pr-2 text-right font-mono">{r.scrapes}</td>
+                        <td className="py-1.5 pr-2 text-muted-foreground whitespace-nowrap">{r.latestAt ? new Date(r.latestAt).toLocaleString("ko-KR") : "—"}</td>
+                      </tr>
+                    ))}
+                    {shareStats.rows.length === 0 && (
+                      <tr><td colSpan={6} className="py-4 text-center text-muted-foreground">아직 공유/랜딩 이벤트 없음</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-[10px] text-muted-foreground">
+                카톡에서 공유 URL을 미리보기로 긁으면 <strong>카톡 스크랩</strong>, 사람이 글로 들어오면 <strong>공유 랜딩</strong>이 증가합니다.
+              </p>
+            </>
+          )}
         </CardContent>
       </Card>
 

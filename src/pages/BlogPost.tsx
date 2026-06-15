@@ -14,6 +14,7 @@ import {
 import FunnelCTAs from "@/components/FunnelCTAs";
 import BlogShareButton, { type BlogShareButtonProps } from "@/components/BlogShareButton";
 import { detectBrand, BRAND_STYLES, hasExplicitBrand } from "@/lib/brandMatching";
+import { trackEvent } from "@/lib/analytics";
 
 
 const categoryColor: Record<string, string> = {
@@ -730,6 +731,27 @@ export default function BlogPost() {
     }
     fetchFromDb();
   }, [slug, navigate]);
+
+  useEffect(() => {
+    if (!post || !slug) return;
+    const key = `blog_landing_tracked:${slug}:${location.search || "direct"}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, "1");
+
+    const params = new URLSearchParams(location.search);
+    const referrer = document.referrer || "";
+    const source = params.get("utm_source") || (referrer.includes("blog-share") ? "blog_share" : referrer ? "referrer" : "direct");
+
+    trackEvent("blog_share_landing", {
+      slug,
+      title: post.title,
+      source,
+      campaign: params.get("utm_campaign") || "",
+      medium: params.get("utm_medium") || "",
+      referrer: referrer.slice(0, 240),
+      path: `${location.pathname}${location.search}`,
+    }, blogPostUrl(slug));
+  }, [post, slug, location.pathname, location.search]);
 
   // Compute prev/next
   const { prevPost, nextPost } = useMemo(() => {

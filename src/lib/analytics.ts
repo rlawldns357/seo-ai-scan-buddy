@@ -14,6 +14,8 @@ type EventName =
   | "result_email_submit"
   | "report_email_sent"
   | "share_click"
+  | "blog_share_landing"
+  | "blog_share_scrape"
   | "naver_store_teaser_click"
   | "ask_ai_teaser_click"
   | "copy_prompt"

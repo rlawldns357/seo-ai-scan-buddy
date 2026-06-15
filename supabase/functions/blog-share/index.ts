@@ -10,7 +10,7 @@ const headers = {
 
 function buildHtmlHeaders() {
   const h = new Headers(headers);
-  h.set("Content-Type", "text/html; charset=utf-8");
+  h.set("content-type", "text/html; charset=utf-8");
   h.set("Cache-Control", "public, max-age=300, s-maxage=300");
   return h;
 }
@@ -37,6 +37,7 @@ function resolveSlug(req: Request) {
 
 function buildHtml(post: Record<string, any>, req: Request) {
   const articleUrl = `${SITE}/blog/${encodeURIComponent(post.slug)}.html`;
+  const redirectUrl = `${articleUrl}?utm_source=blog_share&utm_medium=social&utm_campaign=blog_share&shared_slug=${encodeURIComponent(post.slug)}`;
   const shareUrl = req.url;
   const title = `${post.title} – 서치튠OS 블로그`;
   const description = post.excerpt || "SEO·AEO·GEO 실전 가이드";
@@ -90,8 +91,8 @@ function buildHtml(post: Record<string, any>, req: Request) {
   <script>
     (function(){
       var ua = navigator.userAgent || "";
-      var isCrawler = /kakao|facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|bot|crawler|spider/i.test(ua);
-      if (!isCrawler) setTimeout(function(){ location.replace(${JSON.stringify(articleUrl)}); }, 900);
+      var isCrawler = /kakaotalk-scrap|facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|bot|crawler|spider/i.test(ua);
+      if (!isCrawler) setTimeout(function(){ location.replace(${JSON.stringify(redirectUrl)}); }, 450);
     })();
   </script>
 </head>
@@ -100,10 +101,30 @@ function buildHtml(post: Record<string, any>, req: Request) {
     <img src="${esc(image)}" alt="" width="600" height="315" style="width:100%;height:auto;border-radius:16px;margin-bottom:24px" />
     <p style="font-size:14px;color:#666;margin:0 0 8px">서치튠OS 블로그로 이동 중</p>
     <h1 style="font-size:24px;line-height:1.35;margin:0 0 18px">${esc(post.title)}</h1>
-    <a href="${articleUrl}" style="color:#2563eb;font-weight:700">글 바로 보기</a>
+    <a href="${redirectUrl}" style="color:#2563eb;font-weight:700">글 바로 보기</a>
   </main>
 </body>
 </html>`;
+}
+
+function isShareCrawler(userAgent: string) {
+  return /kakaotalk-scrap|facebookexternalhit|twitterbot|linkedinbot|slackbot|discordbot|telegrambot|whatsapp|bot|crawler|spider/i.test(userAgent || "");
+}
+
+async function trackShareScrape(supabase: ReturnType<typeof createClient>, post: Record<string, any>, req: Request) {
+  const userAgent = req.headers.get("user-agent") || "";
+  if (!isShareCrawler(userAgent)) return;
+  await supabase.from("analytics_events").insert({
+    event_name: "blog_share_scrape",
+    event_data: {
+      slug: post.slug,
+      title: post.title,
+      crawler: userAgent.slice(0, 120),
+      referrer: (req.headers.get("referer") || "").slice(0, 240),
+    },
+    session_id: `share-scrape:${crypto.randomUUID()}`,
+    url: req.url,
+  });
 }
 
 Deno.serve(async (req) => {
@@ -128,7 +149,9 @@ Deno.serve(async (req) => {
       return new Response("Blog post not found", { status: 404, headers: { ...headers, "Content-Type": "text/plain; charset=utf-8" } });
     }
 
-    return new Response(new TextEncoder().encode(buildHtml(data, req)), {
+    await trackShareScrape(supabase, data, req).catch((e) => console.warn("[blog-share] tracking failed", e));
+
+    return new Response(buildHtml(data, req), {
       status: 200,
       headers: buildHtmlHeaders(),
     });
