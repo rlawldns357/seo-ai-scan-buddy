@@ -75,6 +75,7 @@ export default function SeoMonitor() {
   const [days, setDays] = useState(7);
   const [loading, setLoading] = useState(false);
   const [triggering, setTriggering] = useState(false);
+  const [syncing, setSyncing] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -90,6 +91,21 @@ export default function SeoMonitor() {
     await adminInvoke("triggerSerpTracking");
     toast.success("SERP 추적 시작 — 약 2~3분 후 새로고침");
     setTimeout(() => { load(); setTriggering(false); }, 4000);
+  };
+
+  const syncKeywords = async () => {
+    setSyncing(true);
+    const res = await adminInvoke<{ success: boolean; inserted: number; deactivated: number; trackingTriggered: boolean; error?: string }>(
+      "syncBlogKeywords",
+      { runTracking: true }
+    );
+    if (res?.success) {
+      toast.success(`블로그 키워드 동기화 — 신규/갱신 ${res.inserted}건, 비활성 ${res.deactivated}건${res.trackingTriggered ? " · SERP 추적 시작" : ""}`);
+      setTimeout(load, 4000);
+    } else {
+      toast.error(res?.error || "동기화 실패");
+    }
+    setSyncing(false);
   };
 
   const addToIndexing = async (r: Row) => {
@@ -133,11 +149,15 @@ export default function SeoMonitor() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Search className="w-6 h-6" /> SEO 모니터</h1>
-          <p className="text-sm text-muted-foreground">키워드별 노출/순위 추적 · 매일 06:00 KST 자동 실행</p>
+          <p className="text-sm text-muted-foreground">키워드별 노출/순위 추적 · 매일 05:55 KST 블로그 자동 동기화 → 06:00 KST 추적</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={load} disabled={loading}>
             <RefreshCw className={`w-3.5 h-3.5 mr-1 ${loading ? "animate-spin" : ""}`} /> 새로고침
+          </Button>
+          <Button variant="outline" size="sm" onClick={syncKeywords} disabled={syncing}>
+            <RefreshCw className={`w-3.5 h-3.5 mr-1 ${syncing ? "animate-spin" : ""}`} />
+            블로그 키워드 동기화
           </Button>
           <Button size="sm" onClick={trigger} disabled={triggering}>
             지금 추적 실행

@@ -431,6 +431,40 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (action === "syncBlogKeywords") {
+      const { data, error } = await supabase.rpc("sync_blog_serp_keywords");
+      if (error) {
+        return new Response(
+          JSON.stringify({ success: false, error: error.message }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      const row = Array.isArray(data) ? data[0] : data;
+      // Optionally chain SERP tracking right after sync so freshly added
+      // keywords get exposed within minutes.
+      if (body.runTracking) {
+        const adminPw = Deno.env.get("ADMIN_PASSWORD");
+        const url = `${Deno.env.get("SUPABASE_URL")}/functions/v1/track-serp-keywords`;
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")}`,
+          },
+          body: JSON.stringify({ password: adminPw, force: true }),
+        }).catch((e) => console.warn("serp trigger after sync failed:", e));
+      }
+      return new Response(
+        JSON.stringify({
+          success: true,
+          inserted: row?.inserted ?? 0,
+          deactivated: row?.deactivated ?? 0,
+          trackingTriggered: !!body.runTracking,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "blogShareStats") {
       const statDays = Math.min(Math.max(Number(body.statDays ?? 7), 1), 90);
       const since = new Date(Date.now() - statDays * 86400000).toISOString();
