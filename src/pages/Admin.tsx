@@ -21,22 +21,35 @@ interface Summary {
   avgDurationSec: number;
   analysisConversion: number;
   leadConversion: number;
+  // new accurate visit metrics
+  pageviews?: number;
+  homePageViews?: number;
+  uniqueSessions?: number;
+  uniqueHomeSessions?: number;
+  homeStartCount?: number;
+  homeCompleteCount?: number;
+  homeEmailCount?: number;
+  homeToStartPct?: number;
+  startToCompletePct?: number;
+  completeToLeadPct?: number;
 }
 
 interface InsightsData {
   summary: Summary;
   eventCounts: Record<string, number>;
-  dailyData: { date: string; sessions: number; analyses: number; leads: number }[];
+  dailyData: { date: string; sessions: number; pageviews?: number; homePageviews?: number; analyses: number; leads: number }[];
   recentLeads: { email: string; source: string; created_at: string }[];
   recentUrls: { url: string; created_at: string }[];
   recentConsultations: { name: string; email: string; phone: string | null; company: string | null; job_title: string | null; site_url: string | null; budget: string | null; interests: string[] | null; concerns: string | null; status: string; created_at: string }[];
 }
 
 const chartConfig: ChartConfig = {
+  pageviews: { label: "페이지뷰", color: "hsl(220 70% 50%)" },
   sessions: { label: "세션", color: "hsl(230 80% 56%)" },
   analyses: { label: "분석", color: "hsl(268 70% 58%)" },
   leads: { label: "리드", color: "hsl(152 60% 46%)" },
 };
+
 
 function formatDuration(sec: number) {
   if (sec < 60) return `${sec}초`;
@@ -290,13 +303,41 @@ export default function Admin() {
           <div className="text-center py-20 text-muted-foreground">로딩 중...</div>
         ) : data && s ? (
           <>
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-              <StatCard icon={Users} label="총 세션" value={s.totalSessions} />
-              <StatCard icon={Clock} label="평균 체류" value={formatDuration(s.avgDurationSec)} />
-              <StatCard icon={Zap} label="분석 실행" value={s.totalAnalyses} sub={`완료율 ${s.analysisConversion}%`} />
-              <StatCard icon={Mail} label="리드 수집" value={s.totalLeads} sub={`전환율 ${s.leadConversion}%`} />
+            {/* Visit metrics (accurate definitions) */}
+            <div>
+              <div className="flex items-baseline justify-between mb-2">
+                <h3 className="text-sm md:text-base font-bold text-foreground">방문 지표</h3>
+                <p className="text-[10px] md:text-xs text-muted-foreground">page_view 기반 · 세션=동일 브라우저 탭</p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                <StatCard icon={Eye} label="페이지뷰" value={(s.pageviews ?? 0).toLocaleString()} sub={`홈 ${(s.homePageViews ?? 0).toLocaleString()}`} />
+                <StatCard icon={Users} label="고유 세션" value={(s.uniqueSessions ?? s.totalSessions).toLocaleString()} sub={`홈 진입 ${(s.uniqueHomeSessions ?? 0).toLocaleString()}`} />
+                <StatCard icon={Clock} label="평균 체류" value={formatDuration(s.avgDurationSec)} />
+                <StatCard icon={Mail} label="리드 수집" value={s.totalLeads} />
+              </div>
             </div>
+
+            {/* Home-page funnel (correct denominators) */}
+            <Card>
+              <CardHeader className="p-3 md:p-6 md:pb-2">
+                <CardTitle className="text-sm md:text-base flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  홈 진입 퍼널
+                  <span className="text-[10px] md:text-xs font-normal text-muted-foreground">홈을 본 세션만 계산</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 md:p-6 md:pt-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+                  <FunnelStep label="홈 진입" value={s.uniqueHomeSessions ?? 0} pct={100} tone="base" />
+                  <FunnelStep label="분석 시작" value={s.homeStartCount ?? 0} pct={s.homeToStartPct ?? 0} tone="good" />
+                  <FunnelStep label="분석 완료" value={s.homeCompleteCount ?? 0} pct={s.startToCompletePct ?? 0} suffix="(시작 대비)" tone="good" />
+                  <FunnelStep label="이메일 리드" value={s.homeEmailCount ?? 0} pct={s.completeToLeadPct ?? 0} suffix="(완료 대비)" tone="warn" />
+                </div>
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-3">
+                  ※ 기존 "전체 세션 기준" 전환율: 분석 {s.analysisConversion}% · 리드 {s.leadConversion}% (블로그·공유 랜딩 포함)
+                </p>
+              </CardContent>
+            </Card>
 
             {/* Daily Chart */}
             <Card>
@@ -314,6 +355,7 @@ export default function Admin() {
                     />
                     <YAxis className="text-xs" width={28} />
                     <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="pageviews" fill="var(--color-pageviews)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="sessions" fill="var(--color-sessions)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="analyses" fill="var(--color-analyses)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="leads" fill="var(--color-leads)" radius={[4, 4, 0, 0]} />
@@ -321,6 +363,7 @@ export default function Admin() {
                 </ChartContainer>
               </CardContent>
             </Card>
+
 
             {/* Blog Posts Management */}
             <Card>
@@ -991,3 +1034,38 @@ function StatCard({
     </Card>
   );
 }
+
+function FunnelStep({
+  label,
+  value,
+  pct,
+  suffix,
+  tone = "base",
+}: {
+  label: string;
+  value: number;
+  pct: number;
+  suffix?: string;
+  tone?: "base" | "good" | "warn" | "bad";
+}) {
+  const toneCls =
+    tone === "good" ? "text-emerald-600 bg-emerald-500/10"
+    : tone === "warn" ? "text-amber-600 bg-amber-500/10"
+    : tone === "bad" ? "text-rose-600 bg-rose-500/10"
+    : "text-foreground bg-muted";
+  return (
+    <div className="border border-border rounded-lg p-2.5 md:p-3">
+      <div className="text-[10px] md:text-xs text-muted-foreground truncate">{label}</div>
+      <div className="text-base md:text-xl font-bold text-foreground leading-tight mt-0.5">
+        {value.toLocaleString()}
+      </div>
+      <div className="mt-1.5 flex items-center gap-1.5">
+        <span className={`text-[10px] md:text-xs font-semibold px-1.5 py-0.5 rounded ${toneCls}`}>
+          {pct}%
+        </span>
+        {suffix && <span className="text-[10px] text-muted-foreground truncate">{suffix}</span>}
+      </div>
+    </div>
+  );
+}
+
