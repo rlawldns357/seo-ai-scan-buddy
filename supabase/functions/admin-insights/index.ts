@@ -979,22 +979,52 @@ Deno.serve(async (req) => {
     const leads = await fetchAll("email_leads", sinceStr);
     const consultations = await fetchAll("consultation_requests", sinceStr);
 
-    // Process data
-    const sessions = new Set(events?.map((e: any) => e.session_id).filter(Boolean));
-    
-    // Daily sessions
+    // ===== Visit / Funnel definitions =====
+    // pageviews          : count of `page_view` events (every SPA route change)
+    // uniqueSessions     : distinct session_id with ANY event
+    // homePageViews      : `page_view` events with path '/' (root landing)
+    // homeSessions       : distinct session_id that ever saw the home page
+    // analysis_start/_complete : counted only when session also saw home page
+    //                            (so blog-only visitors don't dilute the funnel)
+    const isHomePath = (p: any) => {
+      if (typeof p !== "string") return false;
+      // strip query/hash, normalize trailing slash
+      const clean = p.split("?")[0].split("#")[0].replace(/\/+$/, "");
+      return clean === "" || clean === "/";
+    };
+
+    const sessions = new Set<string>();
+    const homeSessions = new Set<string>();
+    let pageviews = 0;
+    let homePageViews = 0;
+
+    // Daily aggregates
     const dailySessions: Record<string, Set<string>> = {};
+    const dailyPageviews: Record<string, number> = {};
+    const dailyHomePageviews: Record<string, number> = {};
     const dailyAnalyses: Record<string, number> = {};
     const dailyLeads: Record<string, number> = {};
 
-    events?.forEach((e: any) => {
-      const day = e.created_at.substring(0, 10);
+    for (const e of events || []) {
+      if (e.session_id) sessions.add(e.session_id);
+      const day = (e.created_at as string).substring(0, 10);
       if (!dailySessions[day]) dailySessions[day] = new Set();
       if (e.session_id) dailySessions[day].add(e.session_id);
+
+      if (e.event_name === "page_view") {
+        pageviews += 1;
+        dailyPageviews[day] = (dailyPageviews[day] || 0) + 1;
+        const path = e.event_data?.path ?? (typeof e.url === "string" ? new URL(e.url, "https://x").pathname : null);
+        if (isHomePath(path)) {
+          homePageViews += 1;
+          dailyHomePageviews[day] = (dailyHomePageviews[day] || 0) + 1;
+          if (e.session_id) homeSessions.add(e.session_id);
+        }
+      }
       if (e.event_name === "analysis_start") {
         dailyAnalyses[day] = (dailyAnalyses[day] || 0) + 1;
       }
-    });
+    }
 
     leads?.forEach((l: any) => {
       const day = l.created_at.substring(0, 10);
@@ -1006,12 +1036,15 @@ Deno.serve(async (req) => {
       ...Object.keys(dailySessions),
       ...Object.keys(dailyAnalyses),
       ...Object.keys(dailyLeads),
+      ...Object.keys(dailyPageviews),
     ]);
     const dailyData = Array.from(allDays)
       .sort()
       .map((day) => ({
         date: day,
         sessions: dailySessions[day]?.size || 0,
+        pageviews: dailyPageviews[day] || 0,
+        homePageviews: dailyHomePageviews[day] || 0,
         analyses: dailyAnalyses[day] || 0,
         leads: dailyLeads[day] || 0,
       }));
@@ -1042,27 +1075,36 @@ Deno.serve(async (req) => {
       ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
       : 0;
 
-    // Conversion: sessions with analysis_complete / total sessions
-    const sessionsWithComplete = new Set(
-      events
-        ?.filter((e: any) => e.event_name === "analysis_complete")
-        .map((e: any) => e.session_id)
-        .filter(Boolean)
-    );
+    // Home-page funnel: only sessions that actually saw the home page.
+    const sessionsWithStart = new Set<string>();
+    const sessionsWithComplete = new Set<string>();
+    const sessionsWithEmail = new Set<string>();
+    for (const e of events || []) {
+      if (!e.session_id) continue;
+      if (e.event_name === "analysis_start") sessionsWithStart.add(e.session_id);
+      else if (e.event_name === "analysis_complete") sessionsWithComplete.add(e.session_id);
+      else if (e.event_name === "email_submit_success" || e.event_name === "sticky_email_submit") sessionsWithEmail.add(e.session_id);
+    }
 
+    const intersect = (a: Set<string>, b: Set<string>) => {
+      let n = 0;
+      for (const x of a) if (b.has(x)) n += 1;
+      return n;
+    };
+
+    const homeStartCount = intersect(homeSessions, sessionsWithStart);
+    const homeCompleteCount = intersect(homeSessions, sessionsWithComplete);
+    const homeEmailCount = intersect(homeSessions, sessionsWithEmail);
+
+    // % off the home-session denominator (the real top-of-funnel for the analyzer).
+    const homeToStartPct = homeSessions.size ? Math.round((homeStartCount / homeSessions.size) * 100) : 0;
+    const startToCompletePct = sessionsWithStart.size ? Math.round((sessionsWithComplete.size / sessionsWithStart.size) * 100) : 0;
+    const completeToLeadPct = sessionsWithComplete.size ? Math.round((sessionsWithEmail.size / sessionsWithComplete.size) * 100) : 0;
+
+    // Legacy fields (kept for backwards compatibility — denominator = all sessions).
     const analysisConversion = sessions.size
       ? Math.round((sessionsWithComplete.size / sessions.size) * 100)
       : 0;
-
-    // Lead conversion: sessions with email submit / total sessions
-    const sessionsWithEmail = new Set(
-      events
-        ?.filter((e: any) =>
-          e.event_name === "email_submit_success" || e.event_name === "sticky_email_submit"
-        )
-        .map((e: any) => e.session_id)
-        .filter(Boolean)
-    );
     const leadConversion = sessions.size
       ? Math.round((sessionsWithEmail.size / sessions.size) * 100)
       : 0;
@@ -1093,6 +1135,19 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         summary: {
+          // New, accurate visit metrics
+          pageviews,
+          homePageViews,
+          uniqueSessions: sessions.size,
+          uniqueHomeSessions: homeSessions.size,
+          // Home-page funnel (correct denominators)
+          homeStartCount,
+          homeCompleteCount,
+          homeEmailCount,
+          homeToStartPct,
+          startToCompletePct,
+          completeToLeadPct,
+          // Legacy / kept-as-is for existing UI
           totalSessions: sessions.size,
           totalAnalyses: eventCounts["analysis_start"] || 0,
           totalCompleted: eventCounts["analysis_complete"] || 0,
@@ -1109,6 +1164,7 @@ Deno.serve(async (req) => {
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (e) {
     return new Response(
       JSON.stringify({ error: e.message || "서버 오류" }),
