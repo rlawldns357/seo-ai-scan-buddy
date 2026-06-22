@@ -21,22 +21,35 @@ interface Summary {
   avgDurationSec: number;
   analysisConversion: number;
   leadConversion: number;
+  // new accurate visit metrics
+  pageviews?: number;
+  homePageViews?: number;
+  uniqueSessions?: number;
+  uniqueHomeSessions?: number;
+  homeStartCount?: number;
+  homeCompleteCount?: number;
+  homeEmailCount?: number;
+  homeToStartPct?: number;
+  startToCompletePct?: number;
+  completeToLeadPct?: number;
 }
 
 interface InsightsData {
   summary: Summary;
   eventCounts: Record<string, number>;
-  dailyData: { date: string; sessions: number; analyses: number; leads: number }[];
+  dailyData: { date: string; sessions: number; pageviews?: number; homePageviews?: number; analyses: number; leads: number }[];
   recentLeads: { email: string; source: string; created_at: string }[];
   recentUrls: { url: string; created_at: string }[];
   recentConsultations: { name: string; email: string; phone: string | null; company: string | null; job_title: string | null; site_url: string | null; budget: string | null; interests: string[] | null; concerns: string | null; status: string; created_at: string }[];
 }
 
 const chartConfig: ChartConfig = {
+  pageviews: { label: "페이지뷰", color: "hsl(220 70% 50%)" },
   sessions: { label: "세션", color: "hsl(230 80% 56%)" },
   analyses: { label: "분석", color: "hsl(268 70% 58%)" },
   leads: { label: "리드", color: "hsl(152 60% 46%)" },
 };
+
 
 function formatDuration(sec: number) {
   if (sec < 60) return `${sec}초`;
