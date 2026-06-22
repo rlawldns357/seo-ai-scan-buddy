@@ -303,13 +303,41 @@ export default function Admin() {
           <div className="text-center py-20 text-muted-foreground">로딩 중...</div>
         ) : data && s ? (
           <>
-            {/* Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
-              <StatCard icon={Users} label="총 세션" value={s.totalSessions} />
-              <StatCard icon={Clock} label="평균 체류" value={formatDuration(s.avgDurationSec)} />
-              <StatCard icon={Zap} label="분석 실행" value={s.totalAnalyses} sub={`완료율 ${s.analysisConversion}%`} />
-              <StatCard icon={Mail} label="리드 수집" value={s.totalLeads} sub={`전환율 ${s.leadConversion}%`} />
+            {/* Visit metrics (accurate definitions) */}
+            <div>
+              <div className="flex items-baseline justify-between mb-2">
+                <h3 className="text-sm md:text-base font-bold text-foreground">방문 지표</h3>
+                <p className="text-[10px] md:text-xs text-muted-foreground">page_view 기반 · 세션=동일 브라우저 탭</p>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-4">
+                <StatCard icon={Eye} label="페이지뷰" value={(s.pageviews ?? 0).toLocaleString()} sub={`홈 ${(s.homePageViews ?? 0).toLocaleString()}`} />
+                <StatCard icon={Users} label="고유 세션" value={(s.uniqueSessions ?? s.totalSessions).toLocaleString()} sub={`홈 진입 ${(s.uniqueHomeSessions ?? 0).toLocaleString()}`} />
+                <StatCard icon={Clock} label="평균 체류" value={formatDuration(s.avgDurationSec)} />
+                <StatCard icon={Mail} label="리드 수집" value={s.totalLeads} />
+              </div>
             </div>
+
+            {/* Home-page funnel (correct denominators) */}
+            <Card>
+              <CardHeader className="p-3 md:p-6 md:pb-2">
+                <CardTitle className="text-sm md:text-base flex items-center gap-2">
+                  <Activity className="w-4 h-4" />
+                  홈 진입 퍼널
+                  <span className="text-[10px] md:text-xs font-normal text-muted-foreground">홈을 본 세션만 계산</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-3 md:p-6 md:pt-2">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+                  <FunnelStep label="홈 진입" value={s.uniqueHomeSessions ?? 0} pct={100} tone="base" />
+                  <FunnelStep label="분석 시작" value={s.homeStartCount ?? 0} pct={s.homeToStartPct ?? 0} tone="good" />
+                  <FunnelStep label="분석 완료" value={s.homeCompleteCount ?? 0} pct={s.startToCompletePct ?? 0} suffix="(시작 대비)" tone="good" />
+                  <FunnelStep label="이메일 리드" value={s.homeEmailCount ?? 0} pct={s.completeToLeadPct ?? 0} suffix="(완료 대비)" tone="warn" />
+                </div>
+                <p className="text-[10px] md:text-xs text-muted-foreground mt-3">
+                  ※ 기존 "전체 세션 기준" 전환율: 분석 {s.analysisConversion}% · 리드 {s.leadConversion}% (블로그·공유 랜딩 포함)
+                </p>
+              </CardContent>
+            </Card>
 
             {/* Daily Chart */}
             <Card>
@@ -327,6 +355,7 @@ export default function Admin() {
                     />
                     <YAxis className="text-xs" width={28} />
                     <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="pageviews" fill="var(--color-pageviews)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="sessions" fill="var(--color-sessions)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="analyses" fill="var(--color-analyses)" radius={[4, 4, 0, 0]} />
                     <Bar dataKey="leads" fill="var(--color-leads)" radius={[4, 4, 0, 0]} />
@@ -334,6 +363,7 @@ export default function Admin() {
                 </ChartContainer>
               </CardContent>
             </Card>
+
 
             {/* Blog Posts Management */}
             <Card>
