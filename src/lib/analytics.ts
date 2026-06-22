@@ -1,4 +1,5 @@
 type EventName =
+  | "page_view"
   | "analysis_start"
   | "analysis_complete"
   | "analysis_fail"
