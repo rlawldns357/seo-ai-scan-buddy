@@ -1034,3 +1034,38 @@ function StatCard({
     </Card>
   );
 }
+
+function FunnelStep({
+  label,
+  value,
+  pct,
+  suffix,
+  tone = "base",
+}: {
+  label: string;
+  value: number;
+  pct: number;
+  suffix?: string;
+  tone?: "base" | "good" | "warn" | "bad";
+}) {
+  const toneCls =
+    tone === "good" ? "text-emerald-600 bg-emerald-500/10"
+    : tone === "warn" ? "text-amber-600 bg-amber-500/10"
+    : tone === "bad" ? "text-rose-600 bg-rose-500/10"
+    : "text-foreground bg-muted";
+  return (
+    <div className="border border-border rounded-lg p-2.5 md:p-3">
+      <div className="text-[10px] md:text-xs text-muted-foreground truncate">{label}</div>
+      <div className="text-base md:text-xl font-bold text-foreground leading-tight mt-0.5">
+        {value.toLocaleString()}
+      </div>
+      <div className="mt-1.5 flex items-center gap-1.5">
+        <span className={`text-[10px] md:text-xs font-semibold px-1.5 py-0.5 rounded ${toneCls}`}>
+          {pct}%
+        </span>
+        {suffix && <span className="text-[10px] text-muted-foreground truncate">{suffix}</span>}
+      </div>
+    </div>
+  );
+}
+
