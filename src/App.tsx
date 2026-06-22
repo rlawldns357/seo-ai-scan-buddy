@@ -16,8 +16,9 @@ const DesignTest = lazy(() => import("./pages/DesignTest.tsx"));
 const Unsubscribe = lazy(() => import("./pages/Unsubscribe.tsx"));
 const About = lazy(() => import("./pages/About.tsx"));
 const NaverStore = lazy(() => import("./pages/NaverStore.tsx"));
-const Admin = lazy(() => import("./pages/Admin.tsx"));
 const AdminLayout = lazy(() => import("./pages/admin/AdminLayout.tsx"));
+const Insights = lazy(() => import("./pages/admin/Insights.tsx"));
+const BlogManager = lazy(() => import("./pages/admin/BlogManager.tsx"));
 const SeoMonitor = lazy(() => import("./pages/admin/SeoMonitor.tsx"));
 const IndexingQueue = lazy(() => import("./pages/admin/IndexingQueue.tsx"));
 const AiGrowthLoop = lazy(() => import("./pages/admin/AiGrowthLoop.tsx"));
@@ -67,8 +68,8 @@ const App = () => (
             {/* ───── 관리자 (모두 AdminLayout 사이드바 아래에서 통일) ───── */}
             <Route element={<AdminLayout />}>
               <Route path="/admin" element={<Navigate to="/admin/insights" replace />} />
-              <Route path="/admin/insights" element={<Admin />} />
-              <Route path="/admin/blog" element={<Admin />} />
+              <Route path="/admin/insights" element={<Insights />} />
+              <Route path="/admin/blog" element={<BlogManager />} />
               <Route path="/admin/content" element={<Content />} />
               <Route path="/admin/seo" element={<SeoMonitor />} />
               <Route path="/admin/credits" element={<Credits />} />
