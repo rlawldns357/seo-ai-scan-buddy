@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Sparkles, Send, Layers } from "lucide-react";
 
@@ -27,11 +27,11 @@ const STATUS_LABEL: Record<string, string> = {
   published: "발행",
 };
 
-const STATUS_VARIANT: Record<string, "default" | "secondary" | "outline"> = {
-  published: "default",
-  scheduled: "secondary",
-  draft: "outline",
-  idea: "outline",
+const STATUS_CLASS: Record<string, string> = {
+  published: "bg-primary/15 text-primary",
+  scheduled: "bg-secondary text-secondary-foreground",
+  draft: "bg-muted text-muted-foreground",
+  idea: "bg-muted text-muted-foreground",
 };
 
 export default function Content() {
@@ -112,9 +112,9 @@ export default function Content() {
                     <div key={p.id} className="py-3 flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 mb-1">
-                          <Badge variant={STATUS_VARIANT[p.status] ?? "outline"} className="text-[10px]">
+                          <span className={cn("inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium", STATUS_CLASS[p.status] ?? "bg-muted text-muted-foreground")}>
                             {STATUS_LABEL[p.status] ?? p.status}
-                          </Badge>
+                          </span>
                           {typeof p.view_count === "number" && p.view_count > 0 && (
                             <span className="text-[11px] text-muted-foreground">조회 {p.view_count}</span>
                           )}
