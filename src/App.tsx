@@ -26,6 +26,7 @@ const OpsReadonly = lazy(() => import("./pages/admin/OpsReadonly.tsx"));
 const SeoOps = lazy(() => import("./pages/admin/SeoOps.tsx"));
 const QaStatus = lazy(() => import("./pages/admin/QaStatus.tsx"));
 const Threads = lazy(() => import("./pages/admin/Threads.tsx"));
+const Content = lazy(() => import("./pages/admin/Content.tsx"));
 
 const Blog = lazy(() => import("./pages/Blog.tsx"));
 const BlogPost = lazy(() => import("./pages/BlogPost.tsx"));
@@ -68,14 +69,24 @@ const App = () => (
               <Route path="/admin" element={<Navigate to="/admin/insights" replace />} />
               <Route path="/admin/insights" element={<Admin />} />
               <Route path="/admin/blog" element={<Admin />} />
-              <Route path="/admin/seo-monitor" element={<SeoMonitor />} />
-              <Route path="/admin/seo-ops" element={<SeoOps />} />
-              <Route path="/admin/indexing-queue" element={<IndexingQueue />} />
-              <Route path="/admin/qa-status" element={<QaStatus />} />
-              
-              <Route path="/admin/ai-growth-loop" element={<AiGrowthLoop />} />
-              <Route path="/admin/threads" element={<Threads />} />
+              <Route path="/admin/content" element={<Content />} />
+              <Route path="/admin/seo" element={<SeoMonitor />} />
               <Route path="/admin/credits" element={<Credits />} />
+              <Route path="/admin/system" element={<QaStatus />} />
+
+              {/* 레거시 경로 흡수 — 새 6탭으로 redirect */}
+              <Route path="/admin/seo-monitor" element={<Navigate to="/admin/seo" replace />} />
+              <Route path="/admin/seo-ops" element={<Navigate to="/admin/seo" replace />} />
+              <Route path="/admin/indexing-queue" element={<Navigate to="/admin/seo" replace />} />
+              <Route path="/admin/ai-growth-loop" element={<Navigate to="/admin/seo" replace />} />
+              <Route path="/admin/qa-status" element={<Navigate to="/admin/system" replace />} />
+              <Route path="/admin/threads" element={<Navigate to="/admin/content" replace />} />
+
+              {/* 레거시 직접 접근용 (Content 탭의 '구 Threads 페이지 열기' 링크) */}
+              <Route path="/admin/threads-legacy" element={<Threads />} />
+              <Route path="/admin/seo-ops-legacy" element={<SeoOps />} />
+              <Route path="/admin/indexing-queue-legacy" element={<IndexingQueue />} />
+              <Route path="/admin/ai-growth-loop-legacy" element={<AiGrowthLoop />} />
             </Route>
             {/* 읽기 전용 자동 점검(Hermes 등) — 토큰 기반, 관리자 비번 무관 */}
             <Route path="/admin/ops-readonly" element={<OpsReadonly />} />

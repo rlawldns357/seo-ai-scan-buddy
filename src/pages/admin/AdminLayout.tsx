@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, NavLink, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Lock, BarChart3, FileText, Search, Inbox, Sparkles, Wallet, ShieldCheck, Activity, Menu, X, Send } from "lucide-react";
+import { Lock, BarChart3, FileText, Search, Wallet, Activity, Menu, X, Layers } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,14 +9,11 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/admin/insights", label: "인사이트", icon: BarChart3 },
-  { to: "/admin/blog", label: "블로그 관리", icon: FileText },
-  { to: "/admin/seo-monitor", label: "SEO 모니터", icon: Search },
-  { to: "/admin/seo-ops", label: "SEO Ops Center", icon: ShieldCheck },
-  { to: "/admin/indexing-queue", label: "색인 큐", icon: Inbox },
-  { to: "/admin/qa-status", label: "QA Status", icon: Activity },
-  { to: "/admin/ai-growth-loop", label: "AI 성장 루프", icon: Sparkles },
-  { to: "/admin/threads", label: "Threads 발행", icon: Send },
-  { to: "/admin/credits", label: "크레딧 / 비용", icon: Wallet },
+  { to: "/admin/blog", label: "블로그 (자체)", icon: FileText },
+  { to: "/admin/content", label: "콘텐츠 (AutoBlog)", icon: Layers },
+  { to: "/admin/seo", label: "SEO", icon: Search },
+  { to: "/admin/credits", label: "비용 / 크레딧", icon: Wallet },
+  { to: "/admin/system", label: "시스템", icon: Activity },
 ];
 
 export default function AdminLayout() {
