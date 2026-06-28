@@ -468,8 +468,18 @@ function detectRecommendation(text: string, host: string, brand: string, aliases
 }
 
 // ── 대화형 awareness 프롬프트 (사람들이 실제로 챗봇에 물어보듯) ──
-function buildAwarenessPrompt(url: string, brand: string): string {
-  return `"${brand}" 또는 ${url} 라는 브랜드/사이트 알아? 안다면 무슨 서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 추측해서 지어내지 마.`;
+// 🛡️ host가 *.naver.com이면 URL을 프롬프트에서 제거한다.
+// (AI가 도메인의 'naver.com'만 보고 "네이버 스마트스토어는 판매자 플랫폼…"
+//  처럼 플랫폼 자체를 설명해버리는 false positive 방지)
+function buildAwarenessPrompt(url: string, brand: string, category: string = ""): string {
+  const isNaverHost = (() => {
+    try { return /(^|\.)naver\.com$/i.test(new URL(url).hostname); } catch { return false; }
+  })();
+  const catHint = category ? ` (분야: ${category})` : "";
+  if (isNaverHost) {
+    return `"${brand}"${catHint}라는 브랜드 알아? 안다면 무슨 브랜드/서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 중요: '네이버 스마트스토어', '브랜드스토어', '네이버 쇼핑' 같은 플랫폼 자체에 대한 설명은 절대 하지 마. 그 플랫폼 위에 입점한 '브랜드 자체'를 모르면 "모릅니다"라고만 답해. 추측 금지.`;
+  }
+  return `"${brand}"${catHint} 또는 ${url} 라는 브랜드/사이트 알아? 안다면 무슨 서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 추측해서 지어내지 마.`;
 }
 
 // ── 카테고리 인텐트 감지 (현재 미사용 — 모든 질의를 자연 통일 패턴으로) ──
