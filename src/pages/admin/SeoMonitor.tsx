@@ -215,6 +215,78 @@ export default function SeoMonitor() {
         <Kpi label="하락" value={summary?.falling ?? 0} icon={<TrendingDown className="w-3 h-3" />} tone="bad" />
       </div>
 
+      {/* GSC 색인 진단 */}
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm flex items-center justify-between gap-2 flex-wrap">
+            <span className="flex items-center gap-2"><Search className="w-4 h-4" /> Google 색인 진단 (URL Inspection)</span>
+            <span className="text-xs font-normal text-muted-foreground">매일 06:30 KST 자동 · 미색인 글은 자동으로 IndexNow 재핑 + 색인 큐 적재</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0 space-y-3">
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-xs">
+            <Kpi label="진단 누적" value={gscSummary?.total ?? 0} />
+            <Kpi label="색인됨 (PASS)" value={gscSummary?.pass ?? 0} tone="good" />
+            <Kpi label="발견-미색인" value={gscSummary?.discovered_not_indexed ?? 0} tone="bad" />
+            <Kpi label="크롤-미색인" value={gscSummary?.crawled_not_indexed ?? 0} tone="warn" />
+            <Kpi label="부분(PARTIAL)" value={gscSummary?.partial ?? 0} tone="warn" />
+            <Kpi label="실패(FAIL)" value={gscSummary?.fail ?? 0} tone="bad" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" onClick={() => runGscAudit("auto")} disabled={gscRunning}>
+              <RefreshCw className={`w-3.5 h-3.5 mr-1 ${gscRunning ? "animate-spin" : ""}`} />
+              지금 진단 (최근 3일 PASS 제외)
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => runGscAudit("all")} disabled={gscRunning}>전체 재진단</Button>
+            <Button size="sm" variant="outline" onClick={() => runGscAudit("unindexed")} disabled={gscRunning}>미색인만 재진단</Button>
+            <Button size="sm" variant="outline" onClick={loadGsc}>새로고침</Button>
+          </div>
+          {gscItems.length > 0 && (
+            <div className="border rounded-md overflow-hidden">
+              <div className="max-h-72 overflow-auto text-xs">
+                <table className="w-full">
+                  <thead className="bg-muted sticky top-0">
+                    <tr className="text-left">
+                      <th className="px-2 py-1.5">URL</th>
+                      <th className="px-2 py-1.5">판정</th>
+                      <th className="px-2 py-1.5">색인 상태</th>
+                      <th className="px-2 py-1.5">마지막 크롤</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {gscItems
+                      .filter((i) => i.verdict !== "PASS")
+                      .slice(0, 100)
+                      .map((i) => (
+                        <tr key={i.url} className="border-t hover:bg-muted/50">
+                          <td className="px-2 py-1.5 max-w-[280px] truncate">
+                            <a href={i.url} target="_blank" rel="noreferrer" className="hover:underline inline-flex items-center gap-1">
+                              {i.url.replace("https://searchtuneos.com", "")}
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </td>
+                          <td className="px-2 py-1.5">
+                            <span className={
+                              i.verdict === "FAIL" ? "text-destructive" :
+                              i.verdict === "PARTIAL" ? "text-amber-600 dark:text-amber-400" :
+                              "text-muted-foreground"
+                            }>{i.verdict || "—"}</span>
+                          </td>
+                          <td className="px-2 py-1.5 text-muted-foreground">{i.coverage_state || "—"}</td>
+                          <td className="px-2 py-1.5 text-muted-foreground">{i.last_crawl_time ? new Date(i.last_crawl_time).toLocaleDateString("ko-KR") : "—"}</td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="px-2 py-1.5 text-[11px] text-muted-foreground bg-muted/30 border-t">
+                ※ 위 목록은 미색인(PASS 아님)만 표시. 진단 시점에 자동으로 IndexNow 재핑 + 색인 큐에 적재됩니다.
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Filters */}
       <Card>
         <CardContent className="pt-4 pb-4 flex flex-wrap gap-2 items-center text-xs">
