@@ -424,6 +424,14 @@ function detectAwareness(
   const hostMatch = !isNaverHost && lower.includes(host.toLowerCase());
   const tokens = [brand, ...aliases].map((s) => (s || "").trim()).filter((s) => s.length >= 2);
   const matchKind = tokenMatchKind(text, tokens);
+
+  // 🛡️ 플랫폼 가드: 네이버 호스트인데 응답이 플랫폼 일반 설명으로 채워지고
+  // 브랜드명/별칭은 단어경계 매칭 실패라면 "AI가 사실은 모른다"로 강제 다운그레이드.
+  if (isNaverHost && matchKind !== "strict") {
+    const PLATFORM_PAT = /(스마트\s*스토어|브랜드\s*스토어|네이버\s*쇼핑|네이버\s*스토어|판매자\s*센터|쇼핑\s*검색|smartstore|brand\s*store|naver\s*shopping)/i;
+    if (PLATFORM_PAT.test(text)) return { awareness: "no" };
+  }
+
   // 도메인 또는 브랜드명을 단어 경계로 정확히 언급 = yes (언급됨)
   if (hostMatch || matchKind === "strict") return { awareness: "yes" };
   // 공백/기호 제거 후에만 매칭되는 경우 = partial (모호한 언급)
@@ -431,8 +439,6 @@ function detectAwareness(
 
   // 🛡️ 의미 정합성 폴백: 브랜드명을 직접 언급 안 했어도, 답변이 우리가 판단한
   // 실제 카테고리와 일치하면 "AI가 무슨 사이트인지는 알았다"고 본다.
-  // (evabin 케이스: Gemini가 "여성 의류와 잡화를 판매하는 패션 쇼핑몰"이라
-  //  카테고리만 정확히 답한 경우 → 미포함이 아니라 yes 격상)
   const catTokens = meaningfulCategoryTokens(category);
   if (catTokens.length > 0 && text.trim().length >= 12) {
     const squashedText = squash(text);
@@ -440,7 +446,6 @@ function detectAwareness(
       (n, t) => (squashedText.includes(squash(t)) ? n + 1 : n),
       0,
     );
-    // 의미 토큰 중 1개 이상이면 의미상 일치 → "yes" (브랜드명은 모르지만 정체는 인지)
     if (hitCount >= 1) return { awareness: "yes" };
   }
   return { awareness: "no" };
