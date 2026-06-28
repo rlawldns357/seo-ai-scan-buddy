@@ -762,6 +762,12 @@ Deno.serve(async (req) => {
         blog: (blog.body?.items ?? []).slice(0, 3).map((i: any) => stripTags(i.title)),
         webkr: webkrItems.slice(0, 3).map((i: any) => stripTags(i.title)),
       },
+      brandContext: {
+        brandName: brandContext.brandName,
+        aliases: brandContext.aliases,
+        category: brandContext.category,
+        source: brandContext.source,
+      },
     },
     engineMeta: {
       rulebook: "naver-webmaster-bible",
