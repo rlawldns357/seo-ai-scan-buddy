@@ -851,18 +851,27 @@ const Index = () => {
                   <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
                     <p className="text-xs sm:text-sm text-foreground leading-relaxed">
                       <span className="font-bold text-primary">대신 더 중요한 걸 살펴봤어요.</span>{" "}
-                      네이버 스토어는 SEO/AEO/GEO 점수 적용에 한계가 있어요. 그래서 스토어 URL에서 추출한 키워드{" "}
-                      <span className="font-mono font-semibold">"{result.storeContext.slug}"</span>
-                      {"\u00A0"}기준으로, ChatGPT·Claude·Gemini·Perplexity가 이 브랜드를 어떻게 인식하고 있을지 한번 물어봤어요.
-                      <span className="block mt-1.5 text-[11px] text-muted-foreground">
-                        ※ URL 슬러그라 실제 브랜드명과 다를 수 있어요. 결과는 참고용으로 봐주세요.
+                      네이버 스토어는 SEO/AEO/GEO 점수 적용에 한계가 있어요. 그래서 스토어 페이지에서 추출한 브랜드{" "}
+                      <span className="font-mono font-semibold">
+                        "{result.storeContext.brandContext?.brandName || result.storeContext.slug}"
                       </span>
+                      {result.storeContext.brandContext?.category ? (
+                        <> ({result.storeContext.brandContext.category})</>
+                      ) : null}
+                      {"\u00A0"}기준으로, ChatGPT·Claude·Gemini·Perplexity가 이 브랜드를 어떻게 인식하고 있을지 한번 물어봤어요.
+                      {result.storeContext.brandContext?.source !== "page" && (
+                        <span className="block mt-1.5 text-[11px] text-muted-foreground">
+                          ※ 스토어 페이지에서 브랜드명을 확신하지 못해 URL 슬러그로 진행했어요. 결과는 참고용으로 봐주세요.
+                        </span>
+                      )}
                     </p>
                   </div>
                   <div id="ai-perception" className="scroll-mt-20">
                     <AIPerceptionCard
                       url={normalizedUrl}
-                      brand={result.storeContext.slug}
+                      brand={result.storeContext.brandContext?.brandName || result.storeContext.slug}
+                      aliases={result.storeContext.brandContext?.aliases}
+                      category={result.storeContext.brandContext?.category}
                       onAnswerShareClick={() => {
                         trackEvent("answer_share_button_click", { url: normalizedUrl });
                         setAnswerShareOpen(true);
