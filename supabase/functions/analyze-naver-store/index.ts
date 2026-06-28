@@ -640,12 +640,14 @@ Deno.serve(async (req) => {
 
   const query = store.slug;
 
-  const [shop, blog, cafe, kin, webkr] = await Promise.all([
+  // 🛡️ 브랜드 컨텍스트 추출은 검색과 병렬로 실행 (latency 0 추가)
+  const [shop, blog, cafe, kin, webkr, brandContext] = await Promise.all([
     naverSearch("shop", query, 10),
     naverSearch("blog", query, 10),
     naverSearch("cafearticle", query, 10),
     naverSearch("kin", query, 10),
     naverSearch("webkr", query, 10),
+    extractBrandContext(store.storeUrl, store.slug),
   ]);
 
   // 네이버 API 전체 실패면 명확하게 알린다
