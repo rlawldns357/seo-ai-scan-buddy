@@ -610,7 +610,7 @@ async function probeGemini(url: string, host: string, brand: string, aliases: st
       logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out });
       return j?.choices?.[0]?.message?.content ?? "";
     };
-    const awarenessPrompt = buildAwarenessPrompt(url, brand);
+    const awarenessPrompt = buildAwarenessPrompt(url, brand, category);
     const recPrompts = buildRecPrompts(brand, category, regionHint);
 
     const [aw, ...recs] = await Promise.all([
@@ -673,7 +673,7 @@ async function probePerplexity(url: string, host: string, brand: string, aliases
       };
     };
 
-    const awP = buildAwarenessPrompt(url, brand);
+    const awP = buildAwarenessPrompt(url, brand, category);
     const recPrompts = buildRecPrompts(brand, category, regionHint);
 
     const aw = await ask(awP);
@@ -785,7 +785,7 @@ async function probeChatGPT(url: string, host: string, brand: string, aliases: s
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category, regionHint);
-    const awP = buildAwarenessPrompt(url, brand);
+    const awP = buildAwarenessPrompt(url, brand, category);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -846,7 +846,7 @@ async function probeClaude(url: string, host: string, brand: string, aliases: st
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
     const recPrompts = buildRecPrompts(brand, category, regionHint);
-    const awP = buildAwarenessPrompt(url, brand);
+    const awP = buildAwarenessPrompt(url, brand, category);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -923,7 +923,7 @@ async function probeNaver(url: string, host: string, brand: string, aliases: str
       return j?.result?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category, regionHint);
-    const awP = buildAwarenessPrompt(url, brand);
+    const awP = buildAwarenessPrompt(url, brand, category);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -1058,7 +1058,7 @@ Deno.serve(async (req) => {
 
     if (cached && new Date(cached.expires_at) > new Date()) {
       const r = cached.results as ProbeResult;
-      const awarenessPromptTpl = buildAwarenessPrompt(url, brand);
+      const awarenessPromptTpl = buildAwarenessPrompt(url, brand, category);
       const recPromptsTpl = buildRecPrompts(brand, category, regionHint);
       r.brands = (r.brands || []).map((b) => {
         if (b.status !== "ok") return b;
