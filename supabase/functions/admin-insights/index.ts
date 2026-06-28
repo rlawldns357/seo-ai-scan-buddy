@@ -744,6 +744,39 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // ── GSC Index Coverage ──
+    if (action === "gscIndexCoverageSummary") {
+      const { data: rows } = await supabase
+        .from("gsc_index_coverage")
+        .select("url, slug, verdict, coverage_state, indexing_state, last_crawl_time, inspected_at")
+        .order("inspected_at", { ascending: false })
+        .limit(1000);
+      const items = rows || [];
+      const summary = {
+        total: items.length,
+        pass: items.filter((r: any) => r.verdict === "PASS").length,
+        partial: items.filter((r: any) => r.verdict === "PARTIAL").length,
+        fail: items.filter((r: any) => r.verdict === "FAIL").length,
+        neutral: items.filter((r: any) => r.verdict === "NEUTRAL" || !r.verdict).length,
+        discovered_not_indexed: items.filter((r: any) =>
+          ((r.coverage_state || "").toLowerCase().includes("discovered")) ||
+          ((r.coverage_state || "").includes("발견됨"))).length,
+        crawled_not_indexed: items.filter((r: any) =>
+          ((r.coverage_state || "").toLowerCase().includes("crawled")) &&
+          ((r.coverage_state || "").toLowerCase().includes("not indexed"))).length,
+      };
+      return new Response(JSON.stringify({ items: items.slice(0, 300), summary }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "runGscIndexAudit") {
+      const res = await supabase.functions.invoke("gsc-index-audit", {
+        body: { mode: body.mode || "auto", limit: body.limit ?? 80, autoFix: body.autoFix !== false },
+      });
+      return new Response(JSON.stringify(res.data ?? { success: false, error: res.error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // ── SEO Actions (Growth Loop) ──
     if (action === "listSeoActions") {
       const { data: actions } = await supabase
