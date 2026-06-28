@@ -32,6 +32,12 @@ export interface NaverStoreContext {
     blog: string[];
     webkr: string[];
   };
+  brandContext?: {
+    brandName?: string;
+    aliases?: string[];
+    category?: string;
+    source?: "page" | "slug-fallback";
+  };
 }
 
 export type ExtendedDemoResult = DemoResult & {

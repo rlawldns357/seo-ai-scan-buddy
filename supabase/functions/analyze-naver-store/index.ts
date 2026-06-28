@@ -96,6 +96,107 @@ function stripTags(s: string): string {
 }
 
 /* ────────────────────────────────────────────────────────────────────
+ * 🛡️ 브랜드 컨텍스트 추출 — Firecrawl + Gemini
+ * 슬러그(예: "aromatica")만으로는 AI가 플랫폼("스마트스토어")을
+ * 설명해버리는 false positive를 막기 위해, 실제 스토어 페이지에서
+ * 한글 브랜드명 / 별칭 / 카테고리를 추출한다.
+ * 실패 시 슬러그 폴백 — 분석 자체는 절대 막지 않는다.
+ * ──────────────────────────────────────────────────────────────────── */
+interface BrandContext {
+  brandName?: string;
+  aliases?: string[];
+  category?: string;
+  source: "page" | "slug-fallback";
+}
+
+async function extractBrandContext(storeUrl: string, slug: string): Promise<BrandContext> {
+  const FIRECRAWL_KEY = Deno.env.get("FIRECRAWL_API_KEY");
+  const LOVABLE_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const fallback: BrandContext = { brandName: slug, aliases: [slug], source: "slug-fallback" };
+  if (!FIRECRAWL_KEY || !LOVABLE_KEY) return fallback;
+
+  let pageText = "";
+  try {
+    const fr = await fetch("https://api.firecrawl.dev/v2/scrape", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${FIRECRAWL_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ url: storeUrl, formats: ["markdown", "summary"], onlyMainContent: true }),
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!fr.ok) return fallback;
+    const fj = await fr.json();
+    const md = String(fj?.data?.markdown ?? fj?.markdown ?? "");
+    const sm = String(fj?.data?.summary ?? fj?.summary ?? "");
+    pageText = `${sm}\n\n---\n${md}`.slice(0, 5000).trim();
+  } catch {
+    return fallback;
+  }
+  if (!pageText) return fallback;
+
+  try {
+    const prompt = `다음은 네이버 스토어 페이지의 콘텐츠다. 이 스토어의 실제 브랜드 정보를 JSON으로 추출하라.
+
+URL 슬러그: "${slug}"
+
+[페이지 콘텐츠]
+${pageText}
+
+규칙:
+- "스마트스토어", "브랜드스토어", "네이버 쇼핑" 같은 플랫폼명은 절대 brandName/aliases에 넣지 마라.
+- brandName: 페이지에 표기된 실제 한글(또는 영문) 브랜드명. 추측 금지.
+- aliases: 브랜드의 한글/영문/축약 표기 변형 최대 4개 (브랜드명 자체 포함).
+- category: 이 스토어가 판매하는 카테고리 한국어 4~12자 명사구 (예: "유기농 화장품", "여성 의류 쇼핑몰"). 플랫폼 일반어 금지.
+- 페이지에서 확신할 수 없으면 해당 필드를 빈 문자열로 둬라.
+
+출력은 오직 다음 JSON 한 줄(설명·코드블록 금지):
+{"brandName":"...","aliases":["..."],"category":"..."}`;
+
+    const r = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Lovable-API-Key": LOVABLE_KEY,
+        "X-Lovable-AIG-SDK": "vercel-ai-sdk",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3-flash-preview",
+        messages: [{ role: "user", content: prompt }],
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!r.ok) return fallback;
+    const j = await r.json();
+    logApiCost({
+      function_name: "analyze-naver-store",
+      model: "google/gemini-3-flash-preview",
+      tokens_in: Number(j?.usage?.prompt_tokens ?? 0) || 0,
+      tokens_out: Number(j?.usage?.completion_tokens ?? 0) || 0,
+      metadata: { stage: "extract_brand_context" },
+    });
+    let text = String(j?.choices?.[0]?.message?.content ?? "").trim();
+    text = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+    const parsed = JSON.parse(text);
+
+    const PLATFORM_BAN = /(스마트\s*스토어|브랜드\s*스토어|smartstore|brand\s*store|네이버\s*쇼핑|네이버\s*스토어|판매자\s*센터|쇼핑\s*검색)/i;
+    const cleanStr = (s: any) => {
+      const v = String(s ?? "").trim();
+      if (!v || PLATFORM_BAN.test(v)) return "";
+      return v;
+    };
+    const brandName = cleanStr(parsed.brandName) || slug;
+    const aliasArr: string[] = Array.isArray(parsed.aliases) ? parsed.aliases : [];
+    const aliases = Array.from(
+      new Set([brandName, slug, ...aliasArr.map(cleanStr)].filter((s) => s && s.length >= 2)),
+    ).slice(0, 6);
+    const category = cleanStr(parsed.category);
+
+    return { brandName, aliases, category, source: "page" };
+  } catch {
+    return fallback;
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────
  * 시그널 계산 — 누수율의 진짜 의미를 살리기 위한 멀티 신호
  *
  * 네이버 쇼핑 결과는 link가 보통 smartstore.naver.com/main/products/...
@@ -539,12 +640,14 @@ Deno.serve(async (req) => {
 
   const query = store.slug;
 
-  const [shop, blog, cafe, kin, webkr] = await Promise.all([
+  // 🛡️ 브랜드 컨텍스트 추출은 검색과 병렬로 실행 (latency 0 추가)
+  const [shop, blog, cafe, kin, webkr, brandContext] = await Promise.all([
     naverSearch("shop", query, 10),
     naverSearch("blog", query, 10),
     naverSearch("cafearticle", query, 10),
     naverSearch("kin", query, 10),
     naverSearch("webkr", query, 10),
+    extractBrandContext(store.storeUrl, store.slug),
   ]);
 
   // 네이버 API 전체 실패면 명확하게 알린다
@@ -658,6 +761,12 @@ Deno.serve(async (req) => {
         shop: shopItems.slice(0, 3).map((i: any) => stripTags(i.title)),
         blog: (blog.body?.items ?? []).slice(0, 3).map((i: any) => stripTags(i.title)),
         webkr: webkrItems.slice(0, 3).map((i: any) => stripTags(i.title)),
+      },
+      brandContext: {
+        brandName: brandContext.brandName,
+        aliases: brandContext.aliases,
+        category: brandContext.category,
+        source: brandContext.source,
       },
     },
     engineMeta: {

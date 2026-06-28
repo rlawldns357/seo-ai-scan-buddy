@@ -424,6 +424,14 @@ function detectAwareness(
   const hostMatch = !isNaverHost && lower.includes(host.toLowerCase());
   const tokens = [brand, ...aliases].map((s) => (s || "").trim()).filter((s) => s.length >= 2);
   const matchKind = tokenMatchKind(text, tokens);
+
+  // 🛡️ 플랫폼 가드: 네이버 호스트인데 응답이 플랫폼 일반 설명으로 채워지고
+  // 브랜드명/별칭은 단어경계 매칭 실패라면 "AI가 사실은 모른다"로 강제 다운그레이드.
+  if (isNaverHost && matchKind !== "strict") {
+    const PLATFORM_PAT = /(스마트\s*스토어|브랜드\s*스토어|네이버\s*쇼핑|네이버\s*스토어|판매자\s*센터|쇼핑\s*검색|smartstore|brand\s*store|naver\s*shopping)/i;
+    if (PLATFORM_PAT.test(text)) return { awareness: "no" };
+  }
+
   // 도메인 또는 브랜드명을 단어 경계로 정확히 언급 = yes (언급됨)
   if (hostMatch || matchKind === "strict") return { awareness: "yes" };
   // 공백/기호 제거 후에만 매칭되는 경우 = partial (모호한 언급)
@@ -431,8 +439,6 @@ function detectAwareness(
 
   // 🛡️ 의미 정합성 폴백: 브랜드명을 직접 언급 안 했어도, 답변이 우리가 판단한
   // 실제 카테고리와 일치하면 "AI가 무슨 사이트인지는 알았다"고 본다.
-  // (evabin 케이스: Gemini가 "여성 의류와 잡화를 판매하는 패션 쇼핑몰"이라
-  //  카테고리만 정확히 답한 경우 → 미포함이 아니라 yes 격상)
   const catTokens = meaningfulCategoryTokens(category);
   if (catTokens.length > 0 && text.trim().length >= 12) {
     const squashedText = squash(text);
@@ -440,7 +446,6 @@ function detectAwareness(
       (n, t) => (squashedText.includes(squash(t)) ? n + 1 : n),
       0,
     );
-    // 의미 토큰 중 1개 이상이면 의미상 일치 → "yes" (브랜드명은 모르지만 정체는 인지)
     if (hitCount >= 1) return { awareness: "yes" };
   }
   return { awareness: "no" };
@@ -468,8 +473,18 @@ function detectRecommendation(text: string, host: string, brand: string, aliases
 }
 
 // ── 대화형 awareness 프롬프트 (사람들이 실제로 챗봇에 물어보듯) ──
-function buildAwarenessPrompt(url: string, brand: string): string {
-  return `"${brand}" 또는 ${url} 라는 브랜드/사이트 알아? 안다면 무슨 서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 추측해서 지어내지 마.`;
+// 🛡️ host가 *.naver.com이면 URL을 프롬프트에서 제거한다.
+// (AI가 도메인의 'naver.com'만 보고 "네이버 스마트스토어는 판매자 플랫폼…"
+//  처럼 플랫폼 자체를 설명해버리는 false positive 방지)
+function buildAwarenessPrompt(url: string, brand: string, category: string = ""): string {
+  const isNaverHost = (() => {
+    try { return /(^|\.)naver\.com$/i.test(new URL(url).hostname); } catch { return false; }
+  })();
+  const catHint = category ? ` (분야: ${category})` : "";
+  if (isNaverHost) {
+    return `"${brand}"${catHint}라는 브랜드 알아? 안다면 무슨 브랜드/서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 중요: '네이버 스마트스토어', '브랜드스토어', '네이버 쇼핑' 같은 플랫폼 자체에 대한 설명은 절대 하지 마. 그 플랫폼 위에 입점한 '브랜드 자체'를 모르면 "모릅니다"라고만 답해. 추측 금지.`;
+  }
+  return `"${brand}"${catHint} 또는 ${url} 라는 브랜드/사이트 알아? 안다면 무슨 서비스인지 1~2문장으로만 알려주고, 모르면 "모릅니다"라고만 답해줘. 추측해서 지어내지 마.`;
 }
 
 // ── 카테고리 인텐트 감지 (현재 미사용 — 모든 질의를 자연 통일 패턴으로) ──
@@ -595,7 +610,7 @@ async function probeGemini(url: string, host: string, brand: string, aliases: st
       logApiCost({ function_name: "probe-ai-perception", model, tokens_in: u.tokens_in, tokens_out: u.tokens_out });
       return j?.choices?.[0]?.message?.content ?? "";
     };
-    const awarenessPrompt = buildAwarenessPrompt(url, brand);
+    const awarenessPrompt = buildAwarenessPrompt(url, brand, category);
     const recPrompts = buildRecPrompts(brand, category, regionHint);
 
     const [aw, ...recs] = await Promise.all([
@@ -658,7 +673,7 @@ async function probePerplexity(url: string, host: string, brand: string, aliases
       };
     };
 
-    const awP = buildAwarenessPrompt(url, brand);
+    const awP = buildAwarenessPrompt(url, brand, category);
     const recPrompts = buildRecPrompts(brand, category, regionHint);
 
     const aw = await ask(awP);
@@ -770,7 +785,7 @@ async function probeChatGPT(url: string, host: string, brand: string, aliases: s
       return j?.choices?.[0]?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category, regionHint);
-    const awP = buildAwarenessPrompt(url, brand);
+    const awP = buildAwarenessPrompt(url, brand, category);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -831,7 +846,7 @@ async function probeClaude(url: string, host: string, brand: string, aliases: st
       return blocks.map((b: any) => b?.text ?? "").join("\n");
     };
     const recPrompts = buildRecPrompts(brand, category, regionHint);
-    const awP = buildAwarenessPrompt(url, brand);
+    const awP = buildAwarenessPrompt(url, brand, category);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -908,7 +923,7 @@ async function probeNaver(url: string, host: string, brand: string, aliases: str
       return j?.result?.message?.content ?? "";
     };
     const recPrompts = buildRecPrompts(brand, category, regionHint);
-    const awP = buildAwarenessPrompt(url, brand);
+    const awP = buildAwarenessPrompt(url, brand, category);
     const [aw, ...recs] = await Promise.all([
       ask(awP),
       ...recPrompts.map((p) => ask(p)),
@@ -1043,7 +1058,7 @@ Deno.serve(async (req) => {
 
     if (cached && new Date(cached.expires_at) > new Date()) {
       const r = cached.results as ProbeResult;
-      const awarenessPromptTpl = buildAwarenessPrompt(url, brand);
+      const awarenessPromptTpl = buildAwarenessPrompt(url, brand, category);
       const recPromptsTpl = buildRecPrompts(brand, category, regionHint);
       r.brands = (r.brands || []).map((b) => {
         if (b.status !== "ok") return b;
