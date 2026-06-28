@@ -757,6 +757,60 @@ export type Database = {
         }
         Relationships: []
       }
+      gsc_index_coverage: {
+        Row: {
+          coverage_state: string | null
+          created_at: string
+          google_canonical: string | null
+          id: string
+          indexing_state: string | null
+          inspected_at: string
+          last_crawl_time: string | null
+          page_fetch_state: string | null
+          raw: Json | null
+          robots_txt_state: string | null
+          slug: string | null
+          updated_at: string
+          url: string
+          user_canonical: string | null
+          verdict: string | null
+        }
+        Insert: {
+          coverage_state?: string | null
+          created_at?: string
+          google_canonical?: string | null
+          id?: string
+          indexing_state?: string | null
+          inspected_at?: string
+          last_crawl_time?: string | null
+          page_fetch_state?: string | null
+          raw?: Json | null
+          robots_txt_state?: string | null
+          slug?: string | null
+          updated_at?: string
+          url: string
+          user_canonical?: string | null
+          verdict?: string | null
+        }
+        Update: {
+          coverage_state?: string | null
+          created_at?: string
+          google_canonical?: string | null
+          id?: string
+          indexing_state?: string | null
+          inspected_at?: string
+          last_crawl_time?: string | null
+          page_fetch_state?: string | null
+          raw?: Json | null
+          robots_txt_state?: string | null
+          slug?: string | null
+          updated_at?: string
+          url?: string
+          user_canonical?: string | null
+          verdict?: string | null
+        }
+        Relationships: []
+      }
       identity_audit_log: {
         Row: {
           after_state: Json
