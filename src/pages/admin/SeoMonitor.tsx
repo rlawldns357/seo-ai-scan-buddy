@@ -66,6 +66,20 @@ const GROUP_LABEL: Record<string, string> = {
   reverse: "역키워드",
 };
 
+interface GscCoverageItem {
+  url: string;
+  slug: string | null;
+  verdict: string | null;
+  coverage_state: string | null;
+  indexing_state: string | null;
+  last_crawl_time: string | null;
+  inspected_at: string | null;
+}
+interface GscCoverageSummary {
+  total: number; pass: number; partial: number; fail: number; neutral: number;
+  discovered_not_indexed: number; crawled_not_indexed: number;
+}
+
 export default function SeoMonitor() {
   const [rows, setRows] = useState<Row[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);
@@ -76,6 +90,9 @@ export default function SeoMonitor() {
   const [loading, setLoading] = useState(false);
   const [triggering, setTriggering] = useState(false);
   const [syncing, setSyncing] = useState(false);
+  const [gscSummary, setGscSummary] = useState<GscCoverageSummary | null>(null);
+  const [gscItems, setGscItems] = useState<GscCoverageItem[]>([]);
+  const [gscRunning, setGscRunning] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -84,7 +101,28 @@ export default function SeoMonitor() {
     setLoading(false);
   }, [engine, status, group, days]);
 
-  useEffect(() => { load(); }, [load]);
+  const loadGsc = useCallback(async () => {
+    const res = await adminInvoke<{ items: GscCoverageItem[]; summary: GscCoverageSummary }>("gscIndexCoverageSummary");
+    if (res) { setGscItems(res.items || []); setGscSummary(res.summary); }
+  }, []);
+
+  useEffect(() => { load(); loadGsc(); }, [load, loadGsc]);
+
+  const runGscAudit = async (mode: "auto" | "all" | "unindexed") => {
+    setGscRunning(true);
+    toast.info("GSC 색인 진단 시작 — 글당 약 0.8초, 80건 기준 약 1분");
+    const res = await adminInvoke<{ success: boolean; inspected: number; unindexed: number; indexnow_pinged: number; queued_for_indexing: number; error?: string }>(
+      "runGscIndexAudit", { mode, limit: 120, autoFix: true }
+    );
+    setGscRunning(false);
+    if (res?.success) {
+      toast.success(`진단 ${res.inspected}건 · 미색인 ${res.unindexed}건 · IndexNow ${res.indexnow_pinged}건 · 큐 ${res.queued_for_indexing}건`);
+      loadGsc();
+    } else {
+      toast.error(res?.error || "진단 실패 — GSC 연결을 확인하세요");
+    }
+  };
+
 
   const trigger = async () => {
     setTriggering(true);
