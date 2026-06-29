@@ -849,32 +849,24 @@ Deno.serve(async (req) => {
         "process-email-queue":             { label: "이메일 큐 처리 (5초)",                 category: "이메일",  description: "process-email-queue: pgmq 대기 메일 발송" },
       };
 
-      // deno-lint-ignore no-explicit-any
-      const cronClient = supabase.schema("cron" as any);
-      const jobsRes = await cronClient.from("job").select("jobid, jobname, schedule, active");
+      const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      const [jobsRes, runsRes] = await Promise.all([
+        supabase.rpc("admin_list_cron_jobs"),
+        supabase.rpc("admin_list_cron_runs", { _since: since }),
+      ]);
       const jobs = (jobsRes.data as Array<{ jobid: number; jobname: string; schedule: string; active: boolean }> | null) || [];
+      const runs = (runsRes.data as Array<{ jobid: number; status: string; start_time: string; end_time: string | null }> | null) || [];
 
-      const jobIds = jobs.map(j => j.jobid);
       const runsByJob: Record<number, { last_start: string | null; last_status: string | null; last_duration_ms: number | null; success_24h: number; fail_24h: number }> = {};
-      if (jobIds.length) {
-        const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
-        const runsRes = await cronClient.from("job_run_details")
-          .select("jobid, status, start_time, end_time")
-          .in("jobid", jobIds)
-          .gte("start_time", since)
-          .order("start_time", { ascending: false })
-          .limit(3000);
-        const runs = (runsRes.data as Array<{ jobid: number; status: string; start_time: string; end_time: string | null }> | null) || [];
-        for (const r of runs) {
-          const bucket = runsByJob[r.jobid] ||= { last_start: null, last_status: null, last_duration_ms: null, success_24h: 0, fail_24h: 0 };
-          if (!bucket.last_start) {
-            bucket.last_start = r.start_time;
-            bucket.last_status = r.status;
-            bucket.last_duration_ms = r.end_time ? new Date(r.end_time).getTime() - new Date(r.start_time).getTime() : null;
-          }
-          if (r.status === "succeeded") bucket.success_24h++;
-          else if (r.status === "failed") bucket.fail_24h++;
+      for (const r of runs) {
+        const bucket = runsByJob[r.jobid] ||= { last_start: null, last_status: null, last_duration_ms: null, success_24h: 0, fail_24h: 0 };
+        if (!bucket.last_start) {
+          bucket.last_start = r.start_time;
+          bucket.last_status = r.status;
+          bucket.last_duration_ms = r.end_time ? new Date(r.end_time).getTime() - new Date(r.start_time).getTime() : null;
         }
+        if (r.status === "succeeded") bucket.success_24h++;
+        else if (r.status === "failed") bucket.fail_24h++;
       }
 
       const items = jobs.map(j => {
