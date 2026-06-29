@@ -1874,6 +1874,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_cron_jobs: {
+        Args: never
+        Returns: {
+          active: boolean
+          jobid: number
+          jobname: string
+          schedule: string
+        }[]
+      }
+      admin_list_cron_runs: {
+        Args: { _since: string }
+        Returns: {
+          end_time: string
+          jobid: number
+          start_time: string
+          status: string
+        }[]
+      }
       count_site_products: { Args: { _site_id: string }; Returns: number }
       delete_email: {
         Args: { message_id: number; queue_name: string }
