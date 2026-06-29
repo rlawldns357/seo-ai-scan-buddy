@@ -231,6 +231,8 @@ export default function QaStatus() {
         </CardContent>
       </Card>
 
+      <AutomationsPanel />
+
       <EngineKnowledgeSources />
 
       <p className="text-[11px] text-muted-foreground">
