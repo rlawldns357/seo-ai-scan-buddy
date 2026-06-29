@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ExternalLink } from "lucide-react";
+import EngineKnowledgeSources from "@/components/admin/EngineKnowledgeSources";
 
 const SITE = "https://searchtuneos.com";
 const PROBE_SLUGS = ["what-is-aeo", "seo-vs-aeo-vs-geo", "faq-schema-aeo-boost", "geo-generative-engine-optimization", "ai-crawler-access"];
