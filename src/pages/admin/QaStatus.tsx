@@ -229,6 +229,8 @@ export default function QaStatus() {
         </CardContent>
       </Card>
 
+      <EngineKnowledgeSources />
+
       <p className="text-[11px] text-muted-foreground">
         ※ 이 화면은 read-only 요약입니다. 위험한 자동 수정 버튼은 의도적으로 노출하지 않습니다. 실제 수정은 Lovable 에디터에서 배치 단위로 진행하세요.
       </p>
