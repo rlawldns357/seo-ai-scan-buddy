@@ -831,6 +831,103 @@ Deno.serve(async (req) => {
     }
 
 
+    // ── Automations (pg_cron) ──
+    if (action === "listAutomations") {
+      const META: Record<string, { label: string; category: string; description: string; invokeName?: string }> = {
+        "blog-morning-850":                { label: "블로그 자동 발행 (오전 08:50 KST)",   category: "콘텐츠",  description: "generate-blog-post: 매일 1편 자동 생성·발행", invokeName: "generate-blog-post" },
+        "blog-afternoon-1730":             { label: "블로그 자동 발행 (오후 17:30 KST)",   category: "콘텐츠",  description: "generate-blog-post: 매일 1편 자동 생성·발행", invokeName: "generate-blog-post" },
+        "auto-backfill-blog-gaps-daily":   { label: "블로그 누락 보강 (매일 09:00 KST)",   category: "콘텐츠",  description: "auto-backfill-blog-gaps: 실패/누락 슬롯 재생성", invokeName: "auto-backfill-blog-gaps" },
+        "threads-daily-generate-10":       { label: "Threads 10편 생성 (09:30 KST)",        category: "콘텐츠",  description: "generate-threads-from-blog: 블로그→스레드 변환", invokeName: "generate-threads-from-blog" },
+        "threads-publish-worker-5min":     { label: "Threads 발행 워커 (5분)",              category: "콘텐츠",  description: "publish-threads: 예약된 스레드 자동 게시", invokeName: "publish-threads" },
+        "track-serp-keywords-daily":       { label: "SERP 키워드 추적 (06:00 KST)",         category: "SEO",     description: "track-serp-keywords: 전체 발행글 순위/노출 수집", invokeName: "track-serp-keywords" },
+        "sync-blog-serp-keywords-daily":   { label: "블로그→키워드 동기화 (05:55 KST)",     category: "SEO",     description: "sync_blog_serp_keywords: 발행글로 키워드 테이블 갱신" },
+        "gsc-index-audit-daily":           { label: "GSC 색인 진단 (06:30 KST)",            category: "SEO",     description: "gsc-index-audit: URL Inspection로 색인 상태 점검", invokeName: "gsc-index-audit" },
+        "indexnow-daily-resubmit":         { label: "IndexNow 일괄 재제출 (09:00 KST)",     category: "SEO",     description: "submit-indexnow: 전체 URL IndexNow 핑", invokeName: "submit-indexnow" },
+        "fetch-engine-knowledge-daily":    { label: "엔진 지식 소스 수집 (07:10 KST)",      category: "엔진",    description: "fetch-engine-knowledge: 등록된 레퍼런스 URL 스크랩", invokeName: "fetch-engine-knowledge" },
+        "update-analysis-engine-biweekly": { label: "분석 엔진 업데이트 (1·15일 03:00 KST)", category: "엔진",   description: "update-analysis-engine: 점수 기준/프롬프트 재학습", invokeName: "update-analysis-engine" },
+        "dispatch-soap-opera-daily":       { label: "이메일 SOAP 발송 (09:00 KST)",         category: "이메일",  description: "dispatch-soap-opera: 리드 시퀀스 디스패치", invokeName: "dispatch-soap-opera" },
+        "process-email-queue":             { label: "이메일 큐 처리 (5초)",                 category: "이메일",  description: "process-email-queue: pgmq 대기 메일 발송" },
+      };
+
+      // deno-lint-ignore no-explicit-any
+      const cronClient = supabase.schema("cron" as any);
+      const jobsRes = await cronClient.from("job").select("jobid, jobname, schedule, active");
+      const jobs = (jobsRes.data as Array<{ jobid: number; jobname: string; schedule: string; active: boolean }> | null) || [];
+
+      const jobIds = jobs.map(j => j.jobid);
+      const runsByJob: Record<number, { last_start: string | null; last_status: string | null; last_duration_ms: number | null; success_24h: number; fail_24h: number }> = {};
+      if (jobIds.length) {
+        const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+        const runsRes = await cronClient.from("job_run_details")
+          .select("jobid, status, start_time, end_time")
+          .in("jobid", jobIds)
+          .gte("start_time", since)
+          .order("start_time", { ascending: false })
+          .limit(3000);
+        const runs = (runsRes.data as Array<{ jobid: number; status: string; start_time: string; end_time: string | null }> | null) || [];
+        for (const r of runs) {
+          const bucket = runsByJob[r.jobid] ||= { last_start: null, last_status: null, last_duration_ms: null, success_24h: 0, fail_24h: 0 };
+          if (!bucket.last_start) {
+            bucket.last_start = r.start_time;
+            bucket.last_status = r.status;
+            bucket.last_duration_ms = r.end_time ? new Date(r.end_time).getTime() - new Date(r.start_time).getTime() : null;
+          }
+          if (r.status === "succeeded") bucket.success_24h++;
+          else if (r.status === "failed") bucket.fail_24h++;
+        }
+      }
+
+      const items = jobs.map(j => {
+        const meta = META[j.jobname] || { label: j.jobname, category: "기타", description: "" };
+        const stats = runsByJob[j.jobid] || { last_start: null, last_status: null, last_duration_ms: null, success_24h: 0, fail_24h: 0 };
+        return {
+          jobid: j.jobid,
+          jobname: j.jobname,
+          label: meta.label,
+          category: meta.category,
+          description: meta.description,
+          schedule: j.schedule,
+          active: j.active,
+          triggerable: !!meta.invokeName,
+          ...stats,
+        };
+      }).sort((a, b) => a.category.localeCompare(b.category) || a.label.localeCompare(b.label));
+
+      return new Response(JSON.stringify({ items, generated_at: new Date().toISOString() }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "triggerAutomation") {
+      const TRIGGERABLE: Record<string, { fn: string; payload: Record<string, unknown> }> = {
+        "blog-morning-850":                { fn: "generate-blog-post",         payload: {} },
+        "blog-afternoon-1730":             { fn: "generate-blog-post",         payload: {} },
+        "auto-backfill-blog-gaps-daily":   { fn: "auto-backfill-blog-gaps",    payload: { trigger: "manual" } },
+        "threads-daily-generate-10":       { fn: "generate-threads-from-blog", payload: { count: 10 } },
+        "threads-publish-worker-5min":     { fn: "publish-threads",            payload: { trigger: "manual" } },
+        "track-serp-keywords-daily":       { fn: "track-serp-keywords",        payload: {} },
+        "gsc-index-audit-daily":           { fn: "gsc-index-audit",            payload: { mode: "auto", autoFix: true } },
+        "indexnow-daily-resubmit":         { fn: "submit-indexnow",            payload: { submitAll: true } },
+        "fetch-engine-knowledge-daily":    { fn: "fetch-engine-knowledge",     payload: { source: "manual" } },
+        "update-analysis-engine-biweekly": { fn: "update-analysis-engine",     payload: { trigger: "manual" } },
+        "dispatch-soap-opera-daily":       { fn: "dispatch-soap-opera",        payload: {} },
+      };
+      const job = String(body.jobname || "");
+      const target = TRIGGERABLE[job];
+      if (!target) {
+        return new Response(JSON.stringify({ success: false, error: "이 자동화는 수동 실행을 지원하지 않습니다." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      const startedAt = Date.now();
+      const res = await supabase.functions.invoke(target.fn, { body: target.payload });
+      return new Response(JSON.stringify({
+        success: !res.error,
+        function: target.fn,
+        duration_ms: Date.now() - startedAt,
+        data: res.data ?? null,
+        error: res.error?.message ?? null,
+      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // ── SEO Actions (Growth Loop) ──
     if (action === "listSeoActions") {
       const { data: actions } = await supabase
