@@ -36,6 +36,7 @@ export default function AdminLayout() {
   }, [authed, location.pathname, navigate]);
 
   const handleLogin = async () => {
+    if (!password.trim()) { setError("비밀번호를 입력하세요"); return; }
     setLoading(true); setError("");
     try {
       const { data: res, error: err } = await supabase.functions.invoke("admin-auth", { body: { password } });
