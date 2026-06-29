@@ -128,6 +128,26 @@ Deno.serve(async (req) => {
       }
     }
 
+    // 2.5 Curated knowledge sources (어드민이 등록한 레퍼런스 URL)
+    try {
+      const { data: knowledge } = await supabase
+        .from("engine_knowledge_sources")
+        .select("label, url, last_summary, last_content")
+        .eq("active", true)
+        .not("last_fetched_at", "is", null);
+      for (const k of knowledge || []) {
+        const body = (k.last_summary && k.last_summary.length > 200)
+          ? k.last_summary
+          : (k.last_content || "").slice(0, 4000);
+        if (body) {
+          trendResults.unshift(`[Curated Reference — ${k.label}]\n${body}\nSource: ${k.url}`);
+          trendCitations.push(k.url);
+        }
+      }
+    } catch (e) {
+      console.warn("knowledge sources load failed:", e);
+    }
+
     console.log(`Found ${trendResults.length} trend blocks, ${trendCitations.length} citations`);
 
     // 3. Ask AI to analyze trends and suggest prompt updates
