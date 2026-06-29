@@ -682,6 +682,54 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_knowledge_sources: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          fetch_count: number
+          id: string
+          label: string
+          last_content: string | null
+          last_error: string | null
+          last_fetched_at: string | null
+          last_summary: string | null
+          notes: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          fetch_count?: number
+          id?: string
+          label: string
+          last_content?: string | null
+          last_error?: string | null
+          last_fetched_at?: string | null
+          last_summary?: string | null
+          notes?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          fetch_count?: number
+          id?: string
+          label?: string
+          last_content?: string | null
+          last_error?: string | null
+          last_fetched_at?: string | null
+          last_summary?: string | null
+          notes?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: []
+      }
       engine_update_log: {
         Row: {
           changes_summary: string

@@ -777,6 +777,60 @@ Deno.serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // ── Engine Knowledge Sources (외부 레퍼런스 URL 루프) ──
+    if (action === "listEngineKnowledgeSources") {
+      const { data, error } = await supabase
+        .from("engine_knowledge_sources")
+        .select("id, label, url, category, notes, active, fetch_count, last_fetched_at, last_summary, last_error, created_at")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return new Response(JSON.stringify({ items: data || [] }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "addEngineKnowledgeSource") {
+      const { label, url, category, notes } = body;
+      if (!label || !url) throw new Error("label, url 필수");
+      const { data, error } = await supabase
+        .from("engine_knowledge_sources")
+        .insert({ label, url, category: category || "geo", notes: notes || null })
+        .select("id").maybeSingle();
+      if (error) throw error;
+      return new Response(JSON.stringify({ id: data?.id }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "toggleEngineKnowledgeSource") {
+      const { sourceId, active } = body;
+      if (!sourceId) throw new Error("sourceId 필수");
+      const { error } = await supabase
+        .from("engine_knowledge_sources")
+        .update({ active: !!active })
+        .eq("id", sourceId);
+      if (error) throw error;
+      return new Response(JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "deleteEngineKnowledgeSource") {
+      const { sourceId } = body;
+      if (!sourceId) throw new Error("sourceId 필수");
+      const { error } = await supabase
+        .from("engine_knowledge_sources").delete().eq("id", sourceId);
+      if (error) throw error;
+      return new Response(JSON.stringify({ success: true }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (action === "runEngineKnowledgeFetch") {
+      const res = await supabase.functions.invoke("fetch-engine-knowledge", {
+        body: { sourceId: body.sourceId || null },
+      });
+      return new Response(JSON.stringify(res.data ?? { success: false, error: res.error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+
     // ── SEO Actions (Growth Loop) ──
     if (action === "listSeoActions") {
       const { data: actions } = await supabase

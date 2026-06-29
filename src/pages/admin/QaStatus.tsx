@@ -3,6 +3,7 @@ import { Helmet } from "react-helmet-async";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, AlertTriangle, XCircle, RefreshCw, ExternalLink } from "lucide-react";
+import EngineKnowledgeSources from "@/components/admin/EngineKnowledgeSources";
 
 const SITE = "https://searchtuneos.com";
 const PROBE_SLUGS = ["what-is-aeo", "seo-vs-aeo-vs-geo", "faq-schema-aeo-boost", "geo-generative-engine-optimization", "ai-crawler-access"];
@@ -228,6 +229,8 @@ export default function QaStatus() {
           )}
         </CardContent>
       </Card>
+
+      <EngineKnowledgeSources />
 
       <p className="text-[11px] text-muted-foreground">
         ※ 이 화면은 read-only 요약입니다. 위험한 자동 수정 버튼은 의도적으로 노출하지 않습니다. 실제 수정은 Lovable 에디터에서 배치 단위로 진행하세요.
