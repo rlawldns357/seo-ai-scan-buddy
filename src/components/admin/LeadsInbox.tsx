@@ -155,7 +155,7 @@ export default function LeadsInbox() {
                     >
                       {l.email}<Copy className="w-3 h-3 opacity-40" />
                     </button>
-                    <Badge variant="outline" className={`text-[10px] ${stageBadge(l.stage)}`}>{l.stage}</Badge>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded border ${stageBadge(l.stage)}`}>{l.stage}</span>
                     <span className="text-[10px] text-muted-foreground px-1.5 py-0.5 rounded bg-muted">{l.source}</span>
                     {l.funnel_day_sent ? (
                       <span className="text-[10px] text-muted-foreground">Day {l.funnel_day_sent}/5</span>
