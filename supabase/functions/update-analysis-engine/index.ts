@@ -258,6 +258,31 @@ IMPORTANT RULES:
     const args = JSON.parse(toolCall.function.arguments);
 
     if (args.needs_update && args.updated_prompt) {
+      // 🚨 Schema guard: AI가 필수 JSON 스키마 키를 지운 프롬프트를 커밋하면 채점이 전부 undefined가 됨.
+      // seoScore/aeoScore/geoScore 세 키가 모두 남아있는 경우에만 반영한다.
+      const nextPrompt: string = args.updated_prompt;
+      const schemaOk =
+        /"seoScore"/.test(nextPrompt) &&
+        /"aeoScore"/.test(nextPrompt) &&
+        /"geoScore"/.test(nextPrompt) &&
+        /"seoAxis"/.test(nextPrompt) &&
+        /"aeoAxis"/.test(nextPrompt) &&
+        /"geoAxis"/.test(nextPrompt);
+      if (!schemaOk) {
+        console.warn("Rejecting engine update: schema keys missing from updated_prompt");
+        await supabase.from("engine_update_log").insert({
+          version: currentVersion,
+          changes_summary: (args.changes_summary || "") + " [REJECTED: schema keys missing]",
+          trends_found: { trends: args.trends_found, citations: trendCitations },
+          previous_prompt: currentPrompt,
+          new_prompt: nextPrompt,
+          status: "rejected",
+        });
+        return new Response(
+          JSON.stringify({ success: false, rejected: true, reason: "schema keys missing" }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       // 4. Update the engine config
       const newVersion = currentVersion + 1;
 
