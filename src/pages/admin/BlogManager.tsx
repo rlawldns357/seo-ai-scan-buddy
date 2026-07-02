@@ -138,6 +138,14 @@ export default function BlogManager() {
                     <p className="text-xs text-muted-foreground">{post.date}</p>
                   </div>
                   <button
+                    onClick={() => publishToInblog(post.id, post.title)}
+                    disabled={inblogId === post.id}
+                    className="shrink-0 p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
+                    title="Inblog으로 이관 발행"
+                  >
+                    <Rocket className={`w-4 h-4 ${inblogId === post.id ? "animate-pulse" : ""}`} />
+                  </button>
+                  <button
                     onClick={() => togglePublished(post.id, post.published)}
                     disabled={togglingId === post.id}
                     className={`shrink-0 p-2 rounded-lg transition-colors ${
@@ -149,6 +157,7 @@ export default function BlogManager() {
                   >
                     {post.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
+
                 </div>
               ))
             )}
