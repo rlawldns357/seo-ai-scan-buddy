@@ -119,6 +119,8 @@ export default function Insights() {
         </div>
       </div>
 
+      <LeadsInbox />
+
       {loading && !data ? (
         <div className="text-center py-20 text-muted-foreground">로딩 중...</div>
       ) : data && s ? (
