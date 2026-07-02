@@ -169,8 +169,15 @@ serve(async (req) => {
         .eq("config_key", "analysis_prompt")
         .single();
       if (configRow?.config_value) {
-        ANALYSIS_PROMPT = configRow.config_value;
-        console.log("Using dynamic analysis prompt from DB");
+        // Guard: DB 프롬프트가 필수 JSON 스키마 키(seoScore/aeoScore/geoScore)를 포함하지 않으면 폴백 사용
+        const dbPrompt = configRow.config_value as string;
+        const hasSchema = /"seoScore"/.test(dbPrompt) && /"aeoScore"/.test(dbPrompt) && /"geoScore"/.test(dbPrompt);
+        if (hasSchema) {
+          ANALYSIS_PROMPT = dbPrompt;
+          console.log("Using dynamic analysis prompt from DB");
+        } else {
+          console.warn("DB prompt missing seoScore/aeoScore/geoScore schema — falling back to hardcoded prompt");
+        }
       }
       naverRulebook = await loadNaverRulebook(supabase);
     } catch (e) {
