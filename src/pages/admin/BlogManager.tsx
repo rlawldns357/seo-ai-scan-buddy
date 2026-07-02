@@ -16,6 +16,27 @@ export default function BlogManager() {
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string>("");
+  const [inblogId, setInblogId] = useState<string | null>(null);
+
+  const publishToInblog = async (postId: string, title: string) => {
+    setInblogId(postId);
+    const t = toast.loading(`Inblog 이관: ${title}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("publish-to-inblog", {
+        body: { password: pw(), postId, publish: true },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const inblogPostId = (data as any)?.inblogPostId;
+      const sub = (data as any)?.blogSubdomain;
+      toast.success(`Inblog 발행 완료: #${inblogPostId}${sub ? ` (${sub})` : ""}`, { id: t });
+      console.log("[publish-to-inblog]", data);
+    } catch (e) {
+      toast.error(`실패: ${(e as Error).message}`, { id: t });
+    } finally {
+      setInblogId(null);
+    }
+  };
 
   const pw = () => sessionStorage.getItem("admin_pw") || "";
 
