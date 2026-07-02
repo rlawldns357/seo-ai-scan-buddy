@@ -17,6 +17,7 @@ import { buildImprovementPrompt, buildAxisPrompt } from "@/lib/promptBuilder";
 interface ScoreDashboardProps {
   result: DemoResult;
   url?: string;
+  onReveal?: () => void;
   /**
    * true면 점수 카드를 회색(비활성) 처리하고 verdict / CTA / 긴급배지를 숨김.
    * 네이버 스토어처럼 일반 점수체계 적용이 부적절한 경우 사용.
@@ -156,9 +157,9 @@ function ImprovementRow({ icon, label, item, urgent, onCopy }: { icon: React.Rea
 
 /* ── Summary card (clickable, no detail inside) ── */
 function SummaryCard({
-  axis, score, delay, selected, onClick, compact, url,
+  axis, score, delay, selected, onClick, compact, url, onReveal,
 }: {
-  axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void; compact?: boolean; url?: string;
+  axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void; compact?: boolean; url?: string; onReveal?: () => void;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const config = axisConfig[axis.label as AxisLabel] ?? axisConfig.SEO;
@@ -196,6 +197,7 @@ function SummaryCard({
         ref={cardRef}
         className={`rounded-xl bg-card ${cardRing} animate-fade-up w-full text-left transition-all duration-200 scroll-mt-16`}
         style={{ animationDelay: `${delay / 1000}s` }}
+        onAnimationStart={onReveal}
       >
         <button onClick={() => {
           onClick();
@@ -247,6 +249,7 @@ function SummaryCard({
       onClick={onClick}
       className={`rounded-2xl overflow-hidden bg-card ${cardRing} animate-fade-up flex flex-col h-full text-center transition-all duration-200 hover:shadow-elevated`}
       style={{ animationDelay: `${delay / 1000}s` }}
+      onAnimationStart={onReveal}
     >
       <div className="flex flex-col items-center px-4 pt-5 pb-3 flex-1">
         <div className="flex items-center gap-1.5 mb-1">
@@ -821,7 +824,7 @@ function countIssues(axes: { axis: AxisAnalysis; score: number }[]) {
 }
 
 /* ── Main ── */
-export default function ScoreDashboard({ result, url, disabledMode, disabledReason }: ScoreDashboardProps) {
+export default function ScoreDashboard({ result, url, onReveal, disabledMode, disabledReason }: ScoreDashboardProps) {
   const axes: { axis: AxisAnalysis; score: number; key: AxisLabel }[] = [
     { axis: result.seoAxis, score: result.seoScore, key: "SEO" },
     { axis: result.aeoAxis, score: result.aeoScore, key: "AEO" },
@@ -866,6 +869,7 @@ export default function ScoreDashboard({ result, url, disabledMode, disabledReas
               onClick={() => setSelected(selected === key ? null : key)}
               compact
               url={url}
+              onReveal={i === 0 ? onReveal : undefined}
             />
         ))}
       </div>
@@ -882,6 +886,7 @@ export default function ScoreDashboard({ result, url, disabledMode, disabledReas
               selected={selected === key}
             onClick={() => setSelected(selected === key ? null : key)}
             url={url}
+            onReveal={i === 0 ? onReveal : undefined}
             />
           ))}
         </div>
