@@ -25,3 +25,5 @@ project_id = "dmnrbmarbvirtymhszww"
     verify_jwt = false
   [functions.threads-engine-chat]
     verify_jwt = false
+  [functions.notify-admin-lead]
+    verify_jwt = false
