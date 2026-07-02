@@ -17,6 +17,7 @@ import { template as soapDay3 } from './soap-day-3.tsx'
 import { template as soapDay4 } from './soap-day-4.tsx'
 import { template as soapDay5 } from './soap-day-5.tsx'
 import { template as blogAlert } from './blog-alert.tsx'
+import { template as adminNewLead } from './admin-new-lead.tsx'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'lead-confirmation': leadConfirmation,
@@ -27,4 +28,5 @@ export const TEMPLATES: Record<string, TemplateEntry> = {
   'soap-day-4': soapDay4,
   'soap-day-5': soapDay5,
   'blog-alert': blogAlert,
+  'admin-new-lead': adminNewLead,
 }
