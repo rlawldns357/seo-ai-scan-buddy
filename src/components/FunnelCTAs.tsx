@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FileText, MessageSquare, Bell, CheckCircle, X } from "lucide-react";
+import { CheckCircle, Sparkles, ShieldCheck, Clock, X, FileText, Users, BarChart3 } from "lucide-react";
 import ConsultationModal from "@/components/ConsultationModal";
 import { trackEvent } from "@/lib/analytics";
 import { enrollSoapFunnel } from "@/lib/soapFunnel";
@@ -10,183 +10,147 @@ interface FunnelCTAsProps {
   url?: string;
 }
 
+/**
+ * Grand Slam Offer card (Hormozi $100M Offers + StoryBrand SB7 flow).
+ * Single focused CTA: give email → get customized PDF + gain access to strategy call + updates.
+ * Secondary CTA: consult button. Tertiary: just-notify fallback.
+ */
 export default function FunnelCTAs({ result, url }: FunnelCTAsProps) {
-  const [step, setStep] = useState<"idle" | "email" | "email-done" | "consult">("idle");
+  const [step, setStep] = useState<"idle" | "email-done" | "consult">("idle");
   const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState("");
   const [agreed, setAgreed] = useState(false);
-  const [agreeError, setAgreeError] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<"" | "duplicate" | "error">("");
 
-  const handleEmailSubmit = async () => {
-    setEmailError("");
-    setAgreeError("");
-    setEmailStatus("");
+  const submit = async () => {
+    setError("");
     const trimmed = email.trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
-      setEmailError("이메일 형식을 확인해 주세요.");
+      setError("이메일 형식을 확인해 주세요.");
       return;
     }
     if (!agreed) {
-      setAgreeError("동의가 필요해요.");
+      setError("개인정보 수집·마케팅 수신 동의가 필요합니다.");
       return;
     }
-
     setLoading(true);
     try {
-      const r = await enrollSoapFunnel(trimmed, "funnel_step1", {
+      const r = await enrollSoapFunnel(trimmed, "grand_slam_offer", {
         url,
         seo: result?.seoScore,
         aeo: result?.aeoScore,
         geo: result?.geoScore,
       });
       if (r.error) {
-        setEmailStatus("error");
+        setError("일시적 오류입니다. 잠시 후 다시 시도해 주세요.");
         trackEvent("email_submit_fail", { email: trimmed, reason: r.error });
-      } else if (r.duplicate) {
-        setEmailStatus("duplicate");
-        trackEvent("email_submit_duplicate", { email: trimmed });
-        setTimeout(() => setStep("email-done"), 1500);
       } else {
-        trackEvent("email_submit_success", { email: trimmed, source: "funnel_step1" });
+        trackEvent("email_submit_success", { email: trimmed, source: "grand_slam_offer", duplicate: r.duplicate });
         setStep("email-done");
       }
     } catch {
-      setEmailStatus("error");
+      setError("일시적 오류입니다. 잠시 후 다시 시도해 주세요.");
     } finally {
       setLoading(false);
     }
   };
 
+  const worstAxis = result
+    ? ([
+        { k: "SEO", v: result.seoScore ?? 100 },
+        { k: "AEO", v: result.aeoScore ?? 100 },
+        { k: "GEO", v: result.geoScore ?? 100 },
+      ].sort((a, b) => a.v - b.v)[0])
+    : null;
+
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* 1. 무료 상담 신청 - 2-Step Funnel */}
-        <button
-          onClick={() => setStep("consult")}
-          className="group relative flex flex-col items-start gap-3 p-5 rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent hover:border-primary/40 hover:shadow-lg transition-all text-left"
-        >
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl gradient-primary">
-              <MessageSquare className="w-4 h-4 text-primary-foreground" />
-            </div>
-            <span className="text-xs font-bold text-primary">추천</span>
+      <div className="relative overflow-hidden rounded-3xl border-2 border-primary/30 bg-gradient-to-br from-primary/5 via-accent/5 to-transparent p-6 sm:p-8 shadow-lg">
+        {/* Ribbon */}
+        <div className="absolute top-0 right-0">
+          <div className="bg-primary text-primary-foreground text-[10px] font-bold px-3 py-1 rounded-bl-xl tracking-wide">
+            LIMITED · 무료 진단 리포트
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground">무료 상담 신청</h3>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              현재 상태를 진단하고<br />맞춤 솔루션을 제안받으세요
-            </p>
-          </div>
-          <span className="text-xs font-semibold text-primary group-hover:underline">
-            전문가 상담 신청 →
-          </span>
-        </button>
-
-        {/* 2. 자동 SEO 리포트 - Coming Soon */}
-        <div className="relative flex flex-col items-start gap-3 p-5 rounded-2xl border border-border bg-card/50 opacity-75">
-          <div className="absolute top-3 right-3">
-            <span className="px-2 py-0.5 rounded-full bg-score-warning/10 text-score-warning text-[10px] font-bold">
-              출시예정
-            </span>
-          </div>
-          <div className="p-2 rounded-xl bg-muted">
-            <FileText className="w-4 h-4 text-muted-foreground" />
-          </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground">자동 SEO 리포트</h3>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              분석 결과를 상세 보고서로<br />자동 생성해 이메일로 전달
-            </p>
-          </div>
-          <span className="text-xs font-medium text-muted-foreground">
-            곧 출시됩니다
-          </span>
         </div>
 
-        {/* 3. 출시 알림 */}
-        <button
-          onClick={() => setStep("email")}
-          className="group flex flex-col items-start gap-3 p-5 rounded-2xl border border-border bg-card hover:border-primary/20 hover:shadow-md transition-all text-left"
-        >
-          <div className="p-2 rounded-xl bg-accent/10">
-            <Bell className="w-4 h-4 text-accent" />
+        {/* Headline (StoryBrand: problem → guide → plan) */}
+        <div className="mb-5">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full mb-3">
+            <Sparkles className="w-3.5 h-3.5" />
+            {worstAxis
+              ? `${worstAxis.k} ${worstAxis.v}점 — 지금 조치 필요`
+              : "2026 AI 검색 대응 진단"}
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-foreground">출시 알림 받기</h3>
-            <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-              정식 출시 소식을 가장 먼저<br />이메일로 받아보세요
-            </p>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">
+            이 진단 결과, <span className="text-primary">실행 리포트</span>로 받아보세요
+          </h2>
+          <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
+            ChatGPT · Perplexity · Google AI가 당신의 사이트를 인용하도록<br className="hidden sm:block" />
+            {" "}맞춤 실행 순서까지 담긴 무료 PDF를 이메일로 보내드립니다.
+          </p>
+        </div>
+
+        {/* Value stack (Hormozi Grand Slam Offer) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-5">
+          <ValueRow icon={FileText} title="맞춤 SEO/AEO/GEO 진단 PDF" note="당신 사이트 기반 15+ 실행안" />
+          <ValueRow icon={BarChart3} title="경쟁사 대비 벤치마크" note="같은 업계 평균과 차이" />
+          <ValueRow icon={Users} title="30분 무료 전략 상담" note="원하는 리드만 별도 예약" />
+          <ValueRow icon={ShieldCheck} title="5일 실행 가이드 시리즈" note="Day별 액션, 언제든 해지" />
+        </div>
+
+        {/* Form */}
+        <div className="space-y-3">
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setError(""); }}
+            placeholder="you@company.com"
+            className="w-full h-12 px-4 rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all"
+          />
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => { setAgreed(e.target.checked); setError(""); }}
+              className="mt-0.5 accent-primary w-4 h-4"
+            />
+            <span className="text-xs text-muted-foreground leading-relaxed">
+              개인정보 수집 및 마케팅 수신에 동의합니다. (언제든 1클릭 해지)
+            </span>
+          </label>
+          {error && <p className="text-xs text-destructive font-medium">{error}</p>}
+
+          <button
+            onClick={submit}
+            disabled={loading}
+            className="w-full h-13 py-3.5 rounded-xl gradient-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50 shadow-md"
+          >
+            {loading ? "전송 중..." : "무료 리포트 받기 →"}
+          </button>
+
+          {/* Risk reversal */}
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-muted-foreground pt-1">
+            <span className="inline-flex items-center gap-1"><Clock className="w-3 h-3" />3분 안 도착</span>
+            <span className="inline-flex items-center gap-1"><ShieldCheck className="w-3 h-3" />스팸 없음</span>
+            <span className="inline-flex items-center gap-1"><CheckCircle className="w-3 h-3" />1클릭 해지</span>
           </div>
-          <span className="text-xs font-semibold text-accent group-hover:underline">
-            알림 신청하기 →
-          </span>
-        </button>
+        </div>
+
+        {/* Secondary CTA */}
+        <div className="mt-5 pt-4 border-t border-border/60 flex items-center justify-between gap-2 flex-wrap">
+          <p className="text-xs text-muted-foreground">
+            지금 바로 전문가와 이야기하고 싶다면?
+          </p>
+          <button
+            onClick={() => setStep("consult")}
+            className="text-xs font-semibold text-primary hover:underline"
+          >
+            무료 30분 상담 신청 →
+          </button>
+        </div>
       </div>
 
-      {/* Step 1: Email Registration Modal */}
-      {step === "email" && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setStep("idle")} />
-          <div className="relative bg-card rounded-2xl shadow-2xl w-full max-w-md p-6 sm:p-8 animate-fade-up">
-            <button
-              onClick={() => setStep("idle")}
-              className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Step 1</span>
-            </div>
-            <h2 className="text-lg font-bold text-foreground mb-1">📬 출시 알림 등록</h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              이메일을 등록하면 정식 출시 소식을 가장 먼저 받아보실 수 있어요.
-            </p>
-
-            <div className="space-y-4">
-              <div>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => { setEmail(e.target.value); setEmailError(""); setEmailStatus(""); }}
-                  placeholder="you@company.com"
-                  className="w-full h-12 px-4 rounded-xl border border-input bg-muted/30 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary text-sm transition-all"
-                />
-                {emailError && <p className="mt-1.5 text-xs text-destructive font-medium">{emailError}</p>}
-              </div>
-              <label className="flex items-start gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={agreed}
-                  onChange={(e) => { setAgreed(e.target.checked); setAgreeError(""); }}
-                  className="mt-0.5 accent-primary w-4 h-4"
-                />
-                <span className="text-xs text-muted-foreground leading-relaxed">
-                  개인정보 수집 및 마케팅 수신에 동의합니다.
-                </span>
-              </label>
-              {agreeError && <p className="text-xs text-destructive font-medium -mt-2">{agreeError}</p>}
-              {emailStatus === "duplicate" && (
-                <p className="text-xs text-score-warning font-medium">이미 등록된 이메일이에요. 상담 신청으로 넘어갈게요!</p>
-              )}
-              {emailStatus === "error" && (
-                <p className="text-xs text-destructive font-medium">일시적으로 저장에 실패했어요. 잠시 후 다시 시도해 주세요.</p>
-              )}
-              <button
-                onClick={handleEmailSubmit}
-                disabled={loading}
-                className="w-full h-12 rounded-xl gradient-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
-                {loading ? "등록 중..." : "이메일 등록하기"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Step 2: Transition to Consultation */}
+      {/* Confirmation modal */}
       {step === "email-done" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-foreground/40 backdrop-blur-sm" onClick={() => setStep("idle")} />
@@ -197,25 +161,17 @@ export default function FunnelCTAs({ result, url }: FunnelCTAsProps) {
             >
               <X className="w-5 h-5" />
             </button>
-
             <CheckCircle className="w-12 h-12 text-score-excellent mx-auto mb-3" />
             <p className="text-foreground font-bold text-lg">등록 완료!</p>
             <p className="text-sm text-muted-foreground mt-1 mb-6">
-              정식 출시 소식을 이메일로 보내드릴게요.
+              첫 리포트를 몇 분 내로 이메일로 보내드릴게요.
             </p>
-
-            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 mb-4">
-              <div className="flex items-center gap-2 mb-1 justify-center">
-                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">Step 2</span>
-              </div>
-              <p className="text-sm font-semibold text-foreground mt-2">
-                전문가 무료 상담도 받아보시겠어요?
-              </p>
+            <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 mb-4 text-left">
+              <p className="text-sm font-semibold text-foreground">전문가 무료 상담도 받아보시겠어요?</p>
               <p className="text-xs text-muted-foreground mt-1">
-                현재 상태를 진단하고 맞춤 솔루션을 제안해 드려요.
+                진단 결과를 바탕으로 이번 분기 실행 순서를 함께 짜드립니다. (30분)
               </p>
             </div>
-
             <div className="flex gap-3">
               <button
                 onClick={() => setStep("idle")}
@@ -227,15 +183,36 @@ export default function FunnelCTAs({ result, url }: FunnelCTAsProps) {
                 onClick={() => setStep("consult")}
                 className="flex-1 h-11 rounded-xl gradient-primary text-primary-foreground font-bold text-sm hover:opacity-90 transition-opacity"
               >
-                무료 상담 신청하기 →
+                상담 신청 →
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Step 2b: Consultation Modal */}
       <ConsultationModal open={step === "consult"} onClose={() => setStep("idle")} />
     </>
+  );
+}
+
+function ValueRow({
+  icon: Icon,
+  title,
+  note,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  note: string;
+}) {
+  return (
+    <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-card/60 border border-border/60">
+      <div className="p-1.5 rounded-lg bg-primary/10 shrink-0">
+        <Icon className="w-3.5 h-3.5 text-primary" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-xs font-bold text-foreground leading-tight">{title}</p>
+        <p className="text-[11px] text-muted-foreground leading-snug mt-0.5">{note}</p>
+      </div>
+    </div>
   );
 }

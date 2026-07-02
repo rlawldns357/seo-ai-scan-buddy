@@ -1042,6 +1042,77 @@ Deno.serve(async (req) => {
     // Rate-limit / credit usage stats — feeds /admin "사용량" card.
 
 
+    // === Lead inbox actions ===
+    if (action === "listLeads") {
+      const stage = body.stage as string | undefined;
+      const source = body.source as string | undefined;
+      const limit = Math.min(Number(body.limit) || 200, 1000);
+      let q = supabase.from("email_leads")
+        .select("id, email, source, stage, analyzed_url, landing_url, utm_source, utm_medium, utm_campaign, seo_score, aeo_score, geo_score, funnel_day_sent, tripwire_purchased_at, admin_notify_sent_at, notes, created_at")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (stage && stage !== "all") q = q.eq("stage", stage);
+      if (source && source !== "all") q = q.eq("source", source);
+      const { data, error } = await q;
+      const counts: Record<string, number> = {};
+      const { data: countRows } = await supabase.from("email_leads").select("stage");
+      for (const r of countRows || []) counts[r.stage || "new"] = (counts[r.stage || "new"] || 0) + 1;
+      return new Response(
+        JSON.stringify({ leads: data || [], error: error?.message, stageCounts: counts, total: (countRows || []).length }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "updateLeadStage" && body.leadId) {
+      const patch: Record<string, unknown> = {};
+      if (typeof body.stage === "string") patch.stage = body.stage;
+      if (typeof body.notes === "string") patch.notes = body.notes;
+      const { error } = await supabase.from("email_leads").update(patch).eq("id", body.leadId);
+      return new Response(
+        JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "getLeadNotifySettings") {
+      const { data } = await supabase.from("engine_config")
+        .select("config_value, updated_at")
+        .eq("config_key", "lead_notify_emails")
+        .order("version", { ascending: false }).limit(1).maybeSingle();
+      return new Response(
+        JSON.stringify({ emails: (data?.config_value || "").trim(), updated_at: data?.updated_at || null }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "setLeadNotifySettings") {
+      const emails = String(body.emails || "").trim();
+      const { error } = await supabase.from("engine_config")
+        .update({ config_value: emails, updated_at: new Date().toISOString() })
+        .eq("config_key", "lead_notify_emails");
+      return new Response(
+        JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "sendTestLeadNotify") {
+      const { error } = await supabase.functions.invoke("notify-admin-lead", {
+        body: {
+          email: "test@example.com",
+          source: "admin_test",
+          analyzed_url: "https://example.com",
+          seo: 72, aeo: 55, geo: 48,
+          utm_source: "admin", utm_medium: "test",
+          landing_url: "https://www.searchtuneos.com/",
+        },
+      });
+      return new Response(
+        JSON.stringify({ success: !error, error: error?.message }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     if (action === "usageStats") {
       const today = new Date().toISOString().split("T")[0];
       const since7 = new Date();

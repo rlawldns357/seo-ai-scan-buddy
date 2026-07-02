@@ -11,6 +11,7 @@ import {
   type ChartConfig,
 } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts";
+import LeadsInbox from "@/components/admin/LeadsInbox";
 
 interface Summary {
   totalSessions: number;
@@ -118,6 +119,8 @@ export default function Insights() {
           ))}
         </div>
       </div>
+
+      <LeadsInbox />
 
       {loading && !data ? (
         <div className="text-center py-20 text-muted-foreground">로딩 중...</div>

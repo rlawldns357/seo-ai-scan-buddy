@@ -528,6 +528,7 @@ export type Database = {
       }
       email_leads: {
         Row: {
+          admin_notify_sent_at: string | null
           aeo_score: number | null
           analyzed_url: string | null
           created_at: string
@@ -537,10 +538,18 @@ export type Database = {
           funnel_started_at: string
           geo_score: number | null
           id: string
+          landing_url: string | null
+          notes: string | null
           seo_score: number | null
           source: string
+          stage: string
+          tripwire_purchased_at: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
         }
         Insert: {
+          admin_notify_sent_at?: string | null
           aeo_score?: number | null
           analyzed_url?: string | null
           created_at?: string
@@ -550,10 +559,18 @@ export type Database = {
           funnel_started_at?: string
           geo_score?: number | null
           id?: string
+          landing_url?: string | null
+          notes?: string | null
           seo_score?: number | null
           source?: string
+          stage?: string
+          tripwire_purchased_at?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Update: {
+          admin_notify_sent_at?: string | null
           aeo_score?: number | null
           analyzed_url?: string | null
           created_at?: string
@@ -563,8 +580,15 @@ export type Database = {
           funnel_started_at?: string
           geo_score?: number | null
           id?: string
+          landing_url?: string | null
+          notes?: string | null
           seo_score?: number | null
           source?: string
+          stage?: string
+          tripwire_purchased_at?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
         }
         Relationships: []
       }
