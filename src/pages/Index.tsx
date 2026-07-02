@@ -328,43 +328,20 @@ const Index = () => {
           });
       }
 
-      const [psiResults, analyzeRes] = await Promise.all([psiPromise, analyzePromise]);
+      // Render the three-axis gauge as soon as Gemini analysis returns —
+      // do NOT wait for PSI/Lighthouse (which can take 60–90s). PSI results
+      // stream in separately below and update the Lighthouse card in place.
+      const analyzeRes = await analyzePromise;
 
-      // Stale check before applying any results.
       if (!isLatest()) return;
-
-      const [mobileRes, desktopRes] = psiResults;
-
-      if (mobileRes.data) setPsiMobile(mobileRes.data);
-      if (desktopRes.data) setPsiDesktop(desktopRes.data);
-
-      if (mobileRes.data || desktopRes.data) {
-        trackEvent("analysis_complete", { url: finalUrl });
-      } else {
-        const err = mobileRes.error || desktopRes.error;
-        if (err) {
-          setPsiError(err);
-          trackEvent("analysis_fail", { url: finalUrl, error: err.type });
-        }
-      }
 
       if (analyzeRes.data) {
         setResult(analyzeRes.data);
+        setScreen("result");
         // Save to history (fire-and-forget)
         import("@/components/ScoreComparison").then(({ saveAnalysisHistory }) => {
           saveAnalysisHistory(finalUrl, analyzeRes.data!);
         });
-      } else {
-        // Preserve raw debugging info in console while showing a friendly message to the user.
-        console.warn("[runAnalysis] analyze failed:", analyzeRes.error);
-        setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
-        setAnalyzeGeoBlock(!!analyzeRes.error?.geoBlockSuspected);
-        trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
-      }
-
-      setScreen("result");
-
-      if (analyzeRes.data) {
         import("canvas-confetti").then(({ default: confetti }) => {
           const end = Date.now() + 800;
           const colors = ["#6366f1", "#8b5cf6", "#a78bfa", "#34d399", "#fbbf24"];
@@ -375,7 +352,33 @@ const Index = () => {
           };
           frame();
         });
+      } else {
+        console.warn("[runAnalysis] analyze failed:", analyzeRes.error);
+        setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
+        setAnalyzeGeoBlock(!!analyzeRes.error?.geoBlockSuspected);
+        trackEvent("analyze_fail", { url: finalUrl, error: analyzeRes.error?.message });
+        setScreen("result");
       }
+
+      // PSI streams in independently. Never blocks the gauge.
+      psiPromise
+        .then(([mobileRes, desktopRes]) => {
+          if (!isLatest()) return;
+          if (mobileRes.data) setPsiMobile(mobileRes.data);
+          if (desktopRes.data) setPsiDesktop(desktopRes.data);
+          if (mobileRes.data || desktopRes.data) {
+            trackEvent("analysis_complete", { url: finalUrl });
+          } else {
+            const err = mobileRes.error || desktopRes.error;
+            if (err) {
+              setPsiError(err);
+              trackEvent("analysis_fail", { url: finalUrl, error: err.type });
+            }
+          }
+        })
+        .catch((e) => {
+          console.warn("[runAnalysis] PSI failed:", e);
+        });
     } catch (err) {
       // Catch any throw from dynamic imports / fetchPsi / analyzeSite / Promise.all.
       // Make sure the user is never stranded on the loading screen.
