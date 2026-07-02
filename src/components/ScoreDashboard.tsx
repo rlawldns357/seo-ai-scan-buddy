@@ -162,7 +162,6 @@ function SummaryCard({
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const config = axisConfig[axis.label as AxisLabel] ?? axisConfig.SEO;
-  if (!axisConfig[axis.label as AxisLabel]) return null;
   const Icon = config.icon;
   const severity = getSeverity(score);
   const isCritical = severity === "critical";
