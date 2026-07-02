@@ -344,20 +344,21 @@ const Index = () => {
         });
         // Wait for the gauge to actually paint before firing confetti,
         // so the celebration lands *with* the reveal, not before it.
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            import("canvas-confetti").then(({ default: confetti }) => {
-              const end = Date.now() + 800;
-              const colors = ["#6366f1", "#8b5cf6", "#a78bfa", "#34d399", "#fbbf24"];
-              const frame = () => {
-                confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
-                confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
-                if (Date.now() < end) requestAnimationFrame(frame);
-              };
-              frame();
-            });
+        // Match the `animate-fade-up` reveal of the score gauge (~350ms)
+        // so the confetti bursts land exactly when the gauge is fully visible.
+        setTimeout(() => {
+          if (!isLatest()) return;
+          import("canvas-confetti").then(({ default: confetti }) => {
+            const end = Date.now() + 800;
+            const colors = ["#6366f1", "#8b5cf6", "#a78bfa", "#34d399", "#fbbf24"];
+            const frame = () => {
+              confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
+              confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
+              if (Date.now() < end) requestAnimationFrame(frame);
+            };
+            frame();
           });
-        });
+        }, 380);
       } else {
         console.warn("[runAnalysis] analyze failed:", analyzeRes.error);
         setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
