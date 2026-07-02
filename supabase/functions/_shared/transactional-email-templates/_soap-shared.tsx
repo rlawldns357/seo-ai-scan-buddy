@@ -82,7 +82,7 @@ export function ScoreBlock({ seo, aeo, geo, url }: SoapProps) {
   )
 }
 
-export function CtaBlock({ label = '무료 상담 신청하기', href = `${SITE_URL}/?utm_source=soap&utm_medium=email` }: { label?: string; href?: string }) {
+export function CtaBlock({ label = '무료 상담 신청하기', href = `${SITE_URL}/?consult=1&utm_source=soap&utm_medium=email&utm_campaign=day5` }: { label?: string; href?: string }) {
   return (
     <Section style={{ textAlign: 'center', margin: '24px 0' }}>
       <Button href={href} style={ctaBtn}>{label}</Button>
