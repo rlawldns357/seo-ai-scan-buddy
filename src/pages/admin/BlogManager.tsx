@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Eye, EyeOff, AlertTriangle, RefreshCw, Send, Trash2 } from "lucide-react";
+import { FileText, Eye, EyeOff, AlertTriangle, RefreshCw, Send, Trash2, Rocket } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +16,27 @@ export default function BlogManager() {
   const [failedActionId, setFailedActionId] = useState<string | null>(null);
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string>("");
+  const [inblogId, setInblogId] = useState<string | null>(null);
+
+  const publishToInblog = async (postId: string, title: string) => {
+    setInblogId(postId);
+    const t = toast.loading(`Inblog 이관: ${title}`);
+    try {
+      const { data, error } = await supabase.functions.invoke("publish-to-inblog", {
+        body: { password: pw(), postId, publish: true },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      const inblogPostId = (data as any)?.inblogPostId;
+      const sub = (data as any)?.blogSubdomain;
+      toast.success(`Inblog 발행 완료: #${inblogPostId}${sub ? ` (${sub})` : ""}`, { id: t });
+      console.log("[publish-to-inblog]", data);
+    } catch (e) {
+      toast.error(`실패: ${(e as Error).message}`, { id: t });
+    } finally {
+      setInblogId(null);
+    }
+  };
 
   const pw = () => sessionStorage.getItem("admin_pw") || "";
 
@@ -116,6 +138,14 @@ export default function BlogManager() {
                     <p className="text-xs text-muted-foreground">{post.date}</p>
                   </div>
                   <button
+                    onClick={() => publishToInblog(post.id, post.title)}
+                    disabled={inblogId === post.id}
+                    className="shrink-0 p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
+                    title="Inblog으로 이관 발행"
+                  >
+                    <Rocket className={`w-4 h-4 ${inblogId === post.id ? "animate-pulse" : ""}`} />
+                  </button>
+                  <button
                     onClick={() => togglePublished(post.id, post.published)}
                     disabled={togglingId === post.id}
                     className={`shrink-0 p-2 rounded-lg transition-colors ${
@@ -127,6 +157,7 @@ export default function BlogManager() {
                   >
                     {post.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
+
                 </div>
               ))
             )}
