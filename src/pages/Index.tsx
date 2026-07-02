@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, lazy, Suspense } from "react";
+import { useState, useRef, useEffect, lazy, Suspense, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { Zap, Loader2, Search, Sparkles, ArrowRight } from "lucide-react";
 
@@ -191,6 +191,7 @@ const Index = () => {
   // Synchronous re-entry lock. setIsAnalyzing(true) is async (state update),
   // so rapid clicks/Enter presses can slip past it. A ref flips immediately.
   const analyzingRef = useRef(false);
+  const resultCelebratedRef = useRef(false);
 
   // /naver-store 등에서 redirect로 들어올 때 ?url=...&autorun=1 처리
   useEffect(() => {
@@ -266,6 +267,7 @@ const Index = () => {
       setNormalizedUrl(finalUrl);
       setScreen("loading");
       setResult(null);
+      resultCelebratedRef.current = false;
       setPsiMobile(null);
       setPsiDesktop(null);
       setPsiError(null);
@@ -342,23 +344,6 @@ const Index = () => {
         import("@/components/ScoreComparison").then(({ saveAnalysisHistory }) => {
           saveAnalysisHistory(finalUrl, analyzeRes.data!);
         });
-        // Wait for the gauge to actually paint before firing confetti,
-        // so the celebration lands *with* the reveal, not before it.
-        // Match the `animate-fade-up` reveal of the score gauge (~350ms)
-        // so the confetti bursts land exactly when the gauge is fully visible.
-        setTimeout(() => {
-          if (!isLatest()) return;
-          import("canvas-confetti").then(({ default: confetti }) => {
-            const end = Date.now() + 800;
-            const colors = ["#6366f1", "#8b5cf6", "#a78bfa", "#34d399", "#fbbf24"];
-            const frame = () => {
-              confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
-              confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
-              if (Date.now() < end) requestAnimationFrame(frame);
-            };
-            frame();
-          });
-        }, 380);
       } else {
         console.warn("[runAnalysis] analyze failed:", analyzeRes.error);
         setAnalyzeError(formatAnalyzeError(analyzeRes.error?.message));
@@ -402,6 +387,22 @@ const Index = () => {
       if (isLatest()) setIsAnalyzing(false);
     }
   };
+
+  const fireResultCelebration = useCallback(() => {
+    if (resultCelebratedRef.current) return;
+    resultCelebratedRef.current = true;
+
+    import("canvas-confetti").then(({ default: confetti }) => {
+      const end = Date.now() + 800;
+      const colors = ["#6366f1", "#8b5cf6", "#a78bfa", "#34d399", "#fbbf24"];
+      const frame = () => {
+        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors });
+        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    });
+  }, []);
 
   const handleAnalyze = async () => {
     setUrlError("");
@@ -926,6 +927,7 @@ const Index = () => {
                 <ScoreDashboard
                   result={result}
                   url={normalizedUrl}
+                  onReveal={fireResultCelebration}
                   disabledMode={!!result.storeContext}
                   disabledReason={result.storeContext ? "네이버 스토어는 일반 사이트 기준의 SEO·AEO·GEO 점수가 적용되지 않아요. 위 스토어 전용 진단 근거를 참고해 주세요." : undefined}
                 />
