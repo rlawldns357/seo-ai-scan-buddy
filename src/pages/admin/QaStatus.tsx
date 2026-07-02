@@ -232,6 +232,8 @@ export default function QaStatus() {
         </CardContent>
       </Card>
 
+      <LeadNotifySettings />
+
       <AutomationsPanel />
 
       <EngineKnowledgeSources />
