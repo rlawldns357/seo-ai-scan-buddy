@@ -161,7 +161,8 @@ function SummaryCard({
   axis: AxisAnalysis; score: number; delay: number; selected: boolean; onClick: () => void; compact?: boolean; url?: string;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const config = axisConfig[axis.label];
+  const config = axisConfig[axis.label as AxisLabel] ?? axisConfig.SEO;
+  if (!axisConfig[axis.label as AxisLabel]) return null;
   const Icon = config.icon;
   const severity = getSeverity(score);
   const isCritical = severity === "critical";
@@ -285,7 +286,7 @@ function SummaryCard({
 
 /* ── Full-width detail panel ── */
 function DetailPanel({ axis, score, inline, url }: { axis: AxisAnalysis; score: number; inline?: boolean; url?: string }) {
-  const config = axisConfig[axis.label];
+  const config = axisConfig[axis.label as AxisLabel] ?? axisConfig.SEO;
   const Icon = config.icon;
   const severity = getSeverity(score);
   const isCritical = severity === "critical";
