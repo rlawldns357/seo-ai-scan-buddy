@@ -332,6 +332,9 @@ Deno.serve(async (req) => {
       blogSubdomain,
       publishResp,
       redirect,
+      image: imageInfo,
+      faq: faqInfo,
+      tag: tagInfo,
     }), { headers: { ...CORS, "Content-Type": "application/json" } });
   } catch (e) {
     const errMsg = (e as Error).message || String(e);
