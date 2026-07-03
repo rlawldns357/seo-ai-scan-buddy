@@ -17,6 +17,37 @@ export default function BlogManager() {
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string>("");
   const [inblogId, setInblogId] = useState<string | null>(null);
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkCounts, setBulkCounts] = useState<{ pending: number; failed: number; synced: number } | null>(null);
+
+  const runBulkMirror = async (retryFailed = false) => {
+    setBulkRunning(true);
+    const t = toast.loading("Inblog 일괄 이관 시작…");
+    let totalProcessed = 0, totalOk = 0, totalFail = 0;
+    try {
+      // Poll until done
+      for (let i = 0; i < 200; i++) {
+        const { data, error } = await supabase.functions.invoke("bulk-mirror-to-inblog", {
+          body: { password: pw(), limit: 5, retryFailed },
+        });
+        if (error) throw error;
+        if ((data as any)?.error) throw new Error((data as any).error);
+        const d = data as any;
+        totalProcessed += d.processed || 0;
+        totalOk += (d.results || []).filter((r: any) => r.ok).length;
+        totalFail += (d.results || []).filter((r: any) => !r.ok).length;
+        setBulkCounts(d.counts);
+        toast.loading(`이관 중… ${totalOk}건 성공 / ${totalFail}건 실패 · 남은 ${d.counts.pending}건`, { id: t });
+        if (d.done) break;
+      }
+      toast.success(`이관 완료: ${totalOk}건 성공, ${totalFail}건 실패`, { id: t });
+      fetchBlogPosts();
+    } catch (e) {
+      toast.error(`실패: ${(e as Error).message}`, { id: t });
+    } finally {
+      setBulkRunning(false);
+    }
+  };
 
   const publishToInblog = async (postId: string, title: string) => {
     setInblogId(postId);
