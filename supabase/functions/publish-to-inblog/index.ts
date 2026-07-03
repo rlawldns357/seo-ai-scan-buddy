@@ -58,6 +58,53 @@ async function findInblogPostIdBySlug(slug: string, apiKey: string): Promise<str
   return null;
 }
 
+/** Escape HTML for safe injection into content_html. */
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Load tag name→id map. Best-effort: paginates a few pages. */
+async function loadTagCache(apiKey: string): Promise<Record<string, string>> {
+  const map: Record<string, string> = {};
+  for (let page = 1; page <= 10; page++) {
+    const r = await inblogRaw(`/tags?page[size]=100&page[number]=${page}`, apiKey);
+    if (!r.ok || !Array.isArray(r.json?.data)) break;
+    for (const t of r.json.data as any[]) {
+      const name = t?.attributes?.name;
+      if (name && t?.id) map[name] = String(t.id);
+    }
+    const arr = r.json.data as any[];
+    const total = r.json?.meta?.totalPages ?? r.json?.meta?.total_pages ?? 1;
+    if (page >= total || arr.length < 100) break;
+  }
+  return map;
+}
+
+/** Ensure a tag exists, returning its id. Creates on miss. */
+async function ensureTagId(name: string, cache: Record<string, string>, apiKey: string): Promise<string | null> {
+  if (cache[name]) return cache[name];
+  const r = await inblogRaw("/tags", apiKey, {
+    method: "POST",
+    body: JSON.stringify({ data: { type: "tags", attributes: { name } } }),
+  });
+  if (r.ok && r.json?.data?.id) {
+    cache[name] = String(r.json.data.id);
+    return cache[name];
+  }
+  // Race: another call created it. Refresh and check.
+  const refreshed = await loadTagCache(apiKey);
+  if (refreshed[name]) {
+    cache[name] = refreshed[name];
+    return cache[name];
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
 
@@ -90,18 +137,59 @@ Deno.serve(async (req) => {
     if (error || !post) throw new Error(`post not found: ${postId}`);
 
     // Markdown → HTML (Inblog expects content_html)
-    const html = await marked.parse(post.content || "", { async: true });
+    let contentHtml = await marked.parse(post.content || "", { async: true });
+
+    // --- FAQ (hybrid): visible section in content_html + JSON-LD in custom_scripts ---
+    type FaqItem = { q?: string; a?: string; question?: string; answer?: string };
+    const faqRaw = (post as { faq_short?: unknown }).faq_short;
+    const faqItems: { q: string; a: string }[] = Array.isArray(faqRaw)
+      ? (faqRaw as FaqItem[])
+          .map((it) => ({
+            q: String(it?.q ?? it?.question ?? "").trim(),
+            a: String(it?.a ?? it?.answer ?? "").trim(),
+          }))
+          .filter((it) => it.q.length > 0 && it.a.length > 0)
+      : [];
+    let faqInfo: { count: number; injected: boolean; error?: string } = { count: faqItems.length, injected: false };
+    let customScripts: { json_ld_script?: string } | undefined;
+    if (faqItems.length > 0) {
+      const visible = [
+        `\n<h2>자주 묻는 질문</h2>`,
+        ...faqItems.map(
+          (it) => `<div><h3>${escapeHtml(it.q)}</h3><p>${escapeHtml(it.a)}</p></div>`,
+        ),
+      ].join("\n");
+      contentHtml = (contentHtml || "") + "\n" + visible + "\n";
+      const faqPageLd = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqItems.map((it) => ({
+          "@type": "Question",
+          name: it.q,
+          acceptedAnswer: { "@type": "Answer", text: it.a },
+        })),
+      };
+      customScripts = { json_ld_script: JSON.stringify(faqPageLd) };
+      faqInfo.injected = true;
+    }
+
+    // --- Image: prefer og_image, fall back to thumbnail (unless placeholder) ---
+    const rawThumb = (post as { thumbnail?: string; og_image?: string }).thumbnail || "";
+    const rawOg = (post as { og_image?: string }).og_image || "";
+    const imgUrl = rawOg || (rawThumb && !rawThumb.includes("placeholder.svg") ? rawThumb : "");
+    const imageInfo: { url: string | null } = { url: imgUrl || null };
 
     const attributes: Record<string, unknown> = {
       title: post.title,
       slug: post.slug,
       description: post.excerpt || undefined,
-      content_html: html,
+      content_html: contentHtml,
       meta_title: post.title,
       meta_description: post.excerpt || undefined,
     };
-    // Skip image field — Inblog rejects arbitrary URL objects in some cases.
-    // Re-enable only after confirming the exact upload/reference shape.
+    if (imgUrl) attributes.image = { url: imgUrl };
+    if (customScripts) attributes.custom_scripts = customScripts;
+
 
     if (dryRun) {
       return new Response(JSON.stringify({ ok: true, dryRun: true, attributes }), {
@@ -174,6 +262,38 @@ Deno.serve(async (req) => {
       });
     }
 
+    // 3b) Tag attach (best-effort). Map post.category → Inblog tag id, create if missing.
+    const tagInfo: { attempted: string | null; tagId: string | null; attached: boolean; error?: string } = {
+      attempted: null, tagId: null, attached: false,
+    };
+    try {
+      const category = (post as { category?: string }).category?.trim();
+      if (category && inblogPostId) {
+        tagInfo.attempted = category;
+        const cache = await loadTagCache(apiKey);
+        const tagId = await ensureTagId(category, cache, apiKey);
+        if (tagId) {
+          tagInfo.tagId = tagId;
+          const attach = await inblogRaw(`/posts/${inblogPostId}/tags`, apiKey, {
+            method: "POST",
+            body: JSON.stringify({ data: [{ type: "tags", id: tagId }] }),
+          });
+          // 409/422 = already attached → treat as success.
+          if (attach.ok || attach.status === 409 || attach.status === 422) {
+            tagInfo.attached = true;
+          } else {
+            tagInfo.error = `attach ${attach.status}: ${JSON.stringify(attach.json).slice(0, 200)}`;
+          }
+        } else {
+          tagInfo.error = "failed to resolve tag id";
+        }
+      }
+    } catch (e) {
+      tagInfo.error = (e as Error).message;
+      console.warn("tag attach failed:", tagInfo.error);
+    }
+
+
     // 4) 308 redirect: /blog/{slug}.html → new inblog canonical
     let redirect: unknown = null;
     try {
@@ -212,6 +332,9 @@ Deno.serve(async (req) => {
       blogSubdomain,
       publishResp,
       redirect,
+      image: imageInfo,
+      faq: faqInfo,
+      tag: tagInfo,
     }), { headers: { ...CORS, "Content-Type": "application/json" } });
   } catch (e) {
     const errMsg = (e as Error).message || String(e);
