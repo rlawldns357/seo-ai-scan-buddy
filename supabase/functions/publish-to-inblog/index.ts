@@ -10,7 +10,8 @@ const CORS = {
 
 const INBLOG_BASE = "https://inblog.ai/api/v1";
 
-async function inblogFetch(path: string, apiKey: string, init: RequestInit = {}) {
+/** Low-level fetch that returns status + parsed body without throwing on non-2xx. */
+async function inblogRaw(path: string, apiKey: string, init: RequestInit = {}) {
   const method = (init.method || "GET").toUpperCase();
   const headers: Record<string, string> = {
     Authorization: `Bearer ${apiKey}`,
@@ -20,21 +21,66 @@ async function inblogFetch(path: string, apiKey: string, init: RequestInit = {})
   if (method !== "GET" && init.body) headers["Content-Type"] = "application/json";
   const res = await fetch(`${INBLOG_BASE}${path}`, { ...init, headers });
   const text = await res.text();
-  let json: unknown;
+  let json: any;
   try { json = text ? JSON.parse(text) : null; } catch { json = { raw: text }; }
-  if (!res.ok) {
-    throw new Error(`Inblog ${method} ${path} ${res.status}: ${JSON.stringify(json)}`);
+  return { status: res.status, ok: res.ok, json, method, path };
+}
+
+/** Convenience: throws on non-2xx (kept for calls where we want fail-fast). */
+async function inblogFetch(path: string, apiKey: string, init: RequestInit = {}) {
+  const r = await inblogRaw(path, apiKey, init);
+  if (!r.ok) {
+    throw new Error(`Inblog ${r.method} ${r.path} ${r.status}: ${JSON.stringify(r.json)}`);
   }
-  return json as any;
+  return r.json as any;
+}
+
+/** Look up an existing Inblog post id by slug (paginates until found). */
+async function findInblogPostIdBySlug(slug: string, apiKey: string): Promise<string | null> {
+  // Try filter first (harmless if unsupported — falls back to pagination).
+  const filtered = await inblogRaw(`/posts?filter[slug]=${encodeURIComponent(slug)}&page[size]=100`, apiKey);
+  if (filtered.ok && Array.isArray(filtered.json?.data)) {
+    const hit = filtered.json.data.find((p: any) => p?.attributes?.slug === slug);
+    if (hit?.id) return String(hit.id);
+  }
+  // Fallback: scan pages.
+  const pageSize = 100;
+  for (let page = 1; page <= 20; page++) {
+    const r = await inblogRaw(`/posts?page[size]=${pageSize}&page[number]=${page}`, apiKey);
+    if (!r.ok || !Array.isArray(r.json?.data)) break;
+    const arr = r.json.data as any[];
+    const hit = arr.find((p) => p?.attributes?.slug === slug);
+    if (hit?.id) return String(hit.id);
+    const total = r.json?.meta?.totalPages ?? r.json?.meta?.total_pages ?? 1;
+    if (page >= total) break;
+    if (arr.length < pageSize) break;
+  }
+  return null;
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
 
+  // Parse body ONCE up top; keep postId available for the catch block.
+  let body: any = null;
+  let postId: string | null = null;
   try {
-    const { password, postId, publish = true, dryRun = false } = await req.json();
+    body = await req.json();
+    postId = body?.postId ?? null;
+  } catch {
+    return new Response(JSON.stringify({ error: "invalid json body" }), {
+      status: 400,
+      headers: { ...CORS, "Content-Type": "application/json" },
+    });
+  }
+
+  try {
+    const { password, publish = true, dryRun = false } = body ?? {};
     if (password !== Deno.env.get("ADMIN_PASSWORD")) {
-      return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { ...CORS, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "unauthorized" }), {
+        status: 401,
+        headers: { ...CORS, "Content-Type": "application/json" },
+      });
     }
     const apiKey = Deno.env.get("INBLOG_API_KEY");
     if (!apiKey) throw new Error("INBLOG_API_KEY not configured");
@@ -54,37 +100,68 @@ Deno.serve(async (req) => {
       meta_title: post.title,
       meta_description: post.excerpt || undefined,
     };
-    if (post.og_image || post.thumbnail) {
-      attributes.image = { url: post.og_image || post.thumbnail };
-    }
+    // Skip image field — Inblog rejects arbitrary URL objects in some cases.
+    // Re-enable only after confirming the exact upload/reference shape.
 
     if (dryRun) {
-      return new Response(JSON.stringify({ ok: true, dryRun: true, attributes }), { headers: { ...CORS, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ ok: true, dryRun: true, attributes }), {
+        headers: { ...CORS, "Content-Type": "application/json" },
+      });
     }
 
-    // 1) Check /me to verify key + blog
+    // 1) Verify key + blog
     const me = await inblogFetch("/blogs/me", apiKey);
     const blogSubdomain = me?.data?.attributes?.subdomain ?? me?.data?.subdomain ?? null;
 
-    // 2) Create post
-    const created = await inblogFetch("/posts", apiKey, {
+    // 2) Create post — idempotent: if slug conflict (409/422), reuse existing id.
+    let inblogPostId: string | null = null;
+    let reusedExisting = false;
+    const createResp = await inblogRaw("/posts", apiKey, {
       method: "POST",
       body: JSON.stringify({ data: { type: "posts", attributes } }),
     });
-    const inblogPostId: string = created?.data?.id;
-    if (!inblogPostId) throw new Error(`no id in create response: ${JSON.stringify(created)}`);
 
-    // 3) Publish
+    if (createResp.ok) {
+      inblogPostId = createResp.json?.data?.id ? String(createResp.json.data.id) : null;
+      if (!inblogPostId) throw new Error(`no id in create response: ${JSON.stringify(createResp.json)}`);
+    } else if (createResp.status === 409 || createResp.status === 422) {
+      // Slug conflict → the post already exists on Inblog (likely orphaned draft).
+      const errCode = createResp.json?.errors?.[0]?.code || "";
+      const isSlugConflict =
+        createResp.status === 409 ||
+        errCode === "slug_conflict" ||
+        JSON.stringify(createResp.json).toLowerCase().includes("slug");
+      if (!isSlugConflict) {
+        throw new Error(`Inblog POST /posts ${createResp.status}: ${JSON.stringify(createResp.json)}`);
+      }
+      const existingId = await findInblogPostIdBySlug(post.slug, apiKey);
+      if (!existingId) {
+        throw new Error(`slug conflict but existing post not found for slug=${post.slug}`);
+      }
+      inblogPostId = existingId;
+      reusedExisting = true;
+      // Update the existing post's content/meta to match current DB row.
+      await inblogFetch(`/posts/${inblogPostId}`, apiKey, {
+        method: "PATCH",
+        body: JSON.stringify({ data: { type: "posts", id: inblogPostId, attributes } }),
+      });
+    } else {
+      throw new Error(`Inblog POST /posts ${createResp.status}: ${JSON.stringify(createResp.json)}`);
+    }
+
+    // 3) Publish via PATCH /posts/{id} with attributes.published=true
+    //    (The `/posts/{id}/publish` sub-path returns 400 — not a real endpoint.)
     let publishResp: unknown = null;
     if (publish) {
-      publishResp = await inblogFetch(`/posts/${inblogPostId}/publish`, apiKey, {
+      publishResp = await inblogFetch(`/posts/${inblogPostId}`, apiKey, {
         method: "PATCH",
-        body: JSON.stringify({ data: { type: "posts", id: inblogPostId, attributes: { published: true } } }),
+        body: JSON.stringify({
+          data: { type: "posts", id: inblogPostId, attributes: { published: true } },
+        }),
       });
     }
 
     // 4) 308 redirect: /blog/{slug}.html → new inblog canonical
-    // Skip if custom domain is our own — otherwise redirect old .html to inblog subdomain URL.
     let redirect: unknown = null;
     try {
       redirect = await inblogFetch("/redirects", apiKey, {
@@ -104,7 +181,7 @@ Deno.serve(async (req) => {
       redirect = { skipped: true, reason: (e as Error).message };
     }
 
-    // Persist sync state to our DB (best effort)
+    // Persist sync state (best effort).
     try {
       await sb.from("blog_posts").update({
         inblog_post_id: inblogPostId,
@@ -118,20 +195,27 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({
       ok: true,
       inblogPostId,
+      reusedExisting,
       blogSubdomain,
       publishResp,
       redirect,
     }), { headers: { ...CORS, "Content-Type": "application/json" } });
   } catch (e) {
-    // Record failure on our DB (if we can identify the post)
-    try {
-      const body = await req.clone().json().catch(() => null);
-      const pid = body?.postId;
-      if (pid) {
+    const errMsg = (e as Error).message || String(e);
+    // Record failure on our DB using the postId we captured up top.
+    if (postId) {
+      try {
         const sb2 = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
-        await sb2.from("blog_posts").update({ inblog_sync_error: (e as Error).message.slice(0, 500) }).eq("id", pid);
+        await sb2.from("blog_posts")
+          .update({ inblog_sync_error: errMsg.slice(0, 500) })
+          .eq("id", postId);
+      } catch (dbErr) {
+        console.warn("failed to persist inblog_sync_error:", (dbErr as Error).message);
       }
-    } catch { /* noop */ }
-    return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...CORS, "Content-Type": "application/json" } });
+    }
+    return new Response(JSON.stringify({ error: errMsg }), {
+      status: 500,
+      headers: { ...CORS, "Content-Type": "application/json" },
+    });
   }
 });
