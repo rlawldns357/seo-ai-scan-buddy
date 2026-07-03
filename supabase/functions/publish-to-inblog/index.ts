@@ -58,6 +58,53 @@ async function findInblogPostIdBySlug(slug: string, apiKey: string): Promise<str
   return null;
 }
 
+/** Escape HTML for safe injection into content_html. */
+function escapeHtml(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/** Load tag name→id map. Best-effort: paginates a few pages. */
+async function loadTagCache(apiKey: string): Promise<Record<string, string>> {
+  const map: Record<string, string> = {};
+  for (let page = 1; page <= 10; page++) {
+    const r = await inblogRaw(`/tags?page[size]=100&page[number]=${page}`, apiKey);
+    if (!r.ok || !Array.isArray(r.json?.data)) break;
+    for (const t of r.json.data as any[]) {
+      const name = t?.attributes?.name;
+      if (name && t?.id) map[name] = String(t.id);
+    }
+    const arr = r.json.data as any[];
+    const total = r.json?.meta?.totalPages ?? r.json?.meta?.total_pages ?? 1;
+    if (page >= total || arr.length < 100) break;
+  }
+  return map;
+}
+
+/** Ensure a tag exists, returning its id. Creates on miss. */
+async function ensureTagId(name: string, cache: Record<string, string>, apiKey: string): Promise<string | null> {
+  if (cache[name]) return cache[name];
+  const r = await inblogRaw("/tags", apiKey, {
+    method: "POST",
+    body: JSON.stringify({ data: { type: "tags", attributes: { name } } }),
+  });
+  if (r.ok && r.json?.data?.id) {
+    cache[name] = String(r.json.data.id);
+    return cache[name];
+  }
+  // Race: another call created it. Refresh and check.
+  const refreshed = await loadTagCache(apiKey);
+  if (refreshed[name]) {
+    cache[name] = refreshed[name];
+    return cache[name];
+  }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
 
