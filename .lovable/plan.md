@@ -1,48 +1,34 @@
-# FAQ 주입 실측 결과 (post_id 217848)
+## 백필 현재 상황 (인블로그 API 실측)
 
-## 방식1: content_html 말미에 FAQ HTML + JSON-LD `<script>` 추가
+**전체 (인블로그 블로그 전체):** 143 posts, published=141
 
-- PATCH `/posts/217848` → **200 OK**
-- 재조회 결과:
-  - `<h2>자주 묻는 질문 (FAQ TEST)</h2>` ✅ 그대로 저장
-  - `<div><h3>Q</h3><p>A</p></div>` ✅ 그대로 저장
-  - `<script type="application/ld+json">…FAQPage…</script>` ✅ **sanitize 되지 않고 원문 그대로 저장됨**
-- 결론: content_html의 script 태그는 **살아남음**. 화면 표시 + 구조화데이터 둘 다 이 방식만으로 가능.
+### 처리 완료 비율
+| 지표 | 채워짐 / 141 | 미처리 |
+|---|---|---|
+| `attributes.image.url` | **111** | ~30 |
+| `custom_scripts.json_ld_script` (FAQPage) | **110** | ~31 |
+| 태그 부착 (아무 태그라도) | **~110** (untagged=31 중 SearchTune 외 2 포함) | ~29–31 |
 
-## 방식2: `custom_scripts` 필드
+### 태그별 분포 (이미 부착된 것)
+- SEO: 42
+- AEO: 28
+- GEO: 22
+- 가이드: 21
+- **미태그 포스트: 31** (이 중 대부분이 백필 잔여분)
 
-- 이 필드는 **문자열이 아니라 구조화된 오브젝트**임. 실측한 스키마:
-  ```json
-  {
-    "head_start_script": null,
-    "head_end_script": null,
-    "body_start_script": null,
-    "body_end_script": null,
-    "json_ld_script": null
-  }
-  ```
-- 문자열을 그대로 PATCH하면 **조용히 무시됨** (모든 슬롯 null 유지).
-- 오브젝트 `{"json_ld_script": "<원문 JSON>"}` 로 PATCH → **200 OK, 저장 확인됨**.
-- 원문 JSON도, `<script>`로 감싼 문자열도 모두 저장되지만, 원문 JSON만 넣는 게 관례상 안전 (Inblog가 스크립트 태그를 자체 렌더).
+### 해석
+- 이전 exec 타임아웃 시점(20/141)에서 setsid 배치가 백그라운드로 더 진행되어 **약 110건 완료**, **약 30건이 남은 상태**.
+- 완료된 110건은 image/faq/tag가 3축 모두 정상 반영됨 (숫자가 111/110/110으로 거의 일치).
+- 잔여 ~30건도 idempotent라 이어 실행하면 안전하게 마무리됩니다.
 
-## 추천: 하이브리드
+## 다음 액션 (승인 시 진행)
 
-- **`custom_scripts.json_ld_script`** ← FAQPage JSON-LD (원문 JSON 문자열, `<script>` 래핑 없이)
-  - 이유: 전용 슬롯이라 head/적절 위치에 안전하게 렌더될 가능성 높음, 중복 삽입 위험 없음.
-- **`content_html` 말미에 사용자용 FAQ 섹션** (`<h2>자주 묻는 질문</h2>` + Q/A 리스트)
-  - 이유: 사람이 읽을 FAQ 블록 필요. script만 넣으면 화면에는 안 보임.
-- JSON-LD를 content_html에도 넣으면 **구조화데이터 중복** → 검색엔진 경고 가능. content_html에는 시각적 FAQ만, JSON-LD는 `custom_scripts`에만 넣는 것이 클린.
+Build 모드로 전환 후, 잔여 미처리 포스트만 골라 짧은 배치로 마무리:
 
-## 대안 (백업 플랜)
+1. 인블로그 `/posts?page=…&include=tags`로 순회하여 **태그 없는 포스트의 slug 목록** 추출 (~30개).
+2. slug ↔ `blog_posts.slug` 매칭으로 `blog_posts.id(uuid)` 목록 확보.
+3. 각 id에 대해 `publish-to-inblog` 순차 호출 (300ms 간격). 요청당 ~15s → 총 ~8분.
+   - 단일 exec 타임아웃 이슈를 피하기 위해 15개씩 2개 배치로 나눔.
+4. 완료 후 인블로그 API 재집계로 **image=141 / faq=141 / tag=141** 도달 확인 및 태그별 최종 분포 보고.
 
-- Inblog가 `json_ld_script` 슬롯을 실제로 head에 렌더하는지 프론트에서 view-source로 확인이 필요할 수 있음. 렌더 안 되는 것으로 판명되면 → 방식1(콘텐츠 말미 script 삽입)로 폴백. script 태그가 sanitize되지 않는 게 이미 실증됨.
-
-## 다음 단계 (승인 시)
-
-1. `publish-to-inblog/index.ts` PATCH attributes에 아래 추가:
-   - `custom_scripts: { json_ld_script: JSON.stringify(faqPageLd) }` (FAQ 있을 때만)
-   - `content_html` 뒤에 시각용 FAQ 섹션 append
-2. 소스는 `blog_posts.faq` (JSONB, `[{q,a}]` 형태) — 컬럼/구조 최종 확인 필요.
-3. 카나리 1건 검증 → 141건 백필.
-
-이미지·태그 처리 계획과 함께 묶어 다음 턴에서 통합 구현 계획 낼지, FAQ만 먼저 갈지 알려주세요.
+이대로 진행할까요?
