@@ -912,6 +912,22 @@ ${naverRulebook}
       } catch (e) {
         console.warn("IndexNow submission failed (non-blocking):", e);
       }
+
+      // Mirror to Inblog (non-blocking) — pipeline continues even if this fails.
+      try {
+        const adminPassword = Deno.env.get("ADMIN_PASSWORD");
+        if (adminPassword && inserted?.id) {
+          const inblogRes = await fetch(`${supabaseUrl}/functions/v1/publish-to-inblog`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${supabaseServiceKey}` },
+            body: JSON.stringify({ password: adminPassword, postId: inserted.id, publish: true }),
+          });
+          const inblogData = await inblogRes.json();
+          console.log("Inblog mirror:", inblogData);
+        }
+      } catch (e) {
+        console.warn("Inblog mirror failed (non-blocking):", e);
+      }
     }
 
     return new Response(
