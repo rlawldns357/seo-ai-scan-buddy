@@ -307,10 +307,10 @@ Deno.serve(async (req) => {
     if (action === "listBlogPosts") {
       const { data: posts } = await supabase
         .from("blog_posts")
-        .select("id, title, slug, published, date, category, failure_reason")
+        .select("id, title, slug, published, date, category, failure_reason, inblog_post_id, inblog_synced_at, inblog_sync_error")
         .is("failure_reason", null)
         .order("date", { ascending: false })
-        .limit(50);
+        .limit(500);
       return new Response(
         JSON.stringify({ posts: posts || [] }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }

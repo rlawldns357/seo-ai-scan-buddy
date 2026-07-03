@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-interface BlogPost { id: string; title: string; slug: string; published: boolean; date: string; category: string }
+interface BlogPost { id: string; title: string; slug: string; published: boolean; date: string; category: string; inblog_post_id?: string | null; inblog_synced_at?: string | null; inblog_sync_error?: string | null }
 interface FailedPost { id: string; title: string; slug: string; category: string; author: string; failure_reason: string; failure_attempts: number; created_at: string; contentLength: number }
 
 export default function BlogManager() {
@@ -17,6 +17,37 @@ export default function BlogManager() {
   const [retrying, setRetrying] = useState(false);
   const [retryMsg, setRetryMsg] = useState<string>("");
   const [inblogId, setInblogId] = useState<string | null>(null);
+  const [bulkRunning, setBulkRunning] = useState(false);
+  const [bulkCounts, setBulkCounts] = useState<{ pending: number; failed: number; synced: number } | null>(null);
+
+  const runBulkMirror = async (retryFailed = false) => {
+    setBulkRunning(true);
+    const t = toast.loading("Inblog 일괄 이관 시작…");
+    let totalProcessed = 0, totalOk = 0, totalFail = 0;
+    try {
+      // Poll until done
+      for (let i = 0; i < 200; i++) {
+        const { data, error } = await supabase.functions.invoke("bulk-mirror-to-inblog", {
+          body: { password: pw(), limit: 5, retryFailed },
+        });
+        if (error) throw error;
+        if ((data as any)?.error) throw new Error((data as any).error);
+        const d = data as any;
+        totalProcessed += d.processed || 0;
+        totalOk += (d.results || []).filter((r: any) => r.ok).length;
+        totalFail += (d.results || []).filter((r: any) => !r.ok).length;
+        setBulkCounts(d.counts);
+        toast.loading(`이관 중… ${totalOk}건 성공 / ${totalFail}건 실패 · 남은 ${d.counts.pending}건`, { id: t });
+        if (d.done) break;
+      }
+      toast.success(`이관 완료: ${totalOk}건 성공, ${totalFail}건 실패`, { id: t });
+      fetchBlogPosts();
+    } catch (e) {
+      toast.error(`실패: ${(e as Error).message}`, { id: t });
+    } finally {
+      setBulkRunning(false);
+    }
+  };
 
   const publishToInblog = async (postId: string, title: string) => {
     setInblogId(postId);
@@ -112,36 +143,73 @@ export default function BlogManager() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="w-4 h-4" />
-            발행 글
-            <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-              {blogPosts.length}개
-            </span>
-          </CardTitle>
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="w-4 h-4" />
+              발행 글
+              <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                {blogPosts.length}개
+              </span>
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              {bulkCounts && (
+                <span className="text-[11px] text-muted-foreground">
+                  ✅ {bulkCounts.synced} · ⏳ {bulkCounts.pending} · ❌ {bulkCounts.failed}
+                </span>
+              )}
+              <Button size="sm" variant="outline" onClick={() => runBulkMirror(false)} disabled={bulkRunning} className="gap-1.5">
+                <Rocket className={`w-3.5 h-3.5 ${bulkRunning ? "animate-pulse" : ""}`} />
+                {bulkRunning ? "이관 중…" : "Inblog 일괄 이관"}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => runBulkMirror(true)} disabled={bulkRunning} className="gap-1.5">
+                <RefreshCw className="w-3.5 h-3.5" />
+                실패 재시도
+              </Button>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">
+            자동 생성 신규 글은 발행 즉시 Inblog로 미러됩니다. 과거 글은 위 버튼으로 일괄 이관하세요.
+          </p>
         </CardHeader>
         <CardContent>
           <div className="space-y-2 max-h-[500px] overflow-y-auto">
             {blogPosts.length === 0 ? (
               <p className="text-sm text-muted-foreground">블로그 글 없음</p>
             ) : (
-              blogPosts.map((post) => (
+              blogPosts.map((post) => {
+                const mirrored = !!post.inblog_post_id;
+                const failed = !mirrored && !!post.inblog_sync_error;
+                return (
                 <div key={post.id} className="flex items-center justify-between gap-3 border border-border rounded-lg px-3 py-2.5">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className={`shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold ${post.published ? "bg-score-excellent/10 text-score-excellent" : "bg-muted text-muted-foreground"}`}>
                         {post.published ? "공개" : "비공개"}
                       </span>
                       <span className="text-xs text-muted-foreground shrink-0">{post.category}</span>
+                      {mirrored ? (
+                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold bg-score-excellent/10 text-score-excellent" title={`Inblog #${post.inblog_post_id}`}>
+                          ✅ Inblog
+                        </span>
+                      ) : failed ? (
+                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold bg-destructive/10 text-destructive" title={post.inblog_sync_error || ""}>
+                          ❌ 실패
+                        </span>
+                      ) : (
+                        <span className="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-bold bg-muted text-muted-foreground">
+                          ⏳ 대기
+                        </span>
+                      )}
                     </div>
                     <p className="text-sm font-medium text-foreground truncate mt-0.5">{post.title}</p>
                     <p className="text-xs text-muted-foreground">{post.date}</p>
+                    {failed && <p className="text-[10px] text-destructive truncate mt-0.5" title={post.inblog_sync_error || ""}>{post.inblog_sync_error}</p>}
                   </div>
                   <button
                     onClick={() => publishToInblog(post.id, post.title)}
                     disabled={inblogId === post.id}
                     className="shrink-0 p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 disabled:opacity-50"
-                    title="Inblog으로 이관 발행"
+                    title={mirrored ? "Inblog 재이관" : "Inblog으로 이관"}
                   >
                     <Rocket className={`w-4 h-4 ${inblogId === post.id ? "animate-pulse" : ""}`} />
                   </button>
@@ -157,13 +225,13 @@ export default function BlogManager() {
                   >
                     {post.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                   </button>
-
                 </div>
-              ))
+              )})
             )}
           </div>
         </CardContent>
       </Card>
+
 
       <Card className={failedPosts.length > 0 ? "border-destructive/40" : ""}>
         <CardHeader>

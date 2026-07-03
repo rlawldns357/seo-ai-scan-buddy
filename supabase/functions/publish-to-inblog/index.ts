@@ -104,6 +104,17 @@ Deno.serve(async (req) => {
       redirect = { skipped: true, reason: (e as Error).message };
     }
 
+    // Persist sync state to our DB (best effort)
+    try {
+      await sb.from("blog_posts").update({
+        inblog_post_id: inblogPostId,
+        inblog_synced_at: new Date().toISOString(),
+        inblog_sync_error: null,
+      }).eq("id", postId);
+    } catch (e) {
+      console.warn("blog_posts update failed:", (e as Error).message);
+    }
+
     return new Response(JSON.stringify({
       ok: true,
       inblogPostId,
@@ -112,6 +123,15 @@ Deno.serve(async (req) => {
       redirect,
     }), { headers: { ...CORS, "Content-Type": "application/json" } });
   } catch (e) {
+    // Record failure on our DB (if we can identify the post)
+    try {
+      const body = await req.clone().json().catch(() => null);
+      const pid = body?.postId;
+      if (pid) {
+        const sb2 = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+        await sb2.from("blog_posts").update({ inblog_sync_error: (e as Error).message.slice(0, 500) }).eq("id", pid);
+      }
+    } catch { /* noop */ }
     return new Response(JSON.stringify({ error: (e as Error).message }), { status: 500, headers: { ...CORS, "Content-Type": "application/json" } });
   }
 });
