@@ -262,6 +262,38 @@ Deno.serve(async (req) => {
       });
     }
 
+    // 3b) Tag attach (best-effort). Map post.category → Inblog tag id, create if missing.
+    const tagInfo: { attempted: string | null; tagId: string | null; attached: boolean; error?: string } = {
+      attempted: null, tagId: null, attached: false,
+    };
+    try {
+      const category = (post as { category?: string }).category?.trim();
+      if (category && inblogPostId) {
+        tagInfo.attempted = category;
+        const cache = await loadTagCache(apiKey);
+        const tagId = await ensureTagId(category, cache, apiKey);
+        if (tagId) {
+          tagInfo.tagId = tagId;
+          const attach = await inblogRaw(`/posts/${inblogPostId}/tags`, apiKey, {
+            method: "POST",
+            body: JSON.stringify({ data: [{ type: "tags", id: tagId }] }),
+          });
+          // 409/422 = already attached → treat as success.
+          if (attach.ok || attach.status === 409 || attach.status === 422) {
+            tagInfo.attached = true;
+          } else {
+            tagInfo.error = `attach ${attach.status}: ${JSON.stringify(attach.json).slice(0, 200)}`;
+          }
+        } else {
+          tagInfo.error = "failed to resolve tag id";
+        }
+      }
+    } catch (e) {
+      tagInfo.error = (e as Error).message;
+      console.warn("tag attach failed:", tagInfo.error);
+    }
+
+
     // 4) 308 redirect: /blog/{slug}.html → new inblog canonical
     let redirect: unknown = null;
     try {
