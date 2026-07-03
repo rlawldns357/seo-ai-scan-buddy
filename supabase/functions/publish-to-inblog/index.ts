@@ -149,14 +149,27 @@ Deno.serve(async (req) => {
       throw new Error(`Inblog POST /posts ${createResp.status}: ${JSON.stringify(createResp.json)}`);
     }
 
-    // 3) Publish via PATCH /posts/{id} with attributes.published=true
+    // 3) Publish via PATCH /posts/{id} with attributes.published=true + published_at
     //    (The `/posts/{id}/publish` sub-path returns 400 — not a real endpoint.)
+    //    published_at MUST be set — without it inblog treats the post as "scheduled"
+    //    and it never appears on the public blog. Prefer the DB's original date so
+    //    historical posts keep their original publish timestamps.
     let publishResp: unknown = null;
     if (publish) {
+      const publishedAt = (() => {
+        const raw = (post as { date?: string; created_at?: string }).date
+          ?? (post as { date?: string; created_at?: string }).created_at;
+        const d = raw ? new Date(raw) : new Date();
+        return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+      })();
       publishResp = await inblogFetch(`/posts/${inblogPostId}`, apiKey, {
         method: "PATCH",
         body: JSON.stringify({
-          data: { type: "posts", id: inblogPostId, attributes: { published: true } },
+          data: {
+            type: "posts",
+            id: inblogPostId,
+            attributes: { published: true, published_at: publishedAt },
+          },
         }),
       });
     }
