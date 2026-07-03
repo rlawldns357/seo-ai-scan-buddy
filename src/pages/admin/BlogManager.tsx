@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-interface BlogPost { id: string; title: string; slug: string; published: boolean; date: string; category: string }
+interface BlogPost { id: string; title: string; slug: string; published: boolean; date: string; category: string; inblog_post_id?: string | null; inblog_synced_at?: string | null; inblog_sync_error?: string | null }
 interface FailedPost { id: string; title: string; slug: string; category: string; author: string; failure_reason: string; failure_attempts: number; created_at: string; contentLength: number }
 
 export default function BlogManager() {
