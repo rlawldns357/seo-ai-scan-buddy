@@ -428,6 +428,9 @@ export type Database = {
           faq_short: Json | null
           featured: boolean
           id: string
+          inblog_post_id: string | null
+          inblog_sync_error: string | null
+          inblog_synced_at: string | null
           og_image: string | null
           published: boolean
           read_time: string
@@ -448,6 +451,9 @@ export type Database = {
           faq_short?: Json | null
           featured?: boolean
           id?: string
+          inblog_post_id?: string | null
+          inblog_sync_error?: string | null
+          inblog_synced_at?: string | null
           og_image?: string | null
           published?: boolean
           read_time?: string
@@ -468,6 +474,9 @@ export type Database = {
           faq_short?: Json | null
           featured?: boolean
           id?: string
+          inblog_post_id?: string | null
+          inblog_sync_error?: string | null
+          inblog_synced_at?: string | null
           og_image?: string | null
           published?: boolean
           read_time?: string
