@@ -137,18 +137,59 @@ Deno.serve(async (req) => {
     if (error || !post) throw new Error(`post not found: ${postId}`);
 
     // Markdown → HTML (Inblog expects content_html)
-    const html = await marked.parse(post.content || "", { async: true });
+    let contentHtml = await marked.parse(post.content || "", { async: true });
+
+    // --- FAQ (hybrid): visible section in content_html + JSON-LD in custom_scripts ---
+    type FaqItem = { q?: string; a?: string; question?: string; answer?: string };
+    const faqRaw = (post as { faq_short?: unknown }).faq_short;
+    const faqItems: { q: string; a: string }[] = Array.isArray(faqRaw)
+      ? (faqRaw as FaqItem[])
+          .map((it) => ({
+            q: String(it?.q ?? it?.question ?? "").trim(),
+            a: String(it?.a ?? it?.answer ?? "").trim(),
+          }))
+          .filter((it) => it.q.length > 0 && it.a.length > 0)
+      : [];
+    let faqInfo: { count: number; injected: boolean; error?: string } = { count: faqItems.length, injected: false };
+    let customScripts: { json_ld_script?: string } | undefined;
+    if (faqItems.length > 0) {
+      const visible = [
+        `\n<h2>자주 묻는 질문</h2>`,
+        ...faqItems.map(
+          (it) => `<div><h3>${escapeHtml(it.q)}</h3><p>${escapeHtml(it.a)}</p></div>`,
+        ),
+      ].join("\n");
+      contentHtml = (contentHtml || "") + "\n" + visible + "\n";
+      const faqPageLd = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: faqItems.map((it) => ({
+          "@type": "Question",
+          name: it.q,
+          acceptedAnswer: { "@type": "Answer", text: it.a },
+        })),
+      };
+      customScripts = { json_ld_script: JSON.stringify(faqPageLd) };
+      faqInfo.injected = true;
+    }
+
+    // --- Image: prefer og_image, fall back to thumbnail (unless placeholder) ---
+    const rawThumb = (post as { thumbnail?: string; og_image?: string }).thumbnail || "";
+    const rawOg = (post as { og_image?: string }).og_image || "";
+    const imgUrl = rawOg || (rawThumb && !rawThumb.includes("placeholder.svg") ? rawThumb : "");
+    const imageInfo: { url: string | null } = { url: imgUrl || null };
 
     const attributes: Record<string, unknown> = {
       title: post.title,
       slug: post.slug,
       description: post.excerpt || undefined,
-      content_html: html,
+      content_html: contentHtml,
       meta_title: post.title,
       meta_description: post.excerpt || undefined,
     };
-    // Skip image field — Inblog rejects arbitrary URL objects in some cases.
-    // Re-enable only after confirming the exact upload/reference shape.
+    if (imgUrl) attributes.image = { url: imgUrl };
+    if (customScripts) attributes.custom_scripts = customScripts;
+
 
     if (dryRun) {
       return new Response(JSON.stringify({ ok: true, dryRun: true, attributes }), {
