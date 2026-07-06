@@ -46,8 +46,8 @@ Deno.serve(async (req) => {
           ...(d.attributes || {}),
         });
       }
-      if (data.length < 100) break;
     }
+
     return new Response(JSON.stringify({ total: all.length, redirects: all }), { headers: { ...CORS, "content-type": "application/json" } });
   }
 
