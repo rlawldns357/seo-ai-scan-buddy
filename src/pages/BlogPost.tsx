@@ -857,7 +857,7 @@ export default function BlogPost() {
 
       <main className="container pt-10 pb-28 md:pt-16 md:pb-32">
         <Link
-          to="/blog"
+          to="/blog9"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" /> 블로그
