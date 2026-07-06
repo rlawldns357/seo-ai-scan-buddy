@@ -27,13 +27,10 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-// Canonical URL form is .html (e.g. /blog/what-is-aeo.html). Lovable host serves
-// .html files directly; clean URLs fall back to SPA index.html (homepage) which
-// breaks per-route SEO. So all internal links / canonical / og:url must use .html.
-// 실험 결과 (2026-06-15): Lovable on-demand prerender 작동 안 함 확인 — clean URL은
-// 여전히 홈페이지 index.html로 fallback (카톡 디버거에서 홈페이지 OG 반환). .html 유지.
-const blogPostPath = (slug: string) => `/blog/${slug}.html`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
+// 구블로그는 /blog9 비밀 경로 전용 (인블로그가 공식). SPA로 조용히 렌더, noindex.
+// canonical/og:url은 인블로그(clean URL)를 가리켜 중복 색인 방지 + 색인 통합.
+const blogPostPath = (slug: string) => `/blog9/${slug}`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}`;
 const blogShareUrl = (slug: string) => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share?slug=${encodeURIComponent(slug)}`;
 
 function isNaverPost(slug: string) {
