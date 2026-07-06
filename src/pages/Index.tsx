@@ -785,7 +785,6 @@ const Index = () => {
               <FaqSection compact />
             </section>
           </div>
-          <StickyBottomCTA />
         </main>
       )}
 
@@ -795,7 +794,6 @@ const Index = () => {
         {screen === "loading" && (
           <>
             <LoadingScreen completedPhases={completedPhases} skipLighthouse={lighthouseSkipped} askAIEnabled={askAIEnabled} />
-            <StickyBottomCTA />
           </>
         )}
 
@@ -957,7 +955,7 @@ const Index = () => {
               <div className="h-24" />
             </div>
 
-            <StickyBottomCTA />
+
           </main>
         )}
       </Suspense>
