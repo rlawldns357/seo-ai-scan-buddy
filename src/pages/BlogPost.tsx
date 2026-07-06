@@ -817,7 +817,8 @@ export default function BlogPost() {
         <meta name="description" content={post.excerpt} />
         <link rel="canonical" href={postUrl} />
         {/* Naver-specific meta */}
-        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+        {/* /blog9 = 구블로그 비밀 경로 — 인블로그와 중복 색인 방지 */}
+        <meta name="robots" content="noindex, nofollow" />
         <meta name="date" content={post.date} />
         <meta name="author" content={post.author} />
         <meta property="og:title" content={postTitle} />
