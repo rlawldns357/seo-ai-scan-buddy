@@ -40,7 +40,8 @@ function ShareIconButton({ slug, title }: { slug: string; title: string }) {
   );
 }
 
-const blogPostPath = (slug: string) => `/blog/${slug}.html`;
+// 구블로그는 /blog9 비밀 경로에서만 접근 (인블로그가 공식 블로그). SPA 라우팅.
+const blogPostPath = (slug: string) => `/blog9/${slug}`;
 
 const categoryColor: Record<string, string> = {
   SEO: "bg-primary/10 text-primary",
@@ -381,6 +382,8 @@ export default function Blog() {
       <Helmet>
         <title>{blogTitle}</title>
         <meta name="description" content={blogDesc} />
+        {/* /blog9 = 구블로그 비밀 경로 — 인블로그(공식)와 중복 색인 방지 */}
+        <meta name="robots" content="noindex, nofollow" />
         <link rel="canonical" href={blogUrl} />
         <meta property="og:title" content={blogTitle} />
         <meta property="og:description" content={blogDesc} />

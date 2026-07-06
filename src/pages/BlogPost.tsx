@@ -27,13 +27,10 @@ const categoryColor: Record<string, string> = {
 
 const NAVER_SLUGS = ["naver-search-advisor-guide", "naver-seo-optimization-tips", "naver-cue-geo-strategy"];
 
-// Canonical URL form is .html (e.g. /blog/what-is-aeo.html). Lovable host serves
-// .html files directly; clean URLs fall back to SPA index.html (homepage) which
-// breaks per-route SEO. So all internal links / canonical / og:url must use .html.
-// 실험 결과 (2026-06-15): Lovable on-demand prerender 작동 안 함 확인 — clean URL은
-// 여전히 홈페이지 index.html로 fallback (카톡 디버거에서 홈페이지 OG 반환). .html 유지.
-const blogPostPath = (slug: string) => `/blog/${slug}.html`;
-const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}.html`;
+// 구블로그는 /blog9 비밀 경로 전용 (인블로그가 공식). SPA로 조용히 렌더, noindex.
+// canonical/og:url은 인블로그(clean URL)를 가리켜 중복 색인 방지 + 색인 통합.
+const blogPostPath = (slug: string) => `/blog9/${slug}`;
+const blogPostUrl = (slug: string) => `https://searchtuneos.com/blog/${slug}`;
 const blogShareUrl = (slug: string) => `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/blog-share?slug=${encodeURIComponent(slug)}`;
 
 function isNaverPost(slug: string) {
@@ -592,18 +589,8 @@ export default function BlogPost() {
   const [post, setPost] = useState<(BlogPostType & { faqs?: FAQ[]; faqShort?: FaqShort[] }) | null | undefined>(undefined);
   const [allPosts, setAllPosts] = useState<BlogPostType[]>(blogPosts);
 
-  // Canonical URL form is /blog/{slug}.html. If the user landed on a clean
-  // URL (/blog/{slug} or /blog/{slug}/ or /blog/{slug}/index.html), do a
-  // hard client-side redirect via window.location.replace so the browser
-  // fetches the prerendered .html file (correct per-post meta/canonical/og).
-  // SPA navigate() would keep serving the homepage HTML shell — useless for SEO.
-  useEffect(() => {
-    if (!slug) return;
-    const canonical = blogPostPath(slug);
-    if (location.pathname !== canonical) {
-      window.location.replace(canonical + location.search + location.hash);
-    }
-  }, [slug, location.pathname, location.search, location.hash]);
+  // /blog9 비밀 경로 = SPA 렌더 only. .html canonical 강제 리다이렉트 비활성화
+  // (인블로그가 공식 색인이므로 로컬 SPA는 조용히 렌더만).
 
   // Fetch DB posts for nav
   useEffect(() => {
@@ -801,7 +788,7 @@ export default function BlogPost() {
         <Navbar />
         <main className="container pt-20 pb-32 text-center">
           <h1 className="text-2xl font-bold text-foreground">글을 찾을 수 없습니다</h1>
-          <Link to="/blog" className="mt-4 inline-flex items-center gap-1 text-primary font-medium hover:underline">
+          <Link to="/blog9" className="mt-4 inline-flex items-center gap-1 text-primary font-medium hover:underline">
             <ArrowLeft className="w-4 h-4" /> 블로그로 돌아가기
           </Link>
         </main>
@@ -830,7 +817,8 @@ export default function BlogPost() {
         <meta name="description" content={post.excerpt} />
         <link rel="canonical" href={postUrl} />
         {/* Naver-specific meta */}
-        <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+        {/* /blog9 = 구블로그 비밀 경로 — 인블로그와 중복 색인 방지 */}
+        <meta name="robots" content="noindex, nofollow" />
         <meta name="date" content={post.date} />
         <meta name="author" content={post.author} />
         <meta property="og:title" content={postTitle} />
@@ -869,7 +857,7 @@ export default function BlogPost() {
 
       <main className="container pt-10 pb-28 md:pt-16 md:pb-32">
         <Link
-          to="/blog"
+          to="/blog9"
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
         >
           <ArrowLeft className="w-4 h-4" /> 블로그

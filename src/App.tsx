@@ -1,6 +1,34 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
+
+/**
+ * 구블로그(Lovable 호스팅)의 /blog/* 트래픽을 인블로그(searchtuneos.com/blog)로 전량 이관.
+ * - /blog                            → https://searchtuneos.com/blog
+ * - /blog/{slug}                     → https://searchtuneos.com/blog/{slug}
+ * - /blog/{slug}.html                → https://searchtuneos.com/blog/{slug}     (.html 제거)
+ * - /blog/{slug}/index.html          → https://searchtuneos.com/blog/{slug}
+ * 구블로그 UI는 /blog9 비밀 경로에서만 접근 가능 (noindex).
+ */
+function RedirectToInblog() {
+  const location = useLocation();
+  useEffect(() => {
+    let path = location.pathname;
+    // strip /index.html tail
+    path = path.replace(/\/index\.html$/i, "");
+    // strip trailing .html
+    path = path.replace(/\.html$/i, "");
+    // strip trailing slash (but keep root /blog)
+    if (path.length > "/blog".length) path = path.replace(/\/+$/, "");
+    const target = `https://searchtuneos.com${path}${location.search}${location.hash}`;
+    window.location.replace(target);
+  }, [location.pathname, location.search, location.hash]);
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background text-muted-foreground text-sm">
+      searchtuneos.com/blog 로 이동 중…
+    </div>
+  );
+}
 
 import { HelmetProvider } from "react-helmet-async";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -55,10 +83,16 @@ const App = () => (
             <Route path="/naver-store" element={<NaverStore />} />
             {/* 기타 공개 페이지 */}
             <Route path="/about" element={<About />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug.html" element={<BlogPost />} />
-            <Route path="/blog/:slug/index.html" element={<BlogPost />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
+            {/* /blog/* 는 전부 인블로그(searchtuneos.com/blog)로 외부 리다이렉트 */}
+            <Route path="/blog" element={<RedirectToInblog />} />
+            <Route path="/blog/:slug.html" element={<RedirectToInblog />} />
+            <Route path="/blog/:slug/index.html" element={<RedirectToInblog />} />
+            <Route path="/blog/:slug" element={<RedirectToInblog />} />
+            {/* /blog9 = 구블로그 UI 비밀 경로 (noindex, 인블로그와 중복 색인 방지) */}
+            <Route path="/blog9" element={<Blog />} />
+            <Route path="/blog9/:slug.html" element={<BlogPost />} />
+            <Route path="/blog9/:slug/index.html" element={<BlogPost />} />
+            <Route path="/blog9/:slug" element={<BlogPost />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
