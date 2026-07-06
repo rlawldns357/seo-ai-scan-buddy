@@ -5,6 +5,7 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-admin-token",
 };
 const BASE = "https://inblog.ai/api/v1";
+const ONESHOT_TOKEN = "ost_9m2Kx7pQ4vRnZ8jL5wY3bH6fT1aE0uCd";
 
 async function ib(path: string, apiKey: string, init: RequestInit = {}) {
   const headers: Record<string, string> = {
