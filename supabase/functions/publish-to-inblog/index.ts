@@ -294,25 +294,12 @@ Deno.serve(async (req) => {
     }
 
 
-    // 4) 308 redirect: /blog/{slug}.html → new inblog canonical
-    let redirect: unknown = null;
-    try {
-      redirect = await inblogFetch("/redirects", apiKey, {
-        method: "POST",
-        body: JSON.stringify({
-          data: {
-            type: "redirects",
-            attributes: {
-              from_path: `/blog/${post.slug}.html`,
-              to_path: `/${post.slug}`,
-              redirect_type: 308,
-            },
-          },
-        }),
-      });
-    } catch (e) {
-      redirect = { skipped: true, reason: (e as Error).message };
-    }
+    // 4) 308 redirect creation DISABLED — hypothesis test:
+    //    accumulating /blog/{slug}.html redirects may trigger inblog's
+    //    ".html legacy" routing mode. Leaving this off to see if the
+    //    redirect table stays at 0 and posts serve as clean URLs.
+    const redirect: unknown = { skipped: true, reason: "disabled_for_hypothesis_test" };
+
 
     // Persist sync state (best effort).
     try {
