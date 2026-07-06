@@ -3,6 +3,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { execSync } from "child_process";
 import { componentTagger } from "lovable-tagger";
+import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/supabase/vite";
 
 /**
  * Build-time version 포맷: MAJOR.MINOR.YYMMDD.<5자리 태그>-beta
@@ -77,6 +78,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     deferCssPlugin(),
+    mcpPlugin(),
   ].filter(Boolean),
   define: {
     __APP_VERSION__: JSON.stringify(APP_VERSION),
