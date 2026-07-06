@@ -25,7 +25,7 @@ async function ib(path: string, apiKey: string, init: RequestInit = {}) {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
   const token = req.headers.get("x-admin-token");
-  if (!token || token !== Deno.env.get("OPS_READONLY_TOKEN")) {
+  if (!token || token !== ONESHOT_TOKEN) {
     return new Response(JSON.stringify({ error: "unauthorized" }), { status: 401, headers: { ...CORS, "content-type": "application/json" } });
   }
   const apiKey = Deno.env.get("INBLOG_API_KEY")!;
