@@ -27,3 +27,5 @@ project_id = "dmnrbmarbvirtymhszww"
     verify_jwt = false
   [functions.notify-admin-lead]
     verify_jwt = false
+  [functions.inblog-redirects-admin]
+    verify_jwt = false
