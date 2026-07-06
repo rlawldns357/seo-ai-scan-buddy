@@ -393,6 +393,19 @@ function renderBrandWordmark(brand: BrandStyle, cx: number, cy: number): string 
       .join("");
   }
 
+  // SearchTune 폴백 — blog9 SearchTuneBadge 매칭: primary(#3553E9) → accent(#8F49DF) 그라데이션
+  if (brand.key === "searchtune") {
+    return `
+      <defs>
+        <linearGradient id="searchtuneGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#3553E9"/>
+          <stop offset="100%" stop-color="#8F49DF"/>
+        </linearGradient>
+      </defs>
+      <text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="900" fill="url(#searchtuneGrad)" text-anchor="middle" letter-spacing="-3">${escXml(brand.wordmark)}</text>
+    `;
+  }
+
   // 일반 브랜드: 단일 컬러 워드마크
   return `<text x="${cx}" y="${cy}" font-family="${brand.fontFamily}" font-size="${fontSize}" font-weight="${brand.fontWeight}" fill="${brand.color}" text-anchor="middle" letter-spacing="-3">${escXml(brand.wordmark)}</text>`;
 }
