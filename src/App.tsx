@@ -83,10 +83,16 @@ const App = () => (
             <Route path="/naver-store" element={<NaverStore />} />
             {/* 기타 공개 페이지 */}
             <Route path="/about" element={<About />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/blog/:slug.html" element={<BlogPost />} />
-            <Route path="/blog/:slug/index.html" element={<BlogPost />} />
-            <Route path="/blog/:slug" element={<BlogPost />} />
+            {/* /blog/* 는 전부 인블로그(searchtuneos.com/blog)로 외부 리다이렉트 */}
+            <Route path="/blog" element={<RedirectToInblog />} />
+            <Route path="/blog/:slug.html" element={<RedirectToInblog />} />
+            <Route path="/blog/:slug/index.html" element={<RedirectToInblog />} />
+            <Route path="/blog/:slug" element={<RedirectToInblog />} />
+            {/* /blog9 = 구블로그 UI 비밀 경로 (noindex, 인블로그와 중복 색인 방지) */}
+            <Route path="/blog9" element={<Blog />} />
+            <Route path="/blog9/:slug.html" element={<BlogPost />} />
+            <Route path="/blog9/:slug/index.html" element={<BlogPost />} />
+            <Route path="/blog9/:slug" element={<BlogPost />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/unsubscribe" element={<Unsubscribe />} />
