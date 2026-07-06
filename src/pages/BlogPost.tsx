@@ -788,7 +788,7 @@ export default function BlogPost() {
         <Navbar />
         <main className="container pt-20 pb-32 text-center">
           <h1 className="text-2xl font-bold text-foreground">글을 찾을 수 없습니다</h1>
-          <Link to="/blog" className="mt-4 inline-flex items-center gap-1 text-primary font-medium hover:underline">
+          <Link to="/blog9" className="mt-4 inline-flex items-center gap-1 text-primary font-medium hover:underline">
             <ArrowLeft className="w-4 h-4" /> 블로그로 돌아가기
           </Link>
         </main>
