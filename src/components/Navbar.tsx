@@ -78,7 +78,7 @@ export default function Navbar() {
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             <a
               href="/blog"
-              className="hidden sm:inline-block text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors font-medium"
             >
               Blog
             </a>
