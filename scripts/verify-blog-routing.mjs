@@ -1,8 +1,8 @@
 /**
- * Routing test: every blog slug must have dist/blog/{slug}.html (canonical full
- * body) with canonical + og:url = https://searchtuneos.com/blog/{slug}.html.
- * The sibling dist/blog/{slug}/index.html should exist as a redirect stub
- * (meta-refresh + JS) pointing at the canonical .html.
+ * Routing test: every blog slug must have dist/blog/{slug}/index.html
+ * (canonical full body) with canonical + og:url = https://searchtuneos.com/blog/{slug}.
+ * The sibling dist/blog/{slug}.html may exist only as a legacy redirect stub
+ * pointing back to the clean URL.
  *
  * Fails the build (exit 1) on any mismatch.
  */
@@ -16,9 +16,9 @@ const SITE = "https://searchtuneos.com";
 
 const REQUIRED_BODY_MARKERS = {
   "what-is-aeo": ["TL;DR", "Schema.org FAQPage", "Google Search Central"],
-  "geo-generative-engine-optimization": ["TL;DR", "Google Search Central", "/blog/ai-crawler-access.html"],
-  "faq-schema-aeo-boost": ["TL;DR", "Schema.org FAQPage", "/blog/seo-vs-aeo-vs-geo.html"],
-  "ai-crawler-access": ["TL;DR", "OpenAI GPTBot", "/blog/geo-generative-engine-optimization.html"],
+  "geo-generative-engine-optimization": ["TL;DR", "Google Search Central", "/blog/ai-crawler-access"],
+  "faq-schema-aeo-boost": ["TL;DR", "Schema.org FAQPage", "/blog/seo-vs-aeo-vs-geo"],
+  "ai-crawler-access": ["TL;DR", "OpenAI GPTBot", "/blog/geo-generative-engine-optimization"],
 };
 
 function readMeta(filePath) {
@@ -34,8 +34,8 @@ function listSlugs() {
   if (!fs.existsSync(BLOG_DIR)) return [];
   const slugs = new Set();
   for (const entry of fs.readdirSync(BLOG_DIR, { withFileTypes: true })) {
-    if (entry.isFile() && entry.name.endsWith(".html") && entry.name !== "index.html") {
-      slugs.add(entry.name.replace(/\.html$/, ""));
+    if (entry.isDirectory()) {
+      slugs.add(entry.name);
     }
   }
   return [...slugs];
@@ -55,16 +55,16 @@ function main() {
 
   let failed = 0;
   for (const slug of slugs) {
-    const dotHtml = path.join(BLOG_DIR, `${slug}.html`);
-    const stubHtml = path.join(BLOG_DIR, slug, "index.html");
-    const expected = `${SITE}/blog/${slug}.html`;
+    const canonicalHtml = path.join(BLOG_DIR, slug, "index.html");
+    const legacyHtml = path.join(BLOG_DIR, `${slug}.html`);
+    const expected = `${SITE}/blog/${slug}`;
     const errors = [];
 
-    if (!fs.existsSync(dotHtml) || !fs.statSync(dotHtml).isFile()) {
-      errors.push(`missing canonical file at /blog/${slug}.html`);
+    if (!fs.existsSync(canonicalHtml) || !fs.statSync(canonicalHtml).isFile()) {
+      errors.push(`missing canonical file at /blog/${slug}/index.html`);
     } else {
-      const html = fs.readFileSync(dotHtml, "utf-8");
-      const meta = readMeta(dotHtml);
+      const html = fs.readFileSync(canonicalHtml, "utf-8");
+      const meta = readMeta(canonicalHtml);
       if (meta.canonical !== expected) errors.push(`canonical "${meta.canonical}" ≠ "${expected}"`);
       if (meta.ogUrl !== expected) errors.push(`og:url "${meta.ogUrl}" ≠ "${expected}"`);
       if (!meta.ogImage) errors.push(`missing og:image`);
@@ -73,13 +73,13 @@ function main() {
       }
     }
 
-    if (!fs.existsSync(stubHtml) || !fs.statSync(stubHtml).isFile()) {
-      errors.push(`missing redirect stub at /blog/${slug}/index.html`);
+    if (!fs.existsSync(legacyHtml) || !fs.statSync(legacyHtml).isFile()) {
+      errors.push(`missing legacy redirect stub at /blog/${slug}.html`);
     } else {
-      const meta = readMeta(stubHtml);
+      const meta = readMeta(legacyHtml);
       if (meta.canonical !== expected) errors.push(`stub canonical "${meta.canonical}" ≠ "${expected}"`);
-      if (!meta.refresh || !meta.refresh.endsWith(`/blog/${slug}.html`)) {
-        errors.push(`stub does not meta-refresh to "/blog/${slug}.html" (got "${meta.refresh}")`);
+      if (!meta.refresh || !meta.refresh.endsWith(`/blog/${slug}`)) {
+        errors.push(`stub does not meta-refresh to "/blog/${slug}" (got "${meta.refresh}")`);
       }
     }
 
@@ -95,7 +95,7 @@ function main() {
     process.exit(1);
   }
 
-  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs canonical at /blog/{slug}.html with redirect stub.`);
+  console.log(`[verify-routing] ✅ All ${slugs.length} blog slugs canonical at clean /blog/{slug} with legacy redirect stub.`);
 }
 
 main();

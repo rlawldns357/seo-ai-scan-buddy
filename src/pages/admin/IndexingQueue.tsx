@@ -37,14 +37,14 @@ const ENGINE_LABEL: Record<string, string> = {
   indexnow: "IndexNow (자동 · Bing/Naver/Yandex)",
 };
 
-/** Canonicalize /blog/{slug} -> /blog/{slug}.html (idempotent) */
+/** Canonicalize /blog/{slug}.html -> /blog/{slug} (clean URL) */
 function canonicalizeBlogUrl(u: string): string {
   const abs = toAbsoluteUrlSafe(u);
   try {
     const url = new URL(abs);
     let p = url.pathname.replace(/\/+$/, "");
-    if (/^\/blog\/[^/]+$/i.test(p) && !/\.html$/i.test(p)) {
-      p = `${p}.html`;
+    if (/^\/blog\/[^/]+\.html$/i.test(p)) {
+      p = p.replace(/\.html$/i, "");
       return `${url.origin}${p}${url.search}${url.hash}`;
     }
     return abs;

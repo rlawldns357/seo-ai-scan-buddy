@@ -10,11 +10,7 @@ const corsHeaders = {
 const INDEXNOW_KEY = "e9f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5";
 const SITE_URL = "https://searchtuneos.com";
 
-/**
- * Canonical blog URL is always /blog/{slug}.html.
- * Defensive: adds .html if missing, prevents .html.html, accepts bare slug
- * or full URL with/without trailing slash.
- */
+/** Canonical blog URL is clean /blog/{slug}; legacy .html is stripped. */
 function canonicalBlogUrl(input: string): string {
   const s = String(input || "").trim();
   if (!s) return "";
@@ -22,7 +18,7 @@ function canonicalBlogUrl(input: string): string {
   try { if (/^https?:\/\//i.test(s)) path = new URL(s).pathname; } catch { /* keep */ }
   if (!path.startsWith("/")) path = `/blog/${path}`;
   path = path.replace(/\/+$/, "");
-  if (/^\/blog\/[^/]+$/i.test(path) && !/\.html$/i.test(path)) path = `${path}.html`;
+  path = path.replace(/\.html$/i, "");
   return `${SITE_URL}${path}`;
 }
 

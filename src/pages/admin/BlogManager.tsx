@@ -18,17 +18,18 @@ export default function BlogManager() {
   const [retryMsg, setRetryMsg] = useState<string>("");
   const [inblogId, setInblogId] = useState<string | null>(null);
   const [bulkRunning, setBulkRunning] = useState(false);
-  const [bulkCounts, setBulkCounts] = useState<{ pending: number; failed: number; synced: number } | null>(null);
+  const [bulkCounts, setBulkCounts] = useState<{ pending: number; failed: number; synced: number; totalPublished?: number } | null>(null);
 
-  const runBulkMirror = async (retryFailed = false) => {
+  const runBulkMirror = async (retryFailed = false, includeSynced = false) => {
     setBulkRunning(true);
-    const t = toast.loading("Inblog 일괄 이관 시작…");
+    const t = toast.loading(includeSynced ? "Inblog 전체 재동기화 시작…" : "Inblog 일괄 이관 시작…");
     let totalProcessed = 0, totalOk = 0, totalFail = 0;
+    let offset = 0;
     try {
       // Poll until done
       for (let i = 0; i < 200; i++) {
         const { data, error } = await supabase.functions.invoke("bulk-mirror-to-inblog", {
-          body: { password: pw(), limit: 5, retryFailed },
+          body: { password: pw(), limit: 5, retryFailed, includeSynced, offset },
         });
         if (error) throw error;
         if ((data as any)?.error) throw new Error((data as any).error);
@@ -37,10 +38,11 @@ export default function BlogManager() {
         totalOk += (d.results || []).filter((r: any) => r.ok).length;
         totalFail += (d.results || []).filter((r: any) => !r.ok).length;
         setBulkCounts(d.counts);
-        toast.loading(`이관 중… ${totalOk}건 성공 / ${totalFail}건 실패 · 남은 ${d.counts.pending}건`, { id: t });
+        offset = d.nextOffset || 0;
+        toast.loading(`${includeSynced ? "재동기화" : "이관"} 중… ${totalOk}건 성공 / ${totalFail}건 실패 · 남은 ${includeSynced ? Math.max(0, (d.counts.totalPublished || 0) - offset) : d.counts.pending}건`, { id: t });
         if (d.done) break;
       }
-      toast.success(`이관 완료: ${totalOk}건 성공, ${totalFail}건 실패`, { id: t });
+      toast.success(`${includeSynced ? "재동기화" : "이관"} 완료: ${totalOk}건 성공, ${totalFail}건 실패`, { id: t });
       fetchBlogPosts();
     } catch (e) {
       toast.error(`실패: ${(e as Error).message}`, { id: t });
@@ -160,6 +162,10 @@ export default function BlogManager() {
               <Button size="sm" variant="outline" onClick={() => runBulkMirror(false)} disabled={bulkRunning} className="gap-1.5">
                 <Rocket className={`w-3.5 h-3.5 ${bulkRunning ? "animate-pulse" : ""}`} />
                 {bulkRunning ? "이관 중…" : "Inblog 일괄 이관"}
+              </Button>
+              <Button size="sm" variant="outline" onClick={() => runBulkMirror(false, true)} disabled={bulkRunning} className="gap-1.5">
+                <RefreshCw className={`w-3.5 h-3.5 ${bulkRunning ? "animate-spin" : ""}`} />
+                전체 재동기화
               </Button>
               <Button size="sm" variant="ghost" onClick={() => runBulkMirror(true)} disabled={bulkRunning} className="gap-1.5">
                 <RefreshCw className="w-3.5 h-3.5" />
@@ -309,7 +315,7 @@ export default function BlogManager() {
                       삭제
                     </Button>
                     <a
-                      href={`/blog/${post.slug}.html`}
+                      href={`/blog/${post.slug}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs text-primary hover:underline self-center ml-auto"

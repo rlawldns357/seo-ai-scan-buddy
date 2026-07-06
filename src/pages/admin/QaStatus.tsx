@@ -62,16 +62,16 @@ export default function QaStatus() {
       setQa(qaRes);
       setAudit(auditRes);
 
-      // Live canonical probe — fetch each .html and verify canonical + TL;DR text
+        // Live canonical probe — fetch each clean URL and verify canonical + TL;DR text
       const results = await Promise.all(PROBE_SLUGS.map(async (slug): Promise<ProbeResult> => {
-        const url = `${SITE}/blog/${slug}.html`;
+          const url = `${SITE}/blog/${slug}`;
         try {
           const r = await fetch(url, { cache: "no-store" });
           const text = r.ok ? await r.text() : "";
           const canonical = (text.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i) || [])[1] || null;
           const hasTldr = /TL;?DR|핵심 요약|3줄 요약/i.test(text);
-          const ok = r.ok && !!canonical && canonical.endsWith(`.html`);
-          return { slug, ok, httpStatus: r.status, canonical, hasTldr, note: ok ? "canonical .html OK" : "canonical mismatch or non-200" };
+          const ok = r.ok && !!canonical && !/\.html$/i.test(canonical);
+          return { slug, ok, httpStatus: r.status, canonical, hasTldr, note: ok ? "clean canonical OK" : "canonical mismatch or non-200" };
         } catch (e) {
           return { slug, ok: false, httpStatus: null, canonical: null, hasTldr: false, note: String(e) };
         }
@@ -165,7 +165,7 @@ export default function QaStatus() {
                     <td>{p.hasTldr ? "✓" : "—"}</td>
                     <td className="text-muted-foreground">{p.note}</td>
                     <td>
-                      <a href={`${SITE}/blog/${p.slug}.html`} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
+                      <a href={`${SITE}/blog/${p.slug}`} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1">
                         열기<ExternalLink className="w-3 h-3" />
                       </a>
                     </td>

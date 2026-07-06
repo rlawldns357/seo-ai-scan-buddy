@@ -16,7 +16,7 @@ const PUBLIC_DIR = path.resolve("public");
 const DIST_DIR = path.resolve("dist");
 
 // Auto-parsed from src/data/blogPosts.ts so all client-side legacy slugs
-// also appear in the sitemap with /blog/{slug}.html canonical URLs.
+// also appear in the sitemap with clean /blog/{slug} canonical URLs.
 function loadStaticSlugs() {
   try {
     const src = fs.readFileSync(path.resolve("src/data/blogPosts.ts"), "utf-8");
@@ -137,7 +137,7 @@ async function main() {
     if (!p?.slug || seen.has(p.slug)) continue;
     seen.add(p.slug);
     postEntries.push({
-      loc: `${SITE}/blog/${encodeURI(p.slug)}.html`,
+      loc: `${SITE}/blog/${encodeURI(p.slug)}`,
       lastmod: ymd(p.updated_at || p.date),
       changefreq: "monthly",
       priority: "0.7",
@@ -147,7 +147,7 @@ async function main() {
     if (seen.has(slug)) continue;
     seen.add(slug);
     postEntries.push({
-      loc: `${SITE}/blog/${slug}.html`,
+      loc: `${SITE}/blog/${slug}`,
       lastmod: today,
       changefreq: "monthly",
       priority: "0.7",

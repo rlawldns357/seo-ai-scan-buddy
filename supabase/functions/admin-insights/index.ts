@@ -701,12 +701,12 @@ Deno.serve(async (req) => {
       if (rawUrl.startsWith("/")) rawUrl = `https://searchtuneos.com${rawUrl}`;
       else if (!/^https?:\/\//i.test(rawUrl)) rawUrl = `https://searchtuneos.com/${rawUrl}`;
 
-      // Blog canonical rule: /blog/{slug} -> /blog/{slug}.html (no double .html)
+      // Blog canonical rule: /blog/{slug}.html -> /blog/{slug}
       try {
         const u = new URL(rawUrl);
         let p = u.pathname.replace(/\/+$/, "");
-        if (/^\/blog\/[^/]+$/i.test(p) && !/\.html$/i.test(p)) {
-          p = `${p}.html`;
+        if (/^\/blog\/[^/]+\.html$/i.test(p)) {
+          p = p.replace(/\.html$/i, "");
           rawUrl = `${u.origin}${p}${u.search}${u.hash}`;
         }
       } catch { /* leave as-is */ }

@@ -4,11 +4,10 @@
  * index content without executing JavaScript.
  *
  * Runs after `vite build` and writes:
- *   - dist/blog/{slug}.html       → canonical full article (Lovable serves directly)
- *   - dist/blog/{slug}/index.html → redirect stub → /blog/{slug}.html
- * Canonical/share URLs use .html because Lovable hosting's SPA fallback
- * returns the homepage HTML for any extensionless deep path, which breaks
- * per-route SEO. .html files are served as-is.
+ *   - dist/blog/{slug}/index.html → canonical full article (clean URL)
+ *   - dist/blog/{slug}.html       → legacy redirect stub → /blog/{slug}
+ * Canonical/share URLs use clean URLs because the public blog should not send
+ * users or crawlers into the legacy .html route.
  */
 
 import fs from "fs";
@@ -172,21 +171,18 @@ function resolveOgImage(post) {
   return post.og_image;
 }
 
-// Canonical URL form: /blog/{slug}.html. Lovable host serves .html files
-// directly, but clean URLs (/blog/{slug}) fall back to root /index.html
-// (homepage HTML), which breaks per-route SEO. So .html is the canonical
-// shipping format. We also emit dist/blog/{slug}/index.html as a redirect
-// stub so any crawler that reaches the clean URL ends up on the canonical.
-function blogHtmlPath(slug) {
-  return `/blog/${slug}.html`;
+// Canonical URL form: /blog/{slug}. Keep legacy .html only as a compatibility
+// redirect target so our own UI/sitemap/RSS never prefers .html again.
+function blogPath(slug) {
+  return `/blog/${slug}`;
 }
 
-function blogHtmlUrl(slug) {
-  return `${SITE}${blogHtmlPath(slug)}`;
+function blogUrl(slug) {
+  return `${SITE}${blogPath(slug)}`;
 }
 
 function generateHtml(post, assets, related = []) {
-  const postUrl = blogHtmlUrl(post.slug);
+  const postUrl = blogUrl(post.slug);
   const title = `${post.title} – 서치튠OS 블로그`;
   const ogImage = resolveOgImage(post);
   const contentHtml = mdToHtml(post.content || "");
@@ -266,7 +262,7 @@ function generateHtml(post, assets, related = []) {
       ${related.length ? `<aside style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid #eee">
         <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:0.75rem">관련 글</h2>
         <ul style="list-style:none;padding:0;margin:0">
-          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="${blogHtmlPath(r.slug)}" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
+          ${related.map(r => `<li style="margin-bottom:0.5rem"><a href="${blogPath(r.slug)}" style="color:#3056d3;text-decoration:none">${esc(r.title)}</a></li>`).join("\n          ")}
         </ul>
       </aside>` : ""}
       <footer style="margin-top:2rem;padding-top:1rem;border-top:1px solid #eee;font-size:0.85rem;color:#888">
@@ -281,12 +277,11 @@ function generateHtml(post, assets, related = []) {
 </html>`;
 }
 
-// ── 6b. Redirect stub for /blog/{slug}/index.html ───────────────────
-// Goal: zero duplicate body. Crawlers see canonical → .html only.
-// Browsers get http-equiv refresh + JS replace fallback.
+// ── 6b. Legacy redirect stub for /blog/{slug}.html ──────────────────
+// Goal: users/crawlers who hit old .html URLs are sent back to clean URL.
 function generateRedirectStub(post) {
-  const postUrl = blogHtmlUrl(post.slug);
-  const postPath = blogHtmlPath(post.slug);
+  const postUrl = blogUrl(post.slug);
+  const postPath = blogPath(post.slug);
   const title = `${post.title} – 서치튠OS 블로그`;
   const ogImage = resolveOgImage(post);
   return `<!doctype html>
@@ -313,7 +308,7 @@ function generateRedirectStub(post) {
   <script>location.replace(${JSON.stringify(postPath)});</script>
 </head>
 <body>
-  <a href="${postPath}">canonical article로 이동</a>
+   <a href="${postPath}">clean article로 이동</a>
 </body>
 </html>`;
 }
@@ -359,15 +354,13 @@ async function main() {
     const related = relatedPool.filter(p => p.slug !== post.slug).slice(0, 5);
     const html = generateHtml(post, assets, related);
 
-    // CANONICAL: /blog/{slug}.html holds the full article body + canonical
-    // meta. Lovable host serves .html files directly.
-    fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), html, "utf-8");
-
-    // REDIRECT STUB: /blog/{slug}/index.html — if a crawler/user reaches
-    // the clean URL form, redirect to canonical .html via meta-refresh + JS.
+    // CANONICAL: /blog/{slug}/index.html holds the full article body + clean canonical meta.
     const slugDir = path.join(blogDir, post.slug);
     fs.mkdirSync(slugDir, { recursive: true });
-    fs.writeFileSync(path.join(slugDir, "index.html"), generateRedirectStub(post), "utf-8");
+    fs.writeFileSync(path.join(slugDir, "index.html"), html, "utf-8");
+
+    // LEGACY: /blog/{slug}.html redirects back to clean URL.
+    fs.writeFileSync(path.join(blogDir, `${post.slug}.html`), generateRedirectStub(post), "utf-8");
   }
 
   // Always regenerate /blog/index.html (listing page) so it stays fresh
@@ -404,7 +397,7 @@ function generateBlogListHtml(posts, assets) {
   const desc = "SEO, AEO, GEO에 대해 알아야 할 모든 것. 서치튠OS가 제공하는 실전 가이드와 인사이트를 확인하세요.";
 
   const listItems = posts
-    .map(p => `<li><a href="${blogHtmlPath(p.slug)}">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
+    .map(p => `<li><a href="${blogPath(p.slug)}">${esc(p.title)}</a> <span style="color:#999">(${p.date})</span><br/><span style="color:#666;font-size:0.9rem">${esc(p.excerpt)}</span></li>`)
     .join("\n      ");
 
   return `<!doctype html>
@@ -448,7 +441,7 @@ main().catch(console.error);
 // ── 8. RSS XML generator ───────────────────────────────────────────
 function generateRssXml(posts) {
   const items = posts.map(p => {
-    const url = blogHtmlUrl(p.slug);
+    const url = blogUrl(p.slug);
     const pubDate = new Date(p.date).toUTCString();
     return `    <item>
       <title><![CDATA[${p.title}]]></title>
@@ -489,7 +482,7 @@ function generateAboutHtml(latestPosts, assets) {
     isPartOf: { "@type": "WebSite", name: "서치튠OS", url: SITE },
   });
   const blogLinks = latestPosts
-    .map(p => `<li><a href="${blogHtmlPath(p.slug)}" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
+    .map(p => `<li><a href="${blogPath(p.slug)}" style="color:#3056d3;text-decoration:none">${esc(p.title)}</a></li>`)
     .join("\n        ");
 
   return `<!doctype html>
@@ -550,7 +543,7 @@ function injectHomeLinks(latestPosts) {
   const linksHtml = `<section data-prerender-home-links style="display:none">
     <h2>최신 블로그</h2>
     <ul>
-      ${latestPosts.map(p => `<li><a href="${blogHtmlPath(p.slug)}">${esc(p.title)}</a></li>`).join("\n      ")}
+      ${latestPosts.map(p => `<li><a href="${blogPath(p.slug)}">${esc(p.title)}</a></li>`).join("\n      ")}
     </ul>
     <p><a href="/blog">블로그 전체 보기</a> · <a href="/about">서치튠OS 소개</a></p>
   </section>`;

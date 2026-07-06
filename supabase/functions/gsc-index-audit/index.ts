@@ -18,7 +18,7 @@ function canonicalBlogUrl(slug: string): string {
   const s = String(slug || "").trim().replace(/\/+$/, "");
   if (!s) return "";
   const path = s.startsWith("/blog/") ? s : `/blog/${s}`;
-  return `${SITE_ORIGIN}${/\.html$/i.test(path) ? path : `${path}.html`}`;
+  return `${SITE_ORIGIN}${path.replace(/\.html$/i, "")}`;
 }
 
 async function inspect(url: string) {
