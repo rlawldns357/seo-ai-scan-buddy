@@ -125,12 +125,9 @@ export function buildAiOgPrompt(opts: { title: string; category: string }): stri
  * `slug` 미지정 시 카테고리 기반 폴백.
  */
 export function buildSvgOg(opts: { title: string; category: string; slug?: string }): string {
-  // category까지 넘겨서 AEO/GEO/SEO 컨셉 카드 폴백이 작동하도록
-  const explicit = hasExplicitBrand(opts.slug || "", opts.title, opts.category);
-  if (explicit) {
-    return buildBrandSplitSvg(opts);
-  }
-  return buildGradientSvg(opts);
+  // /blog9 카드와 동일한 미니멀 룩으로 통일: 항상 buildBrandSplitSvg.
+  // (SearchTune 폴백도 워드마크+부제 레이아웃으로 렌더)
+  return buildBrandSplitSvg(opts);
 }
 
 /**
