@@ -29,10 +29,6 @@ export default function StickyBottomCTA() {
         <div className="container max-w-4xl mx-auto flex items-center gap-4">
           {/* 브랜드 로고 칩 — 뱃지가 좌측, 로고가 우측 */}
           <div className="shrink-0 flex items-center gap-2.5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-extrabold uppercase tracking-widest bg-white/20 text-white border border-white/30">
-              <ExternalLink className="w-2.5 h-2.5" />
-              새 서비스
-            </span>
             <span className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-white shadow-lg shadow-[hsl(351_60%_30%)]/30 ring-1 ring-white/40">
               <img
                 src={autoblogLogo}
@@ -80,10 +76,6 @@ export default function StickyBottomCTA() {
           <p className="text-[11px] font-medium text-white/85 leading-none">
             진단 다음 단계는 <span className="font-bold text-white">자동 발행</span>
           </p>
-          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-widest bg-white/20 text-white border border-white/30 leading-none">
-            <ExternalLink className="w-2.5 h-2.5" />
-            새 서비스
-          </span>
         </div>
         <div className="flex items-center justify-between gap-2 h-11 pl-2 pr-3 rounded-full bg-white text-[hsl(351_75%_50%)] shadow-lg">
           <span className="inline-flex items-center gap-2 text-sm font-extrabold">
