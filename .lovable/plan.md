@@ -1,79 +1,62 @@
 
-## 결론: 인블로그 리다이렉트는 무죄입니다
+## 결과 보고 (조회 완료)
 
-### 1) 인블로그 리다이렉트 조회 결과 (총 150건)
+### 1) 인블로그 포스트 `chatgpt-citation-structure-tables-lists-20260705` attributes
 
-- **역방향/와일드카드 0건**: `to_path`가 `.html`로 끝나는 항목 **0개**, `*` 포함 항목 **0개**
-- **전부 정상 방향**: `/blog/{slug}.html → /{slug}` (308)
-- 샘플:
-  ```
-  /blog/hreflang-tag-international-seo-strategy.html  →  /hreflang-tag-international-seo-strategy  (308)
-  /blog/seo-canonical-tag-duplicate-content-ranking.html → /seo-canonical-tag-duplicate-content-ranking (308)
-  /blog/robots-txt-master-seo-advanced-guide.html → /robots-txt-master-seo-advanced-guide (308)
-  ```
-- 이 리다이렉트는 **inblog.ai 서브도메인 내부에서만** 발동함. `searchtuneos.com` / `searchtuneos.lovable.app` 하고는 무관.
+- **id**: `219460`
+- **전체 attribute 키**: `canonical_url, content_html, content_type, cta_color, cta_link, cta_text, cta_text_color, custom_scripts, description, form_id, image, meta_description, meta_title, notion_url, published, published_at, slug, title`
+- **URL 관련 필드 값**:
+  - `canonical_url: null` ← **비어있음**
+  - `slug: "chatgpt-citation-structure-tables-lists-20260705"`
+  - `custom_url`, `original_url`, `external_url`, `path`, `permalink` → **필드 자체 존재하지 않음**
 
-### 2) publish-to-inblog의 리다이렉트 생성 코드 (인용)
+즉 이 포스트에는 canonical/URL 관련 오설정이 없습니다.
 
-`supabase/functions/publish-to-inblog/index.ts` — 방향 문제 없음:
+### 2) `publish-to-inblog` POST 페이로드 (정확한 인용, `supabase/functions/publish-to-inblog/index.ts`)
 
 ```ts
-redirect = await inblogFetch("/redirects", apiKey, {
-  method: "POST",
-  body: JSON.stringify({
-    data: {
-      type: "redirects",
-      attributes: {
-        from_path: `/blog/${post.slug}.html`,
-        to_path: `/${post.slug}`,
-        redirect_type: 308,
-      },
-    },
-  }),
-});
+const attributes: Record<string, unknown> = {
+  title: post.title,
+  slug: post.slug,
+  description: post.excerpt || undefined,
+  content_html: contentHtml,
+  meta_title: post.title,
+  meta_description: post.excerpt || undefined,
+};
+if (imgUrl) attributes.image = { url: imgUrl };
+if (customScripts) attributes.custom_scripts = customScripts;
+// ... publish 시 PATCH:
+// attributes: { published: true, published_at: publishedAt }
 ```
 
-`.html → clean`. 코드도 결과도 정상.
+`canonical_url`, `custom_url` 등은 **한 번도 보낸 적 없음**. 원본 페이로드가 무죄임이 확인됨.
 
-### 3) 진짜 원인: 사이트 자체 로직
+### 3) 진짜 원인은 블로그 레벨 라우팅 설정
 
-Cloudflare/Lovable 호스팅 헤더 직접 확인 결과:
-
-| 경로 | 상태 |
-|---|---|
-| `/blog/{slug}` | 200 (SPA) |
-| `/blog/{slug}.html` | 200 (SPA fallback) |
-| `/blog/category/seo` | 200 (SPA — 하지만 매칭 라우트 없음) |
-| `/blog/category/seo.html` | **404** (호스팅이 확장자 있는 경로를 파일로 취급 → SPA fallback 미적용) |
-
-호스팅 레벨에는 308 리다이렉트가 존재하지 않습니다. 유저가 본 308은 **클라이언트 JS가 만든 것**.
-
-**포스트 케이스** — `src/pages/BlogPost.tsx:600-606`:
-```ts
-useEffect(() => {
-  if (!slug) return;
-  const canonical = blogPostPath(slug);           // → `/blog/${slug}.html`
-  if (location.pathname !== canonical) {
-    window.location.replace(canonical + location.search + location.hash);
-  }
-}, [slug, location.pathname, ...]);
+이전 턴에서 확인한 `/blogs/me`:
 ```
-`/blog/{slug}` 진입 시 하드 리로드로 `.html`을 다시 요청. `.html`은 실제로 200을 주지만, 여기서 fetch 실패나 slug 미매칭이면 클라이언트 404 UI가 뜸.
-
-**카테고리 케이스** — `src/App.tsx:58-61`:
-```tsx
-<Route path="/blog" element={<Blog />} />
-<Route path="/blog/:slug.html" element={<BlogPost />} />
-<Route path="/blog/:slug/index.html" element={<BlogPost />} />
-<Route path="/blog/:slug" element={<BlogPost />} />
+"custom_subdirectory": "searchtuneos.com/blog"
+"custom_domain_verified": true
 ```
-`/blog/category/:cat` 라우트가 **없음**. `/blog/category/seo`는 어느 라우트에도 매칭 안 되어 `NotFound`로 떨어지거나 (혹은 다른 로직이 `.html`을 붙임) 최종적으로 유저가 `.html` 404 화면을 목격.
 
-### 4) 다음 액션(승인 시)
+포스트 attribute에는 `.html` 흔적이 없는데도 `searchtune.inblog.io/{slug}` 마저 `.com/blog/{slug}.html` 로 301된다는 것은, 인블로그가 **`custom_subdirectory` 설정이 있는 블로그의 모든 URL을 서브디렉토리 형식(+ `.html` 접미사)으로 강제 정규화**하고 있다는 뜻입니다. 이건 포스트 필드가 아니라 **블로그(id=12516, subdomain=searchtune) 설정 레벨**의 문제입니다.
 
-1. **인블로그 리다이렉트 150건은 그대로 유지** (건드리지 않음).
-2. `src/pages/BlogPost.tsx`의 `window.location.replace(...)` 하드 리다이렉트 로직 재검토 — 정말 `.html`로 강제해야 하는지, 아니면 clean URL을 canonical로 두고 SPA로 렌더할지 결정.
-3. `/blog/category/:category` 라우트 추가 (또는 카테고리 링크가 있다면 해당 링크 목적지 확인). 어느 페이지에서 카테고리 URL을 만드는지 grep 필요.
-4. 수정 후 3개 경로(`/blog/{slug}`, `/blog/{slug}.html`, `/blog/category/seo`) 브라우저 재현으로 검증.
+### 다음 진단 액션 (build mode 승인 시 실행)
 
-**빌드 모드 승인 필요**: 위 2/3번 수정에 착수하려면 build mode로 전환해주세요. 그 전에 어느 방향(clean URL canonical vs .html canonical) 선호하시는지 알려주시면 좋습니다.
+user 요청 3번 항목을 실행할 수는 있지만, `canonical_url`이 이미 `null`이라서 PATCH로 `null → null`을 넣어봐야 아무 변화가 없을 것으로 예상됩니다. 대신 다음 2개를 순차 실행하는 게 유효합니다.
+
+**A. Blog(12516) 레벨 필드 조사 (조회, 무해)**
+   - `GET /api/v1/blogs/me` 전체 attribute 다시 덤프(모든 키 나열) → `url_format`, `permalink_style`, `use_html_extension`, `custom_domain`, `redirect_to_custom_domain` 류 플래그 검색.
+
+**B. `custom_subdirectory` 해제 실험 (되돌릴 수 있음)**
+   - `PATCH /api/v1/blogs/searchtune` body `{ data: { type: "blogs", id: "searchtune", attributes: { custom_subdirectory: null } } }` 시도.
+   - 실행 즉시 `curl -IL https://searchtune.inblog.io/chatgpt-citation-structure-tables-lists-20260705` 재확인 — 301 사슬이 사라지고 200이 뜨는지.
+   - 결과에 따라 즉시 원상복구 or 유지.
+
+**C. 만약 B가 문제 원인이 아니면**, 최소 재현 세트로 포스트 하나에 대해 `canonical_url` PATCH 실험 (`null → https://searchtune.inblog.io/{slug}`) 시도.
+
+### 이번 턴에서 하지 않는 것
+- 프로젝트 코드 수정 없음 (이 문제는 코드로 해결되지 않음).
+- 대량 백필/삭제 없음.
+
+**진행 방향 확인 필요**: A → B → C 순서로 실행할까요, 아니면 인블로그 대시보드에서 직접 `custom_subdirectory`를 확인/제거하시는 편이 낫나요? Build mode 진입 시 A는 무해하니 우선 실행하고 결과를 보고 B를 결정하는 흐름을 추천합니다.
