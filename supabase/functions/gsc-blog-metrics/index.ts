@@ -74,12 +74,12 @@ Deno.serve(async (req) => {
       };
     });
 
-    // Group by slug to detect canonical mismatch (impressions on clean URL but our canonical is .html)
-    const bySlug: Record<string, { canonical?: Row; clean?: Row; total: { clicks: number; impressions: number } }> = {};
+    // Group by slug to detect canonical mismatch (legacy .html has more impressions than clean URL)
+    const bySlug: Record<string, { clean?: Row; legacy?: Row; total: { clicks: number; impressions: number } }> = {};
     for (const r of pageRows) {
       if (!r.slug) continue;
       bySlug[r.slug] = bySlug[r.slug] || { total: { clicks: 0, impressions: 0 } };
-      if (r.isHtml) bySlug[r.slug].canonical = r;
+      if (r.isHtml) bySlug[r.slug].legacy = r;
       else bySlug[r.slug].clean = r;
       bySlug[r.slug].total.clicks += r.clicks;
       bySlug[r.slug].total.impressions += r.impressions;
@@ -87,15 +87,15 @@ Deno.serve(async (req) => {
 
     const slugRows = Object.entries(bySlug).map(([slug, v]) => ({
       slug,
-      canonicalClicks: v.canonical?.clicks || 0,
-      canonicalImpressions: v.canonical?.impressions || 0,
-      canonicalPosition: v.canonical?.position || 0,
       cleanClicks: v.clean?.clicks || 0,
       cleanImpressions: v.clean?.impressions || 0,
       cleanPosition: v.clean?.position || 0,
+      legacyClicks: v.legacy?.clicks || 0,
+      legacyImpressions: v.legacy?.impressions || 0,
+      legacyPosition: v.legacy?.position || 0,
       totalClicks: v.total.clicks,
       totalImpressions: v.total.impressions,
-      mismatch: !!v.clean && v.clean.impressions > 0 && (!v.canonical || v.canonical.impressions < v.clean.impressions),
+      mismatch: !!v.legacy && v.legacy.impressions > 0 && (!v.clean || v.clean.impressions < v.legacy.impressions),
     })).sort((a, b) => b.totalImpressions - a.totalImpressions);
 
     const queryRows = (queries.rows || []).map((r: any) => ({

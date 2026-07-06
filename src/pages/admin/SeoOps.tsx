@@ -9,18 +9,18 @@ import { toast } from "@/components/ui/sonner";
 
 const SITE_ORIGIN = "https://searchtuneos.com";
 
-/** Canonical blog URL is always /blog/{slug}.html */
+/** Canonical blog URL is clean /blog/{slug}. */
 function canonicalBlogUrl(slug: string): string {
   const s = String(slug || "").trim().replace(/^\/+|\/+$/g, "");
   const bare = s.startsWith("blog/") ? s.slice(5) : s;
   const noExt = bare.replace(/\.html$/i, "");
-  return `${SITE_ORIGIN}/blog/${noExt}.html`;
+  return `${SITE_ORIGIN}/blog/${noExt}`;
 }
-function cleanUrl(slug: string): string {
+function legacyHtmlUrl(slug: string): string {
   const s = String(slug || "").trim().replace(/^\/+|\/+$/g, "");
   const bare = s.startsWith("blog/") ? s.slice(5) : s;
   const noExt = bare.replace(/\.html$/i, "");
-  return `${SITE_ORIGIN}/blog/${noExt}`;
+  return `${SITE_ORIGIN}/blog/${noExt}.html`;
 }
 
 interface Row {
@@ -32,7 +32,7 @@ interface Row {
   inSitemap: boolean | null;
   inRss: boolean | null;
   inQueue: { engine: string; status: string; url: string }[];
-  hasCleanUrlInQueue: boolean;
+  hasHtmlUrlInQueue: boolean;
   problems: string[];
 }
 
@@ -45,8 +45,8 @@ interface QueueRow {
 
 interface GscPage {
   slug: string;
-  canonicalClicks: number; canonicalImpressions: number; canonicalPosition: number;
   cleanClicks: number; cleanImpressions: number; cleanPosition: number;
+  legacyClicks: number; legacyImpressions: number; legacyPosition: number;
   totalClicks: number; totalImpressions: number;
   mismatch: boolean;
 }
@@ -100,16 +100,16 @@ export default function SeoOps() {
 
       const out: Row[] = posts.map((p: any) => {
         const canonical = canonicalBlogUrl(p.slug);
-        const clean = cleanUrl(p.slug);
-        const matchedQueue = queue.filter(q => q.url === canonical || q.url === clean || q.url.includes(`/blog/${p.slug}`));
-        const hasCleanUrlInQueue = matchedQueue.some(q => !/\.html(\?|#|$)/i.test(q.url));
+        const legacy = legacyHtmlUrl(p.slug);
+        const matchedQueue = queue.filter(q => q.url === canonical || q.url === legacy || q.url.includes(`/blog/${p.slug}`));
+        const hasHtmlUrlInQueue = matchedQueue.some(q => /\.html(\?|#|$)/i.test(q.url));
         const inSitemap = smSet.has(canonical);
         const inRss = rssSet.size > 0 ? rssSet.has(canonical) : null;
         const problems: string[] = [];
         if (!p.published) problems.push("미발행");
         if (!inSitemap) problems.push("sitemap 누락");
         if (inRss === false) problems.push("RSS 누락");
-        if (hasCleanUrlInQueue) problems.push("큐에 clean URL 잔존");
+        if (hasHtmlUrlInQueue) problems.push("큐에 .html URL 잔존");
         return {
           slug: p.slug,
           title: p.title,
@@ -119,7 +119,7 @@ export default function SeoOps() {
           inSitemap,
           inRss,
           inQueue: matchedQueue.map(q => ({ engine: q.engine, status: q.status, url: q.url })),
-          hasCleanUrlInQueue,
+          hasHtmlUrlInQueue,
           problems,
         };
       });
@@ -200,10 +200,10 @@ export default function SeoOps() {
     const sitemapOk = rows.filter(r => r.inSitemap).length;
     const rssOk = rows.filter(r => r.inRss).length;
     const withProblems = rows.filter(r => r.problems.length > 0).length;
-    const cleanUrlIssues = rows.filter(r => r.hasCleanUrlInQueue).length;
+    const htmlUrlIssues = rows.filter(r => r.hasHtmlUrlInQueue).length;
     const queueByEngine: Record<string, number> = {};
     queueAll.forEach(q => { queueByEngine[q.engine] = (queueByEngine[q.engine] ?? 0) + 1; });
-    return { total, sitemapOk, rssOk, withProblems, cleanUrlIssues, queueByEngine };
+    return { total, sitemapOk, rssOk, withProblems, htmlUrlIssues, queueByEngine };
   }, [rows, queueAll]);
 
   return (
@@ -217,7 +217,7 @@ export default function SeoOps() {
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><ShieldCheck className="w-6 h-6" /> SEO Ops Center</h1>
           <p className="text-sm text-muted-foreground">
-            블로그 canonical · sitemap · RSS · 색인 큐를 한 화면에서 검증. 모든 URL은 <code className="px-1 bg-muted rounded">/blog/{`{slug}`}.html</code> 기준.
+            블로그 canonical · sitemap · RSS · 색인 큐를 한 화면에서 검증. 모든 URL은 <code className="px-1 bg-muted rounded">/blog/{`{slug}`}</code> 기준.
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={load} disabled={loading}>
@@ -234,7 +234,7 @@ export default function SeoOps() {
         <Kpi label="Sitemap 정상" value={summary.sitemapOk} tone="good" />
         <Kpi label="RSS 정상" value={summary.rssOk} tone="good" />
         <Kpi label="문제 있는 글" value={summary.withProblems} tone={summary.withProblems > 0 ? "warn" : "good"} />
-        <Kpi label="Clean URL 잔존" value={summary.cleanUrlIssues} tone={summary.cleanUrlIssues > 0 ? "bad" : "good"} />
+        <Kpi label=".html 잔존" value={summary.htmlUrlIssues} tone={summary.htmlUrlIssues > 0 ? "bad" : "good"} />
         <Kpi label="큐 총건수" value={queueAll.length} />
       </div>
 
@@ -361,11 +361,11 @@ export default function SeoOps() {
                           setSubmitting(true);
                           const { data, error } = await supabase.functions.invoke("submit-indexnow", { body: { urls } });
                           if (error || !data?.success) toast.error(`재제출 실패: ${error?.message || data?.response || "unknown"}`);
-                          else toast.success(`${urls.length}건 .html canonical IndexNow 재제출 완료. Google 재크롤까지 3~14일.`);
+                          else toast.success(`${urls.length}건 clean canonical IndexNow 재제출 완료. Google 재크롤까지 3~14일.`);
                           setSubmitting(false);
                         }}
                       >
-                        mismatch .html 일괄 재제출
+                        mismatch clean URL 일괄 재제출
                       </Button>
                     </>
                   )}
@@ -375,8 +375,8 @@ export default function SeoOps() {
                     <thead className="text-muted-foreground border-b">
                       <tr className="text-left">
                         <th className="py-1.5 pr-2">slug</th>
-                        <th className="py-1.5 pr-2 text-right">.html 노출</th>
                         <th className="py-1.5 pr-2 text-right">clean 노출</th>
+                        <th className="py-1.5 pr-2 text-right">.html 노출</th>
                         <th className="py-1.5 pr-2 text-right">총 클릭</th>
                         <th className="py-1.5 pr-2 text-right">평균 순위</th>
                         <th className="py-1.5 pr-2">상태</th>
@@ -384,12 +384,12 @@ export default function SeoOps() {
                     </thead>
                     <tbody>
                       {gsc.blogPages.slice(0, 30).map(p => {
-                        const avgPos = p.canonicalImpressions >= p.cleanImpressions ? p.canonicalPosition : p.cleanPosition;
+                        const avgPos = p.cleanImpressions >= p.legacyImpressions ? p.cleanPosition : p.legacyPosition;
                         return (
                           <tr key={p.slug} className={`border-b last:border-b-0 ${p.mismatch ? "bg-destructive/[0.04]" : ""}`}>
                             <td className="py-1.5 pr-2 font-mono text-[11px] truncate max-w-[260px]" title={p.slug}>{p.slug}</td>
-                            <td className="py-1.5 pr-2 text-right font-mono">{p.canonicalImpressions}</td>
-                            <td className={`py-1.5 pr-2 text-right font-mono ${p.cleanImpressions > 0 ? "text-destructive font-semibold" : ""}`}>{p.cleanImpressions}</td>
+                            <td className="py-1.5 pr-2 text-right font-mono">{p.cleanImpressions}</td>
+                            <td className={`py-1.5 pr-2 text-right font-mono ${p.legacyImpressions > 0 ? "text-destructive font-semibold" : ""}`}>{p.legacyImpressions}</td>
                             <td className="py-1.5 pr-2 text-right font-mono">{p.totalClicks}</td>
                             <td className="py-1.5 pr-2 text-right font-mono">{avgPos > 0 ? avgPos.toFixed(1) : "—"}</td>
                             <td className="py-1.5 pr-2">
@@ -408,7 +408,7 @@ export default function SeoOps() {
                   </table>
                 </div>
                 <p className="text-[10px] text-muted-foreground mt-2">
-                  <strong>canonical mismatch</strong> = clean URL(/blog/slug)로 색인·노출되는데 우리 canonical은 /blog/slug.html. Google이 정규형을 통합해주길 기다리거나, GSC에서 URL 검사 → 색인 요청으로 .html을 강제 색인시킬 것.
+                  <strong>canonical mismatch</strong> = legacy .html(/blog/slug.html) 노출이 clean URL(/blog/slug)보다 큰 상태. clean URL로 재제출해 정규형을 되돌립니다.
                 </p>
               </div>
 
@@ -490,7 +490,7 @@ export default function SeoOps() {
                       {r.inQueue.length === 0 ? <span className="text-muted-foreground">—</span> : (
                         <div className="flex flex-wrap gap-1">
                           {r.inQueue.map((q, i) => (
-                            <span key={i} className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${/\.html/.test(q.url) ? "bg-muted" : "bg-destructive/15 text-destructive"}`} title={q.url}>
+                            <span key={i} className={`px-1.5 py-0.5 rounded text-[10px] font-mono ${/\.html/.test(q.url) ? "bg-destructive/15 text-destructive" : "bg-muted"}`} title={q.url}>
                               {q.engine}:{q.status}
                             </span>
                           ))}

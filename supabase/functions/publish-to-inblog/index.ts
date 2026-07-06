@@ -294,11 +294,9 @@ Deno.serve(async (req) => {
     }
 
 
-    // 4) 308 redirect creation DISABLED — hypothesis test:
-    //    accumulating /blog/{slug}.html redirects may trigger inblog's
-    //    ".html legacy" routing mode. Leaving this off to see if the
-    //    redirect table stays at 0 and posts serve as clean URLs.
-    const redirect: unknown = { skipped: true, reason: "disabled_for_hypothesis_test" };
+    // 4) Redirect creation intentionally disabled. Public blog canonical is
+    //    clean /blog/{slug}; do not recreate legacy .html redirects.
+    const redirect: unknown = { skipped: true, reason: "clean_url_mode_no_redirects" };
 
 
     // Persist sync state (best effort).

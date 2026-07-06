@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
           if (!post?.slug || slugSet.has(post.slug)) continue;
           slugSet.add(post.slug);
           entries.push({
-            loc: `${SITE_URL}/blog/${encodeURI(post.slug)}.html`,
+            loc: `${SITE_URL}/blog/${encodeURI(post.slug)}`,
             lastmod: ymd(post.updated_at || post.date),
             priority: "0.7",
             changefreq: "monthly",
@@ -72,7 +72,7 @@ Deno.serve(async (req) => {
         if (slugSet.has(slug)) continue;
         slugSet.add(slug);
         entries.push({
-          loc: `${SITE_URL}/blog/${slug}.html`,
+          loc: `${SITE_URL}/blog/${slug}`,
           lastmod: today,
           priority: "0.7",
           changefreq: "monthly",

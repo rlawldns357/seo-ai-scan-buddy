@@ -36,7 +36,7 @@ function resolveSlug(req: Request) {
 }
 
 function buildHtml(post: Record<string, any>, req: Request) {
-  const articleUrl = `${SITE}/blog/${encodeURIComponent(post.slug)}.html`;
+  const articleUrl = `${SITE}/blog/${encodeURIComponent(post.slug)}`;
   const redirectUrl = `${articleUrl}?utm_source=blog_share&utm_medium=social&utm_campaign=blog_share&shared_slug=${encodeURIComponent(post.slug)}`;
   const shareUrl = req.url;
   const title = `${post.title} – 서치튠OS 블로그`;

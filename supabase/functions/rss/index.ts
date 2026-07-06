@@ -57,7 +57,7 @@ Deno.serve(async (req) => {
     const latestDate = items.length > 0 ? new Date(items[0].date).toUTCString() : now;
 
     const rssItems = items.map((p) => {
-      const link = `${SITE_URL}/blog/${encodeURIComponent(p.slug)}.html`;
+      const link = `${SITE_URL}/blog/${encodeURIComponent(p.slug)}`;
       return `    <item>
       <title>${escXml(p.title)}</title>
       <link>${link}</link>
