@@ -125,12 +125,9 @@ export function buildAiOgPrompt(opts: { title: string; category: string }): stri
  * `slug` 미지정 시 카테고리 기반 폴백.
  */
 export function buildSvgOg(opts: { title: string; category: string; slug?: string }): string {
-  // category까지 넘겨서 AEO/GEO/SEO 컨셉 카드 폴백이 작동하도록
-  const explicit = hasExplicitBrand(opts.slug || "", opts.title, opts.category);
-  if (explicit) {
-    return buildBrandSplitSvg(opts);
-  }
-  return buildGradientSvg(opts);
+  // /blog9 카드와 동일한 미니멀 룩으로 통일: 항상 buildBrandSplitSvg.
+  // (SearchTune 폴백도 워드마크+부제 레이아웃으로 렌더)
+  return buildBrandSplitSvg(opts);
 }
 
 /**
@@ -193,109 +190,48 @@ function tidyTitleForOg(rawTitle: string): string {
 }
 
 /**
- * 미니멀 단일 패널 OG (1200x630).
+ * 미니멀 워드마크 OG (1200x630) — /blog9 카드와 동일 미학.
  *
  * 룰:
- *  - 브랜드별 크림/오프화이트 panelBg 풀 적용 (좌/우 분할 폐기)
- *  - SVG `<filter>` 그레인 노이즈 살짝 (한국적 종이 질감)
- *  - 워드마크 중앙 (그라데이션 유지) + descender 안전 baseline
- *  - 위쪽 작은 메타: `회사 · 카테고리` (Inter 700, letter-spacing 넓게, 회색)
- *  - 아래 부제: 제목 정갈 요약 한 줄 (Pretendard 600, 회색 0.7) ← 후킹
- *  - 우측 하단 워터마크: SearchTune OS · searchtuneos.com
+ *  - 배경: brand.panelBg 단일 컬러 (크림/오프화이트). 크롬 없음.
+ *  - 중앙: renderBrandWordmark (AEO/GEO/SEO 3-stop 그라데이션, Google 멀티컬러,
+ *    Bing 그라데이션, 나머지 단일 컬러).
+ *  - 워드마크 아래: brand.subtitle을 UPPERCASE tracking-wide muted 로.
+ *    (SearchTune 폴백은 `OS · {category}`로 오버라이드하여 blog9의 SearchTuneBadge 매칭)
+ *  - 하단: 아주 작은 SearchTune OS 워터마크 (opacity 0.3).
  */
 function buildBrandSplitSvg(opts: { title: string; category: string; slug?: string }): string {
   const brand = getBrandStyle(opts.slug || "", opts.title, opts.category);
-  const categoryStyle = resolveStyle(opts.category);
-  const accent = categoryStyle.accent; // 좌우 액센트 바 컬러
 
-  // 세로 균등 3분할: 메타(y=210) → 워드마크(cy=315) → 부제(y=420)
-  // 위 여백 210 / 아래 여백 210, 워드마크 정중앙
+  // 워드마크는 시각 중심을 살짝 위로 (cy=305) — 부제와 워터마크 사이 균형
   const cx = 600;
-  const cy = 338; // SEO 워드마크 살짝 더 아래로 (322 → 338) — 시각적 정중앙
+  const cy = 320;
   const wordmarkSvg = renderBrandWordmark(brand, cx, cy);
 
-  // eyebrow 메타: 회사 · {DB카테고리} (DB 카테고리 강제 우선)
-  // brand.subtitle에 하드코딩된 카테고리(예: "OpenAI · AEO")는 DB 카테고리와 어긋날 수 있어
-  // 회사명 부분만 추출 후 opts.category로 결합 → DB가 단일 진실 소스
-  const companyOnly = brand.subtitle.split("·")[0].trim() || brand.subtitle;
-  const dbCategory = (opts.category || categoryStyle.label || "GUIDE").trim();
-  const meta = `${companyOnly} · ${dbCategory}`.toUpperCase();
-  const metaFontSize = meta.length > 28 ? 16 : 18;
-
-  // 부제: 제목 정갈 요약 (워드마크 바로 아래, 밀착)
-  const tidyTitle = tidyTitleForOg(opts.title);
-  const titleLines = wrapTitle(tidyTitle, 18).slice(0, 2);
-  const titleFontSize = titleLines.length > 1
-    ? (titleLines.some((line) => line.length > 16) ? 36 : 40)
-    : (tidyTitle.length > 14 ? 44 : 48);
-  const lineGap = titleFontSize + 8;
-  // 부제: 워드마크 바로 아래로 더 밀착 (444→416 / 458→430)
-  const titleStartY = titleLines.length > 1 ? 416 : 430;
-  const titleSvg = titleLines
-    .map((line, i) => `<text x="${cx}" y="${titleStartY + i * lineGap}" font-family="'Pretendard','Noto Sans KR','Inter',sans-serif" font-size="${titleFontSize}" font-weight="800" fill="rgba(0,0,0,0.86)" text-anchor="middle" letter-spacing="-1">${escXml(line)}</text>`)
-    .join("\n  ");
+  // 부제: SearchTune 폴백이면 blog9 SearchTuneBadge와 동일하게 `OS · {category}` 사용
+  const rawSubtitle = brand.key === "searchtune"
+    ? `OS · ${(opts.category || "SEO").trim()}`
+    : brand.subtitle;
+  const subtitleText = rawSubtitle.toUpperCase();
+  // 길이 기반 letter-spacing / fontSize 폴백 (가용 폭 1040px 유지)
+  const subtitleLong = subtitleText.length > 26;
+  const subtitleFontSize = subtitleLong ? 20 : 24;
+  const subtitleLetterSpacing = subtitleLong ? 4 : 6;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   ${FONT_EMBED}
-  <defs>
-    <!-- 살짝 그레인 노이즈 (한국적 종이 질감) -->
-    <filter id="grain" x="0" y="0" width="100%" height="100%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/>
-      <feColorMatrix type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.06 0"/>
-      <feComposite operator="in" in2="SourceGraphic"/>
-    </filter>
-    <!-- 중앙 라디얼 글로우 (카테고리 컬러, 깊이감) -->
-    <radialGradient id="centerGlow" cx="50%" cy="52%" r="42%">
-      <stop offset="0%" stop-color="${accent}" stop-opacity="0.12"/>
-      <stop offset="60%" stop-color="${accent}" stop-opacity="0.04"/>
-      <stop offset="100%" stop-color="${accent}" stop-opacity="0"/>
-    </radialGradient>
-    <!-- 모서리 비네팅 (배경에 무게감) -->
-    <radialGradient id="vignette" cx="50%" cy="50%" r="78%">
-      <stop offset="55%" stop-color="${brand.panelBg}" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#000000" stop-opacity="0.07"/>
-    </radialGradient>
-  </defs>
 
   <!-- 단일 패널 배경 (브랜드별 크림/오프화이트) -->
   <rect width="1200" height="630" fill="${brand.panelBg}"/>
-  <!-- 중앙 라디얼 글로우 (워드마크 뒤 은은한 후광) -->
-  <rect width="1200" height="630" fill="url(#centerGlow)"/>
-  <!-- 그레인 노이즈 오버레이 -->
-  <rect width="1200" height="630" fill="${brand.panelBg}" filter="url(#grain)" opacity="0.6"/>
-  <!-- 모서리 비네팅 -->
-  <rect width="1200" height="630" fill="url(#vignette)"/>
 
-  <!-- 좌우 액센트 바 (카테고리 컬러, 중앙 정렬, h=140) -->
-  <rect x="56" y="245" width="4" height="140" rx="2" fill="${accent}" opacity="0.85"/>
-  <rect x="1140" y="245" width="4" height="140" rx="2" fill="${accent}" opacity="0.85"/>
-
-  <!-- 4코너 모서리 마크 (사진 프레임 느낌, 카테고리 컬러) -->
-  <g stroke="${accent}" stroke-width="2.5" fill="none" opacity="0.55" stroke-linecap="square">
-    <!-- top-left -->
-    <path d="M 56 80 L 56 56 L 80 56"/>
-    <!-- top-right -->
-    <path d="M 1120 56 L 1144 56 L 1144 80"/>
-    <!-- bottom-left -->
-    <path d="M 56 550 L 56 574 L 80 574"/>
-    <!-- bottom-right -->
-    <path d="M 1120 574 L 1144 574 L 1144 550"/>
-  </g>
-
-  <!-- 위쪽 eyebrow 메타: 회사 · 카테고리 -->
-  <text x="${cx}" y="158" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${metaFontSize}" font-weight="800" fill="rgba(0,0,0,0.58)" text-anchor="middle" letter-spacing="6">${escXml(meta)}</text>
-
-  <!-- eyebrow 아래 카테고리 점 (브랜드 액센트 시각 강화) -->
-  <circle cx="${cx}" cy="186" r="3" fill="${accent}" opacity="0.85"/>
-
-  <!-- 워드마크 (정중앙) -->
+  <!-- 워드마크 (정중앙 약간 위) -->
   ${wordmarkSvg}
 
-  <!-- 부제: 제목 정갈 요약 (워드마크 바로 아래) -->
-  ${titleSvg}
+  <!-- 부제: UPPERCASE tracking-wide muted (blog9 카드 하단 라인과 매칭) -->
+  <text x="${cx}" y="430" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="${subtitleFontSize}" font-weight="700" fill="rgba(0,0,0,0.55)" text-anchor="middle" letter-spacing="${subtitleLetterSpacing}">${escXml(subtitleText)}</text>
 
-  <!-- 중앙 하단 워터마크 (부제와 충분히 떨어뜨려 호흡) -->
-  <text x="${cx}" y="548" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="13" font-weight="700" fill="rgba(0,0,0,0.32)" text-anchor="middle" letter-spacing="3">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
+  <!-- 하단 워터마크 (소셜 공유용 서명, 아주 작게) -->
+  <text x="${cx}" y="580" font-family="'Inter','Pretendard','Noto Sans KR',sans-serif" font-size="12" font-weight="700" fill="rgba(0,0,0,0.30)" text-anchor="middle" letter-spacing="3">SEARCHTUNE OS · SEARCHTUNEOS.COM</text>
 </svg>`;
 }
 
