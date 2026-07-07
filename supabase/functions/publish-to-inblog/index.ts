@@ -150,16 +150,15 @@ Deno.serve(async (req) => {
           }))
           .filter((it) => it.q.length > 0 && it.a.length > 0)
       : [];
-    let faqInfo: { count: number; injected: boolean; error?: string } = { count: faqItems.length, injected: false };
+    // FAQ: JSON-LD only (no visible body injection). Google SERP rich results still work;
+    // article body stays clean and inblog auto-TOC isn't polluted with a "자주 묻는 질문" H2.
+    let faqInfo: { count: number; injected: boolean; mode: string; error?: string } = {
+      count: faqItems.length,
+      injected: false,
+      mode: "json_ld_only",
+    };
     let customScripts: { json_ld_script?: string } | undefined;
     if (faqItems.length > 0) {
-      const visible = [
-        `\n<h2>자주 묻는 질문</h2>`,
-        ...faqItems.map(
-          (it) => `<div><h3>${escapeHtml(it.q)}</h3><p>${escapeHtml(it.a)}</p></div>`,
-        ),
-      ].join("\n");
-      contentHtml = (contentHtml || "") + "\n" + visible + "\n";
       const faqPageLd = {
         "@context": "https://schema.org",
         "@type": "FAQPage",
