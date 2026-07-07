@@ -1,110 +1,133 @@
-# 조사 결과: 이미 절반은 통합되어 있음
 
-`/blog9` 목록 카드와 인블로그로 보내는 OG 이미지는 **이미 동일한 브랜드 규칙 데이터**(`BRAND_STYLES` / `detectBrand` / `hasExplicitBrand`)를 공유합니다. 파일이 두 벌 있지만 서로의 미러:
+# AEO 데일리 트래커 & 오토블로그 SEO 극대화 계획
 
-- 프론트: `src/lib/brandMatching.ts` — Blog.tsx의 `CardVisual` → `BrandWordmark` / `SearchTuneBadge`가 사용
-- 엣지: `supabase/functions/_shared/brand-matching.ts` (거울) — `og-design-rulebook.ts` → `buildBrandSplitSvg` → `renderBrandWordmark`가 사용
-- OG 생성 진입점: `supabase/functions/generate-og-image/index.ts` (SVG → resvg-wasm PNG → `og-images` 버킷 → blog_posts.og_image + thumbnail 동시 업데이트)
+## 현황 파악 (기존 자산 재활용 관점)
 
-즉 **큰 워드마크 + 부제 + 배경색 + 카테고리별 그라데이션(AEO/GEO/SEO)** 은 이미 OG PNG에도 그대로 그려지고 있습니다. 실제 DB의 og_image URL도 전부 `og-images/{uuid}.png` 형태로 SVG 렌더 산출물입니다.
-
-## 1) blog9 카드의 정체 (a: 순수 CSS 컴포넌트)
-
-이미지 파일이 아닙니다. `src/pages/Blog.tsx`의 `CardVisual` 컴포넌트가 브랜드 감지 결과에 따라 HTML+CSS로 즉시 그립니다:
-
-- `hasExplicitBrand(slug, title, category)` true → `BrandWordmark`
-  - AEO/GEO/SEO 개념 카드: 3-stop 그라데이션 letter별 컬러 (`aeo: #f59e0b→#d97706→#b45309`, `geo: #10b981→#059669→#047857`, `seo: #3b82f6→#2563eb→#1d4ed8`) + uppercase muted 부제
-  - Google: 멀티컬러 letter (`#4285F4/#EA4335/#FBBC05/#4285F4/#34A853/#EA4335`)
-  - Bing: `linear-gradient(135deg,#0078D4,#00B7C3)` text-clip
-  - ChatGPT×Gemini 비교글: 두 워드마크 나란히 + "VS"
-  - 그 외: 단일 컬러 워드마크 + 부제
-- false → `SearchTuneBadge`: primary→accent 그라데이션 "SearchTune" + `OS · {category}`
-
-배경은 카드 컨테이너의 `style.background = brand.panelBg` (예: ChatGPT `#F7F7F8`, Claude `#FAF9F5`, Cue: `#F0FBF4`).
-
-**큰 타이포에 들어가는 값** = `BRAND_STYLES[key].wordmark` (예: "ChatGPT", "GEO", "Cue:", "CLOVA X").
-**작은 부제** = `BRAND_STYLES[key].subtitle` (예: "OpenAI · AEO", "Generative Engine Optimization", "Naver AI 검색 · GEO"). uppercase + tracking-widest.
-**결정 로직** = 슬러그/제목 substring 매칭 + 카테고리 폴백 (`detectBrand`).
-
-## 2) 현재 OG 생성 코드
-
-`supabase/functions/_shared/og-design-rulebook.ts` → `buildSvgOg` → 브랜드 감지되면 `buildBrandSplitSvg`, 아니면 그라데이션 폴백. `buildBrandSplitSvg`가 그리는 것:
-
-- 배경: `brand.panelBg` 단일 컬러 ✅ (blog9와 동일)
-- 중앙 워드마크: `renderBrandWordmark` — AEO/GEO/SEO 3-stop 그라데이션, Google 멀티컬러, Bing 그라데이션, 나머지 단일 컬러 ✅ (blog9와 동일 색상/폰트 규칙)
-- **추가 요소 (blog9에는 없는 크롬)**:
-  - 상단 eyebrow `"COMPANY · CATEGORY"` (letter-spacing 6, tracking wide) — line 286
-  - eyebrow 아래 카테고리 점 — line 289
-  - 좌우 액센트 바 (h=140, 카테고리 컬러) — lines 270-271
-  - 4코너 프레임 마크 — lines 273-283
-  - 중앙 라디얼 글로우 + 그레인 노이즈 + 비네팅 — lines 248-267
-  - 워드마크 아래 제목 요약 2줄 (Pretendard 800, `tidyTitleForOg` 처리) — lines 226-236, 294
-  - 하단 워터마크 `SEARCHTUNE OS · SEARCHTUNEOS.COM` — line 298
-
-blog9에는 이 크롬이 하나도 없습니다. 단순히 `panelBg` 위 워드마크 + 소문자 부제 두 줄뿐.
-
-## 3) 입력 데이터
-
-blog9 카드도, OG SVG도 **동일한 3개 입력**만 사용: `slug`, `title`, `category`. 나머지는 전부 `BRAND_STYLES`에서 파생됩니다. `og_image` 필드는 저장된 PNG의 public URL이고, blog9는 이 필드를 아예 안 씁니다 (SELECT 리스트에도 없음: line 336에 `thumbnail`만 있음).
-
-`OG SVG의 부제`만 blog9와 다른 소스에서 옵니다:
-- blog9 부제 = `brand.subtitle` (예: "Generative Engine Optimization")
-- OG SVG 부제 = `tidyTitleForOg(title)` 랩된 2줄 (긴 제목 요약)
+- **AI 엔진 호출 로직 이미 존재** — `supabase/functions/measure-answer-share/index.ts`(524줄)와 `probe-ai-perception/index.ts`(1,195줄)가 이미 Perplexity Sonar / OpenAI(GPT-5-mini 직결) / Anthropic Claude / Gemini(게이트웨이)를 병렬 호출하고 브랜드 언급 판정까지 수행. **AEO 트래커는 이 로직을 재사용**해서 신규 코드 표면을 최소화한다.
+- **오토블로그 파이프라인 살아있음** — `generate-blog-post`(952줄)는 자체 채점(SEO/AEO/GEO 평균 70점 임계) + Firecrawl 최신 레퍼런스 주입 + `submit-indexnow` 자동 호출까지 동작 중. Cron 스케줄도 `blog-morning-850` / `blog-afternoon-1730` / `indexnow-daily-resubmit` / `sync-blog-serp-keywords-daily` 등이 모두 `active=t` 상태로 이미 돌고 있음 → **"업데이트 재개"라기보단 "품질/색인 레이어 강화"가 정확한 표현**.
+- **JSON-LD 상태** — `BlogPost.tsx`에 Article + FAQPage + BreadcrumbList 세 개 모두 이미 주입됨. `public/llms.txt`, `sitemap.xml`(sitemap-pages/-posts 분할), `robots.txt`도 존재.
+- **미비점**: llms.txt/sitemap-posts는 정적 파일이라 **신규 발행 시 자동 갱신 안 됨**. 자체 채점 재시도(`MAX_QUALITY_RETRIES=0`)는 타임아웃 방어로 꺼져 있음. **팩트체크 레이어는 아예 없음**. IndexNow는 있으나 네이버 IndexNow(`searchadvisor.naver.com`)는 아직 미지원.
+- **AI 엔진 현실성 판단**: 웹서치 grounding이 진짜 붙는 조합은
+  - ✅ **Perplexity `sonar` / `sonar-pro`** — 네이티브 web search + citations 반환
+  - ✅ **OpenAI Responses API + `web_search` tool** (OPENAI_API_KEY 직결로 사용 중)
+  - ✅ **Anthropic Claude + `web_search` tool** (ANTHROPIC_API_KEY 있음)
+  - ⚠️ **Gemini via Lovable AI Gateway** — grounding 없음. 학습데이터만 검사됨 → 매일 점수 정체. 트래커에서는 **Gemini를 감성/근거 판정 judge로만 쓰고, "AI 엔진 응답" 축에서는 제외**하거나, 참고용 "baseline(grounding 없음)"으로 분리 표기.
+  - ➕ **Firecrawl Search** — Google SERP baseline으로 별도 축(브랜드가 실제 검색결과 상위에 있는지 vs AI 답변에 있는지 갭 비교).
 
 ---
 
-# 계획: OG를 blog9와 동일한 미니멀 룩으로 정렬
+## Part 1 — AEO 데일리 트래커
 
-## 목표
-`buildBrandSplitSvg`를 blog9의 `CardVisual` 미학과 정확히 맞춥니다: 크림 배경 위에 큰 워드마크와 작은 대문자 부제만. 제목 텍스트, 코너 마크, 액센트 바, eyebrow 라인은 제거하거나 하나로 통합.
+### Step 1. DB 마이그레이션 (Supabase)
 
-## 변경 파일 (1개만)
-- `supabase/functions/_shared/og-design-rulebook.ts`의 `buildBrandSplitSvg` 함수 리팩터링. 다른 파일·프론트·DB 스키마 변화 없음.
+세 테이블 신설. 모두 `service_role`로만 write, 관리자 UI는 edge function 프록시(`ops-readonly` 패턴) 경유 read.
 
-## 새 레이아웃 (1200×630)
+- **`aeo_prompts`** — 타겟 질문 세트
+  - `id uuid`, `prompt text`, `category text`(SEO/AEO/GEO/네이버/브랜드 등), `intent text`(추천형/비교형/방법형), `expected_url text`(선호 랜딩), `active boolean default true`, `priority smallint default 5`, `created_at`, `updated_at`
+  - 초기 시드 20~30개 (예: "GEO 진단 툴 추천", "AI 검색 최적화 도구", "ChatGPT 검색 최적화", "네이버 스마트스토어 SEO 진단" 등 — 카테고리별 밸런스).
+- **`aeo_check_results`** — 원본 로그(원자적 1행 = 1엔진 x 1프롬프트 x 1일)
+  - `id`, `check_date date`(KST 기준), `prompt_id uuid`, `engine text`(perplexity/chatgpt/claude/firecrawl_serp), `mentioned boolean`, `mention_rank smallint nullable`(응답 내 브랜드 등장 순번, 1이 최상), `sentiment smallint`(-1/0/1), `accuracy smallint`(0-3, judge 평가), `excerpt text`(브랜드 언급 문장), `citations jsonb`(엔진이 준 URL 리스트, searchtuneos.com 포함 여부 계산 대상), `raw_response_hash text`, `cost_usd numeric`, `created_at`
+  - 인덱스: `(check_date desc, prompt_id)`, `(engine, check_date desc)`
+- **`aeo_daily_scores`** — 일별 집계(대시보드 조회용 캐시)
+  - `check_date date primary key`, `visibility_score smallint`(0-100), `presence_score`, `position_score`, `sentiment_score`, `accuracy_score`, `citation_share numeric`(citations에 searchtuneos.com 비율), `total_checks int`, `mentioned_checks int`, `by_engine jsonb`, `by_prompt jsonb`, `delta_vs_yesterday smallint`, `computed_at timestamptz`
 
+**Visibility Score 공식** (0-100, 가중 평균):
+- Presence 40% = 언급된 프롬프트 비율
+- Position 25% = 언급 시 mention_rank 기반(1위=100, 5위=40, 미언급=0) 평균
+- Sentiment 15% = (긍정=100, 중립=60, 부정=0) 평균
+- Accuracy 20% = accuracy(0-3) * 33.3 평균
+
+RLS: `authenticated` SELECT 차단, `service_role`만 read/write, 관리자용 대시보드는 admin edge function이 서비스 롤로 조회.
+
+### Step 2. Edge Function `aeo-daily-check`
+
+- 입력: `{ mode: "cron" | "canary", prompt_ids?: string[] }` — canary 모드는 `prompt_ids` 3~5개만 실행.
+- 흐름:
+  1. `aeo_prompts` 활성 목록 조회(또는 canary IDs).
+  2. 각 프롬프트에 대해 4개 엔진 병렬 호출:
+     - **Perplexity Sonar**: `search_domain_filter` 없이, `citations` 배열 저장.
+     - **OpenAI Responses API**: `tools: [{ type: "web_search" }]` 로 grounding 강제.
+     - **Anthropic Claude**: `web_search` tool 활성화 (`claude-haiku-4-5`).
+     - **Firecrawl Search**: 상위 10개 결과에서 `searchtuneos.com` 등장 여부·순위.
+  3. 각 응답에 대해 **판정 단계** (Gemini 2.5 flash judge, temperature=0):
+     - `mentioned`(searchtuneos / SearchTune OS 정규화 매칭 — 기존 `probe-ai-perception`의 매칭 로직 재사용)
+     - `mention_rank`(문단·항목 순번)
+     - `sentiment` / `accuracy` / `excerpt` 추출
+  4. `aeo_check_results` 벌크 insert.
+  5. 오늘자 집계 → `aeo_daily_scores` upsert(전일값 조회해 `delta_vs_yesterday` 계산).
+- 비용 가드: 프롬프트 수 x 엔진 4개 = 하루 콜 상한 100회 이내 유지(초기 20 프롬프트). `api_cost_log` 이미 존재하므로 재활용.
+- 타임아웃: 프롬프트당 25초 상한, 엔진별 실패 시 `null` 기록(스코어에서 제외).
+
+### Step 3. 관리자 대시보드 `/admin/aeo-tracker`
+
+`src/pages/admin/AeoTracker.tsx` 신설(`AdminLayout` 하위):
+- **상단**: 오늘 Visibility Score 큰 숫자 + 어제 대비 델타(↑/↓ 색). 4개 서브스코어 미니 바.
+- **차트**: 최근 30일 라인 차트(Presence/Position/Sentiment/Accuracy 4선 + 총점 굵은선). recharts 사용.
+- **엔진별 breakdown**: 스택 바 차트(엔진 x 언급률).
+- **프롬프트 테이블**: 각 프롬프트 오늘값 — 언급/순위/감성/정확성/엔진별 미니 아이콘(초록/회색/빨강). 개선·악화 화살표.
+- **개선점 섹션**: 30일 연속 미언급 프롬프트 목록 → 각 항목 옆에 "이 주제로 블로그 생성" 버튼(→ `generate-blog-post` 큐에 넣는 액션. 이미 있는 파이프라인 재사용).
+- **카나리 실행 버튼**: 프롬프트 3~5개 선택 후 "지금 실행" → `aeo-daily-check` 를 `mode:"canary"`로 호출, 결과 인라인 표시.
+
+데이터 접근: 신규 edge function `admin-aeo-read`(관리자 비밀번호 검증 — 기존 `admin-auth` 패턴 재사용).
+
+### Step 4. Cron 활성화 (카나리 이후)
+
+카나리 3~5일간 수동 실행 → 응답 품질/비용 확인 → 이후 `pg_cron` 등록:
+- `aeo-daily-check-9am` — `0 0 * * *` (UTC 00:00 = KST 09:00), `net.http_post` 로 edge function 호출.
+- 등록은 `admin-run-resync-once` 패턴처럼 admin insert 도구로 (사용자별 시크릿 포함 SQL이므로 마이그레이션 아님).
+
+---
+
+## Part 2 — 오토블로그 SEO 노출 극대화
+
+기존 파이프라인에 얹는 **강화 레이어**만 추가.
+
+### Step A. 동적 sitemap + llms.txt
+
+- **`sitemap-posts.xml`** — 현재 정적. `supabase/functions/sitemap/index.ts` 이미 있으므로 `/functions/v1/sitemap` 이 `blog_posts` 조인해서 실시간 XML 반환하도록 확장. `public/sitemap-posts.xml` 은 초기 로드용 fallback으로 유지하되, `sitemap.xml` 인덱스에 `<loc>https://searchtuneos.com/api/sitemap-posts</loc>` 스타일로 edge function URL 연결(또는 발행 후 정적 파일 재생성).
+- **`llms.txt`** — 정적. `generate-blog-post` 성공 시 새 신설 edge function `regenerate-llms-txt` 를 호출해 최신 블로그 20개 링크를 llms.txt에 반영, `public/llms.txt` 를 Supabase Storage(`og-images` 재사용 X — 신규 `site-assets` 버킷)에 업로드하고 Cloudflare purge. 또는 간단히 edge function `/functions/v1/llms-txt` 가 동적 서빙하고 CDN에서 캐시.
+
+### Step B. IndexNow 확장
+
+- 현재 Bing IndexNow만 호출. `submit-indexnow/index.ts` 에 **네이버 IndexNow**(`searchadvisor.naver.com/indexnow`) 추가.
+- Google은 IndexNow 미지원이므로 그대로 GSC API(`check-indexing` 이미 있음)로 색인 요청.
+
+### Step C. 품질/팩트체크 레이어 재활성화
+
+- **자체 채점 재시도**: `MAX_QUALITY_RETRIES = 0 → 1` 로 상향 (타임아웃 대비 edge function `runtime` 을 늘리거나 백그라운드 큐로 이동 — 안전선을 위해 1회만).
+- **팩트체크(신규)**: 초안 완성 후 Firecrawl Search로 본문 내 핵심 통계·연도·수치를 재검증하는 별도 Gemini judge 스텝 추가. 근거 URL 3개 이하 발견 시 해당 문장에 "출처 필요" 태그 자동 삽입 or 회귀 재생성 트리거.
+
+### Step D. JSON-LD 강화
+
+- 이미 Article/FAQPage/BreadcrumbList 있음. 추가:
+  - `Author` 스키마 노드 확장(sameAs로 searchtuneos.com/about).
+  - `mainEntityOfPage`, `publisher.logo` 명시(현재도 있으나 검증).
+  - 신규: `HowTo` 자동 감지 — 본문에 "1단계 / 2단계" 리스트가 있으면 HowTo 스키마 자동 삽입(generate-blog-post에서 감지 후 JSON-LD 필드에 저장, BlogPost.tsx에서 렌더).
+
+### Step E. RSS 피드
+
+- `supabase/functions/rss` 이미 존재. Cron으로 `rss.xml` 정적 파일 갱신 스텝 추가(선택). 현재 확인 필요 — 이미 동적이면 그대로.
+
+---
+
+## 구현 순서 (권장)
+
+```text
+1. DB 마이그레이션 (aeo_prompts / aeo_check_results / aeo_daily_scores + 시드 20개)
+2. Edge function: aeo-daily-check (canary 모드부터)
+3. Edge function: admin-aeo-read (관리자 인증 + 조회)
+4. 관리자 대시보드 페이지 /admin/aeo-tracker (canary 버튼 포함)
+5. 3~5일 canary 실행 → 응답 품질/비용 확인
+6. pg_cron 등록 (매일 09:00 KST)
+7. [Part 2] submit-indexnow에 네이버 추가
+8. [Part 2] sitemap-posts 동적화 + llms.txt 갱신 훅
+9. [Part 2] generate-blog-post 팩트체크 레이어 + 재시도 1회 재활성
+10. [Part 2] HowTo JSON-LD 자동 감지
 ```
-+------------------------------------------+
-|                                          |
-|              [워드마크]                    |  ← cy≈300, font-size 190/160/140
-|                                          |     (blog9와 동일 로직: renderBrandWordmark 재사용)
-|         SMALL UPPERCASE SUBTITLE          |  ← y≈400, 20pt, tracking 8, muted
-|                                          |
-|                                          |
-|     SEARCHTUNE OS · SEARCHTUNEOS.COM      |  ← y≈580, 12pt, opacity 0.3
-+------------------------------------------+
-```
 
-## 세부 규칙
+## 결정 필요 사항
 
-1. **배경**: `brand.panelBg` 단일 fill만. `centerGlow`/`grain`/`vignette`/`corner marks`/`accent bars` 전부 제거.
-2. **워드마크**: 기존 `renderBrandWordmark(brand, 600, 300)` 그대로 (AEO/GEO/SEO 3-stop 그라데이션 · Google 멀티컬러 · Bing 그라데이션 · 나머지 단일 컬러). blog9와 동일 규칙 이미 구현되어 있음.
-3. **부제 라인 (핵심 정렬 포인트)**: `brand.subtitle`을 **uppercase**로 그리기 (예: "OPENAI · AEO", "GENERATIVE ENGINE OPTIMIZATION", "NAVER AI 검색 · GEO"). blog9의 `text-[10px] font-medium tracking-wider uppercase text-muted-foreground`에 대응:
-   - font-family: `'Inter','Pretendard','Noto Sans KR',sans-serif`
-   - font-size: 22 (짧을 때) / 18 (긴 경우), font-weight 700, `letter-spacing="6"`, fill `rgba(0,0,0,0.55)`, text-anchor middle
-   - y ≈ 400 (워드마크 baseline 아래 100px)
-   - `tidyTitleForOg`/`wrapTitle` 및 제목 2줄 렌더 코드 제거. eyebrow "COMPANY · CATEGORY" 라인도 제거 (부제가 이미 그 역할을 대체하므로 중복).
-4. **워터마크**: 유지하되 위치 조정 (y=580, letter-spacing 3, opacity 0.30, 12pt). blog9는 워터마크 없지만 OG는 공유 매체용이라 SearchTune OS 서명을 남깁니다 — 유저가 원하면 제거 가능한 옵션.
-5. **폴백 (`hasExplicitBrand=false` = SearchTune 폴백)**: 현재 `buildGradientSvg`로 분기됨. blog9와 대응시키려면 `buildBrandSplitSvg`에 `searchtune` 케이스도 통합해 위 레이아웃 그대로(워드마크="SearchTune", 부제=`OS · {category}` uppercase)로 렌더. 이 부분은 `buildSvgOg`의 분기 조건도 손봐야 함 (`hasExplicitBrand` 체크 유지하되 searchtune 폴백을 gradient 대신 split로).
-
-## Blog9 쪽 변경? — **없음**
-사용자 설명("blog9가 예쁘다")에 따라 blog9를 진실 소스로 삼음. 프론트 코드 무수정.
-
-## 새 OG 이미지 재생성 흐름
-1. 코드 배포 후, 관리자 `BlogManager`의 "OG 재생성" 액션 또는 `regenerate-og-image` 트리거로 기존 141편 재렌더 (SVG→PNG→og-images 업로드→blog_posts.og_image/thumbnail 갱신).
-2. 이후 인블로그 재동기화 트리거 (`publish-to-inblog`)를 몇 편 샘플로 돌려 인블로그 측 대표 이미지가 새 PNG를 가리키는지 확인.
-
-## 검증
-1. 배포 후 dry-run: `generate-og-image` 함수를 slug=`chatgpt-citation-structure-tables-lists-20260705`로 호출 → 반환된 PNG URL 직접 접근해서 blog9의 해당 카드 스크린샷과 나란히 비교.
-2. GEO 대표 (`naver-cue-terminated-ai-briefing-strategy-20260701`), SEO 대표 (`sitemap-optimization-strategy-for-ai-search-20260704`), SearchTune 폴백(브랜드 미매칭) 1편 각각 눈으로 확인.
-3. Kakao 디버거/OG 리프레시로 인블로그 URL 미리보기 재캐싱까지 확인.
-
-## 기술 노트
-- 워드마크 y=300, 부제 y=400 조합에서 AEO/GEO/SEO는 fontSize=190 → baseline shift 필요 없음 (기존 cy=338 근처). 렌더 결과가 시각적으로 정중앙이 되도록 워드마크 cy를 300~320 사이로 미세 조정 예정.
-- 부제가 긴 브랜드 (예: "GENERATIVE ENGINE OPTIMIZATION" 32자, letter-spacing 6 포함) 폭 확인 필요 → 폭 초과 시 letter-spacing 4로 하향 + fontSize 20으로 축소하는 fallback.
-- 다국어 부제 (Cue의 "NAVER AI 검색 · GEO")는 한글 포함이라 Pretendard 폰트 병기(`'Inter','Pretendard','Noto Sans KR'`). 이미 FONT_EMBED에 Pretendard ttf가 임베드됨.
-
-## 열린 질문 (플랜 확정 전 확인)
-1. **워터마크 유지 여부**: blog9에는 없지만 인블로그 OG는 소셜 매체 노출이라 브랜드 서명이 있는 편이 유리. 유지/제거 어느 쪽?
-2. **기존 141편 재생성 범위**: 전부 vs 최신 30편만 vs 카테고리 대표 몇 편 dry-run 후 결정?
-3. **재생성 후 인블로그 재동기화**: 자동으로 함께 트리거 vs 사용자 확인 후 별도 실행?
+1. **엔진 조합 최종 확정** — 위 4개(Perplexity + OpenAI web_search + Claude web_search + Firecrawl SERP) 로 진행할지, Gemini도 "grounding 없는 baseline"으로 포함할지.
+2. **프롬프트 초기 시드** — 20개 정도 예시를 제가 초안으로 제시해 승인받는 방식으로 진행할지, 사용자가 직접 목록을 주실지.
+3. **팩트체크 강도** — "출처 필요 태그만 삽입"(약한 개입) vs "임계 미달 시 자동 재생성"(강한 개입, 비용↑) 중 선택.
+4. **대시보드 접근** — `/admin/aeo-tracker` 로 관리자 전용이 맞는지, 아니면 `/aeo-tracker` 공개 마케팅용 대시보드로도 노출할지.
