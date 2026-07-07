@@ -959,6 +959,7 @@ const Index = () => {
           </main>
         )}
       </Suspense>
+      <StickyBottomCTA />
     </div>
   );
 };
