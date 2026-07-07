@@ -14,6 +14,161 @@ export type Database = {
   }
   public: {
     Tables: {
+      aeo_check_results: {
+        Row: {
+          accuracy: number
+          check_date: string
+          citation_hit: boolean
+          citations: Json
+          cost_usd: number
+          created_at: string
+          engine: string
+          error: string | null
+          excerpt: string | null
+          id: string
+          mention_rank: number | null
+          mentioned: boolean
+          mode: string
+          prompt_id: string
+          response_text: string | null
+          sentiment: number
+        }
+        Insert: {
+          accuracy?: number
+          check_date: string
+          citation_hit?: boolean
+          citations?: Json
+          cost_usd?: number
+          created_at?: string
+          engine: string
+          error?: string | null
+          excerpt?: string | null
+          id?: string
+          mention_rank?: number | null
+          mentioned?: boolean
+          mode?: string
+          prompt_id: string
+          response_text?: string | null
+          sentiment?: number
+        }
+        Update: {
+          accuracy?: number
+          check_date?: string
+          citation_hit?: boolean
+          citations?: Json
+          cost_usd?: number
+          created_at?: string
+          engine?: string
+          error?: string | null
+          excerpt?: string | null
+          id?: string
+          mention_rank?: number | null
+          mentioned?: boolean
+          mode?: string
+          prompt_id?: string
+          response_text?: string | null
+          sentiment?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "aeo_check_results_prompt_id_fkey"
+            columns: ["prompt_id"]
+            isOneToOne: false
+            referencedRelation: "aeo_prompts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      aeo_daily_scores: {
+        Row: {
+          accuracy_score: number
+          by_engine: Json
+          by_prompt: Json
+          check_date: string
+          citation_share: number
+          computed_at: string
+          delta_vs_yesterday: number
+          mentioned_checks: number
+          mode: string
+          position_score: number
+          presence_score: number
+          sentiment_score: number
+          total_checks: number
+          visibility_score: number
+        }
+        Insert: {
+          accuracy_score?: number
+          by_engine?: Json
+          by_prompt?: Json
+          check_date: string
+          citation_share?: number
+          computed_at?: string
+          delta_vs_yesterday?: number
+          mentioned_checks?: number
+          mode?: string
+          position_score?: number
+          presence_score?: number
+          sentiment_score?: number
+          total_checks?: number
+          visibility_score?: number
+        }
+        Update: {
+          accuracy_score?: number
+          by_engine?: Json
+          by_prompt?: Json
+          check_date?: string
+          citation_share?: number
+          computed_at?: string
+          delta_vs_yesterday?: number
+          mentioned_checks?: number
+          mode?: string
+          position_score?: number
+          presence_score?: number
+          sentiment_score?: number
+          total_checks?: number
+          visibility_score?: number
+        }
+        Relationships: []
+      }
+      aeo_prompts: {
+        Row: {
+          active: boolean
+          category: string
+          created_at: string
+          expected_url: string | null
+          id: string
+          intent: string | null
+          notes: string | null
+          priority: number
+          prompt: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          expected_url?: string | null
+          id?: string
+          intent?: string | null
+          notes?: string | null
+          priority?: number
+          prompt: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          category?: string
+          created_at?: string
+          expected_url?: string | null
+          id?: string
+          intent?: string | null
+          notes?: string | null
+          priority?: number
+          prompt?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ai_perception_cache: {
         Row: {
           brand: string | null
