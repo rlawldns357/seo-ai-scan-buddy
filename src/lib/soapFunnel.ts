@@ -61,6 +61,10 @@ export async function enrollSoapFunnel(
     }
   }
 
+  if (isInternal) {
+    return { inserted: !duplicate, duplicate };
+  }
+
   // Fire Day 1 (customer). Idempotency keyed per email per day.
   void supabase.functions.invoke("send-transactional-email", {
     body: {
