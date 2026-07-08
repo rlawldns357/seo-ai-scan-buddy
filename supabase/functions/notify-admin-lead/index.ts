@@ -27,6 +27,14 @@ Deno.serve(async (req) => {
       })
     }
 
+    // Internal company domain — do not send admin lead notifications for our own team's signups.
+    if (String(email).trim().toLowerCase().endsWith('@my-progress.co.kr')) {
+      return new Response(
+        JSON.stringify({ ok: true, skipped: 'internal_domain' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      )
+    }
+
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL')!,
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
