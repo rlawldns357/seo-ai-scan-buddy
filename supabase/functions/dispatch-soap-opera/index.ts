@@ -37,6 +37,11 @@ Deno.serve(async (req) => {
   const errors: string[] = []
 
   for (const lead of leads ?? []) {
+    // Internal company domain — never send soap funnel emails to our own team.
+    if (String(lead.email ?? '').toLowerCase().endsWith('@my-progress.co.kr')) {
+      skipped++
+      continue
+    }
     const startedMs = new Date(lead.funnel_started_at).getTime()
     const ageDays = Math.floor((Date.now() - startedMs) / (1000 * 60 * 60 * 24))
     // dueDay = ageDays + 1 capped at 5; only send if dueDay > funnel_day_sent
