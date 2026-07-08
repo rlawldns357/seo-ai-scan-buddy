@@ -37,6 +37,8 @@ export async function enrollSoapFunnel(
   ctx: SoapContext = {},
 ): Promise<{ inserted: boolean; duplicate: boolean; error?: string }> {
   const trimmed = email.trim().toLowerCase();
+  // Internal company domain — record the lead but do not send any funnel/admin emails.
+  const isInternal = trimmed.endsWith("@my-progress.co.kr");
   const attribution = captureAttribution();
   const payload: Record<string, unknown> = { email: trimmed, source, ...attribution };
   if (ctx.url) payload.analyzed_url = ctx.url;
@@ -44,8 +46,9 @@ export async function enrollSoapFunnel(
   if (typeof ctx.aeo === "number") payload.aeo_score = Math.round(ctx.aeo);
   if (typeof ctx.geo === "number") payload.geo_score = Math.round(ctx.geo);
   payload.funnel_started_at = new Date().toISOString();
-  payload.funnel_day_sent = 1;
-  payload.stage = "new";
+  payload.funnel_day_sent = isInternal ? 5 : 1; // skip all subsequent days for internal
+  payload.stage = isInternal ? "internal" : "new";
+  if (isInternal) payload.funnel_paused_at = new Date().toISOString();
 
   const { error } = await supabase.from("email_leads").insert(payload as never);
 
