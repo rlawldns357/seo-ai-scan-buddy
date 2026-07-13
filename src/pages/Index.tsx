@@ -502,7 +502,17 @@ const Index = () => {
       </Helmet>
       <WebSiteJsonLd />
       <FAQPageJsonLd faqs={faqs} />
-      <Navbar />
+      <Navbar
+        onNewAnalysis={
+          screen === "result"
+            ? () => {
+                setResult(null);
+                setScreen("home");
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+            : undefined
+        }
+      />
 
       {screen === "home" && (
         <main className="flex-1 flex items-center justify-center px-4 pt-14 sm:pt-20 pb-44 sm:pb-44">

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ShieldCheck, Bell, MessageSquare, Briefcase } from "lucide-react";
+import { ShieldCheck, Bell, MessageSquare, Briefcase, Plus } from "lucide-react";
 import logoUrl from "@/assets/searchtune-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
@@ -8,7 +8,7 @@ import ConsultationModal from "@/components/ConsultationModal";
 import LeadModal from "@/components/LeadModal";
 import { formatEngineVersion } from "@/lib/engineVersion";
 
-export default function Navbar() {
+export default function Navbar({ onNewAnalysis }: { onNewAnalysis?: () => void } = {}) {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [engineVersion, setEngineVersion] = useState<number | null>(null);
@@ -64,6 +64,17 @@ export default function Navbar() {
                 </span>
               </div>
             </Link>
+            {onNewAnalysis && (
+              <button
+                type="button"
+                onClick={onNewAnalysis}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors shrink-0"
+                aria-label="새 진단 시작"
+              >
+                <Plus className="w-3 h-3" />
+                새 진단
+              </button>
+            )}
             <span className="hidden sm:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent shrink-0">Beta</span>
             {isAdmin && (
               <Link
