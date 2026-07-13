@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { ShieldCheck, Bell, MessageSquare, Briefcase, Plus } from "lucide-react";
+import { ShieldCheck, Bell, MessageSquare, Briefcase, RotateCcw } from "lucide-react";
 import logoUrl from "@/assets/searchtune-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
