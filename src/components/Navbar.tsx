@@ -68,11 +68,11 @@ export default function Navbar({ onNewAnalysis }: { onNewAnalysis?: () => void }
               <button
                 type="button"
                 onClick={onNewAnalysis}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-primary/10 text-primary hover:bg-primary/20 transition-colors shrink-0"
+                className="inline-flex items-center justify-center w-7 h-7 rounded-full text-primary hover:bg-primary/10 transition-colors shrink-0"
                 aria-label="새 진단 시작"
+                title="새 진단"
               >
-                <Plus className="w-3 h-3" />
-                새 진단
+                <RotateCcw className="w-3.5 h-3.5" />
               </button>
             )}
             <span className="hidden sm:inline px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider bg-accent/10 text-accent shrink-0">Beta</span>
