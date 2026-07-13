@@ -8,7 +8,7 @@ import ConsultationModal from "@/components/ConsultationModal";
 import LeadModal from "@/components/LeadModal";
 import { formatEngineVersion } from "@/lib/engineVersion";
 
-export default function Navbar() {
+export default function Navbar({ onNewAnalysis }: { onNewAnalysis?: () => void } = {}) {
   const isAdmin = typeof sessionStorage !== "undefined" && sessionStorage.getItem("admin_pw") !== null;
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [engineVersion, setEngineVersion] = useState<number | null>(null);
